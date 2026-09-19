@@ -1,0 +1,1533 @@
+{
+  "ctx": {
+    "T": 4096,
+    "B": 1,
+    "bytes": 2,
+    "flash": true
+  },
+  "cases": [
+    {
+      "type": "input",
+      "params": {
+        "shape": "B T",
+        "dtype": "int64"
+      },
+      "resolved": {
+        "shape": "B T",
+        "dtype": "int64"
+      },
+      "errors": [],
+      "ports": {
+        "in": {},
+        "out": {
+          "x": "B T"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": null,
+      "flops": null,
+      "retains": null,
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "output",
+      "params": {},
+      "resolved": {},
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "..."
+        },
+        "out": {},
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": null,
+      "flops": null,
+      "retains": null,
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "boundary_in",
+      "params": {
+        "ports": {
+          "x": "B T D"
+        }
+      },
+      "resolved": {
+        "ports": {
+          "x": "B T D"
+        }
+      },
+      "errors": [],
+      "ports": {
+        "in": {},
+        "out": {
+          "x": "B T D"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": null,
+      "flops": null,
+      "retains": null,
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "boundary_out",
+      "params": {
+        "ports": {
+          "x": "B T D"
+        }
+      },
+      "resolved": {
+        "ports": {
+          "x": "B T D"
+        }
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "B T D"
+        },
+        "out": {},
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": null,
+      "flops": null,
+      "retains": null,
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "embedding",
+      "params": {
+        "vocab": 128256,
+        "dim": 4096
+      },
+      "resolved": {
+        "vocab": 128256,
+        "dim": 4096
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "ids": "..."
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 525336576,
+      "flops": {
+        "fwd": 0
+      },
+      "retains": [],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "pos_embedding",
+      "params": {
+        "max_seq": 1024,
+        "dim": 768
+      },
+      "resolved": {
+        "max_seq": 1024,
+        "dim": 768
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 786432,
+      "flops": {
+        "fwd": 0,
+        "elementwise": 768
+      },
+      "retains": [],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "learned_tokens",
+      "params": {
+        "count": 1,
+        "dim": 384,
+        "tokens": 0
+      },
+      "resolved": {
+        "count": 1,
+        "dim": 384,
+        "tokens": 0
+      },
+      "errors": [],
+      "ports": {
+        "in": {},
+        "out": {
+          "y": "B count dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 384,
+      "flops": {
+        "fwd": 0
+      },
+      "retains": [],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "learned_tokens",
+      "params": {
+        "count": 1,
+        "dim": 384,
+        "tokens": 256
+      },
+      "resolved": {
+        "count": 1,
+        "dim": 384,
+        "tokens": 256
+      },
+      "errors": [],
+      "ports": {
+        "in": {},
+        "out": {
+          "y": "B tokens dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 384,
+      "flops": {
+        "fwd": 0
+      },
+      "retains": [],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "linear",
+      "params": {
+        "in_features": 4096,
+        "out_features": 14336,
+        "bias": false
+      },
+      "resolved": {
+        "in_features": 4096,
+        "out_features": 14336,
+        "bias": false
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... in_features"
+        },
+        "out": {
+          "y": "... out_features"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 58720256,
+      "flops": {
+        "fwd": 117440512
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "linear",
+      "params": {
+        "in_features": 4096,
+        "out_features": 14336,
+        "bias": true
+      },
+      "resolved": {
+        "in_features": 4096,
+        "out_features": 14336,
+        "bias": true
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... in_features"
+        },
+        "out": {
+          "y": "... out_features"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 58734592,
+      "flops": {
+        "fwd": 117440512
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "lm_head",
+      "params": {
+        "vocab": 128256,
+        "dim": 4096,
+        "tied": false,
+        "bias": false
+      },
+      "resolved": {
+        "vocab": 128256,
+        "dim": 4096,
+        "tied": false,
+        "bias": false
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... vocab"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 525336576,
+      "flops": {
+        "fwd": 1050673152
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "lm_head",
+      "params": {
+        "vocab": 128256,
+        "dim": 4096,
+        "tied": true,
+        "bias": false
+      },
+      "resolved": {
+        "vocab": 128256,
+        "dim": 4096,
+        "tied": true,
+        "bias": false
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... vocab"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 1050673152
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "conv2d",
+      "params": {
+        "in_channels": 3,
+        "out_channels": 64,
+        "kernel": 11,
+        "stride": 4,
+        "padding": 2,
+        "in_h": 224,
+        "in_w": 224,
+        "act": "relu"
+      },
+      "resolved": {
+        "in_channels": 3,
+        "out_channels": 64,
+        "kernel": 11,
+        "stride": 4,
+        "padding": 2,
+        "groups": 1,
+        "bias": true,
+        "in_h": 224,
+        "in_w": 224,
+        "act": "relu"
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "B 3 224 224"
+        },
+        "out": {
+          "y": "B 64 55 55"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 23296,
+      "flops": {
+        "fwd": 140553600,
+        "elementwise": 193600
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "conv2d",
+      "params": {
+        "in_channels": 192,
+        "out_channels": 384,
+        "kernel": 3,
+        "stride": 1,
+        "padding": 1,
+        "in_h": 13,
+        "in_w": 13,
+        "act": "relu"
+      },
+      "resolved": {
+        "in_channels": 192,
+        "out_channels": 384,
+        "kernel": 3,
+        "stride": 1,
+        "padding": 1,
+        "groups": 1,
+        "bias": true,
+        "in_h": 13,
+        "in_w": 13,
+        "act": "relu"
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "B 192 13 13"
+        },
+        "out": {
+          "y": "B 384 13 13"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 663936,
+      "flops": {
+        "fwd": 224280576,
+        "elementwise": 64896
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "maxpool2d",
+      "params": {
+        "channels": 64,
+        "kernel": 3,
+        "stride": 2,
+        "in_h": 55,
+        "in_w": 55
+      },
+      "resolved": {
+        "channels": 64,
+        "kernel": 3,
+        "stride": 2,
+        "padding": 0,
+        "in_h": 55,
+        "in_w": 55
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "B 64 55 55"
+        },
+        "out": {
+          "y": "B 64 27 27"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0,
+        "elementwise": 419904
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "flatten2d",
+      "params": {
+        "channels": 256,
+        "in_h": 6,
+        "in_w": 6
+      },
+      "resolved": {
+        "channels": 256,
+        "in_h": 6,
+        "in_w": 6
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "B 256 6 6"
+        },
+        "out": {
+          "y": "B 9216"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0
+      },
+      "retains": [],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "rmsnorm",
+      "params": {
+        "dim": 4096
+      },
+      "resolved": {
+        "dim": 4096,
+        "eps": 0.00001,
+        "scale": true
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 4096,
+      "flops": {
+        "fwd": 0,
+        "elementwise": 16384
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "rmsnorm",
+      "params": {
+        "dim": 4096,
+        "scale": false
+      },
+      "resolved": {
+        "dim": 4096,
+        "eps": 0.00001,
+        "scale": false
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0,
+        "elementwise": 16384
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "layernorm",
+      "params": {
+        "dim": 768,
+        "bias": true
+      },
+      "resolved": {
+        "dim": 768,
+        "eps": 0.00001,
+        "bias": true
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 1536,
+      "flops": {
+        "fwd": 0,
+        "elementwise": 4608
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "layernorm",
+      "params": {
+        "dim": 768,
+        "bias": false
+      },
+      "resolved": {
+        "dim": 768,
+        "eps": 0.00001,
+        "bias": false
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 768,
+      "flops": {
+        "fwd": 0,
+        "elementwise": 4608
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "activation",
+      "params": {
+        "kind": "silu",
+        "dim": 14336
+      },
+      "resolved": {
+        "kind": "silu",
+        "dim": 14336
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0,
+        "elementwise": 71680
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "activation",
+      "params": {
+        "kind": "gelu",
+        "dim": 3072
+      },
+      "resolved": {
+        "kind": "gelu",
+        "dim": 3072
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0,
+        "elementwise": 24576
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "add",
+      "params": {
+        "dim": 4096
+      },
+      "resolved": {
+        "dim": 4096
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "a": "... dim",
+          "b": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {
+          "b": "side/inherit"
+        }
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0,
+        "elementwise": 4096
+      },
+      "retains": [],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "mul",
+      "params": {
+        "dim": 14336
+      },
+      "resolved": {
+        "dim": 14336
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "a": "... dim",
+          "b": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {
+          "b": "side/inherit"
+        }
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0,
+        "elementwise": 14336
+      },
+      "retains": [
+        "a",
+        "b"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "rearrange",
+      "params": {
+        "from": "B T (H dh)",
+        "to": "B H T dh"
+      },
+      "resolved": {
+        "from": "B T (H dh)",
+        "to": "B H T dh"
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "B T (H dh)"
+        },
+        "out": {
+          "y": "B H T dh"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0
+      },
+      "retains": [],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "rope",
+      "params": {
+        "heads": 32,
+        "head_dim": 128,
+        "theta": 500000
+      },
+      "resolved": {
+        "heads": 32,
+        "head_dim": 128,
+        "theta": 500000,
+        "scaling": null
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "B heads T head_dim"
+        },
+        "out": {
+          "y": "B heads T head_dim"
+        },
+        "anchors": {
+          "y": "side/inherit"
+        }
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0,
+        "elementwise": 24576
+      },
+      "retains": [],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "rope",
+      "params": {
+        "heads": 32,
+        "head_dim": 127,
+        "theta": 10000
+      },
+      "resolved": {
+        "heads": 32,
+        "head_dim": 127,
+        "theta": 10000,
+        "scaling": null
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "B heads T head_dim"
+        },
+        "out": {
+          "y": "B heads T head_dim"
+        },
+        "anchors": {
+          "y": "side/inherit"
+        }
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0,
+        "elementwise": 24384
+      },
+      "retains": [],
+      "stateBytes": null,
+      "constraints": [
+        "ROPE-01: RoPE needs an even head_dim, got 127"
+      ]
+    },
+    {
+      "type": "sdpa",
+      "params": {
+        "heads": 32,
+        "kv_heads": 8,
+        "head_dim": 128,
+        "causal": true
+      },
+      "resolved": {
+        "heads": 32,
+        "kv_heads": 8,
+        "head_dim": 128,
+        "v_head_dim": 0,
+        "causal": true,
+        "window": 0,
+        "flash": true,
+        "cache": true
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "q": "B heads T head_dim",
+          "k": "B kv_heads T head_dim",
+          "v": "B kv_heads T head_dim"
+        },
+        "out": {
+          "y": "B heads T head_dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0,
+        "fwdSeq": 33554432,
+        "fwdSeqUnmasked": 67108864
+      },
+      "retains": [
+        "q",
+        "k",
+        "v"
+      ],
+      "stateBytes": {
+        "perToken": 4096,
+        "perSeq": 0
+      },
+      "constraints": []
+    },
+    {
+      "type": "sdpa",
+      "params": {
+        "heads": 32,
+        "kv_heads": 8,
+        "head_dim": 128,
+        "causal": false
+      },
+      "resolved": {
+        "heads": 32,
+        "kv_heads": 8,
+        "head_dim": 128,
+        "v_head_dim": 0,
+        "causal": false,
+        "window": 0,
+        "flash": true,
+        "cache": true
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "q": "B heads T head_dim",
+          "k": "B kv_heads T head_dim",
+          "v": "B kv_heads T head_dim"
+        },
+        "out": {
+          "y": "B heads T head_dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0,
+        "fwdSeq": 67108864,
+        "fwdSeqUnmasked": 67108864
+      },
+      "retains": [
+        "q",
+        "k",
+        "v"
+      ],
+      "stateBytes": {
+        "perToken": 4096,
+        "perSeq": 0
+      },
+      "constraints": []
+    },
+    {
+      "type": "sdpa",
+      "params": {
+        "heads": 32,
+        "kv_heads": 8,
+        "head_dim": 128,
+        "window": 4096
+      },
+      "resolved": {
+        "heads": 32,
+        "kv_heads": 8,
+        "head_dim": 128,
+        "v_head_dim": 0,
+        "causal": true,
+        "window": 4096,
+        "flash": true,
+        "cache": true
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "q": "B heads T head_dim",
+          "k": "B kv_heads T head_dim",
+          "v": "B kv_heads T head_dim"
+        },
+        "out": {
+          "y": "B heads T head_dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0,
+        "fwdSeq": 33554432,
+        "fwdSeqUnmasked": 67108864
+      },
+      "retains": [
+        "q",
+        "k",
+        "v"
+      ],
+      "stateBytes": {
+        "perToken": 0,
+        "perSeq": 16777216
+      },
+      "constraints": []
+    },
+    {
+      "type": "sdpa",
+      "params": {
+        "heads": 32,
+        "kv_heads": 7,
+        "head_dim": 128
+      },
+      "resolved": {
+        "heads": 32,
+        "kv_heads": 7,
+        "head_dim": 128,
+        "v_head_dim": 0,
+        "causal": true,
+        "window": 0,
+        "flash": true,
+        "cache": true
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "q": "B heads T head_dim",
+          "k": "B kv_heads T head_dim",
+          "v": "B kv_heads T head_dim"
+        },
+        "out": {
+          "y": "B heads T head_dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0,
+        "fwdSeq": 33554432,
+        "fwdSeqUnmasked": 67108864
+      },
+      "retains": [
+        "q",
+        "k",
+        "v"
+      ],
+      "stateBytes": {
+        "perToken": 3584,
+        "perSeq": 0
+      },
+      "constraints": [
+        "SDPA-01: heads (32) must be divisible by kv_heads (7)"
+      ]
+    },
+    {
+      "type": "sdpa",
+      "params": {
+        "heads": 32,
+        "kv_heads": 8,
+        "head_dim": 128,
+        "cache": false
+      },
+      "resolved": {
+        "heads": 32,
+        "kv_heads": 8,
+        "head_dim": 128,
+        "v_head_dim": 0,
+        "causal": true,
+        "window": 0,
+        "flash": true,
+        "cache": false
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "q": "B heads T head_dim",
+          "k": "B kv_heads T head_dim",
+          "v": "B kv_heads T head_dim"
+        },
+        "out": {
+          "y": "B heads T head_dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0,
+        "fwdSeq": 33554432,
+        "fwdSeqUnmasked": 67108864
+      },
+      "retains": [
+        "q",
+        "k",
+        "v"
+      ],
+      "stateBytes": {
+        "perToken": 0,
+        "perSeq": 0
+      },
+      "constraints": []
+    },
+    {
+      "type": "topk_router",
+      "params": {
+        "d_model": 7168,
+        "experts": 256,
+        "top_k": 8,
+        "bias": true
+      },
+      "resolved": {
+        "d_model": 7168,
+        "experts": 256,
+        "top_k": 8,
+        "bias": true,
+        "normalize": true
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... d_model"
+        },
+        "out": {
+          "weights": "... top_k"
+        },
+        "anchors": {
+          "weights": "side/float"
+        }
+      },
+      "portError": "",
+      "paramCount": 1835264,
+      "flops": {
+        "fwd": 3670016
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "topk_router",
+      "params": {
+        "d_model": 7168,
+        "experts": 8,
+        "top_k": 9
+      },
+      "resolved": {
+        "d_model": 7168,
+        "experts": 8,
+        "top_k": 9,
+        "bias": false,
+        "normalize": true
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... d_model"
+        },
+        "out": {
+          "weights": "... top_k"
+        },
+        "anchors": {
+          "weights": "side/float"
+        }
+      },
+      "portError": "",
+      "paramCount": 57344,
+      "flops": {
+        "fwd": 114688
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": null,
+      "constraints": [
+        "ROUTER-01: top_k (9) cannot exceed the number of experts (8)"
+      ]
+    },
+    {
+      "type": "weighted_sum",
+      "params": {
+        "dim": 4096,
+        "n": 8
+      },
+      "resolved": {
+        "dim": 4096,
+        "n": 8
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim",
+          "weights": "... n"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0,
+        "elementwise": 32768
+      },
+      "retains": [],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "split",
+      "params": {
+        "from": "B T D",
+        "sizes": [
+          512,
+          64
+        ]
+      },
+      "resolved": {
+        "from": "B T D",
+        "sizes": [
+          512,
+          64
+        ],
+        "axis": -1
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "B T D"
+        },
+        "out": {
+          "y0": "B T (512)",
+          "y1": "B T (64)"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0
+      },
+      "retains": [],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "concat",
+      "params": {
+        "to": "B T D",
+        "sizes": [
+          512,
+          64
+        ]
+      },
+      "resolved": {
+        "to": "B T D",
+        "sizes": [
+          512,
+          64
+        ],
+        "axis": -1
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "y0": "B T (512)",
+          "y1": "B T (64)"
+        },
+        "out": {
+          "y": "B T D"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0
+      },
+      "retains": [],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "concat",
+      "params": {
+        "to": "B T Dp",
+        "sizes": [
+          "Tc",
+          "T-Tc"
+        ],
+        "axis": 1
+      },
+      "resolved": {
+        "to": "B T Dp",
+        "sizes": [
+          "Tc",
+          "T-Tc"
+        ],
+        "axis": 1
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "y0": "B (Tc) Dp",
+          "y1": "B (T-Tc) Dp"
+        },
+        "out": {
+          "y": "B T Dp"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0
+      },
+      "retains": [],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "expand_heads",
+      "params": {
+        "heads": 32,
+        "dim": 64
+      },
+      "resolved": {
+        "heads": 32,
+        "dim": 64
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "B T dim"
+        },
+        "out": {
+          "y": "B heads T dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0
+      },
+      "retains": [],
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "kv_latent_cache",
+      "params": {
+        "dim": 576
+      },
+      "resolved": {
+        "dim": 576
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "fwd": 0
+      },
+      "retains": [],
+      "stateBytes": {
+        "perToken": 1152,
+        "perSeq": 0
+      },
+      "constraints": []
+    },
+    {
+      "type": "conv1d",
+      "params": {
+        "channels": 8192,
+        "kernel": 4,
+        "bias": true
+      },
+      "resolved": {
+        "channels": 8192,
+        "kernel": 4,
+        "bias": true
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... channels"
+        },
+        "out": {
+          "y": "... channels"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 40960,
+      "flops": {
+        "fwd": 65536
+      },
+      "retains": [
+        "x"
+      ],
+      "stateBytes": {
+        "perToken": 0,
+        "perSeq": 49152
+      },
+      "constraints": []
+    },
+    {
+      "type": "ssd_scan",
+      "params": {
+        "d_inner": 8192,
+        "heads": 128,
+        "head_dim": 64,
+        "state": 128,
+        "groups": 8,
+        "xbc_width": 10240
+      },
+      "resolved": {
+        "d_inner": 8192,
+        "heads": 128,
+        "head_dim": 64,
+        "state": 128,
+        "groups": 8,
+        "xbc_width": 10240,
+        "chunk": 256
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "xbc": "... xbc_width",
+          "dt": "... heads"
+        },
+        "out": {
+          "y": "... d_inner"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 384,
+      "flops": {
+        "fwd": 14680064
+      },
+      "retains": [
+        "xbc",
+        "dt"
+      ],
+      "stateBytes": {
+        "perToken": 0,
+        "perSeq": 2097152
+      },
+      "constraints": []
+    },
+    {
+      "type": "ssd_scan",
+      "params": {
+        "d_inner": 8192,
+        "heads": 128,
+        "head_dim": 65,
+        "state": 128,
+        "groups": 7,
+        "xbc_width": 10240
+      },
+      "resolved": {
+        "d_inner": 8192,
+        "heads": 128,
+        "head_dim": 65,
+        "state": 128,
+        "groups": 7,
+        "xbc_width": 10240,
+        "chunk": 256
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "xbc": "... xbc_width",
+          "dt": "... heads"
+        },
+        "out": {
+          "y": "... d_inner"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 384,
+      "flops": {
+        "fwd": 14680064
+      },
+      "retains": [
+        "xbc",
+        "dt"
+      ],
+      "stateBytes": {
+        "perToken": 0,
+        "perSeq": 2129920
+      },
+      "constraints": [
+        "SSD-01: heads (128) times head_dim (65) must equal d_inner (8192)",
+        "SSD-02: heads (128) must be divisible by groups (7)"
+      ]
+    }
+  ]
+}

@@ -24,6 +24,9 @@ import {
   matchPattern,
   parsePattern,
   resolveSymbols,
+  CATALOG,
+  resolveNodeParams,
+  portsOf,
   shapeToString,
 } from "@tensorcad/core";
 
@@ -218,3 +221,109 @@ console.log(
     `${CASES.length + ERRORS.length} expression cases, and ` +
     `${PATTERNS.length + PATTERN_ERRORS.length + MATCHES.length} pattern cases`,
 );
+
+/**
+ * The primitive formulas, pinned one block at a time.
+ *
+ * A preset exercises the primitives its architecture happens to use, at the
+ * sizes that architecture happens to pick. This walks every primitive in the
+ * catalog at a fixed set of parameters and writes down what it says: its
+ * resolved parameters, its ports, its parameter count, its FLOPs, what it
+ * retains, and its cache state. A port of a formula is done when this matches.
+ */
+const PRIMITIVE_CASES: { type: string; params: Record<string, unknown> }[] = [
+  { type: "input", params: { shape: "B T", dtype: "int64" } },
+  { type: "output", params: {} },
+  { type: "boundary_in", params: { ports: { x: "B T D" } } },
+  { type: "boundary_out", params: { ports: { x: "B T D" } } },
+  { type: "embedding", params: { vocab: 128256, dim: 4096 } },
+  { type: "pos_embedding", params: { max_seq: 1024, dim: 768 } },
+  { type: "learned_tokens", params: { count: 1, dim: 384, tokens: 0 } },
+  { type: "learned_tokens", params: { count: 1, dim: 384, tokens: 256 } },
+  { type: "linear", params: { in_features: 4096, out_features: 14336, bias: false } },
+  { type: "linear", params: { in_features: 4096, out_features: 14336, bias: true } },
+  { type: "lm_head", params: { vocab: 128256, dim: 4096, tied: false, bias: false } },
+  { type: "lm_head", params: { vocab: 128256, dim: 4096, tied: true, bias: false } },
+  { type: "conv2d", params: { in_channels: 3, out_channels: 64, kernel: 11, stride: 4, padding: 2, in_h: 224, in_w: 224, act: "relu" } },
+  { type: "conv2d", params: { in_channels: 192, out_channels: 384, kernel: 3, stride: 1, padding: 1, in_h: 13, in_w: 13, act: "relu" } },
+  { type: "maxpool2d", params: { channels: 64, kernel: 3, stride: 2, in_h: 55, in_w: 55 } },
+  { type: "flatten2d", params: { channels: 256, in_h: 6, in_w: 6 } },
+  { type: "rmsnorm", params: { dim: 4096 } },
+  { type: "rmsnorm", params: { dim: 4096, scale: false } },
+  { type: "layernorm", params: { dim: 768, bias: true } },
+  { type: "layernorm", params: { dim: 768, bias: false } },
+  { type: "activation", params: { kind: "silu", dim: 14336 } },
+  { type: "activation", params: { kind: "gelu", dim: 3072 } },
+  { type: "add", params: { dim: 4096 } },
+  { type: "mul", params: { dim: 14336 } },
+  { type: "rearrange", params: { from: "B T (H dh)", to: "B H T dh" } },
+  { type: "rope", params: { heads: 32, head_dim: 128, theta: 500000 } },
+  { type: "rope", params: { heads: 32, head_dim: 127, theta: 10000 } },
+  { type: "sdpa", params: { heads: 32, kv_heads: 8, head_dim: 128, causal: true } },
+  { type: "sdpa", params: { heads: 32, kv_heads: 8, head_dim: 128, causal: false } },
+  { type: "sdpa", params: { heads: 32, kv_heads: 8, head_dim: 128, window: 4096 } },
+  { type: "sdpa", params: { heads: 32, kv_heads: 7, head_dim: 128 } },
+  { type: "sdpa", params: { heads: 32, kv_heads: 8, head_dim: 128, cache: false } },
+  { type: "topk_router", params: { d_model: 7168, experts: 256, top_k: 8, bias: true } },
+  { type: "topk_router", params: { d_model: 7168, experts: 8, top_k: 9 } },
+  { type: "weighted_sum", params: { dim: 4096, n: 8 } },
+  { type: "split", params: { from: "B T D", sizes: [512, 64] } },
+  { type: "concat", params: { to: "B T D", sizes: [512, 64] } },
+  { type: "concat", params: { to: "B T Dp", sizes: ["Tc", "T-Tc"], axis: 1 } },
+  { type: "expand_heads", params: { heads: 32, dim: 64 } },
+  { type: "kv_latent_cache", params: { dim: 576 } },
+  { type: "conv1d", params: { channels: 8192, kernel: 4, bias: true } },
+  { type: "ssd_scan", params: { d_inner: 8192, heads: 128, head_dim: 64, state: 128, groups: 8, xbc_width: 10240 } },
+  { type: "ssd_scan", params: { d_inner: 8192, heads: 128, head_dim: 65, state: 128, groups: 7, xbc_width: 10240 } },
+];
+
+const primCtx = { T: 4096, B: 1, bytes: 2, flash: true };
+const primSymbols = resolveSymbols({
+  version: 1,
+  meta: { name: "primitive-cases" },
+  symbols: { ...ENV, Tc: 218, Dp: 384 },
+  graph: { nodes: [], edges: [] },
+} as never);
+
+const primitives = PRIMITIVE_CASES.map(({ type, params }) => {
+  const def = CATALOG[type];
+  const r = resolveNodeParams(def, params as never, primSymbols);
+  let ports: unknown = null;
+  let portErr = "";
+  try {
+    const p = portsOf(def.ports, r);
+    ports = {
+      in: Object.fromEntries(Object.entries(p.in).map(([k, v]) => [k, v.shape])),
+      out: Object.fromEntries(Object.entries(p.out).map(([k, v]) => [k, v.shape])),
+      anchors: Object.fromEntries(
+        [...Object.entries(p.in), ...Object.entries(p.out)]
+          .filter(([, v]) => v.anchor !== "flow" || v.dtype !== "inherit")
+          .map(([k, v]) => [k, `${v.anchor}/${v.dtype}`]),
+      ),
+    };
+  } catch (e) {
+    portErr = (e as Error).message;
+  }
+  const prim = def as never as {
+    paramCount?: (r: unknown) => number;
+    flops?: (r: unknown, c: unknown) => Record<string, number>;
+    retains?: (r: unknown) => string[];
+    stateBytes?: (r: unknown, c: unknown) => Record<string, number>;
+    constraints?: (r: unknown) => { id: string; message: string }[];
+  };
+  return {
+    type,
+    params,
+    resolved: r.p,
+    errors: r.errors,
+    ports,
+    portError: portErr,
+    paramCount: prim.paramCount ? prim.paramCount(r) : null,
+    flops: prim.flops ? prim.flops(r, primCtx) : null,
+    retains: prim.retains ? prim.retains(r) : null,
+    stateBytes: prim.stateBytes ? prim.stateBytes(r, primCtx) : null,
+    constraints: prim.constraints ? prim.constraints(r).map((c) => `${c.id}: ${c.message}`) : [],
+  };
+});
+writeFileSync(join(root, "primitives.json"), JSON.stringify({ ctx: primCtx, cases: primitives }, null, 2) + "\n");
+console.log(`  and ${primitives.length} primitive cases`);

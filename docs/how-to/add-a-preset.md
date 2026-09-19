@@ -25,6 +25,11 @@ Vision transformers use `JEPA_SPECS` and `presets/jepa.ts`; anything whose shape
 does not fit a spec at all is written out block by block, as `presets/convnet.ts`
 does for AlexNet.
 
+The builders are TypeScript, and the library the engine ships is the JSON they
+write: `bun run scripts/golden.ts` puts it in `packages/core-go/presets/data`,
+where `go:embed` picks it up. So a new preset is one spec here and one
+regenerate, not two definitions. When the TypeScript goes the JSON stays.
+
 ## `published` is the point
 
 - `params` — what the authors report, with a `source` link to the config or paper.
@@ -60,5 +65,5 @@ file:
 
 ```bash
 bun run scripts/golden.ts
-go test ./packages/core-go/...
+go test ./...      # from packages/core-go
 ```

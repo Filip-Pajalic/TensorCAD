@@ -62,6 +62,6 @@ number shown beside them.
 
 ## Where it lives
 
-`packages/core/src/shapes/symexpr.ts` is the polynomial; `expr.ts` parses the
+`packages/core-go/shapes/symexpr.go` is the polynomial; `expr.go` parses the
 expressions; `pattern.ts` parses shape patterns; `infer.ts` walks a graph
 propagating shapes and collecting the disagreements.

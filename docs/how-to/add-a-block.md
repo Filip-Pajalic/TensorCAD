@@ -69,8 +69,20 @@ usually you in six months.
 
 ## Code generation
 
-Add a `case` to the switch in `packages/core/src/codegen/torch.ts`. If the block
-cannot be emitted, say so in a warning rather than emitting something wrong.
+Add a `case` to the switch in `codegen/torch.ts` and to the one in
+`packages/core-go/codegen/torch.go`. If the block cannot be emitted, say so in a
+warning rather than emitting something wrong.
+
+## Twice, for now
+
+The engine that ships is `packages/core-go`. `packages/core` is the TypeScript
+it was ported from, and it is what writes the golden files the Go is checked
+against — so a block added to one and not the other fails a test that says so
+by name. Add it to both, in the same shape, and let the goldens prove they
+agree.
+
+Do not "improve" the Go while you are in there. It is bug-compatible on
+purpose, and every deliberate divergence is documented where it is made.
 
 ## Prove it
 
@@ -78,6 +90,8 @@ Either a preset that uses it with a published figure, or a test pinning the
 arithmetic. Preferably both.
 
 ```bash
+bun run scripts/golden.ts     # write down what the TypeScript says
+bun run build:wasm            # the engine the editor will load
 bun run scripts/report.ts     # before and after; the table must not move
-bun test packages
+bun run test:all
 ```

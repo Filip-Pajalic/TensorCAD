@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"sort"
 
 	"github.com/tensorcad/core/ir"
 )
@@ -152,16 +153,26 @@ func compileUserBlock(name string, raw any) (*BlockDef, error) {
 		return nil, fmt.Errorf("block %q has an empty graph", name)
 	}
 
-	params := map[string]ParamSpec{}
-	for key, p := range def.Params {
+	// Sorted, where a built-in block's parameters keep the order they were
+	// written in: a definition arrives as JSON, and decoding it into a map has
+	// already thrown the author's order away.
+	names := make([]string, 0, len(def.Params))
+	for key := range def.Params {
+		names = append(names, key)
+	}
+	sort.Strings(names)
+
+	params := make(ParamList, 0, len(names))
+	for _, key := range names {
+		p := def.Params[key]
 		kind, ok := paramKinds[p.Type]
 		if !ok {
 			return nil, fmt.Errorf("block %q parameter %q has unknown type %q", name, key, p.Type)
 		}
-		params[key] = ParamSpec{
+		params = append(params, ParamEntry{Name: key, Spec: ParamSpec{
 			Type: kind, Default: p.Default, HasDefault: p.Default != nil,
 			Min: p.Min, Max: p.Max, Values: p.Values, Doc: p.Doc,
-		}
+		}})
 	}
 
 	return &BlockDef{

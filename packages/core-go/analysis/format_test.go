@@ -1,6 +1,7 @@
 package analysis_test
 
 import (
+	"math"
 	"testing"
 
 	"github.com/tensorcad/core/analysis"
@@ -43,6 +44,37 @@ func TestJSToFixedMatchesJavaScript(t *testing.T) {
 	for _, c := range cases {
 		if got := analysis.JSToFixed(c.x, c.digits); got != c.want {
 			t.Errorf("JSToFixed(%v, %d) = %q, want %q", c.x, c.digits, got, c.want)
+		}
+	}
+}
+
+// JavaScript keeps fixed notation down to 1e-6 and out to 1e21, where Go's %g
+// gives up at 1e-4. These literals end up in generated Python, where eps=1e-05
+// and eps=0.00001 are two different files for the same design.
+func TestJSNumberMatchesJavaScript(t *testing.T) {
+	cases := []struct {
+		x    float64
+		want string
+	}{
+		{0, "0"},
+		{math.Copysign(0, -1), "0"},
+		{4, "4"},
+		{0.5, "0.5"},
+		{1e-5, "0.00001"},
+		{1e-6, "0.000001"},
+		{1e-7, "1e-7"},
+		{1.5e-7, "1.5e-7"},
+		{2048, "2048"},
+		{123456789, "123456789"},
+		{1e20, "100000000000000000000"},
+		{1e21, "1e+21"},
+		{1.25e22, "1.25e+22"},
+		{-0.02, "-0.02"},
+		{0.004082482904638631, "0.004082482904638631"},
+	}
+	for _, c := range cases {
+		if got := analysis.JSNumber(c.x); got != c.want {
+			t.Errorf("JSNumber(%v) = %q, want %q", c.x, got, c.want)
 		}
 	}
 }

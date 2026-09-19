@@ -95,9 +95,9 @@ var Primitives = []*BlockDef{
 	// --- graph boundaries ---------------------------------------------------
 	{
 		Kind: "primitive", Type: "input", Category: "io",
-		Params: map[string]ParamSpec{
-			"shape": pPattern("B T", "Shape pattern of the model input"),
-			"dtype": pEnum([]string{"int64", "int32", "bf16", "fp32"}, "int64", ""),
+		Params: ParamList{
+			{"shape", pPattern("B T", "Shape pattern of the model input")},
+			{"dtype", pEnum([]string{"int64", "int32", "bf16", "fp32"}, "int64", "")},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			s := r.Str("shape")
@@ -110,19 +110,19 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "output", Category: "io",
-		Params: map[string]ParamSpec{},
+		Params: ParamList{},
 		Ports:  Ports{In: map[string]PortSpec{"x": Port("...")}, Out: map[string]PortSpec{}},
 		Docs:   BlockDocs{Summary: "Model output."},
 	},
 	{
 		Kind: "primitive", Type: "boundary_in", Category: "io",
-		Params:  map[string]ParamSpec{"ports": pObj(map[string]any{"x": "B T D"}, "Port name -> shape pattern")},
+		Params:  ParamList{{"ports", pObj(map[string]any{"x": "B T D"}, "Port name -> shape pattern")}},
 		PortsFn: func(r *Resolved) Ports { return Ports{In: map[string]PortSpec{}, Out: portsParam(r)} },
 		Docs:    BlockDocs{Summary: "Entry point of a container subgraph."},
 	},
 	{
 		Kind: "primitive", Type: "boundary_out", Category: "io",
-		Params:  map[string]ParamSpec{"ports": pObj(map[string]any{"x": "B T D"}, "Port name -> shape pattern")},
+		Params:  ParamList{{"ports", pObj(map[string]any{"x": "B T D"}, "Port name -> shape pattern")}},
 		PortsFn: func(r *Resolved) Ports { return Ports{In: portsParam(r), Out: map[string]PortSpec{}} },
 		Docs:    BlockDocs{Summary: "Exit point of a container subgraph."},
 	},
@@ -130,9 +130,9 @@ var Primitives = []*BlockDef{
 	// --- embeddings ---------------------------------------------------------
 	{
 		Kind: "primitive", Type: "embedding", Category: "embedding",
-		Params: map[string]ParamSpec{
-			"vocab": pInt(1, "Vocabulary size"),
-			"dim":   pInt(1, "Embedding width"),
+		Params: ParamList{
+			{"vocab", pInt(1, "Vocabulary size")},
+			{"dim", pInt(1, "Embedding width")},
 		},
 		Ports:      Ports{In: map[string]PortSpec{"ids": Port("...")}, Out: map[string]PortSpec{"y": Port("... dim")}},
 		ParamCount: func(r *Resolved) float64 { return r.Num("vocab") * r.Num("dim") },
@@ -145,9 +145,9 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "pos_embedding", Category: "embedding",
-		Params: map[string]ParamSpec{
-			"max_seq": pInt(1, "Maximum position index"),
-			"dim":     pInt(1, ""),
+		Params: ParamList{
+			{"max_seq", pInt(1, "Maximum position index")},
+			{"dim", pInt(1, "")},
 		},
 		Ports:      Ports{In: map[string]PortSpec{"x": Port("... dim")}, Out: map[string]PortSpec{"y": Port("... dim")}},
 		ParamCount: func(r *Resolved) float64 { return r.Num("max_seq") * r.Num("dim") },
@@ -162,10 +162,10 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "learned_tokens", Category: "embedding",
-		Params: map[string]ParamSpec{
-			"count":  pIntD(1, 1, "How many distinct vectors are learned"),
-			"dim":    pInt(1, ""),
-			"tokens": pIntD(0, 0, "Sequence length it is broadcast to; 0 means one position per learned vector"),
+		Params: ParamList{
+			{"count", pIntD(1, 1, "How many distinct vectors are learned")},
+			{"dim", pInt(1, "")},
+			{"tokens", pIntD(0, 0, "Sequence length it is broadcast to; 0 means one position per learned vector")},
 		},
 		// Nothing goes in. This is a weight that is also an activation:
 		// broadcast across the batch, and often across the sequence as well.
@@ -192,10 +192,10 @@ var Primitives = []*BlockDef{
 	// --- linear algebra -----------------------------------------------------
 	{
 		Kind: "primitive", Type: "linear", Category: "linear",
-		Params: map[string]ParamSpec{
-			"in_features":  pInt(1, ""),
-			"out_features": pInt(1, ""),
-			"bias":         pBool(false, ""),
+		Params: ParamList{
+			{"in_features", pInt(1, "")},
+			{"out_features", pInt(1, "")},
+			{"bias", pBool(false, "")},
 		},
 		Ports: Ports{
 			In:  map[string]PortSpec{"x": Port("... in_features")},
@@ -219,11 +219,11 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "lm_head", Category: "head",
-		Params: map[string]ParamSpec{
-			"vocab": pInt(1, ""),
-			"dim":   pInt(1, ""),
-			"tied":  pBool(false, "Share weights with the token embedding"),
-			"bias":  pBool(false, ""),
+		Params: ParamList{
+			{"vocab", pInt(1, "")},
+			{"dim", pInt(1, "")},
+			{"tied", pBool(false, "Share weights with the token embedding")},
+			{"bias", pBool(false, "")},
 		},
 		Ports: Ports{
 			In:  map[string]PortSpec{"x": Port("... dim")},
@@ -263,18 +263,18 @@ var Primitives = []*BlockDef{
 	// The per-token FLOP convention holds with one image as the token.
 	{
 		Kind: "primitive", Type: "conv2d", Category: "linear",
-		Params: map[string]ParamSpec{
-			"in_channels":  pInt(1, ""),
-			"out_channels": pInt(1, ""),
-			"kernel":       pIntD(3, 1, ""),
-			"stride":       pIntD(1, 1, ""),
-			"padding":      pIntD(0, 0, ""),
-			"groups":       pIntD(1, 1, "Grouped convolution; equal to in_channels is depthwise"),
-			"bias":         pBool(true, ""),
-			"in_h":         pInt(1, "Height of the incoming feature map"),
-			"in_w":         pInt(1, "Width of the incoming feature map"),
-			"act": pEnum([]string{"identity", "relu", "relu2", "gelu", "gelu_tanh", "silu"}, "identity",
-				"Activation applied to the output, as a convnet always does"),
+		Params: ParamList{
+			{"in_channels", pInt(1, "")},
+			{"out_channels", pInt(1, "")},
+			{"kernel", pIntD(3, 1, "")},
+			{"stride", pIntD(1, 1, "")},
+			{"padding", pIntD(0, 0, "")},
+			{"groups", pIntD(1, 1, "Grouped convolution; equal to in_channels is depthwise")},
+			{"bias", pBool(true, "")},
+			{"in_h", pInt(1, "Height of the incoming feature map")},
+			{"in_w", pInt(1, "Width of the incoming feature map")},
+			{"act", pEnum([]string{"identity", "relu", "relu2", "gelu", "gelu_tanh", "silu"}, "identity",
+				"Activation applied to the output, as a convnet always does")},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			oh := convOut(r.Int("in_h"), r.Int("kernel"), r.Int("stride"), r.Int("padding"))
@@ -317,13 +317,13 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "maxpool2d", Category: "shape",
-		Params: map[string]ParamSpec{
-			"channels": pInt(1, ""),
-			"kernel":   pIntD(2, 1, ""),
-			"stride":   pIntD(2, 1, ""),
-			"padding":  pIntD(0, 0, ""),
-			"in_h":     pInt(1, ""),
-			"in_w":     pInt(1, ""),
+		Params: ParamList{
+			{"channels", pInt(1, "")},
+			{"kernel", pIntD(2, 1, "")},
+			{"stride", pIntD(2, 1, "")},
+			{"padding", pIntD(0, 0, "")},
+			{"in_h", pInt(1, "")},
+			{"in_w", pInt(1, "")},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			oh := convOut(r.Int("in_h"), r.Int("kernel"), r.Int("stride"), r.Int("padding"))
@@ -350,10 +350,10 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "flatten2d", Category: "shape",
-		Params: map[string]ParamSpec{
-			"channels": pInt(1, ""),
-			"in_h":     pInt(1, ""),
-			"in_w":     pInt(1, ""),
+		Params: ParamList{
+			{"channels", pInt(1, "")},
+			{"in_h", pInt(1, "")},
+			{"in_w", pInt(1, "")},
 		},
 		// Where a convnet stops being spatial and becomes a vector, which in
 		// AlexNet is where nine tenths of its parameters live.
@@ -372,10 +372,10 @@ var Primitives = []*BlockDef{
 	// --- normalisation and elementwise --------------------------------------
 	{
 		Kind: "primitive", Type: "rmsnorm", Category: "norm",
-		Params: map[string]ParamSpec{
-			"dim":   pInt(1, ""),
-			"eps":   pNum(1e-5, ""),
-			"scale": pBool(true, "Learned per-channel gain"),
+		Params: ParamList{
+			{"dim", pInt(1, "")},
+			{"eps", pNum(1e-5, "")},
+			{"scale", pBool(true, "Learned per-channel gain")},
 		},
 		Ports: Ports{In: map[string]PortSpec{"x": Port("... dim")}, Out: map[string]PortSpec{"y": Port("... dim")}},
 		ParamCount: func(r *Resolved) float64 {
@@ -392,10 +392,10 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "layernorm", Category: "norm",
-		Params: map[string]ParamSpec{
-			"dim":  pInt(1, ""),
-			"eps":  pNum(1e-5, ""),
-			"bias": pBool(true, ""),
+		Params: ParamList{
+			{"dim", pInt(1, "")},
+			{"eps", pNum(1e-5, "")},
+			{"bias", pBool(true, "")},
 		},
 		Ports: Ports{In: map[string]PortSpec{"x": Port("... dim")}, Out: map[string]PortSpec{"y": Port("... dim")}},
 		ParamCount: func(r *Resolved) float64 {
@@ -413,9 +413,9 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "activation", Category: "elementwise",
-		Params: map[string]ParamSpec{
-			"kind": pEnum([]string{"silu", "gelu", "gelu_tanh", "relu", "relu2", "tanh", "sigmoid", "identity"}, "silu", ""),
-			"dim":  pInt(1, "Width, used for the memory and elementwise estimates"),
+		Params: ParamList{
+			{"kind", pEnum([]string{"silu", "gelu", "gelu_tanh", "relu", "relu2", "tanh", "sigmoid", "identity"}, "silu", "")},
+			{"dim", pInt(1, "Width, used for the memory and elementwise estimates")},
 		},
 		Ports:      Ports{In: map[string]PortSpec{"x": Port("... dim")}, Out: map[string]PortSpec{"y": Port("... dim")}},
 		ParamCount: noParams,
@@ -431,7 +431,9 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "add", Category: "elementwise",
-		Params: map[string]ParamSpec{"dim": pInt(1, "")},
+		Params: ParamList{
+			{"dim", pInt(1, "")},
+		},
 		Ports: Ports{
 			In: map[string]PortSpec{
 				"a": Port("... dim"),
@@ -450,7 +452,9 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "mul", Category: "elementwise",
-		Params: map[string]ParamSpec{"dim": pInt(1, "")},
+		Params: ParamList{
+			{"dim", pInt(1, "")},
+		},
 		Ports: Ports{
 			In: map[string]PortSpec{
 				"a": Port("... dim"),
@@ -466,9 +470,9 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "rearrange", Category: "shape",
-		Params: map[string]ParamSpec{
-			"from": pPattern("B T (H dh)", ""),
-			"to":   pPattern("B H T dh", ""),
+		Params: ParamList{
+			{"from", pPattern("B T (H dh)", "")},
+			{"to", pPattern("B H T dh", "")},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			return Ports{
@@ -486,11 +490,11 @@ var Primitives = []*BlockDef{
 	// --- attention ----------------------------------------------------------
 	{
 		Kind: "primitive", Type: "rope", Category: "position",
-		Params: map[string]ParamSpec{
-			"heads":    pInt(1, ""),
-			"head_dim": pInt(2, ""),
-			"theta":    pNum(10000, ""),
-			"scaling":  pObj(nil, "Optional RoPE scaling spec (linear, NTK, YaRN)"),
+		Params: ParamList{
+			{"heads", pInt(1, "")},
+			{"head_dim", pInt(2, "")},
+			{"theta", pNum(10000, "")},
+			{"scaling", pObj(nil, "Optional RoPE scaling spec (linear, NTK, YaRN)")},
 		},
 		Ports: Ports{
 			In: map[string]PortSpec{"x": Port("B heads T head_dim")},
@@ -520,15 +524,15 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "sdpa", Category: "attention",
-		Params: map[string]ParamSpec{
-			"heads":      pInt(1, "Query heads"),
-			"kv_heads":   pInt(1, "Key/value heads; equal to heads for MHA, 1 for MQA"),
-			"head_dim":   pInt(1, "Width of a query/key head"),
-			"v_head_dim": pIntD(0, 0, "Width of a value head; 0 means the same as head_dim"),
-			"causal":     pBool(true, ""),
-			"window":     ParamSpec{Type: ParamInt, Default: 0.0, HasDefault: true, Doc: "Sliding-window width; 0 means full attention"},
-			"flash":      pBool(true, "Memory-efficient kernel that never materialises the score matrix"),
-			"cache":      pBool(true, "Whether this block owns the inference cache"),
+		Params: ParamList{
+			{"heads", pInt(1, "Query heads")},
+			{"kv_heads", pInt(1, "Key/value heads; equal to heads for MHA, 1 for MQA")},
+			{"head_dim", pInt(1, "Width of a query/key head")},
+			{"v_head_dim", pIntD(0, 0, "Width of a value head; 0 means the same as head_dim")},
+			{"causal", pBool(true, "")},
+			{"window", ParamSpec{Type: ParamInt, Default: 0.0, HasDefault: true, Doc: "Sliding-window width; 0 means full attention"}},
+			{"flash", pBool(true, "Memory-efficient kernel that never materialises the score matrix")},
+			{"cache", pBool(true, "Whether this block owns the inference cache")},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			v := "head_dim"
@@ -622,12 +626,12 @@ var Primitives = []*BlockDef{
 	// --- mixture of experts -------------------------------------------------
 	{
 		Kind: "primitive", Type: "topk_router", Category: "moe",
-		Params: map[string]ParamSpec{
-			"d_model":   pInt(1, ""),
-			"experts":   pInt(1, "Routed experts to choose from"),
-			"top_k":     pInt(1, "Experts each token is sent to"),
-			"bias":      pBool(false, "Per-expert routing bias (DeepSeek's score correction)"),
-			"normalize": pBool(true, "Renormalise the chosen weights to sum to one"),
+		Params: ParamList{
+			{"d_model", pInt(1, "")},
+			{"experts", pInt(1, "Routed experts to choose from")},
+			{"top_k", pInt(1, "Experts each token is sent to")},
+			{"bias", pBool(false, "Per-expert routing bias (DeepSeek's score correction)")},
+			{"normalize", pBool(true, "Renormalise the chosen weights to sum to one")},
 		},
 		Ports: Ports{
 			In:  map[string]PortSpec{"x": Port("... d_model")},
@@ -662,9 +666,9 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "weighted_sum", Category: "moe",
-		Params: map[string]ParamSpec{
-			"dim": pInt(1, ""),
-			"n":   pInt(1, "How many contributions are combined"),
+		Params: ParamList{
+			{"dim", pInt(1, "")},
+			{"n", pInt(1, "How many contributions are combined")},
 		},
 		Ports: Ports{
 			In:  map[string]PortSpec{"x": Port("... dim"), "weights": Port("... n")},
@@ -681,10 +685,10 @@ var Primitives = []*BlockDef{
 	// --- tensor plumbing ----------------------------------------------------
 	{
 		Kind: "primitive", Type: "split", Category: "shape",
-		Params: map[string]ParamSpec{
-			"from":  pPattern("B T D", "Shape of the incoming tensor"),
-			"sizes": pObj([]any{}, "Widths of the pieces, along the last dimension"),
-			"axis":  ParamSpec{Type: ParamInt, Default: -1.0, HasDefault: true, Doc: "Which dimension to cut. Only the last is supported."},
+		Params: ParamList{
+			{"from", pPattern("B T D", "Shape of the incoming tensor")},
+			{"sizes", pObj([]any{}, "Widths of the pieces, along the last dimension")},
+			{"axis", ParamSpec{Type: ParamInt, Default: -1.0, HasDefault: true, Doc: "Which dimension to cut. Only the last is supported."}},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			atoms := patternAtoms(r.Str("from"))
@@ -706,10 +710,10 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "concat", Category: "shape",
-		Params: map[string]ParamSpec{
-			"to":    pPattern("B T D", "Shape of the combined tensor"),
-			"sizes": pObj([]any{}, "Extents of the pieces, along `axis`"),
-			"axis":  ParamSpec{Type: ParamInt, Default: -1.0, HasDefault: true, Doc: "Which dimension to join on; negative counts from the end"},
+		Params: ParamList{
+			{"to", pPattern("B T D", "Shape of the combined tensor")},
+			{"sizes", pObj([]any{}, "Extents of the pieces, along `axis`")},
+			{"axis", ParamSpec{Type: ParamInt, Default: -1.0, HasDefault: true, Doc: "Which dimension to join on; negative counts from the end"}},
 		},
 		// Any axis, not only the last. Joining along the channel dimension is
 		// what a fused QKV projection does; joining along the sequence is what a
@@ -732,7 +736,10 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "expand_heads", Category: "shape",
-		Params: map[string]ParamSpec{"heads": pInt(1, ""), "dim": pInt(1, "")},
+		Params: ParamList{
+			{"heads", pInt(1, "")},
+			{"dim", pInt(1, "")},
+		},
 		Ports: Ports{
 			In:  map[string]PortSpec{"x": Port("B T dim")},
 			Out: map[string]PortSpec{"y": Port("B heads T dim")},
@@ -746,7 +753,9 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "kv_latent_cache", Category: "attention",
-		Params: map[string]ParamSpec{"dim": pInt(1, "Width of the cached vector per token per layer")},
+		Params: ParamList{
+			{"dim", pInt(1, "Width of the cached vector per token per layer")},
+		},
 		Ports: Ports{
 			In:  map[string]PortSpec{"x": Port("... dim")},
 			Out: map[string]PortSpec{"y": Port("... dim")},
@@ -765,10 +774,10 @@ var Primitives = []*BlockDef{
 	// --- state-space models -------------------------------------------------
 	{
 		Kind: "primitive", Type: "conv1d", Category: "ssm",
-		Params: map[string]ParamSpec{
-			"channels": pInt(1, "Width of the stream, convolved per channel"),
-			"kernel":   pIntD(4, 1, "Kernel width"),
-			"bias":     pBool(true, ""),
+		Params: ParamList{
+			{"channels", pInt(1, "Width of the stream, convolved per channel")},
+			{"kernel", pIntD(4, 1, "Kernel width")},
+			{"bias", pBool(true, "")},
 		},
 		Ports: Ports{
 			In:  map[string]PortSpec{"x": Port("... channels")},
@@ -797,14 +806,14 @@ var Primitives = []*BlockDef{
 	},
 	{
 		Kind: "primitive", Type: "ssd_scan", Category: "ssm",
-		Params: map[string]ParamSpec{
-			"d_inner":   pInt(1, "Width of the state-space stream"),
-			"heads":     pInt(1, ""),
-			"head_dim":  pInt(1, "Width per state-space head (Mamba-2's P)"),
-			"state":     pInt(1, "Recurrent state width per head (Mamba-2's N)"),
-			"groups":    pInt(1, "How many heads share one B/C projection"),
-			"xbc_width": pInt(1, "Width of the combined x, B and C stream"),
-			"chunk":     ParamSpec{Type: ParamInt, Default: 256.0, HasDefault: true, Doc: "Chunk length of the chunked scan"},
+		Params: ParamList{
+			{"d_inner", pInt(1, "Width of the state-space stream")},
+			{"heads", pInt(1, "")},
+			{"head_dim", pInt(1, "Width per state-space head (Mamba-2's P)")},
+			{"state", pInt(1, "Recurrent state width per head (Mamba-2's N)")},
+			{"groups", pInt(1, "How many heads share one B/C projection")},
+			{"xbc_width", pInt(1, "Width of the combined x, B and C stream")},
+			{"chunk", ParamSpec{Type: ParamInt, Default: 256.0, HasDefault: true, Doc: "Chunk length of the chunked scan"}},
 		},
 		Ports: Ports{
 			In:  map[string]PortSpec{"xbc": Port("... xbc_width"), "dt": Port("... heads")},

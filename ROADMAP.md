@@ -14,7 +14,15 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M3 Agent (MCP server, CLI) | **Done**, minus the live-UI bridge. 13 MCP tools over stdio, 6 CLI commands, 67 tests. |
 | M4 Test bench | **Partly done.** `tensorcad-runtime smoke-train` trains a scaled design on the local GPU and logs a loss curve; `scaleDesign` shrinks a design to a budget. No run registry or comparison view in the editor yet. |
 | M5 Advanced parts | **Mixture of experts, latent attention and state-space blocks all done.** DeepSeek-V3 and Nemotron-H-8B reproduce exactly. |
+| Go engine | **In progress.** The IR, the shape algebra, the catalog, shape inference, the analysis, the design rules and PyTorch generation all run in Go and are pinned against the TypeScript by golden files. Presets, explain, scale and the Hugging Face importer are still TypeScript only. |
 | Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, and named refusals. Remaining items in `docs/explanation/interaction-design.md`. |
+
+`bun test packages` runs everything: 273 tests. `go test ./...` in
+`packages/core-go` runs the Go engine against the same answers: every preset's
+symbol table, inferred shapes at two expansion settings, the full analysis and
+the design-rule check at three operating points, and the generated PyTorch byte
+for byte. The TypeScript is the specification until it is gone; `bun run
+scripts/golden.ts` writes down what it says.
 
 `bun test packages` runs everything: 273 tests. 20 presets, 17 matching their published parameter count exactly, and every one of them confirmed against PyTorch 2.11 on the local GPU. Not all are language models: `ijepa-vit-h14` is a vision transformer and `alexnet` a convolutional classifier, on the same machinery.
 

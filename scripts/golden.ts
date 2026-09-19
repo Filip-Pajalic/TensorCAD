@@ -31,8 +31,10 @@ import {
   portsOf,
   shapeToString,
   validate,
+  generateTorch,
   RULES,
   type AnalysisOptions,
+  type TorchOptions,
   type InferResult,
 } from "@tensorcad/core";
 
@@ -41,10 +43,12 @@ const docsDir = join(root, "presets");
 const goldenDir = join(root, "golden");
 const analysisDir = join(root, "analysis");
 const rulesDir = join(root, "rules");
+const codegenDir = join(root, "codegen");
 mkdirSync(docsDir, { recursive: true });
 mkdirSync(goldenDir, { recursive: true });
 mkdirSync(analysisDir, { recursive: true });
 mkdirSync(rulesDir, { recursive: true });
+mkdirSync(codegenDir, { recursive: true });
 
 /** JSON has no NaN, and a NaN here would mean the preset itself is broken. */
 function finite(label: string, values: Record<string, number>): Record<string, number> {
@@ -744,3 +748,36 @@ writeFileSync(join(root, "broken.json"), JSON.stringify({ cases: broken }, null,
 console.log(
   `  and ${broken.length} broken designs producing ${broken.reduce((n, c) => n + c.findings.length, 0)} findings`,
 );
+
+/**
+ * The generated PyTorch, byte for byte.
+ *
+ * The strongest test in the set: a model.py is the whole engine's output as a
+ * single artifact, and a file that differs by one character is a file that was
+ * generated differently. Three variants per preset — the default, the traceable
+ * dense mixture-of-experts dispatch, and no weight initialization — because
+ * each takes a different path through the emitter.
+ */
+const CODEGEN_VARIANTS: { label: string; options: TorchOptions }[] = [
+  { label: "default", options: {} },
+  { label: "dense", options: { moeDispatch: "dense" } },
+  { label: "bare", options: { initStd: 0, includeSmokeTest: false, className: "Net" } },
+];
+
+let codegenCases = 0;
+for (const name of PRESET_NAMES) {
+  const doc = getPreset(name);
+  const cases = CODEGEN_VARIANTS.map(({ label, options }) => {
+    const g = generateTorch(doc, options);
+    codegenCases++;
+    return {
+      label,
+      warnings: g.warnings,
+      // Only model.py: the other file is the document itself, which the preset
+      // golden already carries.
+      model: g.files.find((f) => f.path === "model.py")?.contents ?? "",
+    };
+  });
+  writeFileSync(join(codegenDir, `${name}.json`), JSON.stringify({ preset: name, cases }, null, 2) + "\n");
+}
+console.log(`  and ${codegenCases} generated PyTorch files`);

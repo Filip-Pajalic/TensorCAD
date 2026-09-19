@@ -153,19 +153,19 @@ func MultipliersOf(def *BlockDef, r *Resolved) Multipliers {
 
 var gqaAttention = &BlockDef{
 	Kind: "composite", Type: "gqa_attention", Category: "attention",
-	Params: map[string]ParamSpec{
-		"d_model":  pInt(1, "Residual stream width"),
-		"heads":    pInt(1, "Query heads"),
-		"kv_heads": pInt(1, "Key/value heads. Equal to heads gives MHA, 1 gives MQA"),
-		"head_dim": pInt(1, ""),
-		"bias":     pBool(false, "Bias on the q/k/v/o projections"),
-		"o_bias": ParamSpec{Type: ParamBool, Default: nil, HasDefault: true,
-			Doc: "Override the output-projection bias (Qwen2.5 has qkv bias only)"},
-		"causal":  pBool(true, ""),
-		"window":  ParamSpec{Type: ParamInt, Default: 0.0, HasDefault: true, Doc: "Sliding-window width; 0 means full attention"},
-		"qk_norm": pBool(false, "RMSNorm on the query and key heads (Qwen3, Gemma 3)"),
-		"rope":    ropeSpec(),
-		"flash":   pBool(true, ""),
+	Params: ParamList{
+		{"d_model", pInt(1, "Residual stream width")},
+		{"heads", pInt(1, "Query heads")},
+		{"kv_heads", pInt(1, "Key/value heads. Equal to heads gives MHA, 1 gives MQA")},
+		{"head_dim", pInt(1, "")},
+		{"bias", pBool(false, "Bias on the q/k/v/o projections")},
+		{"o_bias", ParamSpec{Type: ParamBool, Default: nil, HasDefault: true,
+			Doc: "Override the output-projection bias (Qwen2.5 has qkv bias only)"}},
+		{"causal", pBool(true, "")},
+		{"window", ParamSpec{Type: ParamInt, Default: 0.0, HasDefault: true, Doc: "Sliding-window width; 0 means full attention"}},
+		{"qk_norm", pBool(false, "RMSNorm on the query and key heads (Qwen3, Gemma 3)")},
+		{"rope", ropeSpec()},
+		{"flash", pBool(true, "")},
 	},
 	Ports: Ports{
 		In:  map[string]PortSpec{"x": Port("... d_model")},
@@ -265,11 +265,11 @@ func expandGQA(raw map[string]any, r *Resolved) Expansion {
 
 var gatedMlp = &BlockDef{
 	Kind: "composite", Type: "gated_mlp", Category: "mlp",
-	Params: map[string]ParamSpec{
-		"d_model": pInt(1, ""),
-		"hidden":  pInt(1, "Intermediate width"),
-		"act":     pEnum([]string{"silu", "gelu", "gelu_tanh", "relu", "relu2"}, "silu", ""),
-		"bias":    pBool(false, ""),
+	Params: ParamList{
+		{"d_model", pInt(1, "")},
+		{"hidden", pInt(1, "Intermediate width")},
+		{"act", pEnum([]string{"silu", "gelu", "gelu_tanh", "relu", "relu2"}, "silu", "")},
+		{"bias", pBool(false, "")},
 	},
 	Ports: Ports{
 		In:  map[string]PortSpec{"x": Port("... d_model")},
@@ -307,11 +307,11 @@ func expandGatedMlp(raw map[string]any, r *Resolved) Expansion {
 
 var denseMlp = &BlockDef{
 	Kind: "composite", Type: "dense_mlp", Category: "mlp",
-	Params: map[string]ParamSpec{
-		"d_model": pInt(1, ""),
-		"hidden":  pInt(1, ""),
-		"act":     pEnum([]string{"gelu", "gelu_tanh", "relu", "relu2", "silu"}, "gelu", ""),
-		"bias":    pBool(true, ""),
+	Params: ParamList{
+		{"d_model", pInt(1, "")},
+		{"hidden", pInt(1, "")},
+		{"act", pEnum([]string{"gelu", "gelu_tanh", "relu", "relu2", "silu"}, "gelu", "")},
+		{"bias", pBool(true, "")},
 	},
 	Ports: Ports{
 		In:  map[string]PortSpec{"x": Port("... d_model")},
@@ -347,17 +347,17 @@ func expandDenseMlp(raw map[string]any, r *Resolved) Expansion {
 
 var mlaAttention = &BlockDef{
 	Kind: "composite", Type: "mla_attention", Category: "attention",
-	Params: map[string]ParamSpec{
-		"d_model":  pInt(1, ""),
-		"heads":    pInt(1, ""),
-		"q_lora":   pInt(1, "Width of the compressed query (DeepSeek's q_lora_rank)"),
-		"kv_lora":  pInt(1, "Width of the compressed key/value latent, which is what gets cached"),
-		"nope_dim": pInt(1, "Per-head width that carries no position information"),
-		"rope_dim": pInt(2, "Per-head width that carries the rotary embedding"),
-		"v_dim":    pInt(1, "Per-head value width"),
-		"causal":   pBool(true, ""),
-		"rope":     ropeSpec(),
-		"bias":     pBool(false, ""),
+	Params: ParamList{
+		{"d_model", pInt(1, "")},
+		{"heads", pInt(1, "")},
+		{"q_lora", pInt(1, "Width of the compressed query (DeepSeek's q_lora_rank)")},
+		{"kv_lora", pInt(1, "Width of the compressed key/value latent, which is what gets cached")},
+		{"nope_dim", pInt(1, "Per-head width that carries no position information")},
+		{"rope_dim", pInt(2, "Per-head width that carries the rotary embedding")},
+		{"v_dim", pInt(1, "Per-head value width")},
+		{"causal", pBool(true, "")},
+		{"rope", ropeSpec()},
+		{"bias", pBool(false, "")},
 	},
 	Ports: Ports{
 		In:  map[string]PortSpec{"x": Port("... d_model")},
@@ -448,9 +448,9 @@ func expandMLA(raw map[string]any, r *Resolved) Expansion {
 // sparse: every expert holds weights, but a token only pays for top_k of them.
 var moeExperts = &BlockDef{
 	Kind: "container", Type: "moe_experts", Category: "moe",
-	Params: map[string]ParamSpec{
-		"experts": pInt(1, "How many expert copies exist"),
-		"top_k":   pInt(1, "How many a single token passes through"),
+	Params: ParamList{
+		{"experts", pInt(1, "How many expert copies exist")},
+		{"top_k", pInt(1, "How many a single token passes through")},
 	},
 	Docs: BlockDocs{
 		Summary: "A bank of experts. Its subgraph describes one expert.",
@@ -460,16 +460,16 @@ var moeExperts = &BlockDef{
 
 var moeLayer = &BlockDef{
 	Kind: "composite", Type: "moe_layer", Category: "moe",
-	Params: map[string]ParamSpec{
-		"d_model":        pInt(1, ""),
-		"experts":        pInt(1, "Routed experts"),
-		"top_k":          pInt(1, ""),
-		"expert_hidden":  pInt(1, "Hidden width of one expert"),
-		"shared_experts": pIntD(0, 0, "Experts every token always passes through"),
-		"act":            pEnum([]string{"silu", "gelu", "gelu_tanh", "relu", "relu2"}, "silu", ""),
-		"bias":           pBool(false, ""),
-		"router_bias":    pBool(false, ""),
-		"normalize":      pBool(true, ""),
+	Params: ParamList{
+		{"d_model", pInt(1, "")},
+		{"experts", pInt(1, "Routed experts")},
+		{"top_k", pInt(1, "")},
+		{"expert_hidden", pInt(1, "Hidden width of one expert")},
+		{"shared_experts", pIntD(0, 0, "Experts every token always passes through")},
+		{"act", pEnum([]string{"silu", "gelu", "gelu_tanh", "relu", "relu2"}, "silu", "")},
+		{"bias", pBool(false, "")},
+		{"router_bias", pBool(false, "")},
+		{"normalize", pBool(true, "")},
 	},
 	Ports: Ports{
 		In:  map[string]PortSpec{"x": Port("... d_model")},
@@ -553,15 +553,15 @@ func expandMoeLayer(raw map[string]any, r *Resolved) Expansion {
 
 var mamba2Block = &BlockDef{
 	Kind: "composite", Type: "mamba2_block", Category: "ssm",
-	Params: map[string]ParamSpec{
-		"d_model":     pInt(1, ""),
-		"expand":      pIntD(2, 1, "Inner width as a multiple of d_model"),
-		"head_dim":    pIntD(64, 1, "Width per state-space head"),
-		"state":       pIntD(128, 1, "Recurrent state width per head"),
-		"groups":      pIntD(1, 1, "Heads sharing one B/C projection"),
-		"conv_kernel": pIntD(4, 1, ""),
-		"conv_bias":   pBool(true, ""),
-		"bias":        pBool(false, "Bias on the input and output projections"),
+	Params: ParamList{
+		{"d_model", pInt(1, "")},
+		{"expand", pIntD(2, 1, "Inner width as a multiple of d_model")},
+		{"head_dim", pIntD(64, 1, "Width per state-space head")},
+		{"state", pIntD(128, 1, "Recurrent state width per head")},
+		{"groups", pIntD(1, 1, "Heads sharing one B/C projection")},
+		{"conv_kernel", pIntD(4, 1, "")},
+		{"conv_bias", pBool(true, "")},
+		{"bias", pBool(false, "Bias on the input and output projections")},
 	},
 	Ports: Ports{
 		In:  map[string]PortSpec{"x": Port("... d_model")},
@@ -622,36 +622,35 @@ func expandMamba2(raw map[string]any, r *Resolved) Expansion {
 
 var transformerBlock = &BlockDef{
 	Kind: "composite", Type: "transformer_block", Category: "block",
-	Params: map[string]ParamSpec{
-		"d_model":    pInt(1, ""),
-		"heads":      pInt(1, ""),
-		"kv_heads":   pInt(1, ""),
-		"head_dim":   pInt(1, ""),
-		"ffn_hidden": pInt(1, ""),
-		"attention":  pEnum([]string{"gqa", "mla"}, "gqa", ""),
-		"q_lora":     pIntD(0, 0, "Latent attention: compressed query width"),
-		"kv_lora":    pIntD(0, 0, "Latent attention: cached latent width"),
-		"nope_dim":   pIntD(0, 0, ""),
-		"rope_dim":   pIntD(0, 0, ""),
-		"v_dim":      pIntD(0, 0, ""),
-		"norm":       pEnum([]string{"rmsnorm", "layernorm"}, "rmsnorm", ""),
-		"norm_bias":  pBool(true, "Bias on layernorm; ignored for rmsnorm"),
-		"post_norm":  pBool(false, "Also normalise each sublayer's output before the residual add (Gemma 2/3)"),
-		"mlp":        pEnum([]string{"gated", "dense", "moe"}, "gated", ""),
-		"experts":    pIntD(0, 0, "Routed experts, when mlp is moe"),
-		"top_k":      pIntD(1, 1, ""),
-
-		"expert_hidden":  pIntD(0, 0, "Hidden width of one expert"),
-		"shared_experts": pIntD(0, 0, ""),
-		"router_bias":    pBool(false, ""),
-		"act":            pEnum([]string{"silu", "gelu", "gelu_tanh", "relu", "relu2"}, "silu", ""),
-		"attn_bias":      pBool(false, ""),
-		"attn_o_bias":    ParamSpec{Type: ParamBool, Default: nil, HasDefault: true},
-		"mlp_bias":       pBool(false, ""),
-		"qk_norm":        pBool(false, ""),
-		"causal":         pBool(true, ""),
-		"window":         ParamSpec{Type: ParamInt, Default: 0.0, HasDefault: true},
-		"rope":           ropeSpec(),
+	Params: ParamList{
+		{"d_model", pInt(1, "")},
+		{"heads", pInt(1, "")},
+		{"kv_heads", pInt(1, "")},
+		{"head_dim", pInt(1, "")},
+		{"ffn_hidden", pInt(1, "")},
+		{"attention", pEnum([]string{"gqa", "mla"}, "gqa", "")},
+		{"q_lora", pIntD(0, 0, "Latent attention: compressed query width")},
+		{"kv_lora", pIntD(0, 0, "Latent attention: cached latent width")},
+		{"nope_dim", pIntD(0, 0, "")},
+		{"rope_dim", pIntD(0, 0, "")},
+		{"v_dim", pIntD(0, 0, "")},
+		{"norm", pEnum([]string{"rmsnorm", "layernorm"}, "rmsnorm", "")},
+		{"norm_bias", pBool(true, "Bias on layernorm; ignored for rmsnorm")},
+		{"post_norm", pBool(false, "Also normalise each sublayer's output before the residual add (Gemma 2/3)")},
+		{"mlp", pEnum([]string{"gated", "dense", "moe"}, "gated", "")},
+		{"experts", pIntD(0, 0, "Routed experts, when mlp is moe")},
+		{"top_k", pIntD(1, 1, "")},
+		{"expert_hidden", pIntD(0, 0, "Hidden width of one expert")},
+		{"shared_experts", pIntD(0, 0, "")},
+		{"router_bias", pBool(false, "")},
+		{"act", pEnum([]string{"silu", "gelu", "gelu_tanh", "relu", "relu2"}, "silu", "")},
+		{"attn_bias", pBool(false, "")},
+		{"attn_o_bias", ParamSpec{Type: ParamBool, Default: nil, HasDefault: true}},
+		{"mlp_bias", pBool(false, "")},
+		{"qk_norm", pBool(false, "")},
+		{"causal", pBool(true, "")},
+		{"window", ParamSpec{Type: ParamInt, Default: 0.0, HasDefault: true}},
+		{"rope", ropeSpec()},
 	},
 	Ports: Ports{
 		In:  map[string]PortSpec{"x": Port("... d_model")},
@@ -760,10 +759,10 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 
 var repeatContainer = &BlockDef{
 	Kind: "container", Type: "repeat", Category: "container",
-	Params: map[string]ParamSpec{
-		"count": pInt(1, "How many times the subgraph is stacked"),
-		"pattern": ParamSpec{Type: ParamStr, Default: nil, HasDefault: true,
-			Doc: "Optional variant pattern for hybrid stacks"},
+	Params: ParamList{
+		{"count", pInt(1, "How many times the subgraph is stacked")},
+		{"pattern", ParamSpec{Type: ParamStr, Default: nil, HasDefault: true,
+			Doc: "Optional variant pattern for hybrid stacks"}},
 	},
 	Docs: BlockDocs{
 		Summary: "Stacks its subgraph count times. The subgraph's input and output shapes must match.",

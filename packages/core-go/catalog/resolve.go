@@ -27,16 +27,25 @@ func ResolveNodeParams(def *BlockDef, raw map[string]any, symbols *ir.SymbolTabl
 		out.Raw = map[string]any{}
 	}
 
-	keys := map[string]bool{}
-	for k := range def.Params {
-		keys[k] = true
-	}
+	// Declared parameters first, in the order the block declares them, then
+	// anything else the document wrote. The declared order is what a reader
+	// sees; the extras are all errors, so they only need to be in *some* order,
+	// and sorted is the one that does not change between runs.
+	extra := map[string]bool{}
 	for k := range raw {
-		keys[k] = true
+		if !def.Params.Has(k) {
+			extra[k] = true
+		}
 	}
+	keys := make([]string, 0, len(def.Params)+len(extra))
+	for _, e := range def.Params {
+		keys = append(keys, e.Name)
+	}
+	keys = append(keys, sortedKeys(extra)...)
+	out.Keys = keys
 
-	for _, key := range sortedKeys(keys) {
-		spec, hasSpec := def.Params[key]
+	for _, key := range keys {
+		spec, hasSpec := def.Params.Get(key)
 		given, hasGiven := raw[key]
 
 		if !hasSpec {

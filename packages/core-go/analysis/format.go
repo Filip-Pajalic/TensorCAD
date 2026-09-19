@@ -56,34 +56,66 @@ func JSToFixed(x float64, digits int) string {
 }
 
 // JSNumber prints a number the way JavaScript's String() would, so a message
-// written by either engine reads the same: 4 rather than 4.000000.
+// or a generated literal written by either engine reads the same.
+//
+// It is the ECMAScript Number::toString algorithm rather than any of Go's
+// formats, because the two languages put the boundary between fixed and
+// exponential notation in different places: 1e-5 is "0.00001" in JavaScript and
+// "1e-05" under Go's %g. Both spellings end up in generated Python, where they
+// would be two different files for the same design.
 func JSNumber(v float64) string {
-	if math.IsInf(v, 1) {
+	switch {
+	case math.IsInf(v, 1):
 		return "Infinity"
-	}
-	if math.IsInf(v, -1) {
+	case math.IsInf(v, -1):
 		return "-Infinity"
-	}
-	if math.IsNaN(v) {
+	case math.IsNaN(v):
 		return "NaN"
+	case v == 0:
+		// Including negative zero, which JavaScript prints as "0".
+		return "0"
 	}
-	s := strconv.FormatFloat(v, 'g', -1, 64)
-	// Go writes an exponent as e+21 and a two-digit e-07; JavaScript writes
-	// e+21 and 1e-7, and only leaves the fixed notation outside 1e21 and 1e-7.
-	if i := strings.IndexAny(s, "eE"); i >= 0 {
-		mantissa, exp := s[:i], s[i+1:]
-		signPart := ""
-		if exp[0] == '+' || exp[0] == '-' {
-			signPart, exp = string(exp[0]), exp[1:]
-		}
-		exp = strings.TrimLeft(exp, "0")
-		if exp == "" {
-			exp = "0"
-		}
-		if signPart == "" {
-			signPart = "+"
-		}
-		s = mantissa + "e" + signPart + exp
+	sign := ""
+	if v < 0 {
+		sign, v = "-", -v
 	}
-	return s
+
+	// The shortest representation that round-trips, which is the digit string
+	// the specification calls s, and the exponent it calls n.
+	mantissa, exp := splitExponential(strconv.FormatFloat(v, 'e', -1, 64))
+	digits := strings.Replace(mantissa, ".", "", 1)
+	k := len(digits)
+	n := exp + 1
+
+	switch {
+	case k <= n && n <= 21:
+		return sign + digits + strings.Repeat("0", n-k)
+	case 0 < n && n <= 21:
+		return sign + digits[:n] + "." + digits[n:]
+	case -6 < n && n <= 0:
+		return sign + "0." + strings.Repeat("0", -n) + digits
+	}
+	// Exponential, with the point after the first digit.
+	out := digits[:1]
+	if k > 1 {
+		out += "." + digits[1:]
+	}
+	e := n - 1
+	if e >= 0 {
+		return sign + out + "e+" + strconv.Itoa(e)
+	}
+	return sign + out + "e-" + strconv.Itoa(-e)
+}
+
+// splitExponential takes Go's "1.5e+07" apart into its mantissa and exponent.
+func splitExponential(s string) (string, int) {
+	i := strings.IndexAny(s, "eE")
+	if i < 0 {
+		return s, 0
+	}
+	exp, err := strconv.Atoi(s[i+1:])
+	if err != nil {
+		return s[:i], 0
+	}
+	return s[:i], exp
 }

@@ -41,6 +41,37 @@ type ParamSpec struct {
 	Doc    string
 }
 
+// ParamEntry is one named parameter of a block.
+type ParamEntry struct {
+	Name string
+	Spec ParamSpec
+}
+
+// ParamList is a block's parameters in the order they were declared.
+//
+// A list rather than a map, because the order is part of what a block says
+// about itself: it is the order the inspector lays the fields out in, the order
+// a generated class documents them in, and the order a resolved parameter set
+// is read back in. A Go map has none, and a block whose documentation lists
+// d_model after head_dim reads like a machine wrote it.
+type ParamList []ParamEntry
+
+// Get looks one parameter's spec up.
+func (l ParamList) Get(name string) (ParamSpec, bool) {
+	for _, e := range l {
+		if e.Name == name {
+			return e.Spec, true
+		}
+	}
+	return ParamSpec{}, false
+}
+
+// Has reports whether the block declares this parameter.
+func (l ParamList) Has(name string) bool {
+	_, ok := l.Get(name)
+	return ok
+}
+
 // PortSpec is what a pin declares. See the reference in docs/reference/ports.md.
 type PortSpec struct {
 	Shape string
@@ -115,7 +146,10 @@ type Resolved struct {
 	// RawFull is Raw with catalog defaults filled in. Composite expansion uses
 	// this so an expression survives into the inner graph.
 	RawFull map[string]any
-	Errors  []string
+	// Keys is the order P was filled in: the block's declared order, then
+	// anything the document wrote that the block does not declare.
+	Keys   []string
+	Errors []string
 }
 
 // Num reads a resolved parameter as a number. Missing or non-numeric is 0.
@@ -191,7 +225,7 @@ type BlockDef struct {
 	Kind     string // "primitive" | "composite" | "container"
 	Type     string
 	Category string
-	Params   map[string]ParamSpec
+	Params   ParamList
 	// PortsFn computes ports from resolved parameters; Ports is the fixed form.
 	Ports   Ports
 	PortsFn func(r *Resolved) Ports

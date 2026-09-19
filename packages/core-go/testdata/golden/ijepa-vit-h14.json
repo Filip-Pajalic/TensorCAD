@@ -1,0 +1,68 @@
+{
+  "preset": "ijepa-vit-h14",
+  "symbols": {
+    "order": [
+      "B",
+      "T",
+      "L",
+      "D",
+      "H",
+      "dh",
+      "F",
+      "Lp",
+      "Dp",
+      "Hp",
+      "dhp",
+      "Fp",
+      "P"
+    ],
+    "values": {
+      "B": 1,
+      "T": 256,
+      "L": 32,
+      "D": 1280,
+      "H": 16,
+      "dh": 80,
+      "F": 5120,
+      "Lp": 12,
+      "Dp": 384,
+      "Hp": 16,
+      "dhp": 24,
+      "Fp": 1536,
+      "P": 588
+    },
+    "designValues": {
+      "L": 32,
+      "D": 1280,
+      "H": 16,
+      "dh": 80,
+      "F": 5120,
+      "Lp": 12,
+      "Dp": 384,
+      "Hp": 16,
+      "dhp": 24,
+      "Fp": 1536,
+      "P": 588
+    },
+    "runtime": [
+      "B",
+      "T"
+    ],
+    "docs": {
+      "B": "Batch size",
+      "T": "Patches in the whole grid (16x16)",
+      "L": "Encoder layers",
+      "D": "Encoder width",
+      "H": "Encoder heads",
+      "dh": "Encoder head dimension",
+      "F": "Encoder feed-forward width",
+      "Lp": "Predictor layers",
+      "Dp": "Predictor width",
+      "Hp": "Predictor heads",
+      "dhp": "Predictor head dimension",
+      "Fp": "Predictor feed-forward width",
+      "P": "Values in one patch (3 x 14 x 14)"
+    },
+    "errors": []
+  }
+}

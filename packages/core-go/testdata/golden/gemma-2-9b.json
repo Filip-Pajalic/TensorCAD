@@ -1,0 +1,52 @@
+{
+  "preset": "gemma-2-9b",
+  "symbols": {
+    "order": [
+      "B",
+      "T",
+      "L",
+      "D",
+      "H",
+      "Hkv",
+      "dh",
+      "F",
+      "V"
+    ],
+    "values": {
+      "B": 1,
+      "T": 8192,
+      "L": 42,
+      "D": 3584,
+      "H": 16,
+      "Hkv": 8,
+      "dh": 256,
+      "F": 14336,
+      "V": 256000
+    },
+    "designValues": {
+      "L": 42,
+      "D": 3584,
+      "H": 16,
+      "Hkv": 8,
+      "dh": 256,
+      "F": 14336,
+      "V": 256000
+    },
+    "runtime": [
+      "B",
+      "T"
+    ],
+    "docs": {
+      "B": "Batch size",
+      "T": "Sequence length in tokens",
+      "L": "Number of transformer layers",
+      "D": "Residual stream width (d_model)",
+      "H": "Query heads",
+      "Hkv": "Key/value heads",
+      "dh": "Head dimension",
+      "F": "Feed-forward hidden width",
+      "V": "Vocabulary size"
+    },
+    "errors": []
+  }
+}

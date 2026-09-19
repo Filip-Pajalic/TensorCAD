@@ -1,0 +1,283 @@
+/*
+ * Themes.
+ *
+ * One attribute on <html> switches everything: `data-theme="light"` or
+ * `data-theme="dark"`. No component stylesheet branches on the theme, and no
+ * component reads a colour in JavaScript. A library that demands a literal
+ * colour reads the computed value of a variable declared here.
+ *
+ * The part palette is CSS rather than TypeScript for the same reason: a
+ * category's colour is a design decision that has to change with the theme, and
+ * putting it in a stylesheet is the only way to get that for free.
+ *
+ * Light is a drawing sheet: pastel bodies, thin darker outlines, dark text on
+ * paper. Dark keeps the hue of every category and swaps the lightness, so a
+ * part is recognisably the same part in either theme.
+ */
+
+/*
+ * Type.
+ *
+ * Not a theme choice: the drawing reads the same in either. A technical UI
+ * sans for chrome and a monospace for every number, shape and identifier, so a
+ * column of figures lines up and a tensor shape cannot be mistaken for prose.
+ * The stacks name what each platform actually ships, so nothing has to be
+ * downloaded and nothing falls back to a serif.
+ */
+
+:root {
+  --sans:
+    "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --mono:
+    "JetBrains Mono", "Cascadia Mono", "Cascadia Code", ui-monospace, "SF Mono",
+    "Menlo", "Consolas", "DejaVu Sans Mono", monospace;
+}
+
+/* Figures line up in a column, which is most of what makes a readout readable. */
+.mono,
+.num,
+.table td,
+.field--num,
+input[type="number"] {
+  font-variant-numeric: tabular-nums;
+}
+
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* Chrome */
+  --bg: #d8dade;
+  --bg-panel: #eceef1;
+  --bg-elev: #f6f7f9;
+  --bg-input: #ffffff;
+  --border: #b3b8bf;
+  --border-soft: #c9ced4;
+  --text: #1b1f24;
+  --text-dim: #535b65;
+  --dim: #5c6570;
+
+  /* The drawing sheet */
+  --sheet: #f7f6f2;
+  --sheet-grid-minor: #e2e0d8;
+  --sheet-grid-major: #cfccc0;
+  --ink: #23272c;
+  --ink-soft: #555d66;
+  --wire: #4a5058;
+  --wire-label: #616a75;
+
+  /* Meaning */
+  --accent: #1a66b3;
+  --accent-on: #ffffff;
+  --accent-soft: #d7e6f7;
+  --ok: #1b6834;
+  --ok-soft: #d8f0e2;
+  --warn: #7d5100;
+  --warn-soft: #f3e3bd;
+  --error: #c0272d;
+  --error-soft: #f7ccd0;
+  --locked: #c01c9e;
+  --locked-halo: rgba(192, 28, 158, 0.42);
+  --shadow: rgba(0, 0, 0, 0.12);
+
+  /* Borders that go with the soft fills above, and the glows and rings that
+     are the one place a colour has to be a literal rgba rather than a hue. */
+  --ok-edge: #a8d9bd;
+  --warn-edge: #e3cb92;
+  --error-edge: #e8a3a9;
+  --accent-strong: #10426f;
+  --accent-ring: rgba(26, 102, 179, 0.22);
+  --error-glow: rgba(192, 39, 45, 0.45);
+  --warn-glow: rgba(125, 81, 0, 0.4);
+
+  /* Surfaces that float over the drawing sheet: banners, chips, the title
+     block. Paper, not panel, so they belong to the drawing. */
+  --overlay: rgba(255, 255, 255, 0.94);
+  --sheet-paper: #fffefb;
+  --sheet-paper-alt: #f1efe8;
+  --sheet-rule: #cfccc0;
+  --sheet-ink: #2f3740;
+  --sheet-ink-dim: #616a75;
+
+  /* Parts.
+   *
+   * The published figures keep almost every box white with a thin outline, tint
+   * only the container that encloses them, and fill exactly one box dark: the
+   * attention. That is what makes those drawings readable at a glance — the eye
+   * lands on the part that distinguishes the architecture, and everything else
+   * recedes. Fifteen pastels competing for attention is a fruit salad, so the
+   * hue now lives in the outline and the fill barely lifts off the sheet. */
+  --part-text: #23272c;
+
+  --part-io-fill: #f1f1ee;
+  --part-io-edge: #8d9099;
+  --part-embedding-fill: #e7f2e8;
+  --part-embedding-edge: #4e8a53;
+  --part-linear-fill: #e9f0f8;
+  --part-linear-edge: #3d72a8;
+  --part-head-fill: #f2eaf5;
+  --part-head-edge: #8a5b9c;
+  --part-norm-fill: #efe9f4;
+  --part-norm-edge: #7d5b95;
+  --part-elementwise-fill: #faf4e2;
+  --part-elementwise-edge: #a8863a;
+  --part-shape-fill: #f0f1f3;
+  --part-shape-edge: #7b8390;
+  --part-position-fill: #e8f2f6;
+  --part-position-edge: #3f7f95;
+
+  /* The one filled box on the sheet. */
+  --part-attention-fill: #3f4854;
+  --part-attention-edge: #4d5766;
+  --part-attention-text: #f3f6fa;
+
+  --part-mlp-fill: #fdf8e2;
+  --part-mlp-edge: #a99038;
+  --part-block-fill: #fbefe1;
+  --part-block-edge: #b1793f;
+  --part-moe-fill: #f9e8ef;
+  --part-moe-edge: #a65275;
+  --part-ssm-fill: #ebe7f7;
+  --part-ssm-edge: #6b5fa8;
+  --part-container-fill: #edeff8;
+  --part-container-edge: #5b6aa8;
+  --part-unknown-fill: #f1f2f4;
+  --part-unknown-edge: #7d848f;
+
+  /* The volume view. Weights read as one material and activations as another,
+     which is the distinction that view exists to make; aggregates are the small
+     grey helpers that neither trains nor flows. */
+  --vol-weight: #7d86ad;
+  --vol-activation: #78976f;
+  --vol-aggregate: #9aa0a8;
+  --vol-grid: rgba(255, 255, 255, 0.35);
+  --vol-face: #ffffff;
+  /* The outline of every box. The reference draws its cube edges in white,
+     which is what gives a plate sides rather than a painted rectangle. */
+  --vol-edge: #33383f;
+  /* Flow ribbons, from the reference: blue where a weight feeds a value, green
+     where a value feeds the next one. On paper they are its own #3333aa and
+     #33aa33; against the dark sheet those sink into the background, so the dark
+     theme carries lifted versions of the same two hues. */
+  --vol-arrow-weight: #3333aa;
+  --vol-arrow-data: #33aa33;
+
+  /* Element types carried by a pin */
+  --dtype-int: #2f6fb0;
+  --dtype-float: #158a6b;
+  --dtype-half: #158a6b;
+  --dtype-fp8: #a8622a;
+  --dtype-bool: #8a5b9c;
+  --dtype-unknown: #6b7480;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Chrome */
+  --bg: #0e1116;
+  --bg-panel: #161a20;
+  --bg-elev: #1d222a;
+  --bg-input: #0b0e12;
+  --border: #2c333c;
+  --border-soft: #222831;
+  --text: #dfe5ec;
+  --text-dim: #99a4b1;
+  --dim: #8d97a4;
+
+  /* The sheet becomes a dark drafting surface rather than paper. Not black:
+     a slight cool cast keeps the pastel hues readable against it. */
+  --sheet: #14181d;
+  --sheet-grid-minor: #1c2128;
+  --sheet-grid-major: #262d36;
+  --ink: #dfe5ec;
+  --ink-soft: #9aa5b2;
+  --wire: #7e8a97;
+  --wire-label: #98a4b1;
+
+  /* Meaning, brightened for a dark ground the way KiCad brightens its dark
+     theme's violation colours. */
+  --accent: #58a6ff;
+  --accent-on: #08121e;
+  --accent-soft: #16304d;
+  --ok: #56d394;
+  --ok-soft: #10301f;
+  --warn: #e3b25f;
+  --warn-soft: #33280f;
+  --error: #ff7b85;
+  --error-soft: #3a161a;
+  --locked: #ff5ed4;
+  --locked-halo: rgba(255, 94, 212, 0.38);
+  --shadow: rgba(0, 0, 0, 0.55);
+
+  --ok-edge: #2c6a48;
+  --warn-edge: #6b5526;
+  --error-edge: #7a3038;
+  --accent-strong: #9ecbff;
+  --accent-ring: rgba(88, 166, 255, 0.3);
+  --error-glow: rgba(255, 123, 133, 0.45);
+  --warn-glow: rgba(227, 178, 95, 0.38);
+
+  --overlay: rgba(20, 24, 29, 0.94);
+  --sheet-paper: #1a1f26;
+  --sheet-paper-alt: #131920;
+  --sheet-rule: #303842;
+  --sheet-ink: #dfe5ec;
+  --sheet-ink-dim: #9aa5b2;
+
+  /* The same restraint inverted: fills sit just above the dark sheet, the hue
+     stays in the outline, and the attention box becomes the light one, so it is
+     still the thing the eye lands on first. */
+  --part-text: #e4eaf1;
+
+  --part-io-fill: #1c2026;
+  --part-io-edge: #9aa3ad;
+  --part-embedding-fill: #17241a;
+  --part-embedding-edge: #6fbf78;
+  --part-linear-fill: #161f29;
+  --part-linear-edge: #6aa9e0;
+  --part-head-fill: #211a26;
+  --part-head-edge: #bf8ed2;
+  --part-norm-fill: #1f1a26;
+  --part-norm-edge: #b08fd0;
+  --part-elementwise-fill: #241f16;
+  --part-elementwise-edge: #d6ae5c;
+  --part-shape-fill: #1d2026;
+  --part-shape-edge: #98a1ad;
+  --part-position-fill: #152126;
+  --part-position-edge: #63b3cb;
+
+  --part-attention-fill: #c7d1dc;
+  --part-attention-edge: #b3bfcd;
+  --part-attention-text: #171b21;
+
+  --part-mlp-fill: #242116;
+  --part-mlp-edge: #d4b74e;
+  --part-block-fill: #251d16;
+  --part-block-edge: #dc9a5c;
+  --part-moe-fill: #241a1f;
+  --part-moe-edge: #d2789c;
+  --part-ssm-fill: #1d1b2b;
+  --part-ssm-edge: #9287d8;
+  --part-container-fill: #1a1e2a;
+  --part-container-edge: #8292d4;
+  --part-unknown-fill: #1d2026;
+  --part-unknown-edge: #8d959f;
+
+  --vol-weight: #6d77a0;
+  --vol-activation: #648161;
+  --vol-aggregate: #6e747d;
+  --vol-grid: rgba(255, 255, 255, 0.22);
+  --vol-face: #e4eaf1;
+  --vol-edge: #f2f6fb;
+  --vol-arrow-weight: #7b7bdd;
+  --vol-arrow-data: #58c258;
+
+  --dtype-int: #6aa9e0;
+  --dtype-float: #4fc3a1;
+  --dtype-half: #4fc3a1;
+  --dtype-fp8: #dc9a5c;
+  --dtype-bool: #bf8ed2;
+  --dtype-unknown: #8d98a5;
+}

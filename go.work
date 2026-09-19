@@ -1,0 +1,12 @@
+// Two Go modules, one workspace: the engine and the app that hosts it.
+//
+// `packages/core-go` is the analysis engine, importable on its own so the CLI
+// and the MCP server can link it without going through the desktop app.
+// `desktop` is the Wails application. The workspace lets the app import the
+// engine during the migration without a replace directive in its go.mod.
+go 1.25.0
+
+use (
+	./desktop
+	./packages/core-go
+)

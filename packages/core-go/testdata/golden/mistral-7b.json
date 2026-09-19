@@ -1,0 +1,56 @@
+{
+  "preset": "mistral-7b",
+  "symbols": {
+    "order": [
+      "B",
+      "T",
+      "L",
+      "D",
+      "H",
+      "Hkv",
+      "dh",
+      "F",
+      "V",
+      "W"
+    ],
+    "values": {
+      "B": 1,
+      "T": 8192,
+      "L": 32,
+      "D": 4096,
+      "H": 32,
+      "Hkv": 8,
+      "dh": 128,
+      "F": 14336,
+      "V": 32000,
+      "W": 4096
+    },
+    "designValues": {
+      "L": 32,
+      "D": 4096,
+      "H": 32,
+      "Hkv": 8,
+      "dh": 128,
+      "F": 14336,
+      "V": 32000,
+      "W": 4096
+    },
+    "runtime": [
+      "B",
+      "T"
+    ],
+    "docs": {
+      "B": "Batch size",
+      "T": "Sequence length in tokens",
+      "L": "Number of transformer layers",
+      "D": "Residual stream width (d_model)",
+      "H": "Query heads",
+      "Hkv": "Key/value heads",
+      "dh": "Head dimension",
+      "F": "Feed-forward hidden width",
+      "V": "Vocabulary size",
+      "W": "Sliding-window width"
+    },
+    "errors": []
+  }
+}

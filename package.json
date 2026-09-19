@@ -1,0 +1,28 @@
+{
+  "name": "llm-cad",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Node-based CAD for designing LLM architectures",
+  "workspaces": [
+    "packages/*",
+    "desktop/frontend"
+  ],
+  "scripts": {
+    "test": "bun test packages",
+    "typecheck": "tsc -p packages/core/tsconfig.json --noEmit",
+    "cli": "bun run packages/cli/src/index.ts",
+    "ui": "cd packages/ui && bun run dev",
+    "test:core": "bun test packages/core/test",
+    "report": "bun run scripts/report.ts",
+    "codegen": "bun run scripts/codegen-demo.ts",
+    "desktop": "cd desktop && wails3 dev",
+    "desktop:build": "cd desktop && wails3 build"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/bun": "latest"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

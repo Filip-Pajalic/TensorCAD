@@ -1,0 +1,34 @@
+{
+  "name": "@tensorcad/mcp",
+  "version": "0.0.1",
+  "description": "Model Context Protocol server for TensorCAD: design, validate, analyze and generate LLM architectures from an agent",
+  "mcpName": "io.github.tensorcad/tensorcad",
+  "type": "module",
+  "bin": {
+    "tensorcad-mcp": "./src/index.ts"
+  },
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "mcp.example.json"
+  ],
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "test": "bun test ../../packages/mcp/test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tensorcad/core": "workspace:*",
+    "@modelcontextprotocol/server": "^2.0.0",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.0.0"
+  },
+  "license": "MIT"
+}

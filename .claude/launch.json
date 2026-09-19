@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tensorcad-ui",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "--cwd", "packages/ui", "dev"],
+      "port": 5173
+    }
+  ]
+}

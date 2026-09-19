@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tensorcad-runtime"
+version = "0.1.0"
+description = "PyTorch verification and smoke-training runtime for TensorCAD designs"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "TensorCAD" }]
+keywords = ["pytorch", "llm", "codegen", "verification"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# torch is deliberately NOT a hard dependency: it must be installed from the
+# platform-specific index (e.g. CUDA 12.8 for Blackwell) before installing this
+# package. See python/README.md.
+dependencies = ["numpy>=1.24"]
+
+[project.optional-dependencies]
+# Real-corpus tokenization. Without these, `data prepare` falls back to a
+# deterministic synthetic corpus.
+data = ["datasets>=2.18", "tiktoken>=0.6"]
+
+[project.scripts]
+tensorcad-runtime = "tensorcad_runtime.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/tensorcad/llm-cad"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]

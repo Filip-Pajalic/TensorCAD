@@ -1,0 +1,56 @@
+{
+  "preset": "gpt2-xl",
+  "symbols": {
+    "order": [
+      "B",
+      "T",
+      "L",
+      "D",
+      "H",
+      "Hkv",
+      "dh",
+      "F",
+      "V",
+      "Tmax"
+    ],
+    "values": {
+      "B": 1,
+      "T": 1024,
+      "L": 48,
+      "D": 1600,
+      "H": 25,
+      "Hkv": 25,
+      "dh": 64,
+      "F": 6400,
+      "V": 50257,
+      "Tmax": 1024
+    },
+    "designValues": {
+      "L": 48,
+      "D": 1600,
+      "H": 25,
+      "Hkv": 25,
+      "dh": 64,
+      "F": 6400,
+      "V": 50257,
+      "Tmax": 1024
+    },
+    "runtime": [
+      "B",
+      "T"
+    ],
+    "docs": {
+      "B": "Batch size",
+      "T": "Sequence length in tokens",
+      "L": "Number of transformer layers",
+      "D": "Residual stream width (d_model)",
+      "H": "Query heads",
+      "Hkv": "Key/value heads",
+      "dh": "Head dimension",
+      "F": "Feed-forward hidden width",
+      "V": "Vocabulary size",
+      "Tmax": "Maximum position index"
+    },
+    "errors": []
+  }
+}

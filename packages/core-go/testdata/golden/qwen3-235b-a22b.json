@@ -1,0 +1,64 @@
+{
+  "preset": "qwen3-235b-a22b",
+  "symbols": {
+    "order": [
+      "B",
+      "T",
+      "L",
+      "D",
+      "H",
+      "Hkv",
+      "dh",
+      "F",
+      "V",
+      "E",
+      "K",
+      "Fe"
+    ],
+    "values": {
+      "B": 1,
+      "T": 32768,
+      "L": 94,
+      "D": 4096,
+      "H": 64,
+      "Hkv": 4,
+      "dh": 128,
+      "F": 12288,
+      "V": 151936,
+      "E": 128,
+      "K": 8,
+      "Fe": 1536
+    },
+    "designValues": {
+      "L": 94,
+      "D": 4096,
+      "H": 64,
+      "Hkv": 4,
+      "dh": 128,
+      "F": 12288,
+      "V": 151936,
+      "E": 128,
+      "K": 8,
+      "Fe": 1536
+    },
+    "runtime": [
+      "B",
+      "T"
+    ],
+    "docs": {
+      "B": "Batch size",
+      "T": "Sequence length in tokens",
+      "L": "Number of transformer layers",
+      "D": "Residual stream width (d_model)",
+      "H": "Query heads",
+      "Hkv": "Key/value heads",
+      "dh": "Head dimension",
+      "F": "Feed-forward hidden width",
+      "V": "Vocabulary size",
+      "E": "Routed experts per layer",
+      "K": "Experts each token is routed to",
+      "Fe": "Hidden width of one expert"
+    },
+    "errors": []
+  }
+}

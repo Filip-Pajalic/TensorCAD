@@ -1,0 +1,38 @@
+node_modules/
+dist/
+
+# Generated PyTorch, written by `bun run scripts/codegen-demo.ts`.
+out/
+
+# NOT `build/`: desktop/build is the Wails build configuration and is source.
+desktop/frontend/dist/
+
+# compiled binaries. The desktop app is built by `wails3 task build` into
+# desktop/bin; nothing in here is a source artefact.
+*.exe
+desktop/bin/
+desktop/frontend/bindings/
+*.tsbuildinfo
+.DS_Store
+.env
+.env.local
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# data & runs
+data/
+runs/
+*.bin
+*.safetensors
+
+# editor
+.vscode/
+.idea/
+
+# Task runner checksum cache
+.task/

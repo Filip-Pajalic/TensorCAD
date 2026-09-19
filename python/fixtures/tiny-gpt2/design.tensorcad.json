@@ -1,0 +1,199 @@
+{
+  "version": 1,
+  "meta": {
+    "name": "tiny-gpt2",
+    "family": "gpt2",
+    "notes": "Scaled-down GPT-2 for smoke training. Not a published model."
+  },
+  "symbols": {
+    "B": {
+      "kind": "runtime",
+      "default": 1,
+      "doc": "Batch size"
+    },
+    "T": {
+      "kind": "runtime",
+      "default": 512,
+      "doc": "Sequence length in tokens"
+    },
+    "L": {
+      "kind": "design",
+      "value": 6,
+      "doc": "Number of transformer layers"
+    },
+    "D": {
+      "kind": "design",
+      "value": 384,
+      "doc": "Residual stream width (d_model)"
+    },
+    "H": {
+      "kind": "design",
+      "value": 6,
+      "doc": "Query heads"
+    },
+    "Hkv": {
+      "kind": "design",
+      "value": 6,
+      "doc": "Key/value heads"
+    },
+    "dh": {
+      "kind": "design",
+      "value": 64,
+      "doc": "Head dimension"
+    },
+    "F": {
+      "kind": "design",
+      "value": "4*D",
+      "doc": "Feed-forward hidden width"
+    },
+    "V": {
+      "kind": "design",
+      "value": 50257,
+      "doc": "Vocabulary size"
+    },
+    "Tmax": {
+      "kind": "design",
+      "value": 512,
+      "doc": "Maximum position index"
+    }
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "tokens",
+        "type": "input",
+        "params": {
+          "shape": "B T",
+          "dtype": "int64"
+        }
+      },
+      {
+        "id": "embed",
+        "type": "embedding",
+        "params": {
+          "vocab": "V",
+          "dim": "D"
+        }
+      },
+      {
+        "id": "pos",
+        "type": "pos_embedding",
+        "params": {
+          "max_seq": "Tmax",
+          "dim": "D"
+        }
+      },
+      {
+        "id": "layers",
+        "type": "repeat",
+        "label": "Transformer block x6",
+        "params": {
+          "count": "L"
+        },
+        "graph": {
+          "nodes": [
+            {
+              "id": "_in",
+              "type": "boundary_in",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            },
+            {
+              "id": "block",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "Hkv",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "layernorm",
+                "norm_bias": true,
+                "post_norm": false,
+                "mlp": "dense",
+                "act": "gelu",
+                "attn_bias": true,
+                "attn_o_bias": null,
+                "mlp_bias": true,
+                "qk_norm": false,
+                "causal": true,
+                "window": 0,
+                "rope": null
+              }
+            },
+            {
+              "id": "_out",
+              "type": "boundary_out",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            }
+          ],
+          "edges": [
+            [
+              "_in:x",
+              "block:x"
+            ],
+            [
+              "block:y",
+              "_out:x"
+            ]
+          ]
+        }
+      },
+      {
+        "id": "final_norm",
+        "type": "layernorm",
+        "params": {
+          "dim": "D",
+          "bias": true
+        }
+      },
+      {
+        "id": "head",
+        "type": "lm_head",
+        "params": {
+          "vocab": "V",
+          "dim": "D",
+          "tied": true
+        }
+      },
+      {
+        "id": "logits",
+        "type": "output"
+      }
+    ],
+    "edges": [
+      [
+        "tokens:x",
+        "embed:ids"
+      ],
+      [
+        "embed:y",
+        "pos:x"
+      ],
+      [
+        "pos:y",
+        "layers:x"
+      ],
+      [
+        "layers:x",
+        "final_norm:x"
+      ],
+      [
+        "final_norm:y",
+        "head:x"
+      ],
+      [
+        "head:y",
+        "logits:x"
+      ]
+    ]
+  },
+  "ui": {}
+}

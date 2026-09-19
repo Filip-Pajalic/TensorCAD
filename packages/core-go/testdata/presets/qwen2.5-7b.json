@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "meta": {
+    "name": "qwen2.5-7b",
+    "family": "qwen",
+    "notes": "Bias on the q/k/v projections but not on the output projection.",
+    "published": {
+      "params": 7615616512,
+      "source": "https://huggingface.co/Qwen/Qwen2.5-7B"
+    }
+  },
+  "symbols": {
+    "B": {
+      "kind": "runtime",
+      "default": 1,
+      "doc": "Batch size"
+    },
+    "T": {
+      "kind": "runtime",
+      "default": 32768,
+      "doc": "Sequence length in tokens"
+    },
+    "L": {
+      "kind": "design",
+      "value": 28,
+      "doc": "Number of transformer layers"
+    },
+    "D": {
+      "kind": "design",
+      "value": 3584,
+      "doc": "Residual stream width (d_model)"
+    },
+    "H": {
+      "kind": "design",
+      "value": 28,
+      "doc": "Query heads"
+    },
+    "Hkv": {
+      "kind": "design",
+      "value": 4,
+      "doc": "Key/value heads"
+    },
+    "dh": {
+      "kind": "design",
+      "value": 128,
+      "doc": "Head dimension"
+    },
+    "F": {
+      "kind": "design",
+      "value": 18944,
+      "doc": "Feed-forward hidden width"
+    },
+    "V": {
+      "kind": "design",
+      "value": 152064,
+      "doc": "Vocabulary size"
+    }
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "tokens",
+        "type": "input",
+        "params": {
+          "shape": "B T",
+          "dtype": "int64"
+        }
+      },
+      {
+        "id": "embed",
+        "type": "embedding",
+        "params": {
+          "vocab": "V",
+          "dim": "D"
+        }
+      },
+      {
+        "id": "layers",
+        "type": "repeat",
+        "label": "Transformer block x28",
+        "params": {
+          "count": "L"
+        },
+        "graph": {
+          "nodes": [
+            {
+              "id": "_in",
+              "type": "boundary_in",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            },
+            {
+              "id": "block",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "Hkv",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "rmsnorm",
+                "norm_bias": true,
+                "post_norm": false,
+                "mlp": "gated",
+                "act": "silu",
+                "attn_bias": true,
+                "attn_o_bias": false,
+                "mlp_bias": false,
+                "qk_norm": false,
+                "causal": true,
+                "window": 0,
+                "rope": {
+                  "theta": 1000000
+                }
+              }
+            },
+            {
+              "id": "_out",
+              "type": "boundary_out",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            }
+          ],
+          "edges": [
+            [
+              "_in:x",
+              "block:x"
+            ],
+            [
+              "block:y",
+              "_out:x"
+            ]
+          ]
+        }
+      },
+      {
+        "id": "final_norm",
+        "type": "rmsnorm",
+        "params": {
+          "dim": "D"
+        }
+      },
+      {
+        "id": "head",
+        "type": "lm_head",
+        "params": {
+          "vocab": "V",
+          "dim": "D",
+          "tied": false
+        }
+      },
+      {
+        "id": "logits",
+        "type": "output"
+      }
+    ],
+    "edges": [
+      [
+        "tokens:x",
+        "embed:ids"
+      ],
+      [
+        "embed:y",
+        "layers:x"
+      ],
+      [
+        "layers:x",
+        "final_norm:x"
+      ],
+      [
+        "final_norm:y",
+        "head:x"
+      ],
+      [
+        "head:y",
+        "logits:x"
+      ]
+    ]
+  },
+  "ui": {}
+}

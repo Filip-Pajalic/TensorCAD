@@ -1,0 +1,36 @@
+{
+  "preset": "alexnet",
+  "symbols": {
+    "order": [
+      "B",
+      "T",
+      "Ccls",
+      "Res",
+      "Fc"
+    ],
+    "values": {
+      "B": 1,
+      "T": 1,
+      "Ccls": 1000,
+      "Res": 224,
+      "Fc": 4096
+    },
+    "designValues": {
+      "Ccls": 1000,
+      "Res": 224,
+      "Fc": 4096
+    },
+    "runtime": [
+      "B",
+      "T"
+    ],
+    "docs": {
+      "B": "Images per batch",
+      "T": "One image per sample; a convnet has no sequence",
+      "Ccls": "ImageNet-1k classes",
+      "Res": "Input resolution",
+      "Fc": "Width of the fully-connected layers"
+    },
+    "errors": []
+  }
+}

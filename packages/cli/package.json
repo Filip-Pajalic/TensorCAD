@@ -1,0 +1,25 @@
+{
+  "name": "@tensorcad/cli",
+  "version": "0.0.1",
+  "description": "Command line interface for TensorCAD: validate, analyze, codegen, diff and show designs",
+  "type": "module",
+  "bin": {
+    "tensorcad": "./src/index.ts"
+  },
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "test": "bun test ../../packages/cli/test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tensorcad/core": "workspace:*"
+  },
+  "license": "MIT"
+}

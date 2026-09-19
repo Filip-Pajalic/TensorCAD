@@ -1,0 +1,318 @@
+{
+  "env": {
+    "B": 4,
+    "T": 2048,
+    "D": 4096,
+    "H": 32,
+    "Hkv": 8,
+    "dh": 128,
+    "F": 14336,
+    "V": 128256,
+    "L": 32
+  },
+  "ok": [
+    {
+      "src": "D",
+      "text": "D",
+      "value": 4096,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "-D",
+      "text": "-D",
+      "value": -4096,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "D + 1",
+      "text": "D + 1",
+      "value": 4097,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "4*D",
+      "text": "4*D",
+      "value": 16384,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "D*4",
+      "text": "4*D",
+      "value": 16384,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "H*dh",
+      "text": "H*dh",
+      "value": 4096,
+      "symbols": [
+        "H",
+        "dh"
+      ]
+    },
+    {
+      "src": "B*T*D",
+      "text": "B*D*T",
+      "value": 33554432,
+      "symbols": [
+        "B",
+        "D",
+        "T"
+      ]
+    },
+    {
+      "src": "D/H",
+      "text": "128",
+      "value": 128,
+      "symbols": []
+    },
+    {
+      "src": "D/4",
+      "text": "1/4*D",
+      "value": 1024,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "D/3",
+      "text": "1/3*D",
+      "value": 1365.3333333333333,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "1/3*D",
+      "text": "1/3*D",
+      "value": 1365.3333333333333,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "1.3*8/3*D",
+      "text": "52/15*D",
+      "value": 14199.466666666667,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "ceil_mult(1.3*8/3*D, 1024)",
+      "text": "14336",
+      "value": 14336,
+      "symbols": []
+    },
+    {
+      "src": "(H + 2*Hkv)*dh",
+      "text": "H*dh + 2*Hkv*dh",
+      "value": 6144,
+      "symbols": [
+        "H",
+        "Hkv",
+        "dh"
+      ]
+    },
+    {
+      "src": "H*dh - D",
+      "text": "H*dh - D",
+      "value": 0,
+      "symbols": [
+        "D",
+        "H",
+        "dh"
+      ]
+    },
+    {
+      "src": "D^2",
+      "text": "D^2",
+      "value": 16777216,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "2^10",
+      "text": "1024",
+      "value": 1024,
+      "symbols": []
+    },
+    {
+      "src": "(D + D)/2",
+      "text": "D",
+      "value": 4096,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "D*dh/dh",
+      "text": "D",
+      "value": 4096,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "B*T*(H*dh)/H",
+      "text": "B*T*dh",
+      "value": 1048576,
+      "symbols": [
+        "B",
+        "T",
+        "dh"
+      ]
+    },
+    {
+      "src": "floor(D/H)",
+      "text": "128",
+      "value": 128,
+      "symbols": []
+    },
+    {
+      "src": "ceil(D/3)",
+      "text": "1366",
+      "value": 1366,
+      "symbols": []
+    },
+    {
+      "src": "round(D/3)",
+      "text": "1365",
+      "value": 1365,
+      "symbols": []
+    },
+    {
+      "src": "min(D, F)",
+      "text": "4096",
+      "value": 4096,
+      "symbols": []
+    },
+    {
+      "src": "max(D, F)",
+      "text": "14336",
+      "value": 14336,
+      "symbols": []
+    },
+    {
+      "src": "floor_mult(F, 1024)",
+      "text": "14336",
+      "value": 14336,
+      "symbols": []
+    },
+    {
+      "src": "round_mult(D*2/3, 128)",
+      "text": "2688",
+      "value": 2688,
+      "symbols": []
+    },
+    {
+      "src": "log2(D)",
+      "text": "12",
+      "value": 12,
+      "symbols": []
+    },
+    {
+      "src": "sqrt(D)",
+      "text": "64",
+      "value": 64,
+      "symbols": []
+    },
+    {
+      "src": "abs(0 - D)",
+      "text": "4096",
+      "value": 4096,
+      "symbols": []
+    },
+    {
+      "src": "1_000 + D",
+      "text": "D + 1000",
+      "value": 5096,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "1e3 + D",
+      "text": "D + 1000",
+      "value": 5096,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "0.5*D",
+      "text": "1/2*D",
+      "value": 2048,
+      "symbols": [
+        "D"
+      ]
+    },
+    {
+      "src": "D - D",
+      "text": "0",
+      "value": 0,
+      "symbols": []
+    },
+    {
+      "src": "3*D - 2*D",
+      "text": "D",
+      "value": 4096,
+      "symbols": [
+        "D"
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "src": "D +",
+      "message": "Unexpected token at 3 in \"D +\"",
+      "text": ""
+    },
+    {
+      "src": "D $ 1",
+      "message": "Unexpected character \"$\" at 2 in \"D $ 1\"",
+      "text": ""
+    },
+    {
+      "src": "nope",
+      "message": "Unknown symbol \"nope\"",
+      "text": ""
+    },
+    {
+      "src": "floor(D, 2)",
+      "message": "Function \"floor\" expects 1 argument(s), got 2",
+      "text": ""
+    },
+    {
+      "src": "notafunction(D)",
+      "message": "Unknown function \"notafunction\"",
+      "text": ""
+    },
+    {
+      "src": "D^(0 - 1)",
+      "message": "Exponent must be a non-negative integer, got -1",
+      "text": ""
+    },
+    {
+      "src": "D/0",
+      "message": "Division by zero",
+      "text": ""
+    },
+    {
+      "src": "B/T",
+      "message": "",
+      "text": "1/512"
+    }
+  ]
+}

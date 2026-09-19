@@ -1,0 +1,52 @@
+{
+  "preset": "qwen2.5-7b",
+  "symbols": {
+    "order": [
+      "B",
+      "T",
+      "L",
+      "D",
+      "H",
+      "Hkv",
+      "dh",
+      "F",
+      "V"
+    ],
+    "values": {
+      "B": 1,
+      "T": 32768,
+      "L": 28,
+      "D": 3584,
+      "H": 28,
+      "Hkv": 4,
+      "dh": 128,
+      "F": 18944,
+      "V": 152064
+    },
+    "designValues": {
+      "L": 28,
+      "D": 3584,
+      "H": 28,
+      "Hkv": 4,
+      "dh": 128,
+      "F": 18944,
+      "V": 152064
+    },
+    "runtime": [
+      "B",
+      "T"
+    ],
+    "docs": {
+      "B": "Batch size",
+      "T": "Sequence length in tokens",
+      "L": "Number of transformer layers",
+      "D": "Residual stream width (d_model)",
+      "H": "Query heads",
+      "Hkv": "Key/value heads",
+      "dh": "Head dimension",
+      "F": "Feed-forward hidden width",
+      "V": "Vocabulary size"
+    },
+    "errors": []
+  }
+}

@@ -1,0 +1,2561 @@
+/* TensorCAD editor.
+ *
+ * Colour lives in theme.css; the design system lives in tailwind.css; this
+ * file is the drawing sheet and the parts on it, which are not components. */
+@import "./theme.css";
+@import "./tailwind.css";
+
+/*
+ * The drawing's one unit.
+ *
+ * A schematic sizes everything it draws against the line it draws with, so a
+ * sheet stays in proportion however thick you set that line. KiCad does this
+ * literally: against a 6 mil wire it puts a 12 mil bus, a 24 mil dangling
+ * circle, a 36 mil junction dot and a 100 mil pin, and derives the lot from
+ * eeschema/default_values.h. These are the same ratios against our wire.
+ *
+ * Colour still lives only in theme.css. This is geometry, and it does not
+ * change with the theme.
+ */
+:root {
+  /* The pick aperture: how close the cursor has to be to hit a thin thing.
+     Every drafting program has one, because nothing on a drawing is as wide as
+     a cursor is imprecise. */
+  --pick: 7px;
+  --wire-w: 1.4px;
+  --wire-w-bus: calc(var(--wire-w) * 2);
+  --dangling-d: calc(var(--wire-w) * 4);
+  --junction-d: calc(var(--wire-w) * 6);
+  --pin-stub: calc(var(--wire-w) * 4);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.dim,
+.muted {
+  color: var(--dim);
+}
+
+.num {
+  text-align: right;
+}
+
+.wrap {
+  word-break: break-all;
+}
+
+code {
+  font-family: var(--mono);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------- shell --- */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.app__body {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+}
+
+.app__left,
+.app__right {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.app__right {
+  border-right: none;
+  border-left: 1px solid var(--border);
+  display: grid;
+  min-height: 0;
+}
+
+.panel--readout,
+.panel--edit {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panel--edit {
+  border-top: 1px solid var(--border);
+}
+
+/* The tool strip runs down the left of the sheet, so the centre is a row of
+   [strip | breadcrumb over canvas] rather than a column. */
+.app__center {
+  display: flex;
+  flex-direction: row;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bg);
+}
+
+.resizer {
+  background: var(--border-soft);
+  transition: background 120ms;
+}
+
+.resizer--x {
+  cursor: col-resize;
+}
+
+.resizer--y {
+  cursor: row-resize;
+}
+
+.resizer:hover {
+  background: var(--accent);
+}
+
+/* -------------------------------------------------------------- inputs --- */
+
+.btn {
+  background: var(--bg-elev);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 4px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--border);
+  background: var(--border-soft);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.btn--icon {
+  padding: 2px 8px;
+  line-height: 1.3;
+}
+
+.btn--danger {
+  border-color: var(--error-edge);
+  color: var(--error);
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: var(--error-soft);
+  border-color: var(--error-edge);
+}
+
+.field {
+  width: 100%;
+  background: var(--bg-input);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 3px 7px;
+  font-family: inherit;
+  font-size: 12px;
+  min-width: 0;
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-ring);
+}
+
+.field:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.field--invalid {
+  border-color: var(--error-soft);
+  background: var(--error-soft);
+}
+
+.field--area {
+  resize: vertical;
+  line-height: 1.4;
+}
+
+select.field {
+  cursor: pointer;
+}
+
+/* -------------------------------------------------------------- badges --- */
+
+.badge {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 0;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--dim);
+  font-size: 10.5px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.badge--tiny {
+  font-size: 9.5px;
+  line-height: 14px;
+  margin-right: 6px;
+}
+
+.badge--ok {
+  color: var(--ok);
+  border-color: var(--ok-soft);
+  background: var(--ok-soft);
+}
+
+.badge--warning {
+  color: var(--warn);
+  border-color: var(--warn-edge);
+  background: var(--warn-soft);
+}
+
+.badge--error {
+  color: var(--error);
+  border-color: var(--error-edge);
+  background: var(--error-soft);
+}
+
+.badge--num {
+  color: var(--text);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  display: inline-block;
+}
+
+.dot--error {
+  background: var(--error);
+  box-shadow: 0 0 6px var(--error-glow);
+}
+
+.dot--warning {
+  background: var(--warn);
+  box-shadow: 0 0 6px var(--warn-glow);
+}
+
+.swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 0;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* -------------------------------------------------------------- panels --- */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 8px 12px 4px;
+}
+
+.panel__head h2 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.panel__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 12px 24px;
+}
+
+
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-input);
+  flex: 0 0 auto;
+}
+
+.tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--dim);
+  padding: 8px 4px;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  position: relative;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab.is-active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+  background: var(--bg-elev);
+}
+
+.tab__badge {
+  margin-left: 5px;
+  background: var(--error);
+  color: var(--error-soft);
+  border-radius: 0;
+  padding: 0 5px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.section {
+  margin: 0 0 16px;
+}
+
+.section h3 {
+  margin: 0 0 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--dim);
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 4px;
+}
+
+.empty {
+  color: var(--dim);
+  padding: 20px 4px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.notice {
+  margin: 4px 12px;
+  padding: 5px 8px;
+  border-radius: 0;
+  background: var(--warn-soft);
+  border: 1px solid var(--warn-edge);
+  color: var(--warn);
+  font-size: 11.5px;
+}
+
+.hint {
+  color: var(--dim);
+  font-size: 11.5px;
+  line-height: 1.5;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 8px;
+}
+
+/* ------------------------------------------------------------- palette --- */
+
+.palette__search {
+  padding: 0 12px 8px;
+}
+
+.palette__group {
+  margin-bottom: 10px;
+}
+
+.palette__category {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  color: var(--accent);
+  padding: 3px 0 3px 8px;
+  border-left: 3px solid var(--accent);
+  margin-bottom: 3px;
+  background: linear-gradient(90deg, var(--accent-ring), transparent);
+}
+
+.palette__item {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 2px 6px;
+  align-items: center;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 0;
+  cursor: grab;
+}
+
+.palette__item:hover {
+  background: var(--bg-elev);
+  border-color: var(--border);
+}
+
+.palette__kind {
+  font-family: var(--mono);
+  font-size: 9px;
+  text-align: center;
+  color: var(--bg);
+  background: var(--accent);
+  border-radius: 0;
+  line-height: 14px;
+}
+
+.palette__type {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.palette__summary {
+  grid-column: 2;
+  font-size: 11px;
+  color: var(--dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------- breadcrumb --- */
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-input);
+  flex: 0 0 auto;
+  min-height: 36px;
+}
+
+.breadcrumb__trail {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.breadcrumb__crumb {
+  display: inline-flex;
+  align-items: center;
+}
+
+.breadcrumb__sep {
+  color: var(--border);
+  margin: 0 2px;
+}
+
+.breadcrumb__button {
+  background: none;
+  border: none;
+  color: var(--dim);
+  font-family: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.breadcrumb__button:hover {
+  background: var(--bg-elev);
+  color: var(--text);
+}
+
+.breadcrumb__button.is-current {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.breadcrumb__sub {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.breadcrumb__right {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+}
+
+/* -------------------------------------------------------------- canvas --- */
+
+.canvas {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.canvas__flow {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+/* A full-width notice above the canvas, so it never covers a block. */
+.strip {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 5px 14px;
+  font-size: 11.5px;
+  border-bottom: 1px solid;
+  flex: 0 0 auto;
+}
+
+.strip strong {
+  white-space: nowrap;
+}
+
+.strip--readonly {
+  background: var(--warn-soft);
+  border-color: var(--warn-edge);
+  color: var(--warn);
+}
+
+.strip--error {
+  background: var(--error-soft);
+  border-color: var(--error-edge);
+  color: var(--error);
+}
+
+.react-flow {
+  background: var(--bg);
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+.react-flow__controls-button {
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  fill: var(--text);
+}
+
+.react-flow__controls-button:hover {
+  background: var(--border-soft);
+}
+
+/* The wire itself is set further down, with the sheet it is drawn on. */
+
+.react-flow__edge-text {
+  fill: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.react-flow__edge-textbg {
+  fill: var(--sheet);
+  stroke: var(--bg-elev);
+  stroke-width: 1;
+  rx: 3;
+}
+
+/* --------------------------------------------------------------- block --- */
+
+/* ---------------------------------------------------------------- parts ---
+   A part is drawn like a part on a schematic: pastel body, thin dark outline,
+   name in the middle, defining numbers on a rule underneath. Nothing glows.
+   ------------------------------------------------------------------------ */
+
+/* The part fills the node box rather than setting its own width. Two
+   different widths put the selection ring and the symbol twelve pixels apart,
+   which is what made a selected block look like two overlapping boxes. */
+.part {
+  --fill: var(--part-unknown-fill);
+  --edge: var(--part-unknown-edge);
+  position: relative;
+  width: 100%;
+  font-size: 12px;
+  line-height: 1.3;
+  /* Inset on all four sides, not just top and bottom: pins sit on every edge
+     now, and a body that ran to the left and right walls put the parameter
+     count underneath the side pins. */
+  padding: 12px;
+}
+
+.part__body {
+  background: var(--fill);
+  border: 1.3px solid var(--edge);
+  border-radius: 0;
+  padding: 7px 10px 6px;
+  text-align: center;
+  color: var(--ink);
+}
+
+/* One indicator, on the symbol itself: a solid ring in the accent, with a
+   hairline of sheet between it and the part's own outline so the two do not
+   merge into a single thick border. */
+.part--selected .part__body {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--sheet);
+}
+
+.frame--selected,
+.glyph--selected {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.part--readonly .part__body {
+  border-style: dashed;
+}
+
+.part--locked .part__body {
+  box-shadow: 0 0 0 3px var(--locked-halo);
+}
+
+/*
+ * A part with an inside: the flowchart standard's predefined process, a box
+ * with a second rule inboard of each side.
+ *
+ * It used to carry a circled plus in the corner. On a transformer sheet a
+ * circled plus is a residual sum — this drawing sets `add` in exactly that
+ * glyph — so the mark for "this block can be opened" was the mark for "add
+ * these two tensors", sitting on the border where it also fouled the parameter
+ * count. Doubling the sides says the same thing without borrowing a symbol that
+ * already means something, and it says it structurally, so it survives being
+ * zoomed out to where a twelve-pixel badge would not.
+ */
+.part--drillable .part__body {
+  cursor: pointer;
+  position: relative;
+}
+
+.part--drillable .part__body::after {
+  content: "";
+  position: absolute;
+  inset: 0 4px;
+  border-left: 1px solid var(--edge);
+  border-right: 1px solid var(--edge);
+  pointer-events: none;
+}
+
+.part__name {
+  font-family: var(--sans);
+  color: var(--part-ink, var(--ink));
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.part__type {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: color-mix(in srgb, var(--part-ink, var(--ink)) 76%, transparent);
+  margin-top: 1px;
+}
+
+.part__rule {
+  margin-top: 5px;
+  padding-top: 4px;
+  border-top: 1px solid color-mix(in srgb, var(--part-ink, var(--ink)) 22%, transparent);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: color-mix(in srgb, var(--part-ink, var(--ink)) 76%, transparent);
+}
+
+.part__values {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.part__params {
+  font-weight: 600;
+  color: var(--part-ink, var(--ink));
+  white-space: nowrap;
+}
+
+/* "48x" written against the part, the way the published figures mark a stack. */
+.part__repeat {
+  position: absolute;
+  left: -34px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.mark--error {
+  color: var(--error);
+  font-size: 9px;
+}
+.mark--warning {
+  color: var(--warn);
+  font-size: 9px;
+}
+.part .mark--lock {
+  display: none;
+}
+.part--locked:hover .mark--lock,
+.part--locked.part--selected .mark--lock {
+  display: inline;
+  font-size: 9px;
+}
+
+/* ----------------------------------------------------------------- pins --- */
+/*
+ * A pin on every side of every port.
+ *
+ * Only the side a wire actually lands on is drawn. The rest stay as invisible,
+ * full-size drop targets, so starting or finishing a connection means aiming at
+ * the block rather than at a six-pixel dot. That is the difference between
+ * wiring that feels like wiring and wiring that feels like a test of precision.
+ */
+
+.pins {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  pointer-events: none;
+}
+
+.pins--top,
+.pins--bottom {
+  left: 0;
+  right: 0;
+  height: 12px;
+  flex-direction: row;
+}
+
+.pins--left,
+.pins--right {
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  flex-direction: column;
+}
+
+.pins--top {
+  top: 0;
+}
+.pins--bottom {
+  bottom: 0;
+}
+.pins--left {
+  left: 0;
+}
+.pins--right {
+  right: 0;
+}
+
+.pin {
+  position: relative;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  min-height: 16px;
+}
+
+.pin__name {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  color: var(--ink-soft);
+  background: var(--sheet);
+  padding: 0 2px;
+  position: absolute;
+  right: 11px;
+  white-space: nowrap;
+}
+
+.pin--dangling .pin__name {
+  color: var(--warn);
+}
+
+/*
+ * What is drawn at a connection point.
+ *
+ * KiCad's vocabulary, because it is the one a schematic reader already knows.
+ * From eeschema/default_values.h and eeschema/sch_painter.cpp:
+ *
+ *   - A pin with a wire on it draws NOTHING. eeschema only reaches for
+ *     drawPinDanglingIndicator when the pin IS_DANGLING; a connected pin has no
+ *     marker at all. The wire meets the pin, and that is the whole statement.
+ *   - A point where the net branches gets a filled dot: SCH_JUNCTION, drawn as
+ *     a filled circle at DEFAULT_JUNCTION_DIAM 36 mils against a 6 mil wire —
+ *     six times the line it sits on, with a hard floor of 1.7x.
+ *   - An end that is connected to nothing gets a hollow circle, sized from
+ *     DANGLING_SYMBOL_SIZE, which works out at four times the wire.
+ *
+ * There are no diamonds in eeschema, and no marker whose meaning is "this value
+ * is of some particular kind" — a bus is told from a net by being drawn twice
+ * as wide, not by what sits on its end.
+ *
+ * What this replaces: a filled dot on every connected pin, and a diamond
+ * wherever a shape mentioned B or T. Nearly every tensor in a transformer has
+ * both, so the diamond was on almost everywhere and therefore distinguished
+ * nothing, and the dots turned every junction into a cluster of marks.
+ */
+
+/*
+ * The handle is the anchor and the hit target, and it is never a mark.
+ *
+ * React Flow measures this element to decide where a wire begins, so it has to
+ * stay exactly where the wire should meet the symbol. Marks are drawn on the
+ * pin instead, which is what lets a junction dot sit clear of a symbol without
+ * dragging the end of the wire out with it.
+ *
+ * It keeps its size because it is still a drop target while a wire is in
+ * flight; at rest it draws nothing at all.
+ */
+.pin__handle.react-flow__handle {
+  position: static;
+  transform: none;
+  width: var(--dangling-d);
+  height: var(--dangling-d);
+  border-radius: 50%;
+  background: none;
+  border: 0;
+  opacity: 0;
+  transition:
+    opacity 90ms,
+    box-shadow 90ms;
+}
+
+.pin--junction::before,
+.pin--dangling::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* A net that branches: eeschema's SCH_JUNCTION, a filled circle six times the
+   wire it sits on. The one mark a healthy drawing carries, and it says
+   something the lines alone cannot — the signal goes two ways from here. In a
+   transformer that is the residual split, which is where the published figures
+   put a dot as well. */
+.pin--junction::before {
+  width: var(--junction-d);
+  height: var(--junction-d);
+  background: var(--dtype, var(--wire));
+}
+
+/* Nothing on the other end: eeschema's dangling indicator, a hollow circle at
+   four times the wire, here in the colour of the warning that it is. An unwired
+   pin is the one thing on a sheet you want to be able to find. */
+.pin--dangling::before {
+  width: var(--dangling-d);
+  height: var(--dangling-d);
+  background: var(--sheet);
+  border: var(--wire-w) solid var(--warn);
+}
+
+/* While a connection is being dragged, every target shows itself. */
+.react-flow.is-connecting .pin--idle .pin__handle.react-flow__handle {
+  opacity: 0.45;
+  background: var(--dtype, var(--wire));
+}
+
+/*
+ * The pick aperture around a pin.
+ *
+ * React Flow measures the handle element to decide where a wire begins, so the
+ * element itself has to stay the size of the mark it represents — about five
+ * pixels. Five pixels is not something anyone can hit at a third of full zoom,
+ * which is where a real design is worked. A pseudo-element does not change the
+ * measured rectangle but does count for hit testing, so the target grows to
+ * something like a fingertip while the wire still starts exactly on the pin.
+ *
+ * eeschema's answer to the same problem is that clicking an unconnected pin
+ * simply starts a wire; this is the same idea, spelt in CSS.
+ */
+.pin__handle.react-flow__handle::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--pick) * -1);
+  border-radius: 50%;
+}
+
+.pin__handle.react-flow__handle:hover {
+  opacity: 1;
+  background: var(--dtype, var(--wire));
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+/* While a wire is in flight the whole pin lights, not just the dot, so where
+   it can land is legible from across the sheet. */
+.react-flow.is-connecting .pin__handle.react-flow__handle {
+  opacity: 0.55;
+}
+
+/* The short stub between the symbol's edge and the pin, as a schematic draws.
+   A dangling pin keeps it: in eeschema the pin is a line whatever is or is not
+   attached to it, and the hollow circle sits at the end of that line. */
+.pin--live::after,
+.pin--dangling::after {
+  content: "";
+  position: absolute;
+  background: var(--dim);
+}
+
+.pin--top::after,
+.pin--bottom::after {
+  left: 50%;
+  width: var(--wire-w);
+  height: var(--pin-stub);
+  transform: translateX(-50%);
+}
+
+.pin--left::after,
+.pin--right::after {
+  top: 50%;
+  height: var(--wire-w);
+  width: var(--pin-stub);
+  transform: translateY(-50%);
+}
+
+.pin--top::after {
+  top: 6px;
+}
+.pin--bottom::after {
+  bottom: 6px;
+}
+.pin--left::after {
+  left: 6px;
+}
+.pin--right::after {
+  right: 6px;
+}
+
+/* ------------------------------------------------------------- wires --- */
+/*
+ * Three line types, the way a schematic has a net, a bus and a no-connect.
+ * The main path is solid; the line that skips a stage is dashed; the one
+ * carrying indices rather than activations is dotted and thinner.
+ */
+
+.flow-edge--bypass .react-flow__edge-path {
+  stroke-dasharray: 5 4;
+  stroke-width: calc(var(--wire-w) * 0.8);
+}
+
+.flow-edge--index .react-flow__edge-path {
+  stroke-dasharray: 1.5 3;
+  stroke-width: calc(var(--wire-w) * 0.8);
+  stroke-linecap: round;
+}
+
+/* ------------------------------------------------------------ status bar --- */
+
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 23px;
+  flex: 0 0 23px;
+  background: var(--bg-input);
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text-dim);
+  user-select: none;
+}
+
+.statusbar__cell {
+  padding: 0 10px;
+  border-right: 1px solid var(--border-soft);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.statusbar__cell--grow {
+  flex: 1;
+  border-right: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusbar__key {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 9px;
+}
+
+.statusbar__value {
+  color: var(--text);
+}
+
+.statusbar__value--error {
+  color: var(--error);
+}
+.statusbar__value--warning {
+  color: var(--warn);
+}
+.statusbar__value--ok {
+  color: var(--ok);
+}
+/* ------------------------------------------------------------- banners --- */
+
+.banner {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  max-width: 620px;
+  padding: 7px 14px;
+  border-radius: 0;
+  font-size: 12px;
+  z-index: 8;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+
+.banner strong {
+  white-space: nowrap;
+}
+
+.banner--readonly {
+  background: var(--warn-soft);
+  border: 1px solid var(--warn-edge);
+  color: var(--warn);
+}
+
+.banner--error {
+  background: var(--error-soft);
+  border: 1px solid var(--error-soft);
+  color: var(--error);
+}
+
+.banner--empty {
+  background: var(--overlay);
+  border: 1px solid var(--border);
+  color: var(--dim);
+  top: 40%;
+}
+
+/* ----------------------------------------------------------- inspector --- */
+
+.inspector__title {
+  border-left: 3px solid var(--accent);
+  padding: 2px 0 2px 8px;
+  margin-bottom: 8px;
+}
+
+.inspector__type {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.inspector__meta {
+  display: flex;
+  gap: 5px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+
+.inspector__summary {
+  margin: 0 0 8px;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.inspector__formula {
+  margin: 0 0 8px;
+  padding: 6px 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-soft);
+  border-radius: 0;
+  font-size: 11px;
+  color: var(--ok);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.inspector__refs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 12px;
+  font-size: 11px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.row__label {
+  color: var(--dim);
+  font-size: 11px;
+}
+
+.row__value {
+  font-size: 11px;
+  color: var(--text-dim);
+  word-break: break-all;
+}
+
+.param {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.param--missing {
+  background: var(--error-soft);
+  border-radius: 0;
+  padding: 4px 6px 6px;
+}
+
+.param__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.param__name {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.param__type {
+  font-size: 10px;
+  color: var(--text-dim);
+  color: var(--text-dim);
+}
+
+.param__numeric {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.param__eval {
+  font-size: 11.5px;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.param__check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--dim);
+  cursor: pointer;
+}
+
+.param__doc {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.4;
+}
+
+.param__error {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--error);
+}
+
+/* -------------------------------------------------------------- tables --- */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.table td,
+.table th {
+  padding: 3px 6px;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: middle;
+}
+
+.table th {
+  color: var(--dim);
+  font-weight: 500;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: left;
+}
+
+.table tr.clickable {
+  cursor: pointer;
+}
+
+.table tr.clickable:hover {
+  background: var(--bg-elev);
+}
+
+.table td.dim {
+  color: var(--dim);
+  font-size: 10px;
+}
+
+.table--symbols td {
+  padding: 2px 3px;
+}
+
+.table--symbols td:first-child {
+  width: 68px;
+}
+
+.table--symbols td:nth-child(2) {
+  width: 78px;
+}
+
+.row--bad .field {
+  border-color: var(--error-soft);
+}
+
+.barcell {
+  width: 56px;
+}
+
+.bar {
+  display: block;
+  height: 5px;
+  border-radius: 0;
+  min-width: 1px;
+}
+
+.headline {
+  text-align: center;
+  padding: 10px 0 14px;
+}
+
+.headline__value {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.1;
+}
+
+.headline__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+}
+
+.headline__exact {
+  font-size: 11px;
+  color: var(--text-dim);
+  color: var(--text-dim);
+  margin-top: 3px;
+}
+
+.ok {
+  color: var(--ok);
+}
+
+.warn {
+  color: var(--warn);
+}
+
+.source {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+/* -------------------------------------------------------------- issues --- */
+
+.issues__summary {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.issues {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.issue {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 6px 8px;
+  border-radius: 0;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-elev);
+  font-size: 12px;
+}
+
+.issue .dot {
+  margin-top: 5px;
+}
+
+.issue--error {
+  border-color: var(--error-edge);
+}
+
+.issue--warning {
+  border-color: var(--warn-edge);
+}
+
+.issue.clickable {
+  cursor: pointer;
+}
+
+.issue.clickable:hover {
+  border-color: var(--accent);
+}
+
+.issue__body {
+  min-width: 0;
+}
+
+.issue__message {
+  color: var(--accent);
+}
+
+.issue__where {
+  margin-top: 2px;
+  font-size: 10.5px;
+  color: var(--dim);
+  word-break: break-all;
+}
+
+/* ------------------------------------------------------------- symbols --- */
+
+.symbols__add {
+  display: flex;
+  gap: 6px;
+  margin: 10px 0 16px;
+}
+
+.symbols__add .field {
+  width: 140px;
+}
+
+.symbols__docs {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.symbols__doc {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.symbols__doc code {
+  color: var(--accent);
+}
+
+/* ------------------------------------------------------------ scrollbar -- */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-soft);
+  border-radius: 0;
+  border: 2px solid var(--bg-panel);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border);
+}
+
+/* -------------------------------------------------------------- toggle --- */
+
+.toggle {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  overflow: hidden;
+  background: var(--bg-input);
+}
+
+.toggle__option {
+  background: none;
+  border: none;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 7px;
+  cursor: pointer;
+}
+
+.toggle__option + .toggle__option {
+  border-left: 1px solid var(--border);
+}
+
+.toggle__option.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.toggle__option:hover:not(.is-active) {
+  color: var(--text);
+}
+
+/* ----------------------------------------------------------- model tree --- */
+
+.app__left {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* The tree is the thing you read; the palette is the thing you reach for.
+   With the palette folded the tree gets the whole column, and with it open the
+   two split the space. */
+.app__left.has-palette .tree {
+  max-height: 46%;
+}
+
+.tree {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.tree__body {
+  overflow: auto;
+  min-height: 0;
+  padding-bottom: 4px;
+}
+
+.tree__row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 21px;
+  padding-right: 4px;
+  font-size: 11.5px;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.tree__row:hover {
+  background: var(--bg-elev);
+}
+
+.tree__row.is-selected {
+  background: var(--accent-soft);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.tree__twisty {
+  width: 12px;
+  flex: 0 0 12px;
+  background: none;
+  border: 0;
+  color: var(--text-dim);
+  font-size: 9px;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.tree__twisty.is-empty {
+  cursor: default;
+}
+
+.tree__swatch {
+  width: 3px;
+  height: 12px;
+  border-radius: 0;
+  flex: 0 0 3px;
+}
+
+.tree__label {
+  font-family: var(--mono);
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tree__type {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tree__params {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.tree__lock {
+  flex: 0 0 auto;
+  background: none;
+  border: 0;
+  padding: 0 2px;
+  font-size: 10px;
+  cursor: pointer;
+  opacity: 0.25;
+  filter: grayscale(1) brightness(1.6);
+}
+
+.tree__row:hover .tree__lock {
+  opacity: 0.7;
+}
+
+.tree__lock.is-locked {
+  opacity: 1;
+  filter: none;
+}
+
+.panel__meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+/* --------------------------------------------------- refused connection --- */
+
+/* While a wire would be refused, the in-flight line turns the alert colour and
+   a chip names the reason. Blender does exactly this, and it is the difference
+   between "nothing happened" and "here is what is wrong". */
+.canvas__flow.is-rejecting .react-flow__connectionline .react-flow__edge-path,
+.canvas__flow.is-rejecting .react-flow__connection-path {
+  stroke: var(--error) !important;
+  stroke-width: 2.5;
+}
+
+/* The sheet. */
+.react-flow__pane,
+.canvas__flow {
+  background: var(--sheet);
+}
+
+/* Wires are drawn as ink on paper: thin, dark, no glow. This is the line every
+   mark on the sheet is sized against. */
+.react-flow__edge-path {
+  stroke: var(--wire);
+  stroke-width: var(--wire-w);
+}
+
+/* Hovered, or part of the net being hovered. eeschema lights a whole net
+   rather than the segment under the cursor, because the net is the thing that
+   means something: a wire that branches is still one signal. */
+.react-flow__edge:hover .react-flow__edge-path,
+.flow-edge--lit .react-flow__edge-path {
+  stroke: var(--accent);
+  stroke-width: var(--wire-w-bus);
+}
+
+/* Picked. Heavier than hover and with a halo, so which one is selected is not
+   a judgement about line weight. */
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--accent);
+  stroke-width: var(--wire-w-bus);
+  filter: drop-shadow(0 0 3px var(--accent-ring));
+}
+
+/* The ends of a picked wire, which is what says they can be moved. A hollow
+   square is eeschema's mark for a wire end, and it stays hollow so the line
+   under it still reads. */
+.wire-grip {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  box-sizing: border-box;
+  background: var(--sheet);
+  border: 1.6px solid var(--accent);
+  pointer-events: none;
+}
+
+/* Shape labels sit on the wire like a net label on a schematic. */
+.react-flow__edge-textbg {
+  fill: var(--sheet);
+}
+
+.react-flow__edge-text {
+  fill: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 9.5px;
+}
+
+.reject-chip {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 78%;
+  padding: 6px 11px;
+  background: var(--error-soft);
+  border: 1px solid var(--error-edge);
+  border-radius: 0;
+  color: var(--error);
+  font-size: 11.5px;
+  font-family: var(--mono);
+  box-shadow: 0 4px 16px var(--shadow);
+  pointer-events: none;
+}
+
+.reject-chip__glyph {
+  color: var(--error);
+  font-size: 9px;
+}
+
+/* ------------------------------------------------------ severity glyphs ---
+   Three shapes, not three colours: severity has to survive colour blindness
+   and a greyscale screenshot. Square = fine, triangle = warning, circle =
+   error, which is the set KiCad uses in its pin-conflict matrix.
+   ------------------------------------------------------------------------ */
+
+.mark--error {
+  color: var(--error);
+}
+.mark--warning {
+  color: var(--warn);
+}
+
+/* ------------------------------------------------------------- callouts ---
+   Annotations around the drawing, each on a dashed leader line, the way a
+   published architecture figure labels its parts.
+   ------------------------------------------------------------------------ */
+
+.callout {
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-family: var(--sans);
+  line-height: 1.32;
+}
+
+.callout--left {
+  text-align: right;
+  padding-right: 4px;
+}
+
+.callout--right {
+  text-align: left;
+  padding-left: 4px;
+}
+
+.callout__lead {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--sheet-ink);
+}
+
+.callout__sub {
+  font-size: 10px;
+  color: var(--sheet-ink-dim);
+}
+
+.callout__leader {
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------- title block ---
+   Bottom-right of the sheet, as on any engineering drawing.
+   ------------------------------------------------------------------------ */
+
+.title-block {
+  background: var(--sheet-paper);
+  border: 1.3px solid var(--ink);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink);
+  min-width: 268px;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.title-block__head {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 5px 8px;
+  border-bottom: 1.3px solid var(--ink);
+  background: var(--sheet-paper-alt);
+}
+
+.title-block__name {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.title-block__family {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
+.title-block__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.title-block__field {
+  padding: 4px 8px 5px;
+  border-right: 1px solid var(--sheet-rule);
+  border-bottom: 1px solid var(--sheet-rule);
+  min-width: 0;
+}
+
+.title-block__field--wide {
+  grid-column: 1 / -1;
+}
+
+.title-block__field:nth-child(3n),
+.title-block__field--wide {
+  border-right: none;
+}
+
+.title-block__label {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-soft);
+}
+
+.title-block__value {
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.title-block__value.is-ok {
+  color: var(--ok);
+}
+.title-block__value.is-warning {
+  color: var(--warn);
+}
+.title-block__value.is-error {
+  color: var(--error);
+}
+
+/* ------------------------------------------------------- command groups ---
+   A caption under each group costs one line and removes the guesswork about
+   what a button belongs to. Fusion and AutoCAD both do it; KiCad separates by
+   toolbar instead, which needs more room than we have.
+   ------------------------------------------------------------------------ */
+
+.tgroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 0 9px;
+  border-right: 1px solid var(--border);
+  align-self: stretch;
+  justify-content: center;
+}
+
+.tgroup__row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tgroup__label {
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-dim);
+  line-height: 1;
+}
+
+/* A view-state toggle reads as pressed when it is on, the way KiCad fills an
+   active toolbar toggle. */
+.btn--toggle.is-on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+/* Fields in the command bar need room to show what they hold. */
+.tgroup input.field {
+  min-width: 132px;
+}
+
+.tgroup select.field {
+  min-width: 108px;
+}
+
+/* ------------------------------------------------------------- folds --- */
+/* A stacked, collapsible section. The readout is a column of these rather
+   than a rack of tabs, so a parameter change and the number it moves are on
+   screen together. */
+
+.fold {
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.fold__head {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  width: 100%;
+  padding: 7px 2px;
+  background: none;
+  border: 0;
+  color: var(--dim);
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: left;
+}
+
+.fold__head:hover {
+  color: var(--text);
+}
+
+.fold__caret {
+  flex: 0 0 9px;
+  font-size: 9px;
+  color: var(--dim);
+}
+
+.fold__title {
+  flex: 1 1 auto;
+}
+
+.fold__note {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-dim);
+}
+
+.fold__body {
+  padding: 0 2px 12px;
+}
+
+.fold__body h4 {
+  margin: 12px 0 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* --------------------------------------------------- operating point --- */
+/* Every number below this depends on it, so it sits above them. */
+
+.op {
+  flex: 0 0 auto;
+  padding: 7px 12px 9px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+}
+
+.op__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.op__head h3 {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.linkish {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  font: inherit;
+  font-size: 10.5px;
+  cursor: pointer;
+}
+
+.linkish:hover {
+  text-decoration: underline;
+}
+
+.op__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(74px, 1fr));
+  gap: 4px 6px;
+  margin-bottom: 5px;
+}
+
+.op__grid--wide {
+  grid-template-columns: 2fr 1fr;
+}
+
+.op__field {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.op__label {
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.op__field .field {
+  padding: 2px 5px;
+  font-size: 11px;
+  min-width: 0;
+}
+
+.field--num {
+  font-family: var(--mono);
+  text-align: right;
+}
+
+.op__foot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 3px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.op__check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.op__foot .field--num {
+  width: 104px;
+  padding: 1px 4px;
+  font-size: 10.5px;
+}
+
+.op__derived {
+  color: var(--dim);
+  font-size: 10.5px;
+}
+
+/* ------------------------------------------------------------ readout --- */
+
+.panel--readout {
+  display: flex;
+  flex-direction: column;
+}
+
+.readout .headline {
+  margin-bottom: 4px;
+}
+
+/* A memory budget against a device's capacity, drawn as one bar. */
+
+.budget {
+  margin: 4px 0 8px;
+}
+
+.budget__bar {
+  position: relative;
+  display: flex;
+  height: 15px;
+  border-radius: 0;
+  overflow: hidden;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+}
+
+.budget__part {
+  height: 100%;
+  min-width: 1px;
+}
+
+/* Where the device runs out. */
+.budget__mark {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--ink);
+  box-shadow: 0 0 0 1px var(--sheet);
+}
+
+.budget__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 12px;
+  margin-top: 5px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.budget__key {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  gap: 3px;
+}
+
+.budget__verdict {
+  margin-top: 4px;
+  font-size: 11px;
+  font-family: var(--mono);
+}
+
+.budget__verdict.ok {
+  color: var(--ok);
+}
+
+.budget__verdict.error {
+  color: var(--error);
+}
+
+/* ---------------------------------------------------------- rulebook --- */
+
+.issue__hint {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.issue--info {
+  border-left-color: var(--border);
+}
+
+.dot--info {
+  background: var(--dim);
+}
+
+.badge--quiet {
+  color: var(--dim);
+}
+
+.issues__summary .badge {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.badge.is-muted {
+  opacity: 0.42;
+  text-decoration: line-through;
+}
+
+.rulebook__row {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.rulebook__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--accent);
+}
+
+.rulebook__title {
+  font-size: 11.5px;
+  color: var(--text);
+  margin-top: 1px;
+}
+
+.rulebook__desc {
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.45;
+}
+
+.tab__badge--warning {
+  background: var(--warn);
+  color: var(--warn-soft);
+}
+
+/* ------------------------------------------------------ folded palette --- */
+
+.panel__head--button {
+  width: 100%;
+  gap: 7px;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--border);
+  font: inherit;
+  cursor: pointer;
+  align-items: center;
+  padding: 7px 12px;
+}
+
+.panel__head--button:hover h2 {
+  color: var(--text);
+}
+
+.panel__head--button h2 {
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+/* `.panel` is height:100% for the panes that own a whole column; in the left
+   column the palette shares with the tree, so it takes only what it needs. */
+.palette {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+}
+
+.palette--closed {
+  flex: 0 0 auto;
+  height: auto;
+}
+
+/* The operating point folds to a single line that still says what the numbers
+   below it were measured under. */
+
+.op__toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.op:not(.is-open) .op__head {
+  margin-bottom: 0;
+}
+
+.op__summary {
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+/* ------------------------------------------------------------- frames --- */
+/* A container drawn around what it holds. The reference figures tint the
+   enclosing rectangle and leave the parts inside pale, so the parts stay the
+   brightest thing on the sheet and the frame reads as a boundary. */
+
+/*
+ * A frame is picked by its outline, not its interior.
+ *
+ * This is the rule every vector editor uses for a shape with no fill, and it is
+ * the single thing that made wires pickable again. A frame is a container drawn
+ * around what it holds; its interior belongs to the parts and the wires inside
+ * it. While the body was a solid pointer target, every wire crossing a frame —
+ * which in an unfolded drawing is nearly all of them — was covered by it, and
+ * clicking a wire selected the frame instead.
+ *
+ * The outline and the caption stay live, so a frame is still selectable by the
+ * things that are visibly *it*.
+ */
+/* Specificity, not source order: React Flow's own sheet is imported after this
+   one and sets `pointer-events: all` on every node at the same weight. */
+.react-flow .react-flow__node-frame {
+  pointer-events: none;
+}
+
+.frame {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: 1.4px solid var(--edge);
+  /* A frame tints from its outline, never from its fill. A leaf attention block
+     is deliberately filled dark; a frame around one has to stay pale or it
+     swallows everything inside it. The tint deepens a little with each level so
+     nesting is visible without a second colour. */
+  background: color-mix(
+    in srgb,
+    var(--edge) calc(7% + var(--depth, 0) * 4%),
+    var(--sheet)
+  );
+  position: relative;
+}
+
+/* The pickable band: the outline, widened to something you can hit. */
+.frame::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--pick) * -0.5);
+  border: var(--pick) solid transparent;
+  pointer-events: auto;
+}
+
+.frame--selected {
+  border-width: 2px;
+}
+
+.frame--locked {
+  border-color: var(--locked);
+  box-shadow: 0 0 0 3px var(--locked-halo);
+}
+
+.frame__caption {
+  pointer-events: auto;
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 11.5px;
+  color: var(--ink);
+}
+
+.frame__name {
+  font-weight: 600;
+}
+
+.frame__type {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--ink-soft);
+}
+
+.frame__params {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-soft);
+}
+
+/* `32 ×` on a bracket down the left edge, as the published figures write it. */
+.frame__stack {
+  position: absolute;
+  left: -52px;
+  top: 34px;
+  bottom: 14px;
+  width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  pointer-events: none;
+}
+
+.frame__bracket {
+  flex: 0 0 9px;
+  align-self: stretch;
+  border: 1.4px solid var(--edge);
+  border-right: 0;
+  border-radius: 0;
+}
+
+.frame__count {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------- glyphs --- */
+/* An elementwise operator is a junction on the line, not a part. Every
+   transformer figure draws the residual sum as a small circled plus. */
+
+.glyph {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.4px solid var(--edge);
+  background: var(--sheet);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-sizing: border-box;
+}
+
+
+
+.glyph__mark {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--ink);
+}
+
+/*
+ * A junction has one connection point per side, at the middle of that side.
+ *
+ * The part symbol spreads its pins along an edge, because a part with three
+ * inputs wants three places along the top. A circled operator does not: it is a
+ * point on the line, and every wire that reaches it reaches the same point.
+ *
+ * So each pin is centred in its side's group rather than laid out in a row.
+ * They were in a row before, sharing the row with the idle pins of the other
+ * ports, and on a 38px circle two 16px pins and a 10px gap do not fit — which
+ * is why the marks ended up scattered around the outside of the circle instead
+ * of sitting on it.
+ *
+ * The groups are pulled out by half their thickness so their centres land on
+ * the outline, not six pixels inside it. A wire meets the circle.
+ */
+.glyph .pin {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+
+.glyph .pins--top {
+  top: calc(var(--pin-stub) * -1);
+}
+.glyph .pins--bottom {
+  bottom: calc(var(--pin-stub) * -1);
+}
+.glyph .pins--left {
+  left: calc(var(--pin-stub) * -1);
+}
+.glyph .pins--right {
+  right: calc(var(--pin-stub) * -1);
+}
+
+/* No stub either: the wire runs to the outline and the outline is the symbol. */
+.glyph .pin--live::after,
+.glyph .pin--dangling::after {
+  display: none;
+}
+
+/* The connection point is on the outline, so a dot centred on it would be half
+   swallowed by the circle and read as a blob stuck to the symbol. Push it out
+   by its own radius and it sits on the wire instead, tangent to the circle,
+   which is where a schematic puts a junction that happens at a symbol's pin. */
+.glyph .pin--top::before {
+  transform: translateY(calc(var(--junction-d) / -2));
+}
+.glyph .pin--bottom::before {
+  transform: translateY(calc(var(--junction-d) / 2));
+}
+.glyph .pin--left::before {
+  transform: translateX(calc(var(--junction-d) / -2));
+}
+.glyph .pin--right::before {
+  transform: translateX(calc(var(--junction-d) / 2));
+}
+
+.glyph .pin__name {
+  display: none;
+}
+
+.glyph .mark {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+}
+
+/* ------------------------------------------------------------ stepper --- */
+
+.stepper {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  overflow: hidden;
+  background: var(--bg-input);
+}
+
+.btn--step {
+  border: 0;
+  border-radius: 0;
+  padding: 0 8px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.stepper__value {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  min-width: 54px;
+  justify-content: center;
+}
+
+/* ------------------------------------------------------------- tools --- */
+/* The pointer says which tool is active, the way it does in any drawing
+   program: an arrow selects, a hand pans, a crosshair wires. */
+
+.canvas__flow.tool-pan,
+.canvas__flow.tool-pan .react-flow__pane {
+  cursor: grab;
+}
+
+.canvas__flow.tool-pan .react-flow__pane.dragging {
+  cursor: grabbing;
+}
+
+.canvas__flow.tool-wire .react-flow__pane {
+  cursor: crosshair;
+}
+
+.canvas__flow.tool-wire .part,
+.canvas__flow.tool-wire .glyph {
+  cursor: crosshair;
+}
+
+/* A block the design defines for itself, rather than one of the built-ins. */
+.palette__own {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 3px;
+  margin-left: 4px;
+  line-height: 13px;
+}
+
+/* The collapse control sits on the panel it collapses, not in the command bar:
+   that is where Fusion puts it, and it is where you are already looking. */
+.dock__collapse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin: -2px -4px -2px 6px;
+  border: 0;
+  background: none;
+  color: var(--dim);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.dock__collapse:hover {
+  color: var(--text);
+  background: var(--bg-elev);
+}
+
+.dock__collapse:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.panel__head {
+  align-items: center;
+}
+
+.panel__meta {
+  flex: 1 1 auto;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

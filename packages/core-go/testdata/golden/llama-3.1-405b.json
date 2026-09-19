@@ -1,0 +1,52 @@
+{
+  "preset": "llama-3.1-405b",
+  "symbols": {
+    "order": [
+      "B",
+      "T",
+      "L",
+      "D",
+      "H",
+      "Hkv",
+      "dh",
+      "F",
+      "V"
+    ],
+    "values": {
+      "B": 1,
+      "T": 8192,
+      "L": 126,
+      "D": 16384,
+      "H": 128,
+      "Hkv": 8,
+      "dh": 128,
+      "F": 53248,
+      "V": 128256
+    },
+    "designValues": {
+      "L": 126,
+      "D": 16384,
+      "H": 128,
+      "Hkv": 8,
+      "dh": 128,
+      "F": 53248,
+      "V": 128256
+    },
+    "runtime": [
+      "B",
+      "T"
+    ],
+    "docs": {
+      "B": "Batch size",
+      "T": "Sequence length in tokens",
+      "L": "Number of transformer layers",
+      "D": "Residual stream width (d_model)",
+      "H": "Query heads",
+      "Hkv": "Key/value heads",
+      "dh": "Head dimension",
+      "F": "Feed-forward hidden width",
+      "V": "Vocabulary size"
+    },
+    "errors": []
+  }
+}

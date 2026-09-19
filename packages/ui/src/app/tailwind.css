@@ -1,0 +1,95 @@
+/*
+ * The design system.
+ *
+ * Tailwind v4 plus the shadcn token names, wired to the tokens this project
+ * already had rather than replacing them. `theme.css` stays the single place a
+ * colour is decided; this file only teaches Tailwind what those decisions are
+ * called, so a component can say `bg-panel` and a drawing can say
+ * `var(--sheet)` and both change together when the theme flips.
+ *
+ * Every radius is zero. This is a CAD tool: a rounded corner on a control says
+ * "app", a square one says "instrument", and the whole point of the last three
+ * passes was to stop it looking like an app.
+ */
+
+@import "tailwindcss";
+
+/* Stated rather than inferred: the desktop build imports this stylesheet from
+   another package, and the automatic source detection roots itself where the
+   importing file is, not where the classes are. */
+@source "../";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  /* shadcn's surface names, mapped onto this project's. */
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-card: var(--bg-panel);
+  --color-card-foreground: var(--text);
+  --color-popover: var(--bg-elev);
+  --color-popover-foreground: var(--text);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-on);
+  --color-secondary: var(--bg-elev);
+  --color-secondary-foreground: var(--text);
+  --color-muted: var(--bg-elev);
+  --color-muted-foreground: var(--dim);
+  --color-accent: var(--accent-soft);
+  --color-accent-foreground: var(--accent-strong);
+  --color-destructive: var(--error);
+  --color-destructive-foreground: var(--error-soft);
+  --color-border: var(--border);
+  --color-input: var(--bg-input);
+  --color-ring: var(--accent);
+
+  /* This project's own names, so a component can reach them directly. */
+  --color-panel: var(--bg-panel);
+  --color-elev: var(--bg-elev);
+  --color-dim: var(--dim);
+  --color-text-dim: var(--text-dim);
+  --color-border-soft: var(--border-soft);
+  --color-sheet: var(--sheet);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-error: var(--error);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn-soft: var(--warn-soft);
+  --color-error-soft: var(--error-soft);
+  --color-locked: var(--locked);
+
+  --font-sans: var(--sans);
+  --font-mono: var(--mono);
+
+  /* Square, everywhere. */
+  --radius: 0px;
+  --radius-none: 0px;
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+}
+
+@layer base {
+  /* A stray rounded corner from a library default undoes the whole look, so
+     the zero is asserted rather than merely configured. Circles opt back in. */
+  *:not(.allow-radius) {
+    border-radius: 0;
+  }
+
+  .allow-radius,
+  .rounded-full {
+    border-radius: 9999px;
+  }
+
+  *,
+  *::before,
+  *::after {
+    border-color: var(--border);
+  }
+}

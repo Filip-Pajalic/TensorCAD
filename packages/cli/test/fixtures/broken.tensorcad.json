@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "meta": {
+    "name": "broken-widths",
+    "notes": "The final norm and the head are 512 wide but the residual stream is 256. Deliberately invalid; used by the CLI tests."
+  },
+  "symbols": {
+    "B": { "kind": "runtime", "default": 1, "doc": "Batch size" },
+    "T": { "kind": "runtime", "default": 128, "doc": "Sequence length in tokens" },
+    "D": { "kind": "design", "value": 256, "doc": "Residual stream width" },
+    "V": { "kind": "design", "value": 1024, "doc": "Vocabulary size" }
+  },
+  "graph": {
+    "nodes": [
+      { "id": "tokens", "type": "input", "params": { "shape": "B T", "dtype": "int64" } },
+      { "id": "embed", "type": "embedding", "params": { "vocab": "V", "dim": "D" } },
+      { "id": "final_norm", "type": "rmsnorm", "params": { "dim": 512 } },
+      { "id": "head", "type": "lm_head", "params": { "vocab": "V", "dim": 512, "tied": false } },
+      { "id": "logits", "type": "output" }
+    ],
+    "edges": [
+      ["tokens:x", "embed:ids"],
+      ["embed:y", "final_norm:x"],
+      ["final_norm:y", "head:x"],
+      ["head:y", "logits:x"]
+    ]
+  }
+}

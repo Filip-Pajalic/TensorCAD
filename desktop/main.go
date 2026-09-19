@@ -51,6 +51,9 @@ func main() {
 	app.RegisterService(application.NewService(designs))
 	app.RegisterService(application.NewService(services.NewRuntimeService(app)))
 	app.RegisterService(application.NewService(services.NewWorkspaceService(app, workspaceRoot)))
+	// The analysis engine itself, so the window can ask this process for the
+	// numbers rather than computing them in JavaScript.
+	app.RegisterService(application.NewService(services.NewEngineService()))
 
 	buildMenu(app)
 

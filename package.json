@@ -1,14 +1,17 @@
 {
-  "name": "llm-cad",
+  "name": "tensorcad",
   "private": true,
   "version": "0.0.0",
-  "description": "Node-based CAD for designing LLM architectures",
+  "description": "Schematic capture for neural network architectures",
   "workspaces": [
     "packages/*",
     "desktop/frontend"
   ],
   "scripts": {
     "test": "bun test packages",
+    "test:go": "cd packages/core-go && go test ./... && cd ../../desktop && go test ./...",
+    "test:all": "bun run typecheck && bun test packages && bun run test:go",
+    "golden": "bun run scripts/golden.ts",
     "typecheck": "tsc -p packages/core/tsconfig.json --noEmit",
     "cli": "bun run packages/cli/src/index.ts",
     "ui": "cd packages/ui && bun run dev",

@@ -6,6 +6,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Filip-Pajalic/TensorCAD/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Filip-Pajalic/TensorCAD/ci.yml?branch=main&style=flat-square&label=CI" alt="CI status" /></a>
   <img src="https://img.shields.io/badge/license-MIT-111111?style=flat-square" alt="MIT licensed" />
   <img src="https://img.shields.io/badge/core-zero%20runtime%20deps-2f6fb0?style=flat-square" alt="Zero runtime dependencies" />
   <img src="https://img.shields.io/badge/presets-20%20verified-1b6834?style=flat-square" alt="20 verified presets" />

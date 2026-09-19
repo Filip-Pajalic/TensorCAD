@@ -1,0 +1,80 @@
+# Both engines, on every push.
+#
+# The TypeScript core is the specification until the Go port replaces it, so a
+# change to either one has to leave the golden files agreeing. That is what the
+# Go parity tests check, and why they run beside the TypeScript suite rather
+# than after it.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  typescript:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Type-check
+        run: bun run typecheck
+      - name: Test
+        run: bun test packages
+
+  go:
+    name: Go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache-dependency-path: |
+            packages/core-go/go.sum
+            desktop/go.sum
+      - name: Format
+        run: |
+          unformatted=$(gofmt -l packages/core-go desktop)
+          if [ -n "$unformatted" ]; then
+            echo "gofmt would change these files:"
+            echo "$unformatted"
+            exit 1
+          fi
+      - name: Vet
+        run: go vet ./...
+        working-directory: packages/core-go
+      - name: Test the engine
+        run: go test ./...
+        working-directory: packages/core-go
+      - name: Test the desktop services
+        run: go test ./...
+        working-directory: desktop
+
+  goldens:
+    name: Goldens are current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      # A golden file that no longer matches what the generator writes is a
+      # parity test comparing the Go engine against a stale answer.
+      - name: Regenerate
+        run: bun run scripts/golden.ts
+      - name: Check for drift
+        run: |
+          if ! git diff --quiet; then
+            echo "The golden files are out of date. Run: bun run scripts/golden.ts"
+            git diff --stat
+            exit 1
+          fi

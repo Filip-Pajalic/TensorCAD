@@ -19,8 +19,9 @@
  * which is exactly what this covers.
  */
 
+import { normalisePort } from "./types.js";
 import type { Graph, NodeDef, ParamValue } from "../ir/types.js";
-import type { BlockDocs, CompositeDef, ParamSpec, Ports } from "./types.js";
+import type { BlockDocs, CompositeDef, ParamSpec, Ports, PortSpec } from "./types.js";
 import { ex } from "./types.js";
 
 export interface UserBlockDef {
@@ -122,6 +123,19 @@ export const BOUNDARY_OUT = "_out";
 
 /** Turn a stored definition into a composite the rest of the core can use. */
 export function compileUserBlock(def: UserBlockDef): CompositeDef {
+/**
+ * A boundary node carries shape patterns and nothing else.
+ *
+ * The rest of a port's declaration — dtype, anchor, whether it may dangle — is
+ * about the outside of the block. Inside its expansion there is only a tensor
+ * arriving at a shape.
+ */
+function shapesOf(side: Record<string, string | PortSpec>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [name, v] of Object.entries(side)) out[name] = normalisePort(v).shape;
+  return out;
+}
+
   return {
     kind: "composite",
     type: def.type,
@@ -130,9 +144,9 @@ export function compileUserBlock(def: UserBlockDef): CompositeDef {
     ports: def.ports,
     expand: (raw): Graph => ({
       nodes: [
-        { id: BOUNDARY_IN, type: "boundary_in", params: { ports: { ...def.ports.in } } },
+        { id: BOUNDARY_IN, type: "boundary_in", params: { ports: shapesOf(def.ports.in) } },
         ...def.graph.nodes.map((n) => fillNode(n, raw)),
-        { id: BOUNDARY_OUT, type: "boundary_out", params: { ports: { ...def.ports.out } } },
+        { id: BOUNDARY_OUT, type: "boundary_out", params: { ports: shapesOf(def.ports.out) } },
       ],
       edges: [...def.graph.edges],
     }),

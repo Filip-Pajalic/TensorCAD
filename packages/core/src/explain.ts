@@ -6,6 +6,7 @@
  * expression somebody wrote and the value it evaluated to.
  */
 
+import type { ResolvedPort, ResolvedPorts } from "./catalog/types.js";
 import type { Doc, ParamValue, SymbolTable } from "./ir/types.js";
 import { joinPath } from "./ir/types.js";
 import { resolveSymbols } from "./ir/symbols.js";
@@ -66,6 +67,12 @@ function findNode(doc: Doc, path: string): { type: string; label?: string; param
 function subtree(flat: FlatResult, path: string) {
   const prefix = `${path}/`;
   return flat.nodes.filter((n) => n.path === path || n.path.startsWith(prefix));
+}
+
+function shapesOnly(side: Record<string, ResolvedPort>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [name, port] of Object.entries(side)) out[name] = port.shape;
+  return out;
 }
 
 export function explain(
@@ -141,7 +148,7 @@ function buildExplanation(input: {
   path: string;
   def: (typeof CATALOG)[string];
   resolvedParams: { p: Record<string, unknown>; raw: Record<string, ParamValue>; rawFull: Record<string, ParamValue> };
-  ports: { in: Record<string, string>; out: Record<string, string> };
+  ports: ResolvedPorts;
   copies: { total: number; active: number };
   nodes: FlatResult["nodes"];
   analysis: AnalysisResult;
@@ -201,7 +208,9 @@ function buildExplanation(input: {
     docs: def.docs,
     copies,
     params,
-    shapes: { in: { ...ports.in }, out: { ...ports.out } },
+    // `shapes` is the report's field and means shapes, so the rest of each
+    // port declaration is dropped here rather than leaking into the output.
+    shapes: { in: shapesOnly(ports.in), out: shapesOnly(ports.out) },
     contributes: {
       params: paramSum,
       activeParams: Math.round(activeSum),

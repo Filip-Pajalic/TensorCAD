@@ -6,8 +6,9 @@
  * from the expression `"D"`.
  */
 
+import { normalisePorts } from "./types.js";
 import type { ParamValue, Resolved, SymbolTable } from "../ir/types.js";
-import type { BlockDef, ParamSpec, Ports, PortsSpec } from "./types.js";
+import type { BlockDef, ParamSpec, PortsSpec, ResolvedPorts } from "./types.js";
 import { Sym } from "../shapes/symexpr.js";
 import { evalExpr } from "../shapes/expr.js";
 import { symbolCtx } from "../ir/symbols.js";
@@ -119,6 +120,13 @@ export function resolveNodeParams(
   return out;
 }
 
-export function portsOf(spec: PortsSpec, r: Resolved): Ports {
-  return typeof spec === "function" ? spec(r) : spec;
+/**
+ * A block's ports, with every default filled in.
+ *
+ * Normalising here rather than at each call site is deliberate: a consumer that
+ * reached for the raw declaration would see a bare string on twenty-two
+ * primitives and an object on the rest, and would get one of the two wrong.
+ */
+export function portsOf(spec: PortsSpec, r: Resolved): ResolvedPorts {
+  return normalisePorts(typeof spec === "function" ? spec(r) : spec);
 }

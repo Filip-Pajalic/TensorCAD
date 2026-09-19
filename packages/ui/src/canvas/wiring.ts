@@ -45,25 +45,18 @@ export const sideOfHandle = (handle: string | null | undefined): Side | null => 
 };
 
 /**
- * Ports that always leave or arrive sideways, regardless of where the other end
- * is. The key is `type:port`.
+ * One end of a wire, as the geometry needs to know it.
  *
- * `add:b` is the residual bypass. `mul:b` is the gate in a gated feed-forward.
- * Both are the line a figure draws running alongside the main path, and both
- * look wrong entering from the top, because from the top they read as the main
- * path rather than the one that skips it.
+ * This used to carry the block's type and the port's name so the renderer could
+ * look both up in a table of `"type:port"` strings. The port now says these
+ * things itself, so the hint carries the answers rather than the keys — and the
+ * table, which had two entries matching no catalog type at all, is gone.
  */
-const SIDEWAYS_IN = new Set(["add:b", "mul:b"]);
-
-/**
- * Ports whose block is an accessory hanging off the side of the main line,
- * rather than a stage on it: rotary tables, masks, routers.
- */
-const SIDEWAYS_OUT = new Set(["rope:y", "causal_mask:mask", "router:weights"]);
-
 export interface EndpointHint {
-  type: string;
-  port: string;
+  /** True when this pin always leaves sideways, whatever the geometry. */
+  side: boolean;
+  /** Declared element type, or `inherit`. */
+  dtype: string;
 }
 
 function centre(b: Box): { x: number; y: number } {
@@ -84,8 +77,8 @@ export function chooseSides(
   from: EndpointHint,
   to: EndpointHint,
 ): { sourceSide: Side; targetSide: Side } {
-  const forcedIn = SIDEWAYS_IN.has(`${to.type}:${to.port}`);
-  const forcedOut = SIDEWAYS_OUT.has(`${from.type}:${from.port}`);
+  const forcedIn = to.side;
+  const forcedOut = from.side;
 
   if (!source || !target) {
     return {
@@ -132,8 +125,10 @@ export function chooseSides(
  */
 export type WireKind = "signal" | "bypass" | "index";
 
-export function wireKind(to: EndpointHint, dtype: string | null): WireKind {
-  if (SIDEWAYS_IN.has(`${to.type}:${to.port}`)) return "bypass";
-  if (dtype && dtype.startsWith("int")) return "index";
+export function wireKind(from: EndpointHint, to: EndpointHint): WireKind {
+  if (to.side) return "bypass";
+  // Declared, not sniffed. A port that carries indices says so; before this the
+  // renderer decided by asking whether a dtype name began with "int".
+  if (from.dtype === "int" || from.dtype === "bool") return "index";
   return "signal";
 }

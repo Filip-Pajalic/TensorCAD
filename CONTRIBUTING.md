@@ -129,8 +129,9 @@ approximate, never vague.
 
 - **Presets.** V-JEPA 2 needs only the existing builder with `frames` and
   `tubelet`. ResNet and VGG need the conv primitives that already exist.
-- **The Go migration.** Stages 3–10 in [`docs/go-migration.md`](./docs/go-migration.md)
-  are well defined and each is provable against golden files.
+- **The Go migration.** `packages/core-go/` has the shape algebra and the IR;
+  shape inference, the catalog, the analysis, the rules and codegen are still to
+  come, and each is provable against the golden files in `testdata/`.
 - **Known gaps** in [`ROADMAP.md`](./ROADMAP.md): linear attention (gated
   DeltaNet), multi-token prediction, Gemma's alternating local/global attention.
 - **Instancing in the 3D view.** It is currently one mesh and one material per
@@ -144,6 +145,16 @@ approximate, never vague.
 - "Improving" the Go port away from bug-compatibility with the TypeScript. It is
   bug-compatible on purpose; the one deliberate divergence is documented.
 - Formulas added to a composite instead of a primitive.
+
+## Documentation
+
+Docs live in [`docs/`](./docs/index.md) and follow [Diátaxis](https://diataxis.fr/).
+Put a change where its *reader's need* is, not where its subject is: a tutorial
+teaches by doing, a how-to solves one problem for someone who already knows the
+tool, a reference is looked things up in, and an explanation argues. A page that
+tries to be two of these serves neither.
+
+Filenames are lowercase and hyphenated.
 
 ## Reporting a problem
 

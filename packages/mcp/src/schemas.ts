@@ -91,6 +91,11 @@ export const BlockPort = z.object({
   name: z.string(),
   pattern: z.string().describe("Declared shape pattern, e.g. \"B T D\"."),
   shape: z.string().optional().describe("Shape actually inferred for this port."),
+  dtype: z
+    .string()
+    .optional()
+    .describe("What the tensor carries, when the port declares it rather than inheriting it."),
+  optional: z.boolean().optional().describe("True when this port may legitimately dangle."),
   connected_to: z.array(z.string()).optional(),
 });
 

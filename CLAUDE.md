@@ -33,7 +33,7 @@ Two cross-checks worth knowing:
 
 - **The engine is moving to Go.** `packages/core-go` is replacing `packages/core`; the
   frontend becomes a client of it over Wails bindings rather than running the analysis in the
-  window. `docs/go-migration.md` has the stages, what is done, and how each one is proven —
+  window. `docs/index.md` has the stages, what is done, and how each one is proven —
   the TypeScript writes golden files for all seventeen presets and the Go tests have to
   reproduce them exactly, including the printed form of every polynomial. Until a stage
   lands, `packages/core` is still the engine and still the specification. Do not "improve"
@@ -72,7 +72,7 @@ Two cross-checks worth knowing:
   it distinguished nothing because nearly every tensor in a transformer has both.
 - `packages/cli`, `packages/mcp` — thin adapters over the core.
 - `python/tensorcad_runtime` — the only Python: instantiates generated models to verify them, and runs small training jobs.
-- `docs/research/` — sourced research behind every formula. `02-analysis-math.md` is the reference for the analysis engine.
+- `docs/` — documentation, organised by Diátaxis (tutorials, how-to, reference, explanation). `reference/analysis-math.md` is the sourced maths behind the analysis engine.
 
 ## Invariants
 
@@ -102,4 +102,4 @@ A catalog entry needs: parameter specs, port patterns, `docs.summary` and `docs.
 
 See `ROADMAP.md` M5. The main ones: linear-attention blocks (gated DeltaNet), multi-token prediction, and Gemma's alternating local and global attention layers, which the importer warns about rather than approximating.
 
-Two figures in `docs/research/02-analysis-math.md` were wrong in the original research and are corrected by the implementation: the Llama-3-70B cache is 320 KiB per token, not 160, and the per-layer activation estimate of 147 KB assumes a fused gated feed-forward. An unfused one keeps two more intermediate tensors, which is the 176 KB the analysis reports.
+Two figures in `docs/reference/analysis-math.md` were wrong in the original research and are corrected by the implementation: the Llama-3-70B cache is 320 KiB per token, not 160, and the per-layer activation estimate of 147 KB assumes a fused gated feed-forward. An unfused one keeps two more intermediate tensors, which is the 176 KB the analysis reports.

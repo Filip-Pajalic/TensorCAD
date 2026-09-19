@@ -950,3 +950,76 @@ It is now the flowchart standard's predefined process: a box with a second rule
 inboard of each side, which is the established way of saying "defined
 elsewhere". It borrows no symbol that already means something, and being
 structural rather than a twelve-pixel badge it survives being zoomed out.
+
+## Seventeenth pass: the port becomes an object
+
+Phase E1 of the editor handoff. Not a visible change — a change that makes four
+of the visible ones possible.
+
+### Nine facts in one string
+
+A port was `name → shape pattern`. Everything else about it lived somewhere
+downstream, and two things lived in the renderer:
+
+- **Which side a wire leaves by** was a lookup table keyed on `"type:port"`
+  strings. `SIDEWAYS_IN` held `add:b` and `mul:b`; `SIDEWAYS_OUT` held `rope:y`,
+  `causal_mask:mask` and `router:weights`.
+- **What a tensor carried** was decided by asking whether a dtype name started
+  with `"int"`.
+
+Two of those five table entries matched no catalog type at all. `causal_mask` and
+`router` are not block types — the real ones are `sdpa` and `topk_router` — so
+those rows had never done anything and nothing had noticed. That is the failure
+mode of a table keyed on strings assembled at a distance from what they name.
+
+A port now declares its own facts:
+
+```ts
+interface PortSpec {
+  shape: string;
+  dtype?: "float" | "half" | "fp8" | "int" | "bool" | "inherit";
+  optional?: boolean;
+  whenUnconnected?: "zero" | "identity" | "causal" | { tensor: string };
+  anchor?: "flow" | "side";
+  showName?: boolean;
+  doc?: string;
+}
+```
+
+A bare string is still legal and means `{ shape }`, so the twenty-two primitives
+with nothing more to say did not have to say it.
+
+### Normalising in one place, deliberately
+
+`portsOf()` returns ports with every default filled in. The alternative — a
+`normalisePort` helper each consumer calls — was rejected: a consumer reaching
+for the raw declaration would find a string on most primitives and an object on
+the rest, and would get one of the two wrong. Making the resolver the only door
+means there is no raw form to reach for.
+
+This rippled further than expected. `infer.ports` now carries resolved ports
+rather than pattern strings, which is what the canvas reads; `explain` had to
+stop passing ports straight into a field called `shapes`; and the MCP's
+`get_block` gained `dtype` and `optional` on every port, which is strictly more
+than it could say before.
+
+### What it unblocks
+
+The three ports that mean something by leaving sideways — `add:b`, `mul:b`,
+`rope:y` — now say so. A block a *document* defines can say it too, which the
+table could never have allowed: there was no way to add a row to a set compiled
+into the renderer. That was the real cost of the old design, and it only becomes
+visible once the definition editor exists.
+
+`dtype` is the other half. An integer tensor arriving at a float matmul is a bug
+shape inference cannot catch, because the shapes agree perfectly. The declaration
+is what makes the check possible; the check itself is E1's remaining item.
+
+### Still outstanding
+
+E2 through E7 of the handoff, in dependency order: findings with stable ids drawn
+on the canvas (the highest-value single item — seventeen rules run on every edit
+and none of them is visible where the work happens), the command surface and
+palette, the inspector, the definition editor and library, multi-selection and
+the bottom dock, and then operations, configurations and tensors as first-class
+objects.

@@ -1,6 +1,6 @@
 # TensorCAD — Roadmap
 
-Goal: a node-based CAD tool for designing neural network architectures at the pretraining level, with checks, analysis, code generation, a local test bench, and an MCP server. It began with language models and now covers vision transformers and convolutional classifiers on the same machinery. Primary use: learning, validating, and testing designs. See [docs/FEATURES.md](docs/FEATURES.md) for the feature proposal and [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) for the build plan.
+Goal: a node-based CAD tool for designing neural network architectures at the pretraining level, with checks, analysis, code generation, a local test bench, and an MCP server. It began with language models and now covers vision transformers and convolutional classifiers on the same machinery. Primary use: learning, validating, and testing designs. See [docs/index.md](docs/index.md) for the documentation.
 
 Effort estimates assume one developer working with an AI coding assistant, part-time. They are ranges, not commitments.
 
@@ -14,7 +14,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M3 Agent (MCP server, CLI) | **Done**, minus the live-UI bridge. 13 MCP tools over stdio, 6 CLI commands, 67 tests. |
 | M4 Test bench | **Partly done.** `tensorcad-runtime smoke-train` trains a scaled design on the local GPU and logs a loss curve; `scaleDesign` shrinks a design to a budget. No run registry or comparison view in the editor yet. |
 | M5 Advanced parts | **Mixture of experts, latent attention and state-space blocks all done.** DeepSeek-V3 and Nemotron-H-8B reproduce exactly. |
-| Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, and named refusals. Remaining items in `docs/ui-critique.md`. |
+| Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, and named refusals. Remaining items in `docs/explanation/interaction-design.md`. |
 
 `bun test packages` runs everything: 256 tests. 17 presets, 14 matching their published parameter count exactly, and every one of them confirmed against PyTorch 2.11 on the local GPU.
 
@@ -24,7 +24,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 2. **Pure core.** Schema, validation, analysis, and codegen are pure TypeScript functions with no I/O, shared by UI, CLI, and MCP.
 3. **Analyze primitives, present composites.** Param/FLOP/memory formulas live on ~20 primitive ops; composite blocks (GQA attention, SwiGLU MLP, MoE layer) are subgraphs of primitives with exposed parameters. New blocks need no new math.
 4. **Verify against PyTorch.** Every estimate can be cross-checked by instantiating the generated model on the meta device.
-5. **Regression-test against real models.** The 15-model table in [docs/research/02-analysis-math.md](docs/research/02-analysis-math.md) is the test suite from day one.
+5. **Regression-test against real models.** The 15-model table in [docs/reference/analysis-math.md](docs/reference/analysis-math.md) is the test suite from day one.
 6. **Assistant-native.** The MCP server is a first-class client of the core, not an afterthought.
 
 ## Milestones
@@ -75,7 +75,7 @@ Close the loop with PyTorch.
 
 Let Claude Code and friends drive the tool.
 
-- `@tensorcad/mcp` on the TypeScript SDK v2, stdio transport, file-mode `DocumentStore`; 15 tools with `outputSchema` and annotations; resources and prompts as listed in [docs/research/03-mcp.md](docs/research/03-mcp.md).
+- `@tensorcad/mcp` on the TypeScript SDK v2, stdio transport, file-mode `DocumentStore`; 15 tools with `outputSchema` and annotations; resources and prompts; see [docs/how-to/use-the-mcp-server.md](docs/how-to/use-the-mcp-server.md).
 - `.mcp.json` for Claude Code; README snippets for Cursor and Claude Desktop.
 - CLI (`tensorcad`) sharing the same command set.
 - Live bridge: UI writes a session file; MCP server attaches over local WebSocket; ops flow both ways; `resources/updated` on human edits.

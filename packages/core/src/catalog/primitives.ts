@@ -368,7 +368,16 @@ export const PRIMITIVES: PrimitiveDef[] = [
     type: "add",
     category: "elementwise",
     params: { dim: { type: "int", min: 1 } },
-    ports: { in: { a: "... dim", b: "... dim" }, out: { y: "... dim" } },
+    ports: {
+      in: {
+        a: "... dim",
+      // The bypass. A figure draws this running alongside the main path, never
+      // entering from above, because from above it reads as the main path
+      // rather than the one that skips it.
+      b: { shape: "... dim", anchor: "side" },
+      },
+      out: { y: "... dim" },
+    },
     paramCount: () => 0,
     flops: (r) => ({ fwd: 0, elementwise: r.p.dim }),
     // The gradient of an add is the identity, so nothing needs to be saved.
@@ -380,7 +389,16 @@ export const PRIMITIVES: PrimitiveDef[] = [
     type: "mul",
     category: "elementwise",
     params: { dim: { type: "int", min: 1 } },
-    ports: { in: { a: "... dim", b: "... dim" }, out: { y: "... dim" } },
+    ports: {
+      in: {
+        a: "... dim",
+      // The bypass. A figure draws this running alongside the main path, never
+      // entering from above, because from above it reads as the main path
+      // rather than the one that skips it.
+      b: { shape: "... dim", anchor: "side" },
+      },
+      out: { y: "... dim" },
+    },
     paramCount: () => 0,
     flops: (r) => ({ fwd: 0, elementwise: r.p.dim }),
     // Each operand is needed to differentiate the other.
@@ -418,7 +436,11 @@ export const PRIMITIVES: PrimitiveDef[] = [
       theta: { type: "num", default: 10000 },
       scaling: { type: "obj", default: null, doc: "Optional RoPE scaling spec (linear, NTK, YaRN)" },
     },
-    ports: { in: { x: "B heads T head_dim" }, out: { y: "B heads T head_dim" } },
+    ports: {
+      in: { x: "B heads T head_dim" },
+      // An accessory beside the line rather than a stage on it.
+      out: { y: { shape: "B heads T head_dim", anchor: "side" } },
+    },
     paramCount: () => 0,
     flops: (r) => ({ fwd: 0, elementwise: 6 * r.p.heads * r.p.head_dim }),
     // The rotation is reconstructed from the position, so nothing is saved.
@@ -521,7 +543,10 @@ export const PRIMITIVES: PrimitiveDef[] = [
       bias: { type: "bool", default: false, doc: "Per-expert routing bias (DeepSeek's score correction)" },
       normalize: { type: "bool", default: true, doc: "Renormalize the chosen weights to sum to one" },
     },
-    ports: { in: { x: "... d_model" }, out: { weights: "... top_k" } },
+    ports: {
+      in: { x: "... d_model" },
+      out: { weights: { shape: "... top_k", dtype: "float", anchor: "side" } },
+    },
     paramCount: (r) => r.p.d_model * r.p.experts + (r.p.bias ? r.p.experts : 0),
     flops: (r) => ({ fwd: 2 * r.p.d_model * r.p.experts }),
     retains: () => ["x"],

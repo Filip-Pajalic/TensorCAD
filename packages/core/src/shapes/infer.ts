@@ -8,11 +8,12 @@
  * difference rather than a coincidence of numbers.
  */
 
+import { normalisePorts } from "../catalog/types.js";
 import type { Doc, Graph, NodeDef, Resolved, SymbolTable } from "../ir/types.js";
 import { joinPath, splitEndpoint } from "../ir/types.js";
 import { catalogOf, isContainer, isComposite, isPrimitive } from "../catalog/index.js";
 import { portsOf, resolveNodeParams } from "../catalog/resolve.js";
-import type { Ports } from "../catalog/types.js";
+import type { ResolvedPorts } from "../catalog/types.js";
 import type { EvalCtx } from "./expr.js";
 import { instantiate, matchPattern, parsePattern, shapeToString, type Shape } from "./pattern.js";
 
@@ -36,7 +37,7 @@ export interface InferResult {
   /** Resolved parameters per node path, reused by the rules engine. */
   resolved: Map<string, Resolved>;
   /** Ports per node path, for the editor. */
-  ports: Map<string, Ports>;
+  ports: Map<string, ResolvedPorts>;
   issues: InferIssue[];
 }
 
@@ -54,14 +55,16 @@ export function evalCtxFor(resolved: Resolved, symbols: SymbolTable): EvalCtx {
 }
 
 /** Ports of a `repeat` container, derived from its boundary nodes. */
-function containerPorts(node: NodeDef): Ports {
+function containerPorts(node: NodeDef): ResolvedPorts {
   const g = node.graph ?? { nodes: [], edges: [] };
   const bIn = g.nodes.find((n) => n.type === "boundary_in");
   const bOut = g.nodes.find((n) => n.type === "boundary_out");
-  return {
+  // A container's ports are whatever its boundary nodes declare, which is
+  // shapes and nothing else — see `shapesOf` in catalog/user.ts.
+  return normalisePorts({
     in: { ...((bIn?.params?.ports as Record<string, string>) ?? {}) },
     out: { ...((bOut?.params?.ports as Record<string, string>) ?? {}) },
-  };
+  });
 }
 
 function topoOrder(graph: Graph, issues: InferIssue[], prefix: string): NodeDef[] {
@@ -148,7 +151,7 @@ function inferGraph(w: Walker, graph: Graph, prefix: string, seeds: Map<string, 
     resolvedMap.set(path, resolved);
     for (const e of resolved.errors) issues.push({ path, message: e, severity: "error" });
 
-    let nodePorts: Ports;
+    let nodePorts: ResolvedPorts;
     try {
       nodePorts = isContainer(def) ? containerPorts(node) : portsOf(def.ports, resolved);
     } catch (e) {
@@ -169,7 +172,8 @@ function inferGraph(w: Walker, graph: Graph, prefix: string, seeds: Map<string, 
     // --- inputs ----------------------------------------------------------
     let batch: Shape | null = null;
 
-    for (const [portName, patternSrc] of Object.entries(nodePorts.in)) {
+    for (const [portName, port] of Object.entries(nodePorts.in)) {
+      const patternSrc = port.shape;
       const key = `${node.id}:${portName}`;
       const from = producers.get(key);
       if (!from) {
@@ -297,7 +301,8 @@ function inferGraph(w: Walker, graph: Graph, prefix: string, seeds: Map<string, 
     }
 
     // --- outputs ---------------------------------------------------------
-    for (const [portName, patternSrc] of Object.entries(nodePorts.out)) {
+    for (const [portName, port] of Object.entries(nodePorts.out)) {
+      const patternSrc = port.shape;
       let pattern;
       try {
         pattern = parsePattern(patternSrc);

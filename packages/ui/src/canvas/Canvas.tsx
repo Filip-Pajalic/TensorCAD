@@ -211,8 +211,12 @@ function wireUp(
   const edges = specs.map((spec) => {
     const fromItem = items.get(spec.source);
     const toItem = items.get(spec.target);
-    const from = { type: fromItem?.node.type ?? "", port: spec.sourcePort };
-    const to = { type: toItem?.node.type ?? "", port: spec.targetPort };
+    // The ports themselves say which side they leave by and what they carry.
+    // This used to be two `type:port` lookups in the renderer.
+    const fromPort = derived.infer.ports.get(spec.source)?.out[spec.sourcePort];
+    const toPort = derived.infer.ports.get(spec.target)?.in[spec.targetPort];
+    const from = { side: fromPort?.anchor === "side", dtype: fromPort?.dtype ?? "inherit" };
+    const to = { side: toPort?.anchor === "side", dtype: toPort?.dtype ?? "inherit" };
 
     const { sourceSide, targetSide } = chooseSides(
       absoluteBox(spec.source, boxes, parentOf),
@@ -226,13 +230,18 @@ function wireUp(
     mark(spec.target, targetHandle);
 
     const shape = derived.infer.outputs.get(`${spec.source}:${spec.sourcePort}`);
-    const dtype = dtypeOf(
-      fromItem?.node ?? { type: "" },
-      derived.infer.resolved.get(spec.source),
-      spec.sourcePort,
-      "out",
-    );
-    const kind = wireKind(to, dtype);
+    // A declared dtype wins; otherwise fall back to what the block's own
+    // parameters imply, which is all an inherited port can offer.
+    const declared =
+      from.dtype !== "inherit"
+        ? from.dtype
+        : (dtypeOf(
+            fromItem?.node ?? { type: "" },
+            derived.infer.resolved.get(spec.source),
+            spec.sourcePort,
+            "out",
+          ) ?? "inherit");
+    const kind = wireKind({ ...from, dtype: declared.startsWith("int") ? "int" : declared }, to);
 
     return {
       id: spec.id,

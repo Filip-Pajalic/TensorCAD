@@ -24,9 +24,84 @@ export type ParamSpec =
   | { type: "pattern"; default?: string | null; doc?: string }
   | { type: "obj"; default?: ParamValue; doc?: string };
 
+/**
+ * What a pin is.
+ *
+ * A port used to be one string — its shape pattern — with everything else about
+ * it inferred somewhere downstream. Which side a wire left from was a lookup
+ * table in the renderer keyed on `"type:port"`; whether a tensor carried
+ * integers was decided by checking whether a dtype name started with "int".
+ * Both of those are facts about the port, so they are declared on the port.
+ *
+ * A bare string is still a legal port and means `{ shape }`, so a block that
+ * has nothing more to say does not have to say it.
+ */
+export interface PortSpec {
+  /** Shape pattern, as before: `"... d_model"`. */
+  shape: string;
+  /**
+   * What the tensor carries. `inherit` (the default) takes it from the producer.
+   *
+   * Declaring it is what lets an integer tensor arriving at a float matmul be
+   * refused: shape inference cannot catch that, because the shapes agree.
+   */
+  dtype?: "float" | "half" | "fp8" | "int" | "bool" | "inherit";
+  /** An unconnected required port is a warning; an optional one is not. */
+  optional?: boolean;
+  /** What a consumer should assume when nothing is wired here. */
+  whenUnconnected?: "zero" | "identity" | "causal" | { tensor: string };
+  /**
+   * Which side of the symbol the wire leaves by.
+   *
+   * `flow` follows the reading direction — down the sheet, or across if the
+   * blocks sit side by side. `side` always leaves sideways, whatever the
+   * geometry, because some pins mean something by it: a residual bypass
+   * entering from above would read as the main path rather than the one that
+   * skips it.
+   */
+  anchor?: "flow" | "side";
+  /** Draw the port's name beside the pin. */
+  showName?: boolean;
+  doc?: string;
+}
+
 export interface Ports {
-  in: Record<string, string>;
-  out: Record<string, string>;
+  in: Record<string, string | PortSpec>;
+  out: Record<string, string | PortSpec>;
+}
+
+/** Ports with every default filled in, which is what consumers work with. */
+export interface ResolvedPort extends PortSpec {
+  shape: string;
+  dtype: NonNullable<PortSpec["dtype"]>;
+  optional: boolean;
+  anchor: NonNullable<PortSpec["anchor"]>;
+}
+
+export interface ResolvedPorts {
+  in: Record<string, ResolvedPort>;
+  out: Record<string, ResolvedPort>;
+}
+
+/** A bare string is a port with nothing more to say than its shape. */
+export function normalisePort(v: string | PortSpec): ResolvedPort {
+  const spec: PortSpec = typeof v === "string" ? { shape: v } : v;
+  return {
+    ...spec,
+    shape: spec.shape,
+    dtype: spec.dtype ?? "inherit",
+    optional: spec.optional ?? false,
+    anchor: spec.anchor ?? "flow",
+  };
+}
+
+export function normalisePorts(ports: Ports): ResolvedPorts {
+  const map = (side: Record<string, string | PortSpec>): Record<string, ResolvedPort> => {
+    const out: Record<string, ResolvedPort> = {};
+    for (const [name, v] of Object.entries(side)) out[name] = normalisePort(v);
+    return out;
+  };
+  return { in: map(ports.in), out: map(ports.out) };
 }
 
 export type PortsSpec = Ports | ((r: Resolved) => Ports);

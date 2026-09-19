@@ -18,6 +18,7 @@
   <a href="#what-it-does">What it does</a> ·
   <a href="#how-it-is-kept-honest">Correctness</a> ·
   <a href="#for-agents">For agents</a> ·
+  <a href="./docs/index.md">Docs</a> ·
   <a href="./CONTRIBUTING.md">Contributing</a> ·
   <a href="./ROADMAP.md">Roadmap</a> ·
   <a href="./LICENSE.md">License</a>
@@ -85,7 +86,7 @@ indeterminate all the way through, so a mismatch is a genuine polynomial
 difference rather than two numbers that happened not to match. Splits carry
 divisibility obligations instead of silently rounding.
 
-**Design-rule checks.** Seventeen rules: head divisibility, vocabulary padding,
+**Design-rule checks.** Eighteen rules: head divisibility, vocabulary padding,
 RoPE dimension parity, interface breakage, whether the design fits the GPUs you
 selected under the sharding plan you chose. The DRC panel correctly refuses
 Llama-3-8B at 90.16 GiB/GPU against an H100's 80.
@@ -132,7 +133,6 @@ A test pins both numbers.
 migrating to Go; the TypeScript writes golden files for all twenty presets and
 the Go tests must reproduce them exactly — including the evaluation order of the
 symbol table, the printed form of every polynomial, and the text of every error.
-See [`docs/go-migration.md`](./docs/go-migration.md).
 
 ## Architectures it draws
 
@@ -157,7 +157,7 @@ packages/cli/       command line: validate, analyze, show, diff, codegen
 packages/mcp/       MCP server
 desktop/            Wails v3 + Go desktop application
 python/             the only Python: verifies generated models against PyTorch
-docs/research/      sourced research behind every formula
+docs/               tutorials, how-to guides, reference and explanation
 ```
 
 ## For agents
@@ -200,7 +200,7 @@ TensorCAD borrows from work that deserves naming:
   **[Wails](https://wails.io/)** — the editor stands on these.
 
 Formulas are sourced individually in
-[`docs/research/02-analysis-math.md`](./docs/research/02-analysis-math.md),
+[`docs/reference/analysis-math.md`](./docs/reference/analysis-math.md),
 including two figures the original research got wrong that the implementation
 corrects.
 
@@ -210,6 +210,15 @@ Working and useful, with rough edges. The Go migration is at stage 2 of 10. See
 [`ROADMAP.md`](./ROADMAP.md) for what is known to be missing — linear-attention
 blocks, multi-token prediction, and Gemma's alternating local/global attention,
 which the importer warns about rather than approximating.
+
+## Documentation
+
+[`docs/`](./docs/index.md), organised by [Diátaxis](https://diataxis.fr/):
+[tutorials](./docs/tutorials/first-design.md) to learn from,
+[how-to guides](./docs/how-to/add-a-block.md) to work from,
+[reference](./docs/reference/ports.md) to look things up in, and
+[explanation](./docs/explanation/why-schematic-capture.md) for why any of it is
+the way it is.
 
 ## License
 

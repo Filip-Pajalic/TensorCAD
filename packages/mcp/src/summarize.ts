@@ -194,6 +194,10 @@ export interface BlockPort {
   name: string;
   pattern: string;
   shape?: string;
+  /** Declared element type, when it is not inherited from the producer. */
+  dtype?: string;
+  /** True when this port may legitimately be left unwired. */
+  optional?: boolean;
   /** The port on the other end of the wire, as a full path. */
   connected_to?: string[];
 }
@@ -251,8 +255,10 @@ export function blockDetail(doc: Doc, path: string): BlockDetail {
     else consumers.set(producer, [consumer]);
   }
 
-  const inputs: BlockPort[] = Object.entries(ports.in).map(([name, pattern]) => {
-    const port: BlockPort = { name, pattern };
+  const inputs: BlockPort[] = Object.entries(ports.in).map(([name, spec]) => {
+    const port: BlockPort = { name, pattern: spec.shape };
+    if (spec.dtype !== "inherit") port.dtype = spec.dtype;
+    if (spec.optional) port.optional = true;
     const shape = infer.inputs.get(`${path}:${name}`);
     if (shape) port.shape = shapeToString(shape);
     const producer = infer.producerOf.get(`${path}:${name}`);
@@ -260,8 +266,9 @@ export function blockDetail(doc: Doc, path: string): BlockDetail {
     return port;
   });
 
-  const outputs: BlockPort[] = Object.entries(ports.out).map(([name, pattern]) => {
-    const port: BlockPort = { name, pattern };
+  const outputs: BlockPort[] = Object.entries(ports.out).map(([name, spec]) => {
+    const port: BlockPort = { name, pattern: spec.shape };
+    if (spec.dtype !== "inherit") port.dtype = spec.dtype;
     const shape = infer.outputs.get(`${path}:${name}`);
     if (shape) port.shape = shapeToString(shape);
     const to = consumers.get(`${path}:${name}`);
@@ -393,8 +400,8 @@ export function catalogEntry(def: BlockDef): CatalogEntry {
     try {
       const resolved = resolveNodeParams(def, {}, STUB_SYMBOLS);
       const ports = portsOf(def.ports, resolved);
-      entry.inputs = Object.entries(ports.in).map(([n, p]) => `${n}: ${p}`);
-      entry.outputs = Object.entries(ports.out).map(([n, p]) => `${n}: ${p}`);
+      entry.inputs = Object.entries(ports.in).map(([n, p]) => `${n}: ${p.shape}`);
+      entry.outputs = Object.entries(ports.out).map(([n, p]) => `${n}: ${p.shape}`);
     } catch {
       // A block whose ports need real parameters still reports its schema.
     }

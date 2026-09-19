@@ -1,0 +1,171 @@
+{
+  "parse": [
+    {
+      "src": "B T D",
+      "atoms": [
+        "B",
+        "T",
+        "D"
+      ],
+      "instantiated": "B T D",
+      "errors": []
+    },
+    {
+      "src": "B T (H dh)",
+      "atoms": [
+        "B",
+        "T",
+        "H dh"
+      ],
+      "instantiated": "B T H*dh",
+      "errors": []
+    },
+    {
+      "src": "... D",
+      "atoms": [
+        "...",
+        "D"
+      ],
+      "instantiated": "B T D",
+      "errors": []
+    },
+    {
+      "src": "...",
+      "atoms": [
+        "..."
+      ],
+      "instantiated": "B T",
+      "errors": []
+    },
+    {
+      "src": "B H T dh",
+      "atoms": [
+        "B",
+        "H",
+        "T",
+        "dh"
+      ],
+      "instantiated": "B H T dh",
+      "errors": []
+    },
+    {
+      "src": "... 2*D",
+      "atoms": [
+        "...",
+        "2*D"
+      ],
+      "instantiated": "B T 2*D",
+      "errors": []
+    },
+    {
+      "src": "B (H dh) T",
+      "atoms": [
+        "B",
+        "H dh",
+        "T"
+      ],
+      "instantiated": "B H*dh T",
+      "errors": []
+    },
+    {
+      "src": "B 3 224 224",
+      "atoms": [
+        "B",
+        "3",
+        "224",
+        "224"
+      ],
+      "instantiated": "B 3 224 224",
+      "errors": []
+    },
+    {
+      "src": "B T (H dh) D",
+      "atoms": [
+        "B",
+        "T",
+        "H dh",
+        "D"
+      ],
+      "instantiated": "B T H*dh D",
+      "errors": []
+    }
+  ],
+  "parseErrors": [
+    {
+      "src": "B T (H dh",
+      "message": "Unbalanced parentheses in pattern \"B T (H dh\""
+    },
+    {
+      "src": "B () D",
+      "message": "Empty group in pattern \"B () D\""
+    },
+    {
+      "src": "... T ... D",
+      "message": "Pattern \"... T ... D\" has more than one \"...\""
+    }
+  ],
+  "matches": [
+    {
+      "actual": "B T D",
+      "pattern": "B T D",
+      "ok": true,
+      "batch": "scalar",
+      "errors": []
+    },
+    {
+      "actual": "B T D",
+      "pattern": "... D",
+      "ok": true,
+      "batch": "B T",
+      "errors": []
+    },
+    {
+      "actual": "B T D",
+      "pattern": "B T (H dh)",
+      "ok": true,
+      "batch": "scalar",
+      "errors": []
+    },
+    {
+      "actual": "B H T dh",
+      "pattern": "... dh",
+      "ok": true,
+      "batch": "B H T",
+      "errors": []
+    },
+    {
+      "actual": "B T D",
+      "pattern": "B T D D",
+      "ok": false,
+      "batch": "scalar",
+      "errors": [
+        "rank 3 does not match pattern \"B T D D\" (rank 4)"
+      ]
+    },
+    {
+      "actual": "B T D",
+      "pattern": "B H T dh",
+      "ok": false,
+      "batch": "scalar",
+      "errors": [
+        "rank 3 does not match pattern \"B H T dh\" (rank 4)"
+      ]
+    },
+    {
+      "actual": "D",
+      "pattern": "... D",
+      "ok": true,
+      "batch": "scalar",
+      "errors": []
+    },
+    {
+      "actual": "B T F",
+      "pattern": "... D",
+      "ok": false,
+      "batch": "B T",
+      "errors": [
+        "dim 2 is F but the port expects D = D"
+      ]
+    }
+  ]
+}

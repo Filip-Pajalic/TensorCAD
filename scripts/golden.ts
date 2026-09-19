@@ -15,7 +15,17 @@
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { PRESET_NAMES, evalExpr, getPreset, resolveSymbols } from "@tensorcad/core";
+import {
+  PRESET_NAMES,
+  Sym,
+  evalExpr,
+  getPreset,
+  instantiate,
+  matchPattern,
+  parsePattern,
+  resolveSymbols,
+  shapeToString,
+} from "@tensorcad/core";
 
 const root = join(import.meta.dir, "..", "packages", "core-go", "testdata");
 const docsDir = join(root, "presets");
@@ -133,7 +143,78 @@ const expressions = {
 };
 writeFileSync(join(root, "expressions.json"), JSON.stringify(expressions, null, 2) + "\n");
 
+/**
+ * Shape patterns, pinned the same way.
+ *
+ * A pattern is where a shape stops being a string and becomes something the
+ * engine can disagree with. The cases below are the corners: groups, ellipses
+ * that bind nothing, ellipses that bind three dimensions, rank mismatches, and
+ * the message a mismatch produces — which is what a person reads off the canvas
+ * when a design is wrong, so it has to be identical in both engines.
+ */
+const PATTERNS = [
+  "B T D",
+  "B T (H dh)",
+  "... D",
+  "...",
+  "B H T dh",
+  "... 2*D",
+  "B (H dh) T",
+  "B 3 224 224",
+  "B T (H dh) D",
+];
+
+const PATTERN_ERRORS = ["B T (H dh", "B () D", "... T ... D"];
+
+/** actual shape (as patterns, instantiated), checked against a pattern. */
+const MATCHES: [string, string][] = [
+  ["B T D", "B T D"],
+  ["B T D", "... D"],
+  ["B T D", "B T (H dh)"],
+  ["B H T dh", "... dh"],
+  ["B T D", "B T D D"],
+  ["B T D", "B H T dh"],
+  ["D", "... D"],
+  ["B T F", "... D"],
+];
+
+const patternCtx = { values: ENV, known: KNOWN };
+
+const patterns = {
+  parse: PATTERNS.map((src) => {
+    const p = parsePattern(src);
+    const shape = instantiate(p, patternCtx, [Sym.v("B"), Sym.v("T")]);
+    return {
+      src,
+      atoms: p.atoms.map((a) => (a.kind === "ellipsis" ? "..." : a.parts.join(" "))),
+      instantiated: shape.shape ? shapeToString(shape.shape) : null,
+      errors: shape.errors,
+    };
+  }),
+  parseErrors: PATTERN_ERRORS.map((src) => {
+    try {
+      parsePattern(src);
+      return { src, message: "" };
+    } catch (e) {
+      return { src, message: (e as Error).message };
+    }
+  }),
+  matches: MATCHES.map(([actualSrc, patternSrc]) => {
+    const actual = instantiate(parsePattern(actualSrc), patternCtx, []).shape ?? [];
+    const r = matchPattern(actual, parsePattern(patternSrc), patternCtx, ENV);
+    return {
+      actual: actualSrc,
+      pattern: patternSrc,
+      ok: r.ok,
+      batch: shapeToString(r.batch),
+      errors: r.errors,
+    };
+  }),
+};
+writeFileSync(join(root, "patterns.json"), JSON.stringify(patterns, null, 2) + "\n");
+
 console.log(
   `wrote ${index.length} presets, their golden symbol tables, ` +
-    `and ${CASES.length + ERRORS.length} expression cases`,
+    `${CASES.length + ERRORS.length} expression cases, and ` +
+    `${PATTERNS.length + PATTERN_ERRORS.length + MATCHES.length} pattern cases`,
 );

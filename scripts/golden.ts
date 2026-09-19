@@ -327,3 +327,61 @@ const primitives = PRIMITIVE_CASES.map(({ type, params }) => {
 });
 writeFileSync(join(root, "primitives.json"), JSON.stringify({ ctx: primCtx, cases: primitives }, null, 2) + "\n");
 console.log(`  and ${primitives.length} primitive cases`);
+
+/**
+ * Composite expansions, pinned node for node.
+ *
+ * A composite is nothing but the subgraph it stands for, so that subgraph *is*
+ * the specification. Comparing parameter totals would let a wrong expansion
+ * pass whenever two wrong numbers happened to cancel; comparing the graph
+ * cannot. Each case records every node's id, type and parameters, and every
+ * edge, in order.
+ */
+const COMPOSITE_CASES: { type: string; params: Record<string, unknown> }[] = [
+  { type: "gqa_attention", params: { d_model: "D", heads: "H", kv_heads: "Hkv", head_dim: "dh" } },
+  { type: "gqa_attention", params: { d_model: "D", heads: "H", kv_heads: "Hkv", head_dim: "dh", bias: true, o_bias: false } },
+  { type: "gqa_attention", params: { d_model: "D", heads: "H", kv_heads: "Hkv", head_dim: "dh", qk_norm: true, rope: { theta: 500000 } } },
+  { type: "gqa_attention", params: { d_model: "D", heads: "H", kv_heads: "Hkv", head_dim: "dh", window: 4096, causal: false } },
+  { type: "gated_mlp", params: { d_model: "D", hidden: "F", act: "silu" } },
+  { type: "gated_mlp", params: { d_model: "D", hidden: "F", act: "gelu", bias: true } },
+  { type: "dense_mlp", params: { d_model: "D", hidden: "4*D", act: "gelu", bias: true } },
+  { type: "mla_attention", params: { d_model: 7168, heads: 128, q_lora: 1536, kv_lora: 512, nope_dim: 128, rope_dim: 64, v_dim: 128, rope: { theta: 10000 } } },
+  { type: "moe_layer", params: { d_model: "D", experts: 8, top_k: 2, expert_hidden: "F" } },
+  { type: "moe_layer", params: { d_model: "D", experts: 256, top_k: 8, expert_hidden: 2048, shared_experts: 1, router_bias: true } },
+  { type: "mamba2_block", params: { d_model: "D", expand: 2, head_dim: 64, state: 128, groups: 8, conv_kernel: 4 } },
+  { type: "transformer_block", params: { d_model: "D", heads: "H", kv_heads: "Hkv", head_dim: "dh", ffn_hidden: "F" } },
+  { type: "transformer_block", params: { d_model: "D", heads: "H", kv_heads: "Hkv", head_dim: "dh", ffn_hidden: "F", norm: "layernorm", norm_bias: true, mlp: "dense", act: "gelu", attn_bias: true, mlp_bias: true, rope: null } },
+  { type: "transformer_block", params: { d_model: "D", heads: "H", kv_heads: "Hkv", head_dim: "dh", ffn_hidden: "F", post_norm: true } },
+  { type: "transformer_block", params: { d_model: "D", heads: "H", kv_heads: "Hkv", head_dim: "dh", ffn_hidden: "F", mlp: "moe", experts: 8, top_k: 2, expert_hidden: 2048 } },
+  { type: "transformer_block", params: { d_model: 7168, heads: 128, kv_heads: 128, head_dim: 128, ffn_hidden: 18432, attention: "mla", q_lora: 1536, kv_lora: 512, nope_dim: 128, rope_dim: 64, v_dim: 128 } },
+];
+
+const flatNode = (n: Record<string, unknown>): unknown => ({
+  id: n.id,
+  type: n.type,
+  params: n.params ?? null,
+  graph: n.graph
+    ? {
+        nodes: ((n.graph as { nodes: Record<string, unknown>[] }).nodes ?? []).map(flatNode),
+        edges: (n.graph as { edges: unknown }).edges ?? [],
+      }
+    : null,
+});
+
+const composites = COMPOSITE_CASES.map(({ type, params }) => {
+  const def = CATALOG[type] as never as {
+    expand: (raw: unknown, r: unknown) => { nodes: Record<string, unknown>[]; edges: unknown[] };
+    constraints?: (r: unknown) => { id: string; message: string }[];
+  };
+  const r = resolveNodeParams(CATALOG[type], params as never, primSymbols);
+  const g = def.expand({ ...(r as never as { rawFull: Record<string, unknown> }).rawFull, ...params }, r);
+  return {
+    type,
+    params,
+    nodes: g.nodes.map(flatNode),
+    edges: g.edges,
+    constraints: def.constraints ? def.constraints(r).map((c) => `${c.id}: ${c.message}`) : [],
+  };
+});
+writeFileSync(join(root, "composites.json"), JSON.stringify({ cases: composites }, null, 2) + "\n");
+console.log(`  and ${composites.length} composite expansions`);

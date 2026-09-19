@@ -203,6 +203,10 @@ type BlockDef struct {
 	Constraints func(r *Resolved) []BlockFinding
 
 	Docs BlockDocs
+
+	// userGraph is the template a block defined by a document carries, instead
+	// of the expansion function a built-in composite has.
+	userGraph *UserBlockDef
 }
 
 // PortsOf is a block's ports, with every default filled in.

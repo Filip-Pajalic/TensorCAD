@@ -1,0 +1,2516 @@
+{
+  "cases": [
+    {
+      "type": "gqa_attention",
+      "params": {
+        "d_model": "D",
+        "heads": "H",
+        "kv_heads": "Hkv",
+        "head_dim": "dh"
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "q_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "H*dh",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "k_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "Hkv*dh",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "v_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "Hkv*dh",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "q_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (H dh)",
+            "to": "B H T dh"
+          },
+          "graph": null
+        },
+        {
+          "id": "k_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (Hkv dh)",
+            "to": "B Hkv T dh"
+          },
+          "graph": null
+        },
+        {
+          "id": "v_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (Hkv dh)",
+            "to": "B Hkv T dh"
+          },
+          "graph": null
+        },
+        {
+          "id": "attn",
+          "type": "sdpa",
+          "params": {
+            "heads": "H",
+            "kv_heads": "Hkv",
+            "head_dim": "dh",
+            "causal": true,
+            "window": "0",
+            "flash": true
+          },
+          "graph": null
+        },
+        {
+          "id": "o_merge",
+          "type": "rearrange",
+          "params": {
+            "from": "B H T dh",
+            "to": "B T (H dh)"
+          },
+          "graph": null
+        },
+        {
+          "id": "o_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "H*dh",
+            "out_features": "D",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "q_proj:x"
+        ],
+        [
+          "_in:x",
+          "k_proj:x"
+        ],
+        [
+          "_in:x",
+          "v_proj:x"
+        ],
+        [
+          "q_proj:y",
+          "q_heads:x"
+        ],
+        [
+          "k_proj:y",
+          "k_heads:x"
+        ],
+        [
+          "v_proj:y",
+          "v_heads:x"
+        ],
+        [
+          "q_heads:y",
+          "attn:q"
+        ],
+        [
+          "k_heads:y",
+          "attn:k"
+        ],
+        [
+          "v_heads:y",
+          "attn:v"
+        ],
+        [
+          "attn:y",
+          "o_merge:x"
+        ],
+        [
+          "o_merge:y",
+          "o_proj:x"
+        ],
+        [
+          "o_proj:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "gqa_attention",
+      "params": {
+        "d_model": "D",
+        "heads": "H",
+        "kv_heads": "Hkv",
+        "head_dim": "dh",
+        "bias": true,
+        "o_bias": false
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "q_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "H*dh",
+            "bias": true
+          },
+          "graph": null
+        },
+        {
+          "id": "k_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "Hkv*dh",
+            "bias": true
+          },
+          "graph": null
+        },
+        {
+          "id": "v_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "Hkv*dh",
+            "bias": true
+          },
+          "graph": null
+        },
+        {
+          "id": "q_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (H dh)",
+            "to": "B H T dh"
+          },
+          "graph": null
+        },
+        {
+          "id": "k_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (Hkv dh)",
+            "to": "B Hkv T dh"
+          },
+          "graph": null
+        },
+        {
+          "id": "v_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (Hkv dh)",
+            "to": "B Hkv T dh"
+          },
+          "graph": null
+        },
+        {
+          "id": "attn",
+          "type": "sdpa",
+          "params": {
+            "heads": "H",
+            "kv_heads": "Hkv",
+            "head_dim": "dh",
+            "causal": true,
+            "window": "0",
+            "flash": true
+          },
+          "graph": null
+        },
+        {
+          "id": "o_merge",
+          "type": "rearrange",
+          "params": {
+            "from": "B H T dh",
+            "to": "B T (H dh)"
+          },
+          "graph": null
+        },
+        {
+          "id": "o_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "H*dh",
+            "out_features": "D",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "q_proj:x"
+        ],
+        [
+          "_in:x",
+          "k_proj:x"
+        ],
+        [
+          "_in:x",
+          "v_proj:x"
+        ],
+        [
+          "q_proj:y",
+          "q_heads:x"
+        ],
+        [
+          "k_proj:y",
+          "k_heads:x"
+        ],
+        [
+          "v_proj:y",
+          "v_heads:x"
+        ],
+        [
+          "q_heads:y",
+          "attn:q"
+        ],
+        [
+          "k_heads:y",
+          "attn:k"
+        ],
+        [
+          "v_heads:y",
+          "attn:v"
+        ],
+        [
+          "attn:y",
+          "o_merge:x"
+        ],
+        [
+          "o_merge:y",
+          "o_proj:x"
+        ],
+        [
+          "o_proj:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "gqa_attention",
+      "params": {
+        "d_model": "D",
+        "heads": "H",
+        "kv_heads": "Hkv",
+        "head_dim": "dh",
+        "qk_norm": true,
+        "rope": {
+          "theta": 500000
+        }
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "q_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "H*dh",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "k_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "Hkv*dh",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "v_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "Hkv*dh",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "q_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (H dh)",
+            "to": "B H T dh"
+          },
+          "graph": null
+        },
+        {
+          "id": "k_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (Hkv dh)",
+            "to": "B Hkv T dh"
+          },
+          "graph": null
+        },
+        {
+          "id": "v_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (Hkv dh)",
+            "to": "B Hkv T dh"
+          },
+          "graph": null
+        },
+        {
+          "id": "q_norm",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "dh"
+          },
+          "graph": null
+        },
+        {
+          "id": "k_norm",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "dh"
+          },
+          "graph": null
+        },
+        {
+          "id": "rope_q",
+          "type": "rope",
+          "params": {
+            "heads": "H",
+            "head_dim": "dh",
+            "theta": 500000,
+            "scaling": null
+          },
+          "graph": null
+        },
+        {
+          "id": "rope_k",
+          "type": "rope",
+          "params": {
+            "heads": "Hkv",
+            "head_dim": "dh",
+            "theta": 500000,
+            "scaling": null
+          },
+          "graph": null
+        },
+        {
+          "id": "attn",
+          "type": "sdpa",
+          "params": {
+            "heads": "H",
+            "kv_heads": "Hkv",
+            "head_dim": "dh",
+            "causal": true,
+            "window": "0",
+            "flash": true
+          },
+          "graph": null
+        },
+        {
+          "id": "o_merge",
+          "type": "rearrange",
+          "params": {
+            "from": "B H T dh",
+            "to": "B T (H dh)"
+          },
+          "graph": null
+        },
+        {
+          "id": "o_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "H*dh",
+            "out_features": "D",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "q_proj:x"
+        ],
+        [
+          "_in:x",
+          "k_proj:x"
+        ],
+        [
+          "_in:x",
+          "v_proj:x"
+        ],
+        [
+          "q_proj:y",
+          "q_heads:x"
+        ],
+        [
+          "k_proj:y",
+          "k_heads:x"
+        ],
+        [
+          "v_proj:y",
+          "v_heads:x"
+        ],
+        [
+          "q_heads:y",
+          "q_norm:x"
+        ],
+        [
+          "k_heads:y",
+          "k_norm:x"
+        ],
+        [
+          "q_norm:y",
+          "rope_q:x"
+        ],
+        [
+          "k_norm:y",
+          "rope_k:x"
+        ],
+        [
+          "rope_q:y",
+          "attn:q"
+        ],
+        [
+          "rope_k:y",
+          "attn:k"
+        ],
+        [
+          "v_heads:y",
+          "attn:v"
+        ],
+        [
+          "attn:y",
+          "o_merge:x"
+        ],
+        [
+          "o_merge:y",
+          "o_proj:x"
+        ],
+        [
+          "o_proj:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "gqa_attention",
+      "params": {
+        "d_model": "D",
+        "heads": "H",
+        "kv_heads": "Hkv",
+        "head_dim": "dh",
+        "window": 4096,
+        "causal": false
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "q_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "H*dh",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "k_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "Hkv*dh",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "v_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "Hkv*dh",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "q_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (H dh)",
+            "to": "B H T dh"
+          },
+          "graph": null
+        },
+        {
+          "id": "k_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (Hkv dh)",
+            "to": "B Hkv T dh"
+          },
+          "graph": null
+        },
+        {
+          "id": "v_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (Hkv dh)",
+            "to": "B Hkv T dh"
+          },
+          "graph": null
+        },
+        {
+          "id": "attn",
+          "type": "sdpa",
+          "params": {
+            "heads": "H",
+            "kv_heads": "Hkv",
+            "head_dim": "dh",
+            "causal": false,
+            "window": "4096",
+            "flash": true
+          },
+          "graph": null
+        },
+        {
+          "id": "o_merge",
+          "type": "rearrange",
+          "params": {
+            "from": "B H T dh",
+            "to": "B T (H dh)"
+          },
+          "graph": null
+        },
+        {
+          "id": "o_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "H*dh",
+            "out_features": "D",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "q_proj:x"
+        ],
+        [
+          "_in:x",
+          "k_proj:x"
+        ],
+        [
+          "_in:x",
+          "v_proj:x"
+        ],
+        [
+          "q_proj:y",
+          "q_heads:x"
+        ],
+        [
+          "k_proj:y",
+          "k_heads:x"
+        ],
+        [
+          "v_proj:y",
+          "v_heads:x"
+        ],
+        [
+          "q_heads:y",
+          "attn:q"
+        ],
+        [
+          "k_heads:y",
+          "attn:k"
+        ],
+        [
+          "v_heads:y",
+          "attn:v"
+        ],
+        [
+          "attn:y",
+          "o_merge:x"
+        ],
+        [
+          "o_merge:y",
+          "o_proj:x"
+        ],
+        [
+          "o_proj:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "gated_mlp",
+      "params": {
+        "d_model": "D",
+        "hidden": "F",
+        "act": "silu"
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "gate",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "F",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "up",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "F",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "act",
+          "type": "activation",
+          "params": {
+            "kind": "silu",
+            "dim": "F"
+          },
+          "graph": null
+        },
+        {
+          "id": "gated",
+          "type": "mul",
+          "params": {
+            "dim": "F"
+          },
+          "graph": null
+        },
+        {
+          "id": "down",
+          "type": "linear",
+          "params": {
+            "in_features": "F",
+            "out_features": "D",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "gate:x"
+        ],
+        [
+          "_in:x",
+          "up:x"
+        ],
+        [
+          "gate:y",
+          "act:x"
+        ],
+        [
+          "act:y",
+          "gated:a"
+        ],
+        [
+          "up:y",
+          "gated:b"
+        ],
+        [
+          "gated:y",
+          "down:x"
+        ],
+        [
+          "down:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "gated_mlp",
+      "params": {
+        "d_model": "D",
+        "hidden": "F",
+        "act": "gelu",
+        "bias": true
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "gate",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "F",
+            "bias": true
+          },
+          "graph": null
+        },
+        {
+          "id": "up",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "F",
+            "bias": true
+          },
+          "graph": null
+        },
+        {
+          "id": "act",
+          "type": "activation",
+          "params": {
+            "kind": "gelu",
+            "dim": "F"
+          },
+          "graph": null
+        },
+        {
+          "id": "gated",
+          "type": "mul",
+          "params": {
+            "dim": "F"
+          },
+          "graph": null
+        },
+        {
+          "id": "down",
+          "type": "linear",
+          "params": {
+            "in_features": "F",
+            "out_features": "D",
+            "bias": true
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "gate:x"
+        ],
+        [
+          "_in:x",
+          "up:x"
+        ],
+        [
+          "gate:y",
+          "act:x"
+        ],
+        [
+          "act:y",
+          "gated:a"
+        ],
+        [
+          "up:y",
+          "gated:b"
+        ],
+        [
+          "gated:y",
+          "down:x"
+        ],
+        [
+          "down:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "dense_mlp",
+      "params": {
+        "d_model": "D",
+        "hidden": "4*D",
+        "act": "gelu",
+        "bias": true
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "up",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "(4*D)",
+            "bias": true
+          },
+          "graph": null
+        },
+        {
+          "id": "act",
+          "type": "activation",
+          "params": {
+            "kind": "gelu",
+            "dim": "(4*D)"
+          },
+          "graph": null
+        },
+        {
+          "id": "down",
+          "type": "linear",
+          "params": {
+            "in_features": "(4*D)",
+            "out_features": "D",
+            "bias": true
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "up:x"
+        ],
+        [
+          "up:y",
+          "act:x"
+        ],
+        [
+          "act:y",
+          "down:x"
+        ],
+        [
+          "down:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "mla_attention",
+      "params": {
+        "d_model": 7168,
+        "heads": 128,
+        "q_lora": 1536,
+        "kv_lora": 512,
+        "nope_dim": 128,
+        "rope_dim": 64,
+        "v_dim": 128,
+        "rope": {
+          "theta": 10000
+        }
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... 7168"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "q_down",
+          "type": "linear",
+          "params": {
+            "in_features": "7168",
+            "out_features": "1536",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "q_norm",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "1536"
+          },
+          "graph": null
+        },
+        {
+          "id": "q_up",
+          "type": "linear",
+          "params": {
+            "in_features": "1536",
+            "out_features": "128*(128+64)",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "q_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (128 (128+64))",
+            "to": "B 128 T (128+64)"
+          },
+          "graph": null
+        },
+        {
+          "id": "kv_down",
+          "type": "linear",
+          "params": {
+            "in_features": "7168",
+            "out_features": "512+64",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "latent",
+          "type": "kv_latent_cache",
+          "params": {
+            "dim": "512+64"
+          },
+          "graph": null
+        },
+        {
+          "id": "kv_split",
+          "type": "split",
+          "params": {
+            "from": "B T (512+64)",
+            "sizes": [
+              "512",
+              "64"
+            ]
+          },
+          "graph": null
+        },
+        {
+          "id": "kv_norm",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "512"
+          },
+          "graph": null
+        },
+        {
+          "id": "k_up",
+          "type": "linear",
+          "params": {
+            "in_features": "512",
+            "out_features": "128*(128)",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "k_nope_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (128 (128))",
+            "to": "B 128 T (128)"
+          },
+          "graph": null
+        },
+        {
+          "id": "v_up",
+          "type": "linear",
+          "params": {
+            "in_features": "512",
+            "out_features": "128*(128)",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "v_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (128 (128))",
+            "to": "B 128 T (128)"
+          },
+          "graph": null
+        },
+        {
+          "id": "k_rope_shared",
+          "type": "expand_heads",
+          "params": {
+            "heads": "128",
+            "dim": "64"
+          },
+          "graph": null
+        },
+        {
+          "id": "k_rope",
+          "type": "rope",
+          "params": {
+            "heads": "128",
+            "head_dim": "64",
+            "theta": 10000
+          },
+          "graph": null
+        },
+        {
+          "id": "k_cat",
+          "type": "concat",
+          "params": {
+            "to": "B 128 T (128+64)",
+            "sizes": [
+              "128",
+              "64"
+            ]
+          },
+          "graph": null
+        },
+        {
+          "id": "attn",
+          "type": "sdpa",
+          "params": {
+            "heads": "128",
+            "kv_heads": "128",
+            "head_dim": "128+64",
+            "v_head_dim": "128",
+            "causal": true,
+            "cache": false
+          },
+          "graph": null
+        },
+        {
+          "id": "o_merge",
+          "type": "rearrange",
+          "params": {
+            "from": "B 128 T (128)",
+            "to": "B T (128 (128))"
+          },
+          "graph": null
+        },
+        {
+          "id": "o_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "128*(128)",
+            "out_features": "7168",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... 7168"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "q_down:x"
+        ],
+        [
+          "q_down:y",
+          "q_norm:x"
+        ],
+        [
+          "q_norm:y",
+          "q_up:x"
+        ],
+        [
+          "q_up:y",
+          "q_heads:x"
+        ],
+        [
+          "_in:x",
+          "kv_down:x"
+        ],
+        [
+          "kv_down:y",
+          "latent:x"
+        ],
+        [
+          "latent:y",
+          "kv_split:x"
+        ],
+        [
+          "kv_split:y0",
+          "kv_norm:x"
+        ],
+        [
+          "kv_norm:y",
+          "k_up:x"
+        ],
+        [
+          "k_up:y",
+          "k_nope_heads:x"
+        ],
+        [
+          "kv_norm:y",
+          "v_up:x"
+        ],
+        [
+          "v_up:y",
+          "v_heads:x"
+        ],
+        [
+          "kv_split:y1",
+          "k_rope_shared:x"
+        ],
+        [
+          "k_rope_shared:y",
+          "k_rope:x"
+        ],
+        [
+          "k_nope_heads:y",
+          "k_cat:y0"
+        ],
+        [
+          "k_rope:y",
+          "k_cat:y1"
+        ],
+        [
+          "q_heads:y",
+          "attn:q"
+        ],
+        [
+          "k_cat:y",
+          "attn:k"
+        ],
+        [
+          "v_heads:y",
+          "attn:v"
+        ],
+        [
+          "attn:y",
+          "o_merge:x"
+        ],
+        [
+          "o_merge:y",
+          "o_proj:x"
+        ],
+        [
+          "o_proj:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "moe_layer",
+      "params": {
+        "d_model": "D",
+        "experts": 8,
+        "top_k": 2,
+        "expert_hidden": "F"
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "router",
+          "type": "topk_router",
+          "params": {
+            "d_model": "D",
+            "experts": "8",
+            "top_k": "2",
+            "bias": false,
+            "normalize": true
+          },
+          "graph": null
+        },
+        {
+          "id": "experts",
+          "type": "moe_experts",
+          "params": {
+            "experts": "8",
+            "top_k": "2"
+          },
+          "graph": {
+            "nodes": [
+              {
+                "id": "_in",
+                "type": "boundary_in",
+                "params": {
+                  "ports": {
+                    "x": "... D"
+                  }
+                },
+                "graph": null
+              },
+              {
+                "id": "expert",
+                "type": "gated_mlp",
+                "params": {
+                  "d_model": "D",
+                  "hidden": "F",
+                  "act": "silu",
+                  "bias": false
+                },
+                "graph": null
+              },
+              {
+                "id": "_out",
+                "type": "boundary_out",
+                "params": {
+                  "ports": {
+                    "y": "... D"
+                  }
+                },
+                "graph": null
+              }
+            ],
+            "edges": [
+              [
+                "_in:x",
+                "expert:x"
+              ],
+              [
+                "expert:y",
+                "_out:y"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "combine",
+          "type": "weighted_sum",
+          "params": {
+            "dim": "D",
+            "n": "2"
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "router:x"
+        ],
+        [
+          "_in:x",
+          "experts:x"
+        ],
+        [
+          "experts:y",
+          "combine:x"
+        ],
+        [
+          "router:weights",
+          "combine:weights"
+        ],
+        [
+          "combine:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "moe_layer",
+      "params": {
+        "d_model": "D",
+        "experts": 256,
+        "top_k": 8,
+        "expert_hidden": 2048,
+        "shared_experts": 1,
+        "router_bias": true
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "router",
+          "type": "topk_router",
+          "params": {
+            "d_model": "D",
+            "experts": "256",
+            "top_k": "8",
+            "bias": true,
+            "normalize": true
+          },
+          "graph": null
+        },
+        {
+          "id": "experts",
+          "type": "moe_experts",
+          "params": {
+            "experts": "256",
+            "top_k": "8"
+          },
+          "graph": {
+            "nodes": [
+              {
+                "id": "_in",
+                "type": "boundary_in",
+                "params": {
+                  "ports": {
+                    "x": "... D"
+                  }
+                },
+                "graph": null
+              },
+              {
+                "id": "expert",
+                "type": "gated_mlp",
+                "params": {
+                  "d_model": "D",
+                  "hidden": "2048",
+                  "act": "silu",
+                  "bias": false
+                },
+                "graph": null
+              },
+              {
+                "id": "_out",
+                "type": "boundary_out",
+                "params": {
+                  "ports": {
+                    "y": "... D"
+                  }
+                },
+                "graph": null
+              }
+            ],
+            "edges": [
+              [
+                "_in:x",
+                "expert:x"
+              ],
+              [
+                "expert:y",
+                "_out:y"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "combine",
+          "type": "weighted_sum",
+          "params": {
+            "dim": "D",
+            "n": "8"
+          },
+          "graph": null
+        },
+        {
+          "id": "shared",
+          "type": "gated_mlp",
+          "params": {
+            "d_model": "D",
+            "hidden": "1*2048",
+            "act": "silu",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "merge",
+          "type": "add",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "router:x"
+        ],
+        [
+          "_in:x",
+          "experts:x"
+        ],
+        [
+          "experts:y",
+          "combine:x"
+        ],
+        [
+          "router:weights",
+          "combine:weights"
+        ],
+        [
+          "_in:x",
+          "shared:x"
+        ],
+        [
+          "combine:y",
+          "merge:a"
+        ],
+        [
+          "shared:y",
+          "merge:b"
+        ],
+        [
+          "merge:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "mamba2_block",
+      "params": {
+        "d_model": "D",
+        "expand": 2,
+        "head_dim": 64,
+        "state": 128,
+        "groups": 8,
+        "conv_kernel": 4
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "in_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "D",
+            "out_features": "2*(2*D)+(2*(8)*(128))+((2*D)/(64))",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "split",
+          "type": "split",
+          "params": {
+            "from": "B T (2*(2*D)+(2*(8)*(128))+((2*D)/(64)))",
+            "sizes": [
+              "2*D",
+              "(2*D)+(2*(8)*(128))",
+              "(2*D)/(64)"
+            ]
+          },
+          "graph": null
+        },
+        {
+          "id": "gate_act",
+          "type": "activation",
+          "params": {
+            "kind": "silu",
+            "dim": "2*D"
+          },
+          "graph": null
+        },
+        {
+          "id": "conv",
+          "type": "conv1d",
+          "params": {
+            "channels": "(2*D)+(2*(8)*(128))",
+            "kernel": "4",
+            "bias": true
+          },
+          "graph": null
+        },
+        {
+          "id": "conv_act",
+          "type": "activation",
+          "params": {
+            "kind": "silu",
+            "dim": "(2*D)+(2*(8)*(128))"
+          },
+          "graph": null
+        },
+        {
+          "id": "scan",
+          "type": "ssd_scan",
+          "params": {
+            "d_inner": "2*D",
+            "heads": "(2*D)/(64)",
+            "head_dim": "64",
+            "state": "128",
+            "groups": "8",
+            "xbc_width": "(2*D)+(2*(8)*(128))"
+          },
+          "graph": null
+        },
+        {
+          "id": "norm",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "2*D"
+          },
+          "graph": null
+        },
+        {
+          "id": "gate",
+          "type": "mul",
+          "params": {
+            "dim": "2*D"
+          },
+          "graph": null
+        },
+        {
+          "id": "out_proj",
+          "type": "linear",
+          "params": {
+            "in_features": "2*D",
+            "out_features": "D",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "in_proj:x"
+        ],
+        [
+          "in_proj:y",
+          "split:x"
+        ],
+        [
+          "split:y0",
+          "gate_act:x"
+        ],
+        [
+          "split:y1",
+          "conv:x"
+        ],
+        [
+          "conv:y",
+          "conv_act:x"
+        ],
+        [
+          "conv_act:y",
+          "scan:xbc"
+        ],
+        [
+          "split:y2",
+          "scan:dt"
+        ],
+        [
+          "scan:y",
+          "norm:x"
+        ],
+        [
+          "norm:y",
+          "gate:a"
+        ],
+        [
+          "gate_act:y",
+          "gate:b"
+        ],
+        [
+          "gate:y",
+          "out_proj:x"
+        ],
+        [
+          "out_proj:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "transformer_block",
+      "params": {
+        "d_model": "D",
+        "heads": "H",
+        "kv_heads": "Hkv",
+        "head_dim": "dh",
+        "ffn_hidden": "F"
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "norm1",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "attn",
+          "type": "gqa_attention",
+          "params": {
+            "d_model": "D",
+            "heads": "H",
+            "kv_heads": "Hkv",
+            "head_dim": "dh",
+            "bias": false,
+            "o_bias": null,
+            "causal": true,
+            "window": "0",
+            "qk_norm": false,
+            "rope": null
+          },
+          "graph": null
+        },
+        {
+          "id": "resid1",
+          "type": "add",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "norm2",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "mlp",
+          "type": "gated_mlp",
+          "params": {
+            "d_model": "D",
+            "hidden": "F",
+            "act": "silu",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "resid2",
+          "type": "add",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "norm1:x"
+        ],
+        [
+          "norm1:y",
+          "attn:x"
+        ],
+        [
+          "_in:x",
+          "resid1:b"
+        ],
+        [
+          "resid1:y",
+          "norm2:x"
+        ],
+        [
+          "norm2:y",
+          "mlp:x"
+        ],
+        [
+          "resid1:y",
+          "resid2:b"
+        ],
+        [
+          "resid2:y",
+          "_out:y"
+        ],
+        [
+          "attn:y",
+          "resid1:a"
+        ],
+        [
+          "mlp:y",
+          "resid2:a"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "transformer_block",
+      "params": {
+        "d_model": "D",
+        "heads": "H",
+        "kv_heads": "Hkv",
+        "head_dim": "dh",
+        "ffn_hidden": "F",
+        "norm": "layernorm",
+        "norm_bias": true,
+        "mlp": "dense",
+        "act": "gelu",
+        "attn_bias": true,
+        "mlp_bias": true,
+        "rope": null
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "norm1",
+          "type": "layernorm",
+          "params": {
+            "dim": "D",
+            "bias": true
+          },
+          "graph": null
+        },
+        {
+          "id": "attn",
+          "type": "gqa_attention",
+          "params": {
+            "d_model": "D",
+            "heads": "H",
+            "kv_heads": "Hkv",
+            "head_dim": "dh",
+            "bias": true,
+            "o_bias": null,
+            "causal": true,
+            "window": "0",
+            "qk_norm": false,
+            "rope": null
+          },
+          "graph": null
+        },
+        {
+          "id": "resid1",
+          "type": "add",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "norm2",
+          "type": "layernorm",
+          "params": {
+            "dim": "D",
+            "bias": true
+          },
+          "graph": null
+        },
+        {
+          "id": "mlp",
+          "type": "dense_mlp",
+          "params": {
+            "d_model": "D",
+            "hidden": "F",
+            "act": "gelu",
+            "bias": true
+          },
+          "graph": null
+        },
+        {
+          "id": "resid2",
+          "type": "add",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "norm1:x"
+        ],
+        [
+          "norm1:y",
+          "attn:x"
+        ],
+        [
+          "_in:x",
+          "resid1:b"
+        ],
+        [
+          "resid1:y",
+          "norm2:x"
+        ],
+        [
+          "norm2:y",
+          "mlp:x"
+        ],
+        [
+          "resid1:y",
+          "resid2:b"
+        ],
+        [
+          "resid2:y",
+          "_out:y"
+        ],
+        [
+          "attn:y",
+          "resid1:a"
+        ],
+        [
+          "mlp:y",
+          "resid2:a"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "transformer_block",
+      "params": {
+        "d_model": "D",
+        "heads": "H",
+        "kv_heads": "Hkv",
+        "head_dim": "dh",
+        "ffn_hidden": "F",
+        "post_norm": true
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "norm1",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "attn",
+          "type": "gqa_attention",
+          "params": {
+            "d_model": "D",
+            "heads": "H",
+            "kv_heads": "Hkv",
+            "head_dim": "dh",
+            "bias": false,
+            "o_bias": null,
+            "causal": true,
+            "window": "0",
+            "qk_norm": false,
+            "rope": null
+          },
+          "graph": null
+        },
+        {
+          "id": "resid1",
+          "type": "add",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "norm2",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "mlp",
+          "type": "gated_mlp",
+          "params": {
+            "d_model": "D",
+            "hidden": "F",
+            "act": "silu",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "resid2",
+          "type": "add",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "post_attn_norm",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "post_mlp_norm",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "norm1:x"
+        ],
+        [
+          "norm1:y",
+          "attn:x"
+        ],
+        [
+          "_in:x",
+          "resid1:b"
+        ],
+        [
+          "resid1:y",
+          "norm2:x"
+        ],
+        [
+          "norm2:y",
+          "mlp:x"
+        ],
+        [
+          "resid1:y",
+          "resid2:b"
+        ],
+        [
+          "resid2:y",
+          "_out:y"
+        ],
+        [
+          "attn:y",
+          "post_attn_norm:x"
+        ],
+        [
+          "post_attn_norm:y",
+          "resid1:a"
+        ],
+        [
+          "mlp:y",
+          "post_mlp_norm:x"
+        ],
+        [
+          "post_mlp_norm:y",
+          "resid2:a"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "transformer_block",
+      "params": {
+        "d_model": "D",
+        "heads": "H",
+        "kv_heads": "Hkv",
+        "head_dim": "dh",
+        "ffn_hidden": "F",
+        "mlp": "moe",
+        "experts": 8,
+        "top_k": 2,
+        "expert_hidden": 2048
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "norm1",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "attn",
+          "type": "gqa_attention",
+          "params": {
+            "d_model": "D",
+            "heads": "H",
+            "kv_heads": "Hkv",
+            "head_dim": "dh",
+            "bias": false,
+            "o_bias": null,
+            "causal": true,
+            "window": "0",
+            "qk_norm": false,
+            "rope": null
+          },
+          "graph": null
+        },
+        {
+          "id": "resid1",
+          "type": "add",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "norm2",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "mlp",
+          "type": "moe_layer",
+          "params": {
+            "d_model": "D",
+            "experts": "8",
+            "top_k": "2",
+            "expert_hidden": "2048",
+            "shared_experts": "0",
+            "act": "silu",
+            "bias": false,
+            "router_bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "resid2",
+          "type": "add",
+          "params": {
+            "dim": "D"
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "norm1:x"
+        ],
+        [
+          "norm1:y",
+          "attn:x"
+        ],
+        [
+          "_in:x",
+          "resid1:b"
+        ],
+        [
+          "resid1:y",
+          "norm2:x"
+        ],
+        [
+          "norm2:y",
+          "mlp:x"
+        ],
+        [
+          "resid1:y",
+          "resid2:b"
+        ],
+        [
+          "resid2:y",
+          "_out:y"
+        ],
+        [
+          "attn:y",
+          "resid1:a"
+        ],
+        [
+          "mlp:y",
+          "resid2:a"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "transformer_block",
+      "params": {
+        "d_model": 7168,
+        "heads": 128,
+        "kv_heads": 128,
+        "head_dim": 128,
+        "ffn_hidden": 18432,
+        "attention": "mla",
+        "q_lora": 1536,
+        "kv_lora": 512,
+        "nope_dim": 128,
+        "rope_dim": 64,
+        "v_dim": 128
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... 7168"
+            }
+          },
+          "graph": null
+        },
+        {
+          "id": "norm1",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "7168"
+          },
+          "graph": null
+        },
+        {
+          "id": "attn",
+          "type": "mla_attention",
+          "params": {
+            "d_model": "7168",
+            "heads": "128",
+            "q_lora": "1536",
+            "kv_lora": "512",
+            "nope_dim": "128",
+            "rope_dim": "64",
+            "v_dim": "128",
+            "causal": true,
+            "rope": null,
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "resid1",
+          "type": "add",
+          "params": {
+            "dim": "7168"
+          },
+          "graph": null
+        },
+        {
+          "id": "norm2",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "7168"
+          },
+          "graph": null
+        },
+        {
+          "id": "mlp",
+          "type": "gated_mlp",
+          "params": {
+            "d_model": "7168",
+            "hidden": "18432",
+            "act": "silu",
+            "bias": false
+          },
+          "graph": null
+        },
+        {
+          "id": "resid2",
+          "type": "add",
+          "params": {
+            "dim": "7168"
+          },
+          "graph": null
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... 7168"
+            }
+          },
+          "graph": null
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "norm1:x"
+        ],
+        [
+          "norm1:y",
+          "attn:x"
+        ],
+        [
+          "_in:x",
+          "resid1:b"
+        ],
+        [
+          "resid1:y",
+          "norm2:x"
+        ],
+        [
+          "norm2:y",
+          "mlp:x"
+        ],
+        [
+          "resid1:y",
+          "resid2:b"
+        ],
+        [
+          "resid2:y",
+          "_out:y"
+        ],
+        [
+          "attn:y",
+          "resid1:a"
+        ],
+        [
+          "mlp:y",
+          "resid2:a"
+        ]
+      ],
+      "constraints": []
+    }
+  ]
+}

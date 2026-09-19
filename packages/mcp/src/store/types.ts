@@ -10,8 +10,8 @@
  * not implemented yet; see the TODO in `file-store.ts`.
  */
 
-import type { Doc } from "@tensorcad/core";
 import type { Op } from "../ops.js";
+import type { Doc } from "@tensorcad/engine";
 
 export type DesignSource = "preset" | "file" | "empty";
 

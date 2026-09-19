@@ -7,12 +7,15 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import { countParams, getPreset, resolveSymbols, type Doc } from "@tensorcad/core";
+import type { Doc } from "@tensorcad/engine";
+import { countParams, getPreset, loadEngine } from "@tensorcad/engine/node";
 import { applyOps, OpError, type Op } from "../src/ops.js";
 import { FileStore } from "../src/store/file-store.js";
 import { outlineOf } from "../src/summarize.js";
 
-const params = (doc: Doc) => countParams(doc, resolveSymbols(doc)).total;
+await loadEngine();
+
+const params = (doc: Doc) => countParams(doc).total;
 
 describe("applyOps", () => {
   test("leaves the input document untouched", () => {

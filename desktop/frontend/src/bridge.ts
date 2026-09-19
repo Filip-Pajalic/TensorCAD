@@ -20,7 +20,7 @@ import {
   serializeDoc,
   type ResolvedTheme,
 } from "@tensorcad/ui";
-import { generateTorch } from "@tensorcad/core";
+import { generateTorch } from "@tensorcad/ui/engine";
 import {
   DesignService,
   RuntimeService,

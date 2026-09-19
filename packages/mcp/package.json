@@ -23,7 +23,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tensorcad/core": "workspace:*",
+    "@tensorcad/engine": "workspace:*",
     "@modelcontextprotocol/server": "^2.0.0",
     "zod": "^4.2.0"
   },

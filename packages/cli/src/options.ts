@@ -4,8 +4,9 @@
  * Shared by `validate` and `analyze` so both commands take the same knobs.
  */
 
-import { HARDWARE, type AnalysisOptions } from "@tensorcad/core";
 import { num, str, UsageError, type Args } from "./args.js";
+import type { AnalysisOptions } from "@tensorcad/engine";
+import { HARDWARE } from "@tensorcad/engine/node";
 
 const DTYPES = ["fp32", "bf16", "fp16", "fp8"] as const;
 const OPTIMIZERS = ["adamw", "adamw8bit", "muon", "sgd_momentum", "sgd", "bf16_adam"] as const;

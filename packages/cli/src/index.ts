@@ -1,12 +1,11 @@
 #!/usr/bin/env bun
 /**
- * `tensorcad` — a thin command line over `@tensorcad/core`.
+ * `tensorcad` — a thin command line over the analysis engine.
  *
  * Every command takes a `<file|preset>`: a preset name if it matches one, a
  * path to a `.tensorcad.json` document otherwise.
  */
 
-import { PRESET_NAMES } from "@tensorcad/core";
 import { parseArgs, UsageError, type Args } from "./args.js";
 import { bold, dim, red, writeErr, writeOut } from "./format.js";
 import { cmdList } from "./commands/list.js";
@@ -15,6 +14,7 @@ import { cmdAnalyze } from "./commands/analyze.js";
 import { cmdCodegen } from "./commands/codegen.js";
 import { cmdDiff } from "./commands/diff.js";
 import { cmdShow } from "./commands/show.js";
+import { PRESET_NAMES, loadEngine } from "@tensorcad/engine/node";
 
 const COMMANDS: Record<string, { run: (args: Args) => number; usage: string; blurb: string }> = {
   list: { run: cmdList, usage: "list [--json]", blurb: "presets and hardware profiles" },
@@ -94,5 +94,14 @@ export function run(argv: string[]): number {
 
 // `import.meta.main` is true under bun when this file is the entry point.
 if (import.meta.main) {
-  process.exitCode = run(process.argv.slice(2));
+  // The engine is WebAssembly and loading it is the one asynchronous thing in
+  // the whole command line. Everything past here is a function of a document.
+  try {
+    await loadEngine();
+    process.exitCode = run(process.argv.slice(2));
+  } catch (e) {
+    process.stderr.write(`${(e as Error).message}
+`);
+    process.exitCode = 2;
+  }
 }

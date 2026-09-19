@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tensorcad/core": "workspace:*",
+    "@tensorcad/engine": "workspace:*",
     "@tensorcad/ui": "workspace:*",
     "@wailsio/runtime": "latest",
     "react": "^19.0.0",

@@ -2,22 +2,12 @@
  * `tensorcad show <file|preset>` — the block tree with the shape on every edge.
  */
 
-import {
-  countParams,
-  formatCount,
-  getBlock,
-  inferShapes,
-  joinPath,
-  resolveSymbols,
-  shapeToString,
-  splitEndpoint,
-  type Doc,
-  type Graph,
-  type NodeDef,
-} from "@tensorcad/core";
 import { bool, type Args } from "../args.js";
 import { loadDesign } from "../load.js";
 import { bold, cyan, dim, magenta, pad, writeOut, yellow } from "../format.js";
+import type { Doc, Graph, NodeDef } from "@tensorcad/engine";
+import { formatCount, joinPath, splitEndpoint } from "@tensorcad/engine";
+import { countParams, getBlock, inferShapes, resolveSymbols } from "@tensorcad/engine/node";
 
 interface TreeNode {
   path: string;
@@ -43,12 +33,13 @@ export function cmdShow(args: Args): number {
   }
 
   const symbols = resolveSymbols(doc);
-  const params = countParams(doc, symbols);
+  const params = countParams(doc);
   const lines: string[] = [
     `${bold(doc.meta.name)}  ${dim(`${formatCount(params.total)} parameters`)}`,
   ];
-  const symbolLine = Object.entries(symbols.values)
-    .filter(([k]) => !symbols.runtime.has(k))
+  // The design symbols only: B and T stay indeterminate until a run, so
+  // printing them beside D and L would read as though they were settings.
+  const symbolLine = Object.entries(symbols.designValues)
     .map(([k, v]) => `${k}=${v}`)
     .join("  ");
   if (symbolLine) lines.push(dim(`  ${symbolLine}`));
@@ -60,13 +51,12 @@ export function cmdShow(args: Args): number {
 }
 
 function buildTree(doc: Doc): TreeNode[] {
-  const symbols = resolveSymbols(doc);
-  const infer = inferShapes(doc, symbols);
-  const params = countParams(doc, symbols);
+  const infer = inferShapes(doc);
+  const params = countParams(doc);
 
   // Invert `consumer -> producer` so a producer port can list its consumers.
   const consumers = new Map<string, string[]>();
-  for (const [consumer, producer] of infer.producerOf) {
+  for (const [consumer, producer] of Object.entries(infer.producerOf)) {
     const list = consumers.get(producer);
     if (list) list.push(consumer);
     else consumers.set(producer, [consumer]);
@@ -84,13 +74,13 @@ function buildTree(doc: Doc): TreeNode[] {
     graph.nodes.map((node: NodeDef) => {
       const path = joinPath(prefix, node.id);
       const def = getBlock(node.type);
-      const ports = infer.ports.get(path);
+      const ports = infer.ports[path];
       const outputs = Object.keys(ports?.out ?? {}).map((port) => {
         const key = `${path}:${port}`;
-        const shape = infer.outputs.get(key);
+        const shape = infer.outputs[key];
         return {
           port,
-          shape: shape ? shapeToString(shape) : "?",
+          shape: shape ? shape.symbolic : "?",
           to: (consumers.get(key) ?? []).map((c) => {
             const { node: n, port: p } = splitEndpoint(c);
             return `${n.slice(prefix ? prefix.length + 1 : 0)}:${p}`;
@@ -109,7 +99,7 @@ function buildTree(doc: Doc): TreeNode[] {
       };
       if (node.label) child.label = node.label;
       if (node.graph) {
-        const resolved = infer.resolved.get(path);
+        const resolved = infer.resolved[path];
         const count = resolved?.p?.count;
         if (typeof count === "number") child.repeat = `x${count}`;
       }

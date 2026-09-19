@@ -1,7 +1,7 @@
 /**
  * JSON Schema for the design document, served as `tensorcad://schema/design`.
  *
- * Hand-written rather than derived, because `@tensorcad/core` describes the
+ * Hand-written rather than derived, because the engine describes the
  * document with TypeScript types and a per-block parameter catalog rather than
  * one monolithic runtime schema. Block parameters are therefore `object` here;
  * `tensorcad_search_catalog` is where the per-type parameter schemas live.

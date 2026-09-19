@@ -11,8 +11,9 @@
 
 import { readdir, readFile, stat, writeFile, mkdir } from "node:fs/promises";
 import { dirname, extname, isAbsolute, join, resolve } from "node:path";
-import { getPreset, PRESET_NAMES, type Doc } from "@tensorcad/core";
 import { applyOps, type Op } from "../ops.js";
+import type { Doc } from "@tensorcad/engine";
+import { PRESET_NAMES, getPreset } from "@tensorcad/engine/node";
 import {
   RevisionConflictError,
   UnknownDesignError,

@@ -11,6 +11,7 @@
  * clever in it — no object graph to keep in step, no handles to leak.
  */
 
+import { Catalog } from "./catalog.js";
 import type {
   AnalysisOptions,
   AnalysisResult,
@@ -32,6 +33,7 @@ import type {
 export * from "./types.js";
 export * from "./format.js";
 export * from "./ir.js";
+export * from "./catalog.js";
 
 /** What the engine says about itself. */
 export interface EngineVersion {
@@ -75,6 +77,11 @@ export interface Engine {
   importHuggingFace(configText: string, name?: string): ImportResult;
   /** Every block the engine knows, for the palette. */
   catalog(): CatalogEntry[];
+  /**
+   * The same blocks, ready to be asked about one at a time and to have a
+   * design's own definitions folded in. Fetched once when the engine loads.
+   */
+  readonly blocks: Catalog;
   /** The design rules, for the panel that lists what is being checked. */
   rules(): RuleInfo[];
   /**
@@ -210,7 +217,9 @@ export async function createEngine(options: LoadOptions = {}): Promise<Engine> {
 }
 
 function wrap(api: Exports): Engine {
+  const entries = JSON.parse(api.catalog()) as CatalogEntry[];
   return {
+    blocks: new Catalog(entries),
     version: () => unwrap(api.version()) as EngineVersion,
     analyze: (doc, options) => unwrap(api.analyze(JSON.stringify(doc), point(options))) as AnalysisResult,
     validate: (doc, options) => unwrap(api.validate(JSON.stringify(doc), point(options))) as ValidationReport,

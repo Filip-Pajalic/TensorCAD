@@ -12,7 +12,7 @@
       "name": "@tensorcad/desktop-frontend",
       "version": "0.0.1",
       "dependencies": {
-        "@tensorcad/core": "workspace:*",
+        "@tensorcad/engine": "workspace:*",
         "@tensorcad/ui": "workspace:*",
         "@wailsio/runtime": "latest",
         "react": "^19.0.0",
@@ -33,7 +33,7 @@
         "tensorcad": "./src/index.ts",
       },
       "dependencies": {
-        "@tensorcad/core": "workspace:*",
+        "@tensorcad/engine": "workspace:*",
       },
     },
     "packages/core": {
@@ -43,6 +43,9 @@
     "packages/engine": {
       "name": "@tensorcad/engine",
       "version": "0.0.1",
+      "devDependencies": {
+        "@tensorcad/core": "workspace:*",
+      },
     },
     "packages/mcp": {
       "name": "@tensorcad/mcp",
@@ -52,7 +55,7 @@
       },
       "dependencies": {
         "@modelcontextprotocol/server": "^2.0.0",
-        "@tensorcad/core": "workspace:*",
+        "@tensorcad/engine": "workspace:*",
         "zod": "^4.2.0",
       },
       "devDependencies": {

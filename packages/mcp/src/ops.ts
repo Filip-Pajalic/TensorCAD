@@ -1,3 +1,6 @@
+import type { Doc, Graph, NodeDef, ParamValue, SymbolDef } from "@tensorcad/engine";
+import { joinPath, splitEndpoint } from "@tensorcad/engine";
+import { getBlock } from "@tensorcad/engine/node";
 /**
  * The edit operations an agent can apply to a design.
  *
@@ -6,16 +9,6 @@
  * half-applied edit can never be observed.
  */
 
-import {
-  getBlock,
-  joinPath,
-  splitEndpoint,
-  type Doc,
-  type Graph,
-  type NodeDef,
-  type ParamValue,
-  type SymbolDef,
-} from "@tensorcad/core";
 
 export type Op =
   | {

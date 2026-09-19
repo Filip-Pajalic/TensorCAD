@@ -6,15 +6,9 @@
  * what a person reads.
  */
 
-import {
-  formatBytes,
-  formatCount,
-  formatDollars,
-  formatFlops,
-  formatHours,
-  type AnalysisResult,
-} from "@tensorcad/core";
 import { bold, dim, finite, heading, percent, rows } from "./format.js";
+import type { AnalysisResult } from "@tensorcad/engine";
+import { formatBytes, formatCount, formatDollars, formatFlops, formatHours } from "@tensorcad/engine";
 
 // ---------------------------------------------------------------------------
 // JSON

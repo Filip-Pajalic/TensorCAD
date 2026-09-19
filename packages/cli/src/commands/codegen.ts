@@ -4,10 +4,10 @@
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { generateTorch } from "@tensorcad/core";
 import { bool, str, type Args } from "../args.js";
 import { loadDesign } from "../load.js";
 import { bold, dim, green, writeOut, yellow } from "../format.js";
+import { generateTorch } from "@tensorcad/engine/node";
 
 export function cmdCodegen(args: Args): number {
   const { doc } = loadDesign(args._[0]);

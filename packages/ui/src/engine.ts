@@ -14,14 +14,16 @@
 
 import {
   createEngine,
+  isComposite,
+  isContainer,
+  isPrimitive,
   type CatalogEntry,
   type Doc,
   type Engine,
   type HardwareProfile,
-  type ParamSpec,
-  type PortSpec,
   type GeneratedCode,
   type Inference,
+  type ParamSpec,
   type RuleInfo,
   type SymbolTable,
   type TorchOptions,
@@ -29,8 +31,11 @@ import {
 } from "@tensorcad/engine";
 import "@tensorcad/engine/wasm_exec";
 
+// Re-exported so a panel asking what kind of block it has does not have to
+// reach past this module for it.
+export { isComposite, isContainer, isPrimitive };
+
 let loaded: Engine | null = null;
-let builtIn = new Map<string, CatalogEntry>();
 
 /**
  * The built-in catalog, by type.
@@ -56,8 +61,7 @@ export const RULES: RuleInfo[] = [];
 export async function loadEngine(): Promise<void> {
   if (loaded) return;
   const engine = await createEngine();
-  builtIn = new Map(engine.catalog().map((entry) => [entry.type, entry]));
-  for (const [type, entry] of builtIn) CATALOG[type] = entry;
+  for (const entry of engine.blocks.builtInEntries) CATALOG[entry.type] = entry;
   PRESET_NAMES.push(...engine.presets());
   HARDWARE.push(...engine.hardware());
   for (const profile of HARDWARE) HARDWARE_BY_ID[profile.id] = profile;
@@ -116,85 +120,10 @@ export function validateUserBlock(def: UserBlockDef, name: string): string[] {
 // ---------------------------------------------------------------------------
 // The catalog
 // ---------------------------------------------------------------------------
-
-/**
- * A block a design defined for itself, described the way a built-in is.
- *
- * The engine only ships the built-in catalog, because a user block lives in the
- * document. Rendering one needs the same fields, so this fills them in from the
- * definition rather than teaching every panel about a second kind of block.
- */
-function fromUserBlock(type: string, def: UserBlockDef): CatalogEntry {
-  const params = { ...(def.params ?? {}) };
-  const shapes = (side: Record<string, string | PortSpec>): Record<string, string> => {
-    const out: Record<string, string> = {};
-    for (const [name, port] of Object.entries(side ?? {})) {
-      out[name] = typeof port === "string" ? port : port.shape;
-    }
-    return out;
-  };
-  return {
-    type,
-    kind: "composite",
-    category: def.category ?? "custom",
-    docs: {
-      summary: def.docs?.summary ?? "A block this design defines for itself.",
-      formula: def.docs?.formula,
-      refs: def.docs?.refs,
-    },
-    params,
-    paramOrder: Object.keys(params),
-    ports: { in: shapes(def.ports?.in ?? {}), out: shapes(def.ports?.out ?? {}) },
-  };
-}
-
-/** One block's definition, built-in or the design's own. */
-export function blockDef(type: string, doc?: Doc): CatalogEntry | undefined {
-  const own = doc?.defs?.[type];
-  // A design never shadows a built-in, which is what the engine's own resolver
-  // does; agreeing here keeps the palette showing what the analysis counted.
-  if (builtIn.has(type)) return builtIn.get(type);
-  if (own) return fromUserBlock(type, own);
-  return undefined;
-}
-
-/** Every block a document can use, built-ins first. */
-export function catalogEntries(doc?: Doc): CatalogEntry[] {
-  const out = [...builtIn.values()];
-  for (const [type, def] of Object.entries(doc?.defs ?? {})) {
-    if (!builtIn.has(type)) out.push(fromUserBlock(type, def));
-  }
-  return out;
-}
-
-export function catalogByCategory(doc?: Doc): Record<string, CatalogEntry[]> {
-  const out: Record<string, CatalogEntry[]> = {};
-  for (const entry of catalogEntries(doc)) {
-    (out[entry.category] ??= []).push(entry);
-  }
-  return out;
-}
-
-/** True when this type came from the design rather than from the engine. */
-export function isUserBlock(doc: Doc | undefined, type: string): boolean {
-  return Boolean(doc?.defs && type in doc.defs && !builtIn.has(type));
-}
-
-export function isPrimitive(def: CatalogEntry | undefined): boolean {
-  return def?.kind === "primitive";
-}
-export function isComposite(def: CatalogEntry | undefined): boolean {
-  return def?.kind === "composite";
-}
-export function isContainer(def: CatalogEntry | undefined): boolean {
-  return def?.kind === "container";
-}
-
-/** A block's parameter spec, by name, in declaration order. */
-export function paramSpec(def: CatalogEntry | undefined, name: string): ParamSpec | undefined {
-  return def?.params[name];
-}
-
+//
+// The folding of a design's own blocks into the engine's lives in the engine
+// package, because the command line and the MCP server need exactly the same
+// answers. What is here is the editor's names for it.
 
 /**
  * A block's definition, as the editor's own name for it.
@@ -204,16 +133,38 @@ export function paramSpec(def: CatalogEntry | undefined, name: string): ParamSpe
  */
 export type BlockDef = CatalogEntry;
 
+/** One block's definition, built-in or the design's own. */
+export function blockDef(type: string, doc?: Doc): BlockDef | undefined {
+  return engine().blocks.get(type, doc);
+}
+
 /** One block's definition, built-in only. */
 export function getBlock(type: string): BlockDef | undefined {
-  return builtIn.get(type);
+  return engine().blocks.isBuiltIn(type) ? engine().blocks.get(type) : undefined;
 }
 
 /** Every block a document can use, built-ins first. */
+export function catalogEntries(doc?: Doc): BlockDef[] {
+  return engine().blocks.entries(doc);
+}
+
+export function catalogByCategory(doc?: Doc): Record<string, BlockDef[]> {
+  return engine().blocks.byCategory(doc);
+}
+
+/** Every block a document can use, by type. */
 export function catalogOf(doc?: Doc): Record<string, BlockDef> {
-  const out: Record<string, BlockDef> = { ...CATALOG };
-  for (const [type, def] of Object.entries(doc?.defs ?? {})) {
-    if (!builtIn.has(type)) out[type] = fromUserBlock(type, def);
-  }
+  const out: Record<string, BlockDef> = {};
+  for (const entry of catalogEntries(doc)) out[entry.type] = entry;
   return out;
+}
+
+/** True when this type came from the design rather than from the engine. */
+export function isUserBlock(doc: Doc | undefined, type: string): boolean {
+  return engine().blocks.isUserBlock(doc, type);
+}
+
+/** A block's parameter spec, by name. */
+export function paramSpec(def: BlockDef | undefined, name: string): ParamSpec | undefined {
+  return def?.params[name];
 }

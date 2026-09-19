@@ -7,8 +7,9 @@
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { getPreset, PRESET_NAMES, type Doc } from "@tensorcad/core";
 import { UsageError } from "./args.js";
+import type { Doc } from "@tensorcad/engine";
+import { PRESET_NAMES, getPreset } from "@tensorcad/engine/node";
 
 export interface LoadedDoc {
   doc: Doc;

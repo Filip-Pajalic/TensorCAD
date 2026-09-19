@@ -4,11 +4,13 @@
  * Exits 1 when anything is an error, which makes it usable in CI.
  */
 
-import { formatCount, validate, type Finding, type Severity } from "@tensorcad/core";
 import { bool, type Args } from "../args.js";
 import { loadDesign } from "../load.js";
 import { analysisOptions, impliedGpus } from "../options.js";
 import { bold, dim, green, heading, red, writeOut, yellow, blue } from "../format.js";
+import type { Finding, Severity } from "@tensorcad/engine";
+import { formatCount } from "@tensorcad/engine";
+import { validate } from "@tensorcad/engine/node";
 
 const ORDER: Severity[] = ["error", "warning", "info"];
 

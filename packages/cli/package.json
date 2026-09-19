@@ -19,7 +19,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tensorcad/core": "workspace:*"
+    "@tensorcad/engine": "workspace:*"
   },
   "license": "MIT"
 }

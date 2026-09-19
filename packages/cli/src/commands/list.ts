@@ -2,9 +2,10 @@
  * `tensorcad list` — what you can pass to the other commands.
  */
 
-import { getPreset, HARDWARE, PRESET_NAMES, formatBytes, formatCount, formatFlops, peakFlops } from "@tensorcad/core";
 import { bold, dim, heading, pad, writeOut } from "../format.js";
 import { bool, type Args } from "../args.js";
+import { formatBytes, formatCount, formatFlops } from "@tensorcad/engine";
+import { HARDWARE, PRESET_NAMES, getPreset, peakFlops } from "@tensorcad/engine/node";
 
 export function cmdList(args: Args): number {
   if (bool(args, "json")) {

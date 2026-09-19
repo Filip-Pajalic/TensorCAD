@@ -1,3 +1,7 @@
+import type { CatalogEntry as EngineCatalogEntry } from "@tensorcad/engine";
+import type { AnalysisResult, Doc, Graph, ParamSpec, SymbolTable, ValidationReport } from "@tensorcad/engine";
+import { formatBytes, formatCount, formatFlops, isComposite, isContainer, isPrimitive, joinPath, splitEndpoint } from "@tensorcad/engine";
+import { catalogByCategory, countParams, getBlock, inferShapes, resolveSymbols } from "@tensorcad/engine/node";
 /**
  * Projections of a design that are cheap for a model to read.
  *
@@ -7,31 +11,6 @@
  * `AnalysisResult` carries `Map`s that do not survive serialization.
  */
 
-import {
-  catalogByCategory,
-  countParams,
-  formatBytes,
-  formatCount,
-  formatFlops,
-  getBlock,
-  inferShapes,
-  isComposite,
-  isContainer,
-  isPrimitive,
-  joinPath,
-  portsOf,
-  resolveNodeParams,
-  resolveSymbols,
-  shapeToString,
-  splitEndpoint,
-  type AnalysisResult,
-  type BlockDef,
-  type Doc,
-  type Graph,
-  type ParamSpec,
-  type SymbolTable,
-  type ValidationReport,
-} from "@tensorcad/core";
 
 // ---------------------------------------------------------------------------
 // Outline
@@ -80,8 +59,8 @@ export interface Outline {
 
 export function outlineOf(doc: Doc): Outline {
   const symbols = resolveSymbols(doc);
-  const infer = inferShapes(doc, symbols);
-  const params = countParams(doc, symbols);
+  const infer = inferShapes(doc);
+  const params = countParams(doc);
 
   const paramsAt = (path: string): number => {
     let sum = 0;
@@ -98,8 +77,8 @@ export function outlineOf(doc: Doc): Outline {
     for (const [from, to] of graph.edges) {
       const edge: OutlineEdge = { graph: prefix, from, to };
       const source = splitEndpoint(from);
-      const shape = infer.outputs.get(`${joinPath(prefix, source.node)}:${source.port}`);
-      if (shape) edge.shape = shapeToString(shape);
+      const shape = infer.outputs[`${joinPath(prefix, source.node)}:${source.port}`];
+      if (shape) edge.shape = shape.symbolic;
       edges.push(edge);
     }
 
@@ -115,7 +94,7 @@ export function outlineOf(doc: Doc): Outline {
       };
       if (node.label) block.label = node.label;
       if (node.graph) {
-        const count = infer.resolved.get(path)?.p?.count;
+        const count = infer.resolved[path]?.p?.count;
         if (typeof count === "number") block.repeat = count;
       }
       blocks.push(block);
@@ -223,9 +202,8 @@ export interface BlockDetail {
 }
 
 export function blockDetail(doc: Doc, path: string): BlockDetail {
-  const symbols = resolveSymbols(doc);
-  const infer = inferShapes(doc, symbols);
-  const params = countParams(doc, symbols);
+  const infer = inferShapes(doc);
+  const params = countParams(doc);
 
   const segments = path.split("/").filter(Boolean);
   if (segments.length === 0) throw new Error(`"${path}" is not a block path.`);
@@ -246,10 +224,10 @@ export function blockDetail(doc: Doc, path: string): BlockDetail {
   if (!node) throw new Error(`No block "${path}".`);
 
   const def = getBlock(node.type);
-  const ports = infer.ports.get(path) ?? { in: {}, out: {} };
+  const ports = infer.ports[path] ?? { in: {}, out: {} };
 
   const consumers = new Map<string, string[]>();
-  for (const [consumer, producer] of infer.producerOf) {
+  for (const [consumer, producer] of Object.entries(infer.producerOf)) {
     const list = consumers.get(producer);
     if (list) list.push(consumer);
     else consumers.set(producer, [consumer]);
@@ -259,9 +237,9 @@ export function blockDetail(doc: Doc, path: string): BlockDetail {
     const port: BlockPort = { name, pattern: spec.shape };
     if (spec.dtype !== "inherit") port.dtype = spec.dtype;
     if (spec.optional) port.optional = true;
-    const shape = infer.inputs.get(`${path}:${name}`);
-    if (shape) port.shape = shapeToString(shape);
-    const producer = infer.producerOf.get(`${path}:${name}`);
+    const shape = infer.inputs[`${path}:${name}`];
+    if (shape) port.shape = shape.symbolic;
+    const producer = infer.producerOf[`${path}:${name}`];
     if (producer) port.connected_to = [producer];
     return port;
   });
@@ -269,8 +247,8 @@ export function blockDetail(doc: Doc, path: string): BlockDetail {
   const outputs: BlockPort[] = Object.entries(ports.out).map(([name, spec]) => {
     const port: BlockPort = { name, pattern: spec.shape };
     if (spec.dtype !== "inherit") port.dtype = spec.dtype;
-    const shape = infer.outputs.get(`${path}:${name}`);
-    if (shape) port.shape = shapeToString(shape);
+    const shape = infer.outputs[`${path}:${name}`];
+    if (shape) port.shape = shape.symbolic;
     const to = consumers.get(`${path}:${name}`);
     if (to) port.connected_to = to;
     return port;
@@ -281,7 +259,10 @@ export function blockDetail(doc: Doc, path: string): BlockDetail {
     if (p === path || p.startsWith(`${path}/`)) paramsCount += v;
   }
 
-  const resolved = infer.resolved.get(path) ?? (def ? resolveNodeParams(def, node.params, symbols) : undefined);
+  // Whatever the analysis resolved for this path. A block it could not reach
+  // has none, and the error below says so rather than this resolving a second
+  // set that might disagree with the numbers beside it.
+  const resolved = infer.resolved[path];
 
   const detail: BlockDetail = {
     path,
@@ -292,7 +273,7 @@ export function blockDetail(doc: Doc, path: string): BlockDetail {
     summary: def?.docs.summary ?? "Unknown block type.",
     params: { ...(node.params ?? {}) },
     resolved_params: resolved ? { ...resolved.p } : {},
-    param_errors: resolved?.errors ?? [`Unknown block type "${node.type}"`],
+    param_errors: resolved ? [] : [`Unknown block type "${node.type}"`],
     inputs,
     outputs,
     params_count: paramsCount,
@@ -313,7 +294,7 @@ function instancesOf(infer: ReturnType<typeof inferShapes>, segments: string[]):
   let multiplier = 1;
   for (let i = 0; i < segments.length - 1; i++) {
     const prefix = segments.slice(0, i + 1).join("/");
-    const count = infer.resolved.get(prefix)?.p?.count;
+    const count = infer.resolved[prefix]?.p?.count;
     if (typeof count === "number") multiplier *= count;
   }
   return multiplier;
@@ -372,23 +353,16 @@ export interface CatalogEntry {
   dynamic_ports: boolean;
 }
 
-const STUB_SYMBOLS: SymbolTable = {
-  order: [],
-  values: { B: 1, T: 1 },
-  designValues: {},
-  runtime: new Set(["B", "T"]),
-  docs: {},
-  errors: [],
-};
-
-export function catalogEntry(def: BlockDef): CatalogEntry {
+export function catalogEntry(def: EngineCatalogEntry): CatalogEntry {
   const entry: CatalogEntry = {
     type: def.type,
     kind: def.kind,
     category: def.category,
-    summary: def.docs.summary,
+    summary: def.docs.summary ?? "",
     refs: def.docs.refs ?? [],
-    params: Object.entries(def.params ?? {}).map(([name, spec]) => catalogParam(name, spec as ParamSpec)),
+    // In the order the block declares them, which is the order a reader
+    // expects to meet them in.
+    params: def.paramOrder.map((name: string) => catalogParam(name, def.params[name])),
     inputs: [],
     outputs: [],
     dynamic_ports: false,
@@ -396,15 +370,12 @@ export function catalogEntry(def: BlockDef): CatalogEntry {
   if (def.docs.formula) entry.formula = def.docs.formula;
 
   if (isPrimitive(def) || isComposite(def)) {
-    entry.dynamic_ports = typeof def.ports === "function";
-    try {
-      const resolved = resolveNodeParams(def, {}, STUB_SYMBOLS);
-      const ports = portsOf(def.ports, resolved);
-      entry.inputs = Object.entries(ports.in).map(([n, p]) => `${n}: ${p.shape}`);
-      entry.outputs = Object.entries(ports.out).map(([n, p]) => `${n}: ${p.shape}`);
-    } catch {
-      // A block whose ports need real parameters still reports its schema.
-    }
+    // A block whose pins depend on its parameters declares none until it has
+    // some, and the catalog reports it that way rather than inventing a set.
+    const declared = Object.keys(def.ports.in).length + Object.keys(def.ports.out).length;
+    entry.dynamic_ports = declared === 0;
+    entry.inputs = Object.entries(def.ports.in).map(([n, shape]) => `${n}: ${shape}`);
+    entry.outputs = Object.entries(def.ports.out).map(([n, shape]) => `${n}: ${shape}`);
   } else if (isContainer(def)) {
     entry.inputs = ["(from the container's boundary_in block)"];
     entry.outputs = ["(from the container's boundary_out block)"];
@@ -419,7 +390,7 @@ function catalogParam(name: string, spec: ParamSpec): CatalogParam {
   const dflt = (spec as { default?: unknown }).default;
   if (dflt !== undefined) p.default = JSON.stringify(dflt);
   if (spec.doc) p.doc = spec.doc;
-  if (spec.type === "enum") p.values = [...spec.values];
+  if (spec.type === "enum" && spec.values) p.values = [...spec.values];
   return p;
 }
 

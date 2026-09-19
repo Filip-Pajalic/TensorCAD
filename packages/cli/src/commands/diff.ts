@@ -3,12 +3,12 @@
  * numerically.
  */
 
-import { formatBytes, formatCount, formatFlops } from "@tensorcad/core";
 import { bool, UsageError, type Args } from "../args.js";
 import { loadDesign } from "../load.js";
 import { analysisOptions, impliedGpus } from "../options.js";
 import { bold, dim, green, heading, pad, red, writeOut, yellow } from "../format.js";
 import { diffDesigns, type NumericDelta } from "../diff.js";
+import { formatBytes, formatCount, formatFlops } from "@tensorcad/engine";
 
 const FORMATTERS: Record<string, (n: number) => string> = {
   parameters: formatCount,

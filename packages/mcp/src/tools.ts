@@ -11,16 +11,6 @@ import { dirname, isAbsolute, join, resolve } from "node:path";
 import * as z from "zod";
 import type { McpServer } from "@modelcontextprotocol/server";
 import {
-  analyze,
-  formatCount,
-  generateTorch,
-  getPreset,
-  HARDWARE,
-  PRESET_NAMES,
-  validate,
-  type AnalysisOptions,
-} from "@tensorcad/core";
-import {
   AnalysisOutput,
   analysisOptionsShape,
   BlockPort,
@@ -47,6 +37,9 @@ import {
 } from "./summarize.js";
 import type { DocumentStore } from "./store/types.js";
 import type { Op as OpType } from "./ops.js";
+import type { AnalysisOptions } from "@tensorcad/engine";
+import { formatCount } from "@tensorcad/engine";
+import { HARDWARE, PRESET_NAMES, analyze, generateTorch, getPreset, validate } from "@tensorcad/engine/node";
 
 type ToolResult = {
   content: { type: "text"; text: string }[];

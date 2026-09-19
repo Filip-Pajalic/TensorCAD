@@ -11,6 +11,7 @@
 package shapes
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"math/big"
@@ -62,6 +63,28 @@ func RatFromPair(n, d float64) *big.Rat {
 		scale *= 10
 	}
 	return new(big.Rat).SetFrac64(int64(math.Round(n*scale)), int64(math.Round(d*scale)))
+}
+
+// catchFault turns an arithmetic fault into an error at the boundaries where
+// the TypeScript has a try/catch.
+//
+// The two engines spell a fault differently. The TypeScript throws from inside
+// its rational constructor and expects every caller to sit inside a try; this
+// port spells that as a panic. That is only equivalent if the same boundaries
+// catch it, so the exported entry points do, with the TypeScript's own wording.
+// The case that reaches here in practice is a symbol whose own value failed:
+// it is stored as NaN, and whatever mentions it next has to report that rather
+// than take the process down.
+func catchFault(err *error) {
+	r := recover()
+	if r == nil {
+		return
+	}
+	s, ok := r.(string)
+	if !ok || !strings.HasPrefix(s, "shapes: ") {
+		panic(r)
+	}
+	*err = errors.New("SymExpr: " + strings.TrimPrefix(s, "shapes: "))
 }
 
 func isWhole(v float64) bool { return v == math.Trunc(v) && !math.IsInf(v, 0) }
@@ -415,8 +438,19 @@ func (s Sym) Subst(values map[string]float64) Sym {
 }
 
 // ToNumber fully evaluates; ok is false when some symbol has no value.
+//
+// It faults on a non-finite substitution. Callers that substitute the design
+// values only cannot hit that, because a symbol that failed to evaluate never
+// reaches them; a caller working from the full value table should use Evaluate.
 func (s Sym) ToNumber(values map[string]float64) (float64, bool) {
 	return s.Subst(values).AsConst()
+}
+
+// Evaluate is ToNumber with an arithmetic fault reported rather than raised.
+func (s Sym) Evaluate(values map[string]float64) (value float64, ok bool, err error) {
+	defer catchFault(&err)
+	value, ok = s.ToNumber(values)
+	return value, ok, err
 }
 
 // Equals is structural equality of the canonical form, with no substitution.

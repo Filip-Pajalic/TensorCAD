@@ -30,6 +30,8 @@ import {
   resolveNodeParams,
   portsOf,
   shapeToString,
+  validate,
+  RULES,
   type AnalysisOptions,
   type InferResult,
 } from "@tensorcad/core";
@@ -38,9 +40,11 @@ const root = join(import.meta.dir, "..", "packages", "core-go", "testdata");
 const docsDir = join(root, "presets");
 const goldenDir = join(root, "golden");
 const analysisDir = join(root, "analysis");
+const rulesDir = join(root, "rules");
 mkdirSync(docsDir, { recursive: true });
 mkdirSync(goldenDir, { recursive: true });
 mkdirSync(analysisDir, { recursive: true });
+mkdirSync(rulesDir, { recursive: true });
 
 /** JSON has no NaN, and a NaN here would mean the preset itself is broken. */
 function finite(label: string, values: Record<string, number>): Record<string, number> {
@@ -576,3 +580,167 @@ for (const name of PRESET_NAMES) {
   writeFileSync(join(analysisDir, `${name}.json`), JSON.stringify({ preset: name, cases }, null, 2) + "\n");
 }
 console.log(`  and ${analysisCases} analysis cases`);
+
+/**
+ * The design rules, at the same three operating points.
+ *
+ * A rule is a sentence a person reads and acts on, so the message and the hint
+ * are the specification as much as the severity is: "the cache dominates" and
+ * "quantize the weights" send someone to different parts of their design. Both
+ * engines have to say the same thing, down to the rounding in the percentages.
+ */
+let ruleCases = 0;
+for (const name of PRESET_NAMES) {
+  const doc = getPreset(name);
+  const cases = ANALYSIS_VARIANTS.map(({ label, options }) => {
+    const r = validate(doc, options);
+    ruleCases++;
+    return {
+      label,
+      ok: r.ok,
+      counts: r.counts,
+      findings: r.findings.map((f) => ({
+        rule: f.rule,
+        severity: f.severity,
+        path: f.path,
+        port: f.port,
+        param: f.param,
+        message: f.message,
+        hint: f.hint,
+      })),
+    };
+  });
+  writeFileSync(join(rulesDir, `${name}.json`), JSON.stringify({ preset: name, cases }, null, 2) + "\n");
+}
+console.log(`  and ${ruleCases} design-rule cases over ${RULES.length} rules`);
+
+/**
+ * Designs that are wrong on purpose.
+ *
+ * A correct preset never exercises a rule that fires on a mistake, and eight of
+ * the eighteen rules only fire on one. Their messages are what a person sees
+ * when their design is broken — the most important sentences the engine
+ * writes — so they need pinning more than the quiet paths do, not less.
+ */
+const BROKEN: { name: string; note: string; doc: unknown }[] = [
+  {
+    name: "wrong-widths",
+    note: "A projection that widens the stream without anything narrowing it again, an odd RoPE head dimension, and heads that do not divide by the key/value heads.",
+    doc: {
+      version: 1,
+      meta: { name: "wrong-widths", published: { params: 1_000_000, source: "nowhere" } },
+      symbols: {
+        B: { kind: "runtime", default: 1 },
+        T: { kind: "runtime", default: 128 },
+        D: { kind: "design", value: 100 },
+        Unused: { kind: "design", value: 7 },
+      },
+      graph: {
+        nodes: [
+          { id: "x", type: "input", params: { shape: "B T", dtype: "int64" } },
+          { id: "embed", type: "embedding", params: { vocab: 999, dim: "D" } },
+          { id: "wide", type: "linear", params: { in_features: "D", out_features: "3*D" } },
+          { id: "norm", type: "rmsnorm", params: { dim: "D" } },
+          { id: "rope", type: "rope", params: { heads: 3, head_dim: 33 } },
+          { id: "attn", type: "sdpa", params: { heads: 3, kv_heads: 2, head_dim: 33, window: 4096 } },
+          { id: "head", type: "lm_head", params: { vocab: 999, dim: "D" } },
+          { id: "out", type: "output" },
+        ],
+        edges: [
+          ["x:x", "embed:ids"],
+          ["embed:y", "wide:x"],
+          ["wide:y", "norm:x"],
+          ["norm:y", "head:x"],
+          ["head:y", "out:x"],
+        ],
+      },
+    },
+  },
+  {
+    name: "bad-block-def",
+    note: "A design whose own block definition names a parameter it does not have, and writes a boundary node the compiler generates.",
+    doc: {
+      version: 1,
+      meta: { name: "bad-block-def" },
+      symbols: { B: { kind: "runtime", default: 1 }, T: { kind: "runtime", default: 8 }, D: { kind: "design", value: 64 } },
+      defs: {
+        "Bad Name": {
+          category: "custom",
+          params: { width: { type: "int", default: 64 } },
+          ports: { in: { x: "... width" }, out: {} },
+          graph: {
+            nodes: [{ id: "_in", type: "boundary_in", params: {} }, { id: "p", type: "linear", params: { in_features: "$width", out_features: "$missing" } }],
+            edges: [],
+          },
+        },
+        rmsnorm: {
+          category: "custom",
+          params: {},
+          ports: { in: { x: "... D" }, out: { y: "... D" } },
+          graph: { nodes: [{ id: "n", type: "rmsnorm", params: { dim: "D" } }], edges: [] },
+        },
+      },
+      graph: {
+        nodes: [
+          { id: "x", type: "input", params: { shape: "B T D" } },
+          { id: "out", type: "output" },
+        ],
+        edges: [["x:x", "out:x"]],
+      },
+    },
+  },
+  {
+    name: "bad-symbols",
+    note: "Symbols that depend on each other in a cycle, two nodes sharing an id, and an active parameter count that does not match what the design claims.",
+    doc: {
+      version: 1,
+      meta: {
+        name: "bad-symbols",
+        published: { params: 200_000, activeParams: 1_000_000, tolerance: 0.01 },
+      },
+      symbols: {
+        B: { kind: "runtime", default: 1 },
+        T: { kind: "runtime", default: 16 },
+        D: { kind: "design", value: "E + 1" },
+        E: { kind: "design", value: "D + 1" },
+        Nope: { kind: "design", value: "sqrt(0 - 4)" },
+      },
+      graph: {
+        nodes: [
+          { id: "x", type: "input", params: { shape: "B T 64" } },
+          { id: "twin", type: "rmsnorm", params: { dim: 64 } },
+          { id: "twin", type: "rmsnorm", params: { dim: 64 } },
+          { id: "out", type: "output" },
+        ],
+        edges: [
+          ["x:x", "twin:x"],
+          ["twin:y", "out:x"],
+        ],
+      },
+    },
+  },
+];
+
+const broken = BROKEN.map(({ name, note, doc }) => {
+  const r = validate(doc as never);
+  return {
+    name,
+    note,
+    doc,
+    ok: r.ok,
+    counts: r.counts,
+    findings: r.findings.map((f) => ({
+      rule: f.rule,
+      severity: f.severity,
+      path: f.path,
+      port: f.port,
+      param: f.param,
+      message: f.message,
+      hint: f.hint,
+    })),
+  };
+});
+writeFileSync(join(root, "broken.json"), JSON.stringify({ cases: broken }, null, 2) + "\n");
+console.log(
+  `  and ${broken.length} broken designs producing ${broken.reduce((n, c) => n + c.findings.length, 0)} findings`,
+);

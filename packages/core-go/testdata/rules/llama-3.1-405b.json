@@ -1,0 +1,68 @@
+{
+  "preset": "llama-3.1-405b",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 2,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 911.88 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 755.96 GiB and the cache is 3.94 GiB at 8192 tokens across 1 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 12 devices."
+        },
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 6.53 TiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 755.96 GiB, gradients 755.96 GiB, optimizer 4.43 TiB, activations 640.80 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 529.18 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 377.98 GiB and the cache is 63.00 GiB at 8192 tokens across 32 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 7 devices."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 2,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 909.52 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 755.96 GiB and the cache is 1.97 GiB at 8192 tokens across 1 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 12 devices."
+        },
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 8.41 TiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 755.96 GiB, gradients 755.96 GiB, optimizer 4.43 TiB, activations 2.50 TiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        }
+      ]
+    }
+  ]
+}

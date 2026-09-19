@@ -1,0 +1,77 @@
+{
+  "preset": "gpt2-large",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 1
+      },
+      "findings": [
+        {
+          "rule": "vocab-padding",
+          "severity": "info",
+          "path": "head",
+          "message": "Vocabulary 50257 is not a multiple of 128.",
+          "hint": "Padding to 50304 adds 60.2K parameters and speeds up the output projection."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 3
+      },
+      "findings": [
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 245.40 MiB, which is 84% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 1058.7x the compute-optimal budget of 14B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        },
+        {
+          "rule": "vocab-padding",
+          "severity": "info",
+          "path": "head",
+          "message": "Vocabulary 50257 is not a multiple of 128.",
+          "hint": "Padding to 50304 adds 60.2K parameters and speeds up the output projection."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 2
+      },
+      "findings": [
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 8192 tokens, attention is 33% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        },
+        {
+          "rule": "vocab-padding",
+          "severity": "info",
+          "path": "head",
+          "message": "Vocabulary 50257 is not a multiple of 128.",
+          "hint": "Padding to 50304 adds 60.2K parameters and speeds up the output projection."
+        }
+      ]
+    }
+  ]
+}

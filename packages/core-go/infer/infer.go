@@ -342,7 +342,7 @@ func (w *walker) graph(graph *ir.Graph, prefix string, seeds map[string]shapes.S
 		}
 
 		ctx := EvalCtxFor(resolved, w.symbols)
-		batch, hasBatch := w.checkInputs(node, path, prefix, nodePorts, producers, ctx)
+		batch := w.checkInputs(node, path, prefix, nodePorts, producers, ctx)
 
 		if catalog.IsContainer(def) && node.Graph != nil {
 			w.recurseContainer(node, path, nodePorts)
@@ -363,7 +363,7 @@ func (w *walker) graph(graph *ir.Graph, prefix string, seeds map[string]shapes.S
 			continue
 		}
 
-		w.instantiateOutputs(node, path, nodePorts, ctx, batch, hasBatch, seeds)
+		w.instantiateOutputs(node, path, nodePorts, ctx, batch, seeds)
 	}
 }
 
@@ -372,9 +372,11 @@ func (w *walker) graph(graph *ir.Graph, prefix string, seeds map[string]shapes.S
 func (w *walker) checkInputs(
 	node ir.NodeDef, path, prefix string,
 	nodePorts catalog.Ports, producers map[string]string, ctx shapes.EvalCtx,
-) (shapes.Shape, bool) {
+) shapes.Shape {
 	var batch shapes.Shape
-	hasBatch := false
+	// Distinct from len(batch) == 0: a port whose pattern has no ellipsis binds
+	// an empty batch, and that still counts as having bound one.
+	bound := false
 
 	for _, portName := range sortedNames(nodePorts.In) {
 		port := nodePorts.In[portName]
@@ -421,8 +423,8 @@ func (w *walker) checkInputs(
 		if !m.OK {
 			continue
 		}
-		if !hasBatch {
-			batch, hasBatch = m.Batch, true
+		if !bound {
+			batch, bound = m.Batch, true
 			continue
 		}
 		if !sameShape(batch, m.Batch, w.symbols.DesignValues) {
@@ -434,7 +436,7 @@ func (w *walker) checkInputs(
 			})
 		}
 	}
-	return batch, hasBatch
+	return batch
 }
 
 // recurseContainer walks a repeat container's subgraph, seeded with what
@@ -503,7 +505,7 @@ func (w *walker) recurseComposite(inner *ir.Graph, path string, nodePorts catalo
 // batch dimensions the inputs bound.
 func (w *walker) instantiateOutputs(
 	node ir.NodeDef, path string, nodePorts catalog.Ports,
-	ctx shapes.EvalCtx, batch shapes.Shape, hasBatch bool, seeds map[string]shapes.Shape,
+	ctx shapes.EvalCtx, batch shapes.Shape, seeds map[string]shapes.Shape,
 ) {
 	for _, portName := range sortedNames(nodePorts.Out) {
 		port := nodePorts.Out[portName]
@@ -518,7 +520,12 @@ func (w *walker) instantiateOutputs(
 			w.result.Outputs[path+":"+portName] = seed
 			continue
 		}
-		shape, errs := shapes.Instantiate(pattern, ctx, batch, hasBatch)
+		// Always with a batch, even an empty one. A pattern's ellipsis binds
+		// whatever the inputs bound, and when they bound nothing it contributes
+		// no dimensions — that is a rank-1 output, not a failure. Instantiate's
+		// "no batch at all" case is for a caller working outside a graph, where
+		// there is nothing an ellipsis could stand for.
+		shape, errs := shapes.Instantiate(pattern, ctx, batch, true)
 		for _, e := range errs {
 			w.issue(Issue{Path: path, Port: portName, Message: e, Severity: "error"})
 		}

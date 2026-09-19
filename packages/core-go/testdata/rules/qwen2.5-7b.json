@@ -1,0 +1,80 @@
+{
+  "preset": "qwen2.5-7b",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 2
+      },
+      "findings": [
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 315.98 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 14.19 GiB, gradients 14.19 GiB, optimizer 85.11 GiB, activations 202.50 GiB.",
+          "hint": "Activations dominate. Turn on activation recomputation, or reduce the micro-batch."
+        },
+        {
+          "rule": "recompute-hint",
+          "severity": "info",
+          "message": "Activations are 64% of the training footprint at batch 1 and 32768 tokens.",
+          "hint": "Full recomputation trades about 33% more compute for most of that memory."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 32768 tokens, attention is 32% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 3
+      },
+      "findings": [
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 23.20 GiB, which is 88% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 32768 tokens, attention is 32% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 106.1x the compute-optimal budget of 141B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 315.98 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 14.19 GiB, gradients 14.19 GiB, optimizer 85.11 GiB, activations 202.50 GiB.",
+          "hint": "Activations dominate. Turn on activation recomputation, or reduce the micro-batch."
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,6 @@
 package analysis
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/tensorcad/core/catalog"
@@ -67,8 +66,10 @@ func FormatBytes(n float64) string {
 	}
 	for _, u := range units {
 		if math.Abs(n) >= u.scale {
-			return fmt.Sprintf("%.2f %s", n/u.scale, u.unit)
+			return JSToFixed(n/u.scale, 2) + " " + u.unit
 		}
 	}
-	return fmt.Sprintf("%.0f B", math.Round(n))
+	// Math.round, not toFixed(0): they differ only for a negative half, which a
+	// byte count never is.
+	return JSNumber(math.Round(n)) + " B"
 }

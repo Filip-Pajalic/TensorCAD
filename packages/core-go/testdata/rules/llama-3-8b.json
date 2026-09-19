@@ -1,0 +1,62 @@
+{
+  "preset": "llama-3-8b",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 168.69 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 14.96 GiB, gradients 14.96 GiB, optimizer 89.75 GiB, activations 49.03 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 2
+      },
+      "findings": [
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 4.89 GiB, which is 82% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 99.9x the compute-optimal budget of 150B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 315.77 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 14.96 GiB, gradients 14.96 GiB, optimizer 89.75 GiB, activations 196.11 GiB.",
+          "hint": "Activations dominate. Turn on activation recomputation, or reduce the micro-batch."
+        }
+      ]
+    }
+  ]
+}

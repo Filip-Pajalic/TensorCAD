@@ -1,0 +1,74 @@
+{
+  "preset": "llama-3-70b",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 2,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 160.70 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 131.42 GiB and the cache is 2.50 GiB at 8192 tokens across 1 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 3 devices."
+        },
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 1.24 TiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 131.42 GiB, gradients 131.42 GiB, optimizer 788.50 GiB, activations 218.78 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 1
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 126.85 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 65.71 GiB and the cache is 40.00 GiB at 8192 tokens across 32 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 2 devices."
+        },
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 4.89 GiB, which is 49% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 2,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 159.20 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 131.42 GiB and the cache is 1.25 GiB at 8192 tokens across 1 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 2 devices."
+        },
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 1.88 TiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 131.42 GiB, gradients 131.42 GiB, optimizer 788.50 GiB, activations 875.11 GiB.",
+          "hint": "Activations dominate. Turn on activation recomputation, or reduce the micro-batch."
+        }
+      ]
+    }
+  ]
+}

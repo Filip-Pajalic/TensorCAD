@@ -1,0 +1,83 @@
+{
+  "preset": "gpt2-xl",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 1
+      },
+      "findings": [
+        {
+          "rule": "vocab-padding",
+          "severity": "info",
+          "path": "head",
+          "message": "Vocabulary 50257 is not a multiple of 128.",
+          "hint": "Padding to 50304 adds 75.2K parameters and speeds up the output projection."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 3
+      },
+      "findings": [
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 245.40 MiB, which is 76% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 508.3x the compute-optimal budget of 30B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        },
+        {
+          "rule": "vocab-padding",
+          "severity": "info",
+          "path": "head",
+          "message": "Vocabulary 50257 is not a multiple of 128.",
+          "hint": "Padding to 50304 adds 75.2K parameters and speeds up the output projection."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 2
+      },
+      "findings": [
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 112.44 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 2.90 GiB, gradients 2.90 GiB, optimizer 17.41 GiB, activations 89.23 GiB.",
+          "hint": "Activations dominate. Turn on activation recomputation, or reduce the micro-batch."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 8192 tokens, attention is 29% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        },
+        {
+          "rule": "vocab-padding",
+          "severity": "info",
+          "path": "head",
+          "message": "Vocabulary 50257 is not a multiple of 128.",
+          "hint": "Padding to 50304 adds 75.2K parameters and speeds up the output projection."
+        }
+      ]
+    }
+  ]
+}

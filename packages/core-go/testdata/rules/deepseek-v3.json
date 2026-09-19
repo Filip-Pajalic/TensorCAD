@@ -1,0 +1,92 @@
+{
+  "preset": "deepseek-v3",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 2,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 1.47 TiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 1.22 TiB and the cache is 274.50 MiB at 4096 tokens across 1 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 19 devices."
+        },
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 9.89 TiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 1.22 TiB, gradients 1.22 TiB, optimizer 7.32 TiB, activations 127.05 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 2,
+        "info": 2
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 755.08 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 624.94 GiB and the cache is 4.29 GiB at 4096 tokens across 32 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 10 devices."
+        },
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 98.17 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 19.53 GiB, gradients 19.53 GiB, optimizer 58.59 GiB, activations 536.13 MiB.",
+          "hint": "Model state dominates even when fully sharded. Add more data-parallel replicas or use a smaller optimizer state."
+        },
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 2.47 GiB, which is 59% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 20.5x the compute-optimal budget of 733B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 2,
+        "info": 1
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 1.47 TiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 1.22 TiB and the cache is 274.50 MiB at 8192 tokens across 1 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 19 devices."
+        },
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 10.76 TiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 1.22 TiB, gradients 1.22 TiB, optimizer 7.32 TiB, activations 1016.38 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 8192 tokens, attention is 25% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        }
+      ]
+    }
+  ]
+}

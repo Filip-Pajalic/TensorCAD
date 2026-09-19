@@ -61,9 +61,9 @@ func AnalyzeThroughput(o ThroughputOptions) *ThroughputResult {
 	if memoryBound {
 		notes = append(notes, fmt.Sprintf(
 			"Decoding is memory-bound at batch %s. It stays that way until the batch passes this device's ridge point of about %s FLOP per byte.",
-			num(o.Batch), num(math.Round(ridgePoint))))
+			JSNumber(o.Batch), JSNumber(math.Round(ridgePoint))))
 	} else {
-		notes = append(notes, fmt.Sprintf("Decoding is compute-bound at batch %s.", num(o.Batch)))
+		notes = append(notes, fmt.Sprintf("Decoding is compute-bound at batch %s.", JSNumber(o.Batch)))
 	}
 
 	prefillSeconds := (o.Batch * o.Seq * o.Flops.FwdTotal) / (o.Peak * o.MFU)
@@ -217,29 +217,20 @@ func AnalyzeChinchilla(p ChinchillaInputs) *ChinchillaResult {
 func FormatHours(h float64) string {
 	switch {
 	case h < 1:
-		return fmt.Sprintf("%.1f min", h*60)
+		return JSToFixed(h*60, 1) + " min"
 	case h < 48:
-		return fmt.Sprintf("%.1f h", h)
+		return JSToFixed(h, 1) + " h"
 	}
-	return fmt.Sprintf("%.1f days", h/24)
+	return JSToFixed(h/24, 1) + " days"
 }
 
 // FormatDollars is a price as a person reads it: $1.20M, $4.5k, $12.34.
 func FormatDollars(d float64) string {
 	switch {
 	case d >= 1e6:
-		return fmt.Sprintf("$%.2fM", d/1e6)
+		return "$" + JSToFixed(d/1e6, 2) + "M"
 	case d >= 1e3:
-		return fmt.Sprintf("$%.1fk", d/1e3)
+		return "$" + JSToFixed(d/1e3, 1) + "k"
 	}
-	return fmt.Sprintf("$%.2f", d)
-}
-
-// num prints a number the way JavaScript would, so a message written by either
-// engine reads the same: 4 rather than 4.000000.
-func num(v float64) string {
-	if v == math.Trunc(v) && math.Abs(v) < 1e21 {
-		return fmt.Sprintf("%.0f", v)
-	}
-	return fmt.Sprintf("%v", v)
+	return "$" + JSToFixed(d, 2)
 }

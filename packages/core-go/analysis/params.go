@@ -1,9 +1,7 @@
 package analysis
 
 import (
-	"fmt"
 	"math"
-	"strconv"
 )
 
 // ParamsResult is what the design weighs.
@@ -76,13 +74,13 @@ func FormatCount(n float64) string {
 	abs := math.Abs(n)
 	switch {
 	case abs >= 1e12:
-		return fmt.Sprintf("%.2fT", n/1e12)
+		return JSToFixed(n/1e12, 2) + "T"
 	case abs >= 1e9:
-		return fmt.Sprintf("%.2fB", n/1e9)
+		return JSToFixed(n/1e9, 2) + "B"
 	case abs >= 1e6:
-		return fmt.Sprintf("%.1fM", n/1e6)
+		return JSToFixed(n/1e6, 1) + "M"
 	case abs >= 1e3:
-		return fmt.Sprintf("%.1fK", n/1e3)
+		return JSToFixed(n/1e3, 1) + "K"
 	}
-	return strconv.FormatFloat(n, 'g', -1, 64)
+	return JSNumber(n)
 }

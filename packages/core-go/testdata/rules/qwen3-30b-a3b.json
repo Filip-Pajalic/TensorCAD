@@ -1,0 +1,86 @@
+{
+  "preset": "qwen3-30b-a3b",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 1
+      },
+      "findings": [
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 679.72 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 56.87 GiB, gradients 56.87 GiB, optimizer 341.22 GiB, activations 224.76 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 32768 tokens, attention is 68% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 3
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 91.72 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 28.44 GiB and the cache is 48.00 GiB at 32768 tokens across 32 sequence(s).",
+          "hint": "The cache dominates. Reduce KV heads, shorten the context, or move some layers to a sliding window."
+        },
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 23.18 GiB, which is 88% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 32768 tokens, attention is 68% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 246.6x the compute-optimal budget of 61B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 1
+      },
+      "findings": [
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 679.72 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 56.87 GiB, gradients 56.87 GiB, optimizer 341.22 GiB, activations 224.76 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 8192 tokens, attention is 35% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        }
+      ]
+    }
+  ]
+}

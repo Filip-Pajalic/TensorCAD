@@ -1,0 +1,68 @@
+{
+  "preset": "nanogpt",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 1
+      },
+      "findings": [
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 294.75 MiB, which is 49% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 2
+      },
+      "findings": [
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 245.63 MiB, which is 96% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 8817.7x the compute-optimal budget of 2B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 2
+      },
+      "findings": [
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 9.21 GiB, which is 49% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 8192 tokens, attention is 38% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        }
+      ]
+    }
+  ]
+}

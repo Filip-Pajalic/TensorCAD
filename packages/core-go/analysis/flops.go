@@ -1,7 +1,6 @@
 package analysis
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/tensorcad/core/catalog"
@@ -115,8 +114,8 @@ func FormatFlops(n float64) string {
 	}
 	for _, u := range units {
 		if math.Abs(n) >= u.scale {
-			return fmt.Sprintf("%.2f %s", n/u.scale, u.unit)
+			return JSToFixed(n/u.scale, 2) + " " + u.unit
 		}
 	}
-	return fmt.Sprintf("%.0f FLOP", n)
+	return JSToFixed(n, 0) + " FLOP"
 }

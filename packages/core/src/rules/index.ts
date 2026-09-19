@@ -50,10 +50,23 @@ export function validate(doc: Doc, options: AnalysisOptions = {}): ValidationRep
     findings.push({ rule: "graph", severity: "error", message });
   }
 
+  // By severity, then node, then pin; stable, so findings that tie keep the
+  // order the rules produced them in.
+  //
+  // Sorted by code unit rather than by locale, and down to the pin rather than
+  // stopping at the node, because the Go engine has to produce this same list.
+  // `localeCompare` orders an underscore against a digit by whatever locale the
+  // host has, and a Go map has no port order to inherit, so leaving two findings
+  // on the same block to tie would leave their order to chance.
   findings.sort((a, b) => {
     const s = SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity];
     if (s !== 0) return s;
-    return (a.path ?? "").localeCompare(b.path ?? "");
+    const pa = a.path ?? "";
+    const pb = b.path ?? "";
+    if (pa !== pb) return pa < pb ? -1 : 1;
+    const qa = a.port ?? "";
+    const qb = b.port ?? "";
+    return qa < qb ? -1 : qa > qb ? 1 : 0;
   });
 
   const counts: Record<Severity, number> = { error: 0, warning: 0, info: 0 };

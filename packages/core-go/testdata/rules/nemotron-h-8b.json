@@ -1,0 +1,80 @@
+{
+  "preset": "nemotron-h-8b",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 1
+      },
+      "findings": [
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 176.26 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 15.09 GiB, gradients 15.09 GiB, optimizer 90.53 GiB, activations 55.55 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        },
+        {
+          "rule": "unused-symbol",
+          "severity": "info",
+          "message": "Symbol \"L\" is not referenced by any block.",
+          "hint": "Remove it, or wire it into the parameter that should follow it."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 3
+      },
+      "findings": [
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 5.00 GiB, which is 98% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 99.2x the compute-optimal budget of 151B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        },
+        {
+          "rule": "unused-symbol",
+          "severity": "info",
+          "message": "Symbol \"L\" is not referenced by any block.",
+          "hint": "Remove it, or wire it into the parameter that should follow it."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 1
+      },
+      "findings": [
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 342.92 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 15.09 GiB, gradients 15.09 GiB, optimizer 90.53 GiB, activations 222.20 GiB.",
+          "hint": "Activations dominate. Turn on activation recomputation, or reduce the micro-batch."
+        },
+        {
+          "rule": "unused-symbol",
+          "severity": "info",
+          "message": "Symbol \"L\" is not referenced by any block.",
+          "hint": "Remove it, or wire it into the parameter that should follow it."
+        }
+      ]
+    }
+  ]
+}

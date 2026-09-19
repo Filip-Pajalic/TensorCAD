@@ -1,0 +1,86 @@
+{
+  "preset": "qwen3-8b",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 2
+      },
+      "findings": [
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 337.26 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 15.26 GiB, gradients 15.26 GiB, optimizer 91.54 GiB, activations 215.21 GiB.",
+          "hint": "Activations dominate. Turn on activation recomputation, or reduce the micro-batch."
+        },
+        {
+          "rule": "recompute-hint",
+          "severity": "info",
+          "message": "Activations are 64% of the training footprint at batch 1 and 32768 tokens.",
+          "hint": "Full recomputation trades about 33% more compute for most of that memory."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 32768 tokens, attention is 39% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 3
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 95.55 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 7.63 GiB and the cache is 72.00 GiB at 32768 tokens across 32 sequence(s).",
+          "hint": "The cache dominates. Reduce KV heads, shorten the context, or move some layers to a sliding window."
+        },
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 23.18 GiB, which is 83% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 32768 tokens, attention is 39% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 99.1x the compute-optimal budget of 151B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 0
+      },
+      "findings": [
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 337.26 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 15.26 GiB, gradients 15.26 GiB, optimizer 91.54 GiB, activations 215.21 GiB.",
+          "hint": "Activations dominate. Turn on activation recomputation, or reduce the micro-batch."
+        }
+      ]
+    }
+  ]
+}

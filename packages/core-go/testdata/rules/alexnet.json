@@ -1,0 +1,83 @@
+{
+  "preset": "alexnet",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 2
+      },
+      "findings": [
+        {
+          "rule": "unused-symbol",
+          "severity": "info",
+          "message": "Symbol \"Res\" is not referenced by any block.",
+          "hint": "Remove it, or wire it into the parameter that should follow it."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "fc3",
+          "message": "Projection width 1000 is not a multiple of 64.",
+          "hint": "Rounding up to 1024 usually costs little memory and speeds up the matmul."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 3
+      },
+      "findings": [
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 12274.8x the compute-optimal budget of 1B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        },
+        {
+          "rule": "unused-symbol",
+          "severity": "info",
+          "message": "Symbol \"Res\" is not referenced by any block.",
+          "hint": "Remove it, or wire it into the parameter that should follow it."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "fc3",
+          "message": "Projection width 1000 is not a multiple of 64.",
+          "hint": "Rounding up to 1024 usually costs little memory and speeds up the matmul."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 2
+      },
+      "findings": [
+        {
+          "rule": "unused-symbol",
+          "severity": "info",
+          "message": "Symbol \"Res\" is not referenced by any block.",
+          "hint": "Remove it, or wire it into the parameter that should follow it."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "fc3",
+          "message": "Projection width 1000 is not a multiple of 64.",
+          "hint": "Rounding up to 1024 usually costs little memory and speeds up the matmul."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "preset": "qwen3-235b-a22b",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 2,
+        "info": 1
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 532.53 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 437.90 GiB and the cache is 5.88 GiB at 32768 tokens across 1 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 7 devices."
+        },
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 4.19 TiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 437.90 GiB, gradients 437.90 GiB, optimizer 2.57 TiB, activations 789.87 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 32768 tokens, attention is 54% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 1,
+        "info": 3
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 375.54 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 218.95 GiB and the cache is 94.00 GiB at 32768 tokens across 32 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 5 devices."
+        },
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 23.18 GiB, which is 66% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 32768 tokens, attention is 54% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 34.8x the compute-optimal budget of 431B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "warning": 2,
+        "info": 1
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 526.36 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 437.90 GiB and the cache is 752.00 MiB at 8192 tokens across 1 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 7 devices."
+        },
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 4.19 TiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 437.90 GiB, gradients 437.90 GiB, optimizer 2.57 TiB, activations 789.87 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 8192 tokens, attention is 23% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        }
+      ]
+    }
+  ]
+}

@@ -211,12 +211,19 @@ func ResolveSymbols(doc *Doc) *SymbolTable {
 				table.Values[name] = math.NaN()
 				break
 			}
-			v, ok := sym.ToNumber(table.Values)
-			if !ok {
+			// Evaluate rather than ToNumber: the table can hold a NaN for a
+			// symbol that already failed, and a symbol that mentions it has to
+			// report that rather than fault.
+			v, ok, err := sym.Evaluate(table.Values)
+			switch {
+			case err != nil:
+				table.Errors = append(table.Errors, fmt.Sprintf("Symbol %q: %s", name, err))
+				table.Values[name] = math.NaN()
+			case !ok:
 				table.Errors = append(table.Errors,
 					fmt.Sprintf("Symbol %q does not evaluate to a number (got %s)", name, sym))
 				table.Values[name] = math.NaN()
-			} else {
+			default:
 				table.Values[name] = v
 				table.DesignValues[name] = v
 			}

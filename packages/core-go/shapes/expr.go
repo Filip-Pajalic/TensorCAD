@@ -346,7 +346,12 @@ type EvalCtx struct {
 }
 
 // EvalAst evaluates a parsed expression.
-func EvalAst(ast *Ast, ctx EvalCtx) (Sym, error) {
+func EvalAst(ast *Ast, ctx EvalCtx) (result Sym, err error) {
+	defer catchFault(&err)
+	return evalAst(ast, ctx)
+}
+
+func evalAst(ast *Ast, ctx EvalCtx) (Sym, error) {
 	switch ast.Kind {
 	case AstNum:
 		return ConRat(ast.Num), nil

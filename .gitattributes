@@ -1,0 +1,8 @@
+# The repository stores text with LF. Without this, Windows checkouts convert on
+# the way in and every commit warns about it; worse, a generated file would
+# differ from the one the generator wrote.
+* text=auto eol=lf
+
+# Generated, and large: keeping them out of diffs makes a review readable. They
+# are still compared in full by the Go parity tests.
+packages/core-go/testdata/** linguist-generated=true

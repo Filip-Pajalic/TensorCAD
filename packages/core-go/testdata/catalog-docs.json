@@ -1,0 +1,1449 @@
+{
+  "blocks": [
+    {
+      "type": "activation",
+      "kind": "primitive",
+      "category": "elementwise",
+      "summary": "Pointwise nonlinearity.",
+      "formula": "",
+      "refs": [],
+      "params": [
+        [
+          "kind",
+          "enum",
+          "",
+          [
+            "silu",
+            "gelu",
+            "gelu_tanh",
+            "relu",
+            "relu2",
+            "tanh",
+            "sigmoid",
+            "identity"
+          ]
+        ],
+        [
+          "dim",
+          "int",
+          "Width, used for the memory and elementwise estimates",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "add",
+      "kind": "primitive",
+      "category": "elementwise",
+      "summary": "Elementwise sum, the residual connection.",
+      "formula": "",
+      "refs": [],
+      "params": [
+        [
+          "dim",
+          "int",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "boundary_in",
+      "kind": "primitive",
+      "category": "io",
+      "summary": "Entry point of a container subgraph.",
+      "formula": "",
+      "refs": [],
+      "params": [
+        [
+          "ports",
+          "obj",
+          "Port name -> shape pattern",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "boundary_out",
+      "kind": "primitive",
+      "category": "io",
+      "summary": "Exit point of a container subgraph.",
+      "formula": "",
+      "refs": [],
+      "params": [
+        [
+          "ports",
+          "obj",
+          "Port name -> shape pattern",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "concat",
+      "kind": "primitive",
+      "category": "shape",
+      "summary": "Joins tensors along one dimension.",
+      "formula": "",
+      "refs": [],
+      "params": [
+        [
+          "to",
+          "pattern",
+          "Shape of the combined tensor",
+          null
+        ],
+        [
+          "sizes",
+          "obj",
+          "Extents of the pieces, along `axis`",
+          null
+        ],
+        [
+          "axis",
+          "int",
+          "Which dimension to join on; negative counts from the end",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "conv1d",
+      "kind": "primitive",
+      "category": "ssm",
+      "summary": "Short depthwise convolution over time, used before a state-space scan.",
+      "formula": "params = channels * kernel (+ channels with bias)",
+      "refs": [
+        "https://arxiv.org/abs/2405.21060"
+      ],
+      "params": [
+        [
+          "channels",
+          "int",
+          "Width of the stream, convolved per channel",
+          null
+        ],
+        [
+          "kernel",
+          "int",
+          "Kernel width",
+          null
+        ],
+        [
+          "bias",
+          "bool",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "conv2d",
+      "kind": "primitive",
+      "category": "linear",
+      "summary": "Two-dimensional convolution, optionally with the activation a convnet always follows it with.",
+      "formula": "params = (in/groups)*out*k*k (+out with bias); FLOPs = 2*(in/groups)*out*k*k*H_out*W_out; H_out = floor((H + 2*padding - k)/stride) + 1",
+      "refs": [
+        "https://papers.nips.cc/paper/2012/hash/c399862d3b9d6b76c8436e924a68c45b-Abstract.html"
+      ],
+      "params": [
+        [
+          "in_channels",
+          "int",
+          "",
+          null
+        ],
+        [
+          "out_channels",
+          "int",
+          "",
+          null
+        ],
+        [
+          "kernel",
+          "int",
+          "",
+          null
+        ],
+        [
+          "stride",
+          "int",
+          "",
+          null
+        ],
+        [
+          "padding",
+          "int",
+          "",
+          null
+        ],
+        [
+          "groups",
+          "int",
+          "Grouped convolution; equal to in_channels is depthwise",
+          null
+        ],
+        [
+          "bias",
+          "bool",
+          "",
+          null
+        ],
+        [
+          "in_h",
+          "int",
+          "Height of the incoming feature map",
+          null
+        ],
+        [
+          "in_w",
+          "int",
+          "Width of the incoming feature map",
+          null
+        ],
+        [
+          "act",
+          "enum",
+          "Activation applied to the output, as a convnet always does",
+          [
+            "identity",
+            "relu",
+            "relu2",
+            "gelu",
+            "gelu_tanh",
+            "silu"
+          ]
+        ]
+      ]
+    },
+    {
+      "type": "dense_mlp",
+      "kind": "composite",
+      "category": "mlp",
+      "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
+      "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)",
+      "refs": [],
+      "params": [
+        [
+          "d_model",
+          "int",
+          "",
+          null
+        ],
+        [
+          "hidden",
+          "int",
+          "",
+          null
+        ],
+        [
+          "act",
+          "enum",
+          "",
+          [
+            "gelu",
+            "gelu_tanh",
+            "relu",
+            "relu2",
+            "silu"
+          ]
+        ],
+        [
+          "bias",
+          "bool",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "embedding",
+      "kind": "primitive",
+      "category": "embedding",
+      "summary": "Token embedding table.",
+      "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)",
+      "refs": [],
+      "params": [
+        [
+          "vocab",
+          "int",
+          "Vocabulary size",
+          null
+        ],
+        [
+          "dim",
+          "int",
+          "Embedding width",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "expand_heads",
+      "kind": "primitive",
+      "category": "shape",
+      "summary": "Shares one tensor across every attention head, as latent attention does with its rotary key.",
+      "formula": "",
+      "refs": [],
+      "params": [
+        [
+          "heads",
+          "int",
+          "",
+          null
+        ],
+        [
+          "dim",
+          "int",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "flatten2d",
+      "kind": "primitive",
+      "category": "shape",
+      "summary": "Folds a feature map into one vector per sample.",
+      "formula": "",
+      "refs": [],
+      "params": [
+        [
+          "channels",
+          "int",
+          "",
+          null
+        ],
+        [
+          "in_h",
+          "int",
+          "",
+          null
+        ],
+        [
+          "in_w",
+          "int",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "gated_mlp",
+      "kind": "composite",
+      "category": "mlp",
+      "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
+      "formula": "params = 3 * d_model * hidden",
+      "refs": [
+        "https://arxiv.org/abs/2002.05202"
+      ],
+      "params": [
+        [
+          "d_model",
+          "int",
+          "",
+          null
+        ],
+        [
+          "hidden",
+          "int",
+          "Intermediate width",
+          null
+        ],
+        [
+          "act",
+          "enum",
+          "",
+          [
+            "silu",
+            "gelu",
+            "gelu_tanh",
+            "relu",
+            "relu2"
+          ]
+        ],
+        [
+          "bias",
+          "bool",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "gqa_attention",
+      "kind": "composite",
+      "category": "attention",
+      "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
+      "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
+      "refs": [
+        "https://arxiv.org/abs/2305.13245"
+      ],
+      "params": [
+        [
+          "d_model",
+          "int",
+          "Residual stream width",
+          null
+        ],
+        [
+          "heads",
+          "int",
+          "Query heads",
+          null
+        ],
+        [
+          "kv_heads",
+          "int",
+          "Key/value heads. Equal to heads gives MHA, 1 gives MQA",
+          null
+        ],
+        [
+          "head_dim",
+          "int",
+          "",
+          null
+        ],
+        [
+          "bias",
+          "bool",
+          "Bias on the q/k/v/o projections",
+          null
+        ],
+        [
+          "o_bias",
+          "bool",
+          "Override the output-projection bias (Qwen2.5 has qkv bias only)",
+          null
+        ],
+        [
+          "causal",
+          "bool",
+          "",
+          null
+        ],
+        [
+          "window",
+          "int",
+          "Sliding-window width; 0 means full attention",
+          null
+        ],
+        [
+          "qk_norm",
+          "bool",
+          "RMSNorm on the query and key heads (Qwen3, Gemma 3)",
+          null
+        ],
+        [
+          "rope",
+          "obj",
+          "RoPE settings, or null for no rotary embedding",
+          null
+        ],
+        [
+          "flash",
+          "bool",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "input",
+      "kind": "primitive",
+      "category": "io",
+      "summary": "Model input, usually a batch of token ids.",
+      "formula": "",
+      "refs": [],
+      "params": [
+        [
+          "shape",
+          "pattern",
+          "Shape pattern of the model input",
+          null
+        ],
+        [
+          "dtype",
+          "enum",
+          "",
+          [
+            "int64",
+            "int32",
+            "bf16",
+            "fp32"
+          ]
+        ]
+      ]
+    },
+    {
+      "type": "kv_latent_cache",
+      "kind": "primitive",
+      "category": "attention",
+      "summary": "Marks the compressed vector that latent attention caches instead of keys and values.",
+      "formula": "cache = layers * dim * bytes per token, against 2 * layers * kv_heads * head_dim * bytes for GQA",
+      "refs": [
+        "https://arxiv.org/abs/2405.04434"
+      ],
+      "params": [
+        [
+          "dim",
+          "int",
+          "Width of the cached vector per token per layer",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "layernorm",
+      "kind": "primitive",
+      "category": "norm",
+      "summary": "Standard layer norm.",
+      "formula": "params = 2*dim with bias, dim without",
+      "refs": [],
+      "params": [
+        [
+          "dim",
+          "int",
+          "",
+          null
+        ],
+        [
+          "eps",
+          "num",
+          "",
+          null
+        ],
+        [
+          "bias",
+          "bool",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "learned_tokens",
+      "kind": "primitive",
+      "category": "embedding",
+      "summary": "A learned tensor with no input: a mask token, a CLS token, register tokens, learned queries. I-JEPA's predictor stands one of these in for every patch it has to predict.",
+      "formula": "params = count * dim",
+      "refs": [
+        "https://github.com/facebookresearch/ijepa/blob/main/src/models/vision_transformer.py"
+      ],
+      "params": [
+        [
+          "count",
+          "int",
+          "How many distinct vectors are learned",
+          null
+        ],
+        [
+          "dim",
+          "int",
+          "",
+          null
+        ],
+        [
+          "tokens",
+          "int",
+          "Sequence length it is broadcast to; 0 means one position per learned vector",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "linear",
+      "kind": "primitive",
+      "category": "linear",
+      "summary": "Dense projection.",
+      "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient",
+      "refs": [],
+      "params": [
+        [
+          "in_features",
+          "int",
+          "",
+          null
+        ],
+        [
+          "out_features",
+          "int",
+          "",
+          null
+        ],
+        [
+          "bias",
+          "bool",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "lm_head",
+      "kind": "primitive",
+      "category": "head",
+      "summary": "Output projection to vocabulary logits.",
+      "formula": "params = 0 when tied, else vocab*dim; FLOPs/token = 2*vocab*dim; logits cost vocab*(bytes+4) per token",
+      "refs": [
+        "https://blog.eleuther.ai/transformer-math/"
+      ],
+      "params": [
+        [
+          "vocab",
+          "int",
+          "",
+          null
+        ],
+        [
+          "dim",
+          "int",
+          "",
+          null
+        ],
+        [
+          "tied",
+          "bool",
+          "Share weights with the token embedding",
+          null
+        ],
+        [
+          "bias",
+          "bool",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "mamba2_block",
+      "kind": "composite",
+      "category": "ssm",
+      "summary": "Mamba-2 block. Its cost is linear in sequence length and it keeps a fixed state per sequence instead of a growing cache.",
+      "formula": "params = d_model*(2*d_inner + 2*groups*state + heads) + conv + 3*heads + d_inner + d_inner*d_model",
+      "refs": [
+        "https://arxiv.org/abs/2405.21060"
+      ],
+      "params": [
+        [
+          "d_model",
+          "int",
+          "",
+          null
+        ],
+        [
+          "expand",
+          "int",
+          "Inner width as a multiple of d_model",
+          null
+        ],
+        [
+          "head_dim",
+          "int",
+          "Width per state-space head",
+          null
+        ],
+        [
+          "state",
+          "int",
+          "Recurrent state width per head",
+          null
+        ],
+        [
+          "groups",
+          "int",
+          "Heads sharing one B/C projection",
+          null
+        ],
+        [
+          "conv_kernel",
+          "int",
+          "",
+          null
+        ],
+        [
+          "conv_bias",
+          "bool",
+          "",
+          null
+        ],
+        [
+          "bias",
+          "bool",
+          "Bias on the input and output projections",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "maxpool2d",
+      "kind": "primitive",
+      "category": "shape",
+      "summary": "Spatial max pooling.",
+      "formula": "no parameters; H_out = floor((H + 2*padding - k)/stride) + 1",
+      "refs": [],
+      "params": [
+        [
+          "channels",
+          "int",
+          "",
+          null
+        ],
+        [
+          "kernel",
+          "int",
+          "",
+          null
+        ],
+        [
+          "stride",
+          "int",
+          "",
+          null
+        ],
+        [
+          "padding",
+          "int",
+          "",
+          null
+        ],
+        [
+          "in_h",
+          "int",
+          "",
+          null
+        ],
+        [
+          "in_w",
+          "int",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "mla_attention",
+      "kind": "composite",
+      "category": "attention",
+      "summary": "Multi-head latent attention. Keys and values are compressed to one small vector per token, and only that vector is cached.",
+      "formula": "params = d_model*q_lora + q_lora + q_lora*heads*(nope+rope) + d_model*(kv_lora+rope) + kv_lora + kv_lora*heads*(nope+v_dim) + heads*v_dim*d_model; cache = layers*(kv_lora+rope)*bytes per token",
+      "refs": [
+        "https://arxiv.org/abs/2405.04434",
+        "https://arxiv.org/abs/2412.19437"
+      ],
+      "params": [
+        [
+          "d_model",
+          "int",
+          "",
+          null
+        ],
+        [
+          "heads",
+          "int",
+          "",
+          null
+        ],
+        [
+          "q_lora",
+          "int",
+          "Width of the compressed query (DeepSeek's q_lora_rank)",
+          null
+        ],
+        [
+          "kv_lora",
+          "int",
+          "Width of the compressed key/value latent, which is what gets cached",
+          null
+        ],
+        [
+          "nope_dim",
+          "int",
+          "Per-head width that carries no position information",
+          null
+        ],
+        [
+          "rope_dim",
+          "int",
+          "Per-head width that carries the rotary embedding",
+          null
+        ],
+        [
+          "v_dim",
+          "int",
+          "Per-head value width",
+          null
+        ],
+        [
+          "causal",
+          "bool",
+          "",
+          null
+        ],
+        [
+          "rope",
+          "obj",
+          "RoPE settings, or null for no rotary embedding",
+          null
+        ],
+        [
+          "bias",
+          "bool",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "moe_experts",
+      "kind": "container",
+      "category": "moe",
+      "summary": "A bank of experts. Its subgraph describes one expert.",
+      "formula": "total params scale with experts; FLOPs and activations scale with top_k",
+      "refs": [],
+      "params": [
+        [
+          "experts",
+          "int",
+          "How many expert copies exist",
+          null
+        ],
+        [
+          "top_k",
+          "int",
+          "How many a single token passes through",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "moe_layer",
+      "kind": "composite",
+      "category": "moe",
+      "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
+      "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden; active swaps experts for top_k",
+      "refs": [
+        "https://arxiv.org/abs/2401.06066",
+        "https://arxiv.org/abs/2412.19437"
+      ],
+      "params": [
+        [
+          "d_model",
+          "int",
+          "",
+          null
+        ],
+        [
+          "experts",
+          "int",
+          "Routed experts",
+          null
+        ],
+        [
+          "top_k",
+          "int",
+          "",
+          null
+        ],
+        [
+          "expert_hidden",
+          "int",
+          "Hidden width of one expert",
+          null
+        ],
+        [
+          "shared_experts",
+          "int",
+          "Experts every token always passes through",
+          null
+        ],
+        [
+          "act",
+          "enum",
+          "",
+          [
+            "silu",
+            "gelu",
+            "gelu_tanh",
+            "relu",
+            "relu2"
+          ]
+        ],
+        [
+          "bias",
+          "bool",
+          "",
+          null
+        ],
+        [
+          "router_bias",
+          "bool",
+          "",
+          null
+        ],
+        [
+          "normalize",
+          "bool",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "mul",
+      "kind": "primitive",
+      "category": "elementwise",
+      "summary": "Elementwise product, the gate in a gated MLP.",
+      "formula": "",
+      "refs": [],
+      "params": [
+        [
+          "dim",
+          "int",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "output",
+      "kind": "primitive",
+      "category": "io",
+      "summary": "Model output.",
+      "formula": "",
+      "refs": [],
+      "params": []
+    },
+    {
+      "type": "pos_embedding",
+      "kind": "primitive",
+      "category": "embedding",
+      "summary": "Learned absolute position embedding, added to the token embedding (GPT-2 style).",
+      "formula": "params = max_seq * dim",
+      "refs": [],
+      "params": [
+        [
+          "max_seq",
+          "int",
+          "Maximum position index",
+          null
+        ],
+        [
+          "dim",
+          "int",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "rearrange",
+      "kind": "primitive",
+      "category": "shape",
+      "summary": "Reshape or permute, written in einops notation.",
+      "formula": "No parameters and no FLOPs; the product of the dimensions must be preserved",
+      "refs": [],
+      "params": [
+        [
+          "from",
+          "pattern",
+          "",
+          null
+        ],
+        [
+          "to",
+          "pattern",
+          "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "repeat",
+      "kind": "container",
+      "category": "container",
+      "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match.",
+      "formula": "",
+      "refs": [],
+      "params": [
+        [
+          "count",
+          "int",
+          "How many times the subgraph is stacked",
+          null
+        ],
+        [
+          "pattern",
+          "str",
+          "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "rmsnorm",
+      "kind": "primitive",
+      "category": "norm",
+      "summary": "Root-mean-square layer norm.",
+      "formula": "params = dim (scale only, no bias)",
+      "refs": [],
+      "params": [
+        [
+          "dim",
+          "int",
+          "",
+          null
+        ],
+        [
+          "eps",
+          "num",
+          "",
+          null
+        ],
+        [
+          "scale",
+          "bool",
+          "Learned per-channel gain",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "rope",
+      "kind": "primitive",
+      "category": "position",
+      "summary": "Rotary position embedding applied to queries or keys.",
+      "formula": "",
+      "refs": [
+        "https://arxiv.org/abs/2104.09864"
+      ],
+      "params": [
+        [
+          "heads",
+          "int",
+          "",
+          null
+        ],
+        [
+          "head_dim",
+          "int",
+          "",
+          null
+        ],
+        [
+          "theta",
+          "num",
+          "",
+          null
+        ],
+        [
+          "scaling",
+          "obj",
+          "Optional RoPE scaling spec (linear, NTK, YaRN)",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "sdpa",
+      "kind": "primitive",
+      "category": "attention",
+      "summary": "Scaled dot-product attention core. Covers MHA, GQA and MQA through kv_heads.",
+      "formula": "FLOPs/token = 4*T_eff*heads*head_dim (halved when causal); KV cache = 2*kv_heads*head_dim*bytes per token",
+      "refs": [
+        "https://arxiv.org/abs/2305.13245",
+        "https://arxiv.org/abs/2205.14135"
+      ],
+      "params": [
+        [
+          "heads",
+          "int",
+          "Query heads",
+          null
+        ],
+        [
+          "kv_heads",
+          "int",
+          "Key/value heads; equal to heads for MHA, 1 for MQA",
+          null
+        ],
+        [
+          "head_dim",
+          "int",
+          "Width of a query/key head",
+          null
+        ],
+        [
+          "v_head_dim",
+          "int",
+          "Width of a value head; 0 means the same as head_dim",
+          null
+        ],
+        [
+          "causal",
+          "bool",
+          "",
+          null
+        ],
+        [
+          "window",
+          "int",
+          "Sliding-window width; 0 means full attention",
+          null
+        ],
+        [
+          "flash",
+          "bool",
+          "Memory-efficient kernel that never materializes the score matrix",
+          null
+        ],
+        [
+          "cache",
+          "bool",
+          "Whether this block owns the inference cache. Latent attention caches a compressed vector instead.",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "split",
+      "kind": "primitive",
+      "category": "shape",
+      "summary": "Cuts a tensor into pieces along its last dimension.",
+      "formula": "No parameters and no FLOPs; the pieces must add up to the incoming width",
+      "refs": [],
+      "params": [
+        [
+          "from",
+          "pattern",
+          "Shape of the incoming tensor",
+          null
+        ],
+        [
+          "sizes",
+          "obj",
+          "Widths of the pieces, along the last dimension",
+          null
+        ],
+        [
+          "axis",
+          "int",
+          "Which dimension to cut. Only the last is supported.",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "ssd_scan",
+      "kind": "primitive",
+      "category": "ssm",
+      "summary": "Mamba-2 state-space scan. Linear in sequence length, and its state is fixed per sequence rather than growing per token.",
+      "formula": "params = 3*heads; state = heads*head_dim*state*bytes per sequence; FLOPs are approximate",
+      "refs": [
+        "https://arxiv.org/abs/2405.21060"
+      ],
+      "params": [
+        [
+          "d_inner",
+          "int",
+          "Width of the state-space stream",
+          null
+        ],
+        [
+          "heads",
+          "int",
+          "",
+          null
+        ],
+        [
+          "head_dim",
+          "int",
+          "Width per state-space head (Mamba-2's P)",
+          null
+        ],
+        [
+          "state",
+          "int",
+          "Recurrent state width per head (Mamba-2's N)",
+          null
+        ],
+        [
+          "groups",
+          "int",
+          "How many heads share one B/C projection",
+          null
+        ],
+        [
+          "xbc_width",
+          "int",
+          "Width of the combined x, B and C stream",
+          null
+        ],
+        [
+          "chunk",
+          "int",
+          "Chunk length of the chunked scan",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "topk_router",
+      "kind": "primitive",
+      "category": "moe",
+      "summary": "Chooses which experts each token is sent to.",
+      "formula": "params = d_model * experts (+ experts with a routing bias)",
+      "refs": [
+        "https://arxiv.org/abs/2401.06066"
+      ],
+      "params": [
+        [
+          "d_model",
+          "int",
+          "",
+          null
+        ],
+        [
+          "experts",
+          "int",
+          "Routed experts to choose from",
+          null
+        ],
+        [
+          "top_k",
+          "int",
+          "Experts each token is sent to",
+          null
+        ],
+        [
+          "bias",
+          "bool",
+          "Per-expert routing bias (DeepSeek's score correction)",
+          null
+        ],
+        [
+          "normalize",
+          "bool",
+          "Renormalize the chosen weights to sum to one",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "transformer_block",
+      "kind": "composite",
+      "category": "block",
+      "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+      "formula": "params = attention + mlp + 2 norms",
+      "refs": [],
+      "params": [
+        [
+          "d_model",
+          "int",
+          "",
+          null
+        ],
+        [
+          "heads",
+          "int",
+          "",
+          null
+        ],
+        [
+          "kv_heads",
+          "int",
+          "",
+          null
+        ],
+        [
+          "head_dim",
+          "int",
+          "",
+          null
+        ],
+        [
+          "ffn_hidden",
+          "int",
+          "",
+          null
+        ],
+        [
+          "attention",
+          "enum",
+          "",
+          [
+            "gqa",
+            "mla"
+          ]
+        ],
+        [
+          "q_lora",
+          "int",
+          "Latent attention: compressed query width",
+          null
+        ],
+        [
+          "kv_lora",
+          "int",
+          "Latent attention: cached latent width",
+          null
+        ],
+        [
+          "nope_dim",
+          "int",
+          "",
+          null
+        ],
+        [
+          "rope_dim",
+          "int",
+          "",
+          null
+        ],
+        [
+          "v_dim",
+          "int",
+          "",
+          null
+        ],
+        [
+          "norm",
+          "enum",
+          "",
+          [
+            "rmsnorm",
+            "layernorm"
+          ]
+        ],
+        [
+          "norm_bias",
+          "bool",
+          "Bias on layernorm; ignored for rmsnorm",
+          null
+        ],
+        [
+          "post_norm",
+          "bool",
+          "Also normalize each sublayer's output before the residual add (Gemma 2/3)",
+          null
+        ],
+        [
+          "mlp",
+          "enum",
+          "",
+          [
+            "gated",
+            "dense",
+            "moe"
+          ]
+        ],
+        [
+          "experts",
+          "int",
+          "Routed experts, when mlp is moe",
+          null
+        ],
+        [
+          "top_k",
+          "int",
+          "",
+          null
+        ],
+        [
+          "expert_hidden",
+          "int",
+          "Hidden width of one expert",
+          null
+        ],
+        [
+          "shared_experts",
+          "int",
+          "",
+          null
+        ],
+        [
+          "router_bias",
+          "bool",
+          "",
+          null
+        ],
+        [
+          "act",
+          "enum",
+          "",
+          [
+            "silu",
+            "gelu",
+            "gelu_tanh",
+            "relu",
+            "relu2"
+          ]
+        ],
+        [
+          "attn_bias",
+          "bool",
+          "",
+          null
+        ],
+        [
+          "attn_o_bias",
+          "bool",
+          "",
+          null
+        ],
+        [
+          "mlp_bias",
+          "bool",
+          "",
+          null
+        ],
+        [
+          "qk_norm",
+          "bool",
+          "",
+          null
+        ],
+        [
+          "causal",
+          "bool",
+          "",
+          null
+        ],
+        [
+          "window",
+          "int",
+          "",
+          null
+        ],
+        [
+          "rope",
+          "obj",
+          "RoPE settings, or null for no rotary embedding",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "weighted_sum",
+      "kind": "primitive",
+      "category": "moe",
+      "summary": "Combines the chosen experts' outputs using the router's weights.",
+      "formula": "",
+      "refs": [],
+      "params": [
+        [
+          "dim",
+          "int",
+          "",
+          null
+        ],
+        [
+          "n",
+          "int",
+          "How many contributions are combined",
+          null
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,516 @@
+{
+  "cases": [
+    {
+      "label": "30m",
+      "preset": "gpt2-small",
+      "achieved": 30339456,
+      "target": 30000000,
+      "changes": [
+        [
+          "D",
+          768,
+          384
+        ],
+        [
+          "H",
+          12,
+          6
+        ],
+        [
+          "Hkv",
+          12,
+          6
+        ],
+        [
+          "L",
+          12,
+          6
+        ]
+      ],
+      "notes": [
+        "The embedding table is 65% of this design's weights. Shrink the vocabulary or tie the output projection if you want the comparison to be about the transformer."
+      ],
+      "name": "gpt2-small-30m",
+      "notesOnDoc": "Scaled down from gpt2-small (124m parameters) for a local bench run. The original 124M GPT-2. Learned positions, LayerNorm with bias, GELU MLP, tied head.",
+      "published": null,
+      "symbols": [
+        [
+          "D",
+          384
+        ],
+        [
+          "F",
+          1536
+        ],
+        [
+          "H",
+          6
+        ],
+        [
+          "Hkv",
+          6
+        ],
+        [
+          "L",
+          6
+        ],
+        [
+          "Tmax",
+          1024
+        ],
+        [
+          "V",
+          50257
+        ],
+        [
+          "dh",
+          64
+        ]
+      ]
+    },
+    {
+      "label": "30m-nonembed",
+      "preset": "llama-3-8b",
+      "achieved": 34413440,
+      "target": 30000000,
+      "changes": [
+        [
+          "D",
+          4096,
+          640
+        ],
+        [
+          "H",
+          32,
+          5
+        ],
+        [
+          "Hkv",
+          8,
+          1
+        ],
+        [
+          "L",
+          32,
+          5
+        ],
+        [
+          "V",
+          128256,
+          8192
+        ]
+      ],
+      "notes": [
+        "The closest reachable size is 15% from the target. Rounding the width to whole heads limits how finely the size can be tuned."
+      ],
+      "name": "llama-3-8b-40m",
+      "notesOnDoc": "Scaled down from llama-3-8b (7.5b parameters) for a local bench run. GQA with 8 KV heads, 128k vocabulary, RoPE theta 500000. The FFN width follows Llama 3's ceil_mult(1.3 * 8/3 * D, 1024) rule, which is why F is written as an expression.",
+      "published": null,
+      "symbols": [
+        [
+          "D",
+          640
+        ],
+        [
+          "F",
+          3072
+        ],
+        [
+          "H",
+          5
+        ],
+        [
+          "Hkv",
+          1
+        ],
+        [
+          "L",
+          5
+        ],
+        [
+          "V",
+          8192
+        ],
+        [
+          "dh",
+          128
+        ]
+      ]
+    },
+    {
+      "label": "100m-keepdepth",
+      "preset": "llama-3-8b",
+      "achieved": 96092416,
+      "target": 100000000,
+      "changes": [
+        [
+          "D",
+          4096,
+          256
+        ],
+        [
+          "H",
+          32,
+          4
+        ],
+        [
+          "Hkv",
+          8,
+          1
+        ],
+        [
+          "dh",
+          128,
+          64
+        ]
+      ],
+      "notes": [
+        "Narrowed the head dimension to 64 so the scaled design keeps at least 4 heads."
+      ],
+      "name": "llama-3-8b-96m",
+      "notesOnDoc": "Scaled down from llama-3-8b (8.0b parameters) for a local bench run. GQA with 8 KV heads, 128k vocabulary, RoPE theta 500000. The FFN width follows Llama 3's ceil_mult(1.3 * 8/3 * D, 1024) rule, which is why F is written as an expression.",
+      "published": null,
+      "symbols": [
+        [
+          "D",
+          256
+        ],
+        [
+          "F",
+          1024
+        ],
+        [
+          "H",
+          4
+        ],
+        [
+          "Hkv",
+          1
+        ],
+        [
+          "L",
+          32
+        ],
+        [
+          "V",
+          128256
+        ],
+        [
+          "dh",
+          64
+        ]
+      ]
+    },
+    {
+      "label": "50m-moe",
+      "preset": "mixtral-8x7b",
+      "achieved": 56669760,
+      "target": 50000000,
+      "changes": [
+        [
+          "D",
+          4096,
+          448
+        ],
+        [
+          "F",
+          14336,
+          1600
+        ],
+        [
+          "Fe",
+          14336,
+          1600
+        ],
+        [
+          "H",
+          32,
+          7
+        ],
+        [
+          "Hkv",
+          8,
+          1
+        ],
+        [
+          "L",
+          32,
+          3
+        ],
+        [
+          "V",
+          32000,
+          4096
+        ],
+        [
+          "dh",
+          128,
+          64
+        ]
+      ],
+      "notes": [
+        "Narrowed the head dimension to 64 so the scaled design keeps at least 4 heads.",
+        "The closest reachable size is 13% from the target. Rounding the width to whole heads limits how finely the size can be tuned."
+      ],
+      "name": "mixtral-8x7b-57m",
+      "notesOnDoc": "Scaled down from mixtral-8x7b (46.7b parameters) for a local bench run. Eight experts per layer, two active per token. The first widely used sparse open model.",
+      "published": null,
+      "symbols": [
+        [
+          "D",
+          448
+        ],
+        [
+          "E",
+          8
+        ],
+        [
+          "F",
+          1600
+        ],
+        [
+          "Fe",
+          1600
+        ],
+        [
+          "H",
+          7
+        ],
+        [
+          "Hkv",
+          1
+        ],
+        [
+          "K",
+          2
+        ],
+        [
+          "L",
+          3
+        ],
+        [
+          "V",
+          4096
+        ],
+        [
+          "dh",
+          64
+        ]
+      ]
+    },
+    {
+      "label": "20m-mla",
+      "preset": "deepseek-v3",
+      "achieved": 20043264,
+      "target": 20000000,
+      "changes": [
+        [
+          "D",
+          7168,
+          256
+        ],
+        [
+          "F",
+          18432,
+          640
+        ],
+        [
+          "Fe",
+          2048,
+          64
+        ],
+        [
+          "H",
+          128,
+          4
+        ],
+        [
+          "Hkv",
+          128,
+          4
+        ],
+        [
+          "L",
+          61,
+          2
+        ],
+        [
+          "Ld",
+          3,
+          1
+        ],
+        [
+          "V",
+          129280,
+          4096
+        ],
+        [
+          "dh",
+          192,
+          64
+        ]
+      ],
+      "notes": [
+        "Narrowed the head dimension to 64 so the scaled design keeps at least 4 heads.",
+        "Reduced the leading dense layers so at least one sparse layer remains."
+      ],
+      "name": "deepseek-v3-20m",
+      "notesOnDoc": "Scaled down from deepseek-v3 (671.0b parameters) for a local bench run. Latent attention with a 576-wide cached vector per token per layer, three leading dense layers, then 58 sparse layers with 256 routed experts, eight active, plus one shared expert. The published figure excludes the multi-token-prediction module.",
+      "published": null,
+      "symbols": [
+        [
+          "D",
+          256
+        ],
+        [
+          "E",
+          256
+        ],
+        [
+          "F",
+          640
+        ],
+        [
+          "Fe",
+          64
+        ],
+        [
+          "H",
+          4
+        ],
+        [
+          "Hkv",
+          4
+        ],
+        [
+          "K",
+          8
+        ],
+        [
+          "Kl",
+          512
+        ],
+        [
+          "L",
+          2
+        ],
+        [
+          "Ld",
+          1
+        ],
+        [
+          "Lm",
+          1
+        ],
+        [
+          "Ns",
+          1
+        ],
+        [
+          "Ql",
+          1536
+        ],
+        [
+          "V",
+          4096
+        ],
+        [
+          "dh",
+          64
+        ],
+        [
+          "dnope",
+          128
+        ],
+        [
+          "drope",
+          64
+        ],
+        [
+          "dv",
+          128
+        ]
+      ]
+    },
+    {
+      "label": "10m-mamba",
+      "preset": "nemotron-h-8b",
+      "achieved": 5579216,
+      "target": 10000000,
+      "changes": [
+        [
+          "D",
+          4096,
+          64
+        ],
+        [
+          "F",
+          21504,
+          320
+        ],
+        [
+          "H",
+          32,
+          1
+        ],
+        [
+          "Hkv",
+          8,
+          1
+        ],
+        [
+          "L",
+          52,
+          1
+        ],
+        [
+          "V",
+          131072,
+          4096
+        ],
+        [
+          "dh",
+          128,
+          64
+        ]
+      ],
+      "notes": [
+        "Narrowed the head dimension to 64 so the scaled design keeps at least 4 heads.",
+        "The closest reachable size is 44% from the target. Rounding the width to whole heads limits how finely the size can be tuned."
+      ],
+      "name": "nemotron-h-8b-6m",
+      "notesOnDoc": "Scaled down from nemotron-h-8b (8.1b parameters) for a local bench run. A hybrid stack: 24 Mamba-2 layers, 24 feed-forward layers and only 4 attention layers. Almost all of the cache cost disappears because a state-space layer keeps a fixed state per sequence rather than one that grows with every token.",
+      "published": null,
+      "symbols": [
+        [
+          "D",
+          64
+        ],
+        [
+          "F",
+          320
+        ],
+        [
+          "H",
+          1
+        ],
+        [
+          "Hkv",
+          1
+        ],
+        [
+          "L",
+          1
+        ],
+        [
+          "V",
+          4096
+        ],
+        [
+          "dh",
+          64
+        ]
+      ]
+    }
+  ]
+}

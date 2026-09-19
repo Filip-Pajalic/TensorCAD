@@ -188,6 +188,25 @@ type Doc struct {
 	SymbolOrder []string `json:"-"`
 }
 
+// Clone is a deep copy.
+//
+// Through JSON, so a copy is exactly what the document would be if it had been
+// saved and reopened: nothing shared, and nothing carried across that the file
+// format does not hold. The symbol order is the one thing JSON cannot carry, so
+// it is copied across by hand.
+func (d *Doc) Clone() (*Doc, error) {
+	raw, err := json.Marshal(d)
+	if err != nil {
+		return nil, err
+	}
+	var out Doc
+	if err := json.Unmarshal(raw, &out); err != nil {
+		return nil, err
+	}
+	out.SymbolOrder = append([]string{}, d.SymbolOrder...)
+	return &out, nil
+}
+
 // SymbolTable is every symbol resolved to a number.
 type SymbolTable struct {
 	// Order is the evaluation order actually used, which is dependency order.

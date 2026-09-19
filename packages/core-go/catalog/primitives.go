@@ -183,7 +183,9 @@ var Primitives = []*BlockDef{
 		Flops:      noFlops,
 		Retains:    noRetains,
 		Docs: BlockDocs{
-			Summary: "A learned tensor with no input: a mask token, a CLS token, register tokens, learned queries.",
+			Summary: "A learned tensor with no input: a mask token, a CLS token, register tokens, " +
+				"learned queries. I-JEPA's predictor stands one of these in for every patch " +
+				"it has to predict.",
 			Formula: "params = count * dim",
 			Refs:    []string{"https://github.com/facebookresearch/ijepa/blob/main/src/models/vision_transformer.py"},
 		},
@@ -311,8 +313,10 @@ var Primitives = []*BlockDef{
 		Retains: func(*Resolved) []string { return []string{"x"} },
 		Docs: BlockDocs{
 			Summary: "Two-dimensional convolution, optionally with the activation a convnet always follows it with.",
-			Formula: "params = (in/groups)*out*k*k (+out with bias); FLOPs = 2*(in/groups)*out*k*k*H_out*W_out",
-			Refs:    []string{"https://papers.nips.cc/paper/2012/hash/c399862d3b9d6b76c8436e924a68c45b-Abstract.html"},
+			Formula: "params = (in/groups)*out*k*k (+out with bias); " +
+				"FLOPs = 2*(in/groups)*out*k*k*H_out*W_out; " +
+				"H_out = floor((H + 2*padding - k)/stride) + 1",
+			Refs: []string{"https://papers.nips.cc/paper/2012/hash/c399862d3b9d6b76c8436e924a68c45b-Abstract.html"},
 		},
 	},
 	{
@@ -531,8 +535,8 @@ var Primitives = []*BlockDef{
 			{"v_head_dim", pIntD(0, 0, "Width of a value head; 0 means the same as head_dim")},
 			{"causal", pBool(true, "")},
 			{"window", ParamSpec{Type: ParamInt, Default: 0.0, HasDefault: true, Doc: "Sliding-window width; 0 means full attention"}},
-			{"flash", pBool(true, "Memory-efficient kernel that never materialises the score matrix")},
-			{"cache", pBool(true, "Whether this block owns the inference cache")},
+			{"flash", pBool(true, "Memory-efficient kernel that never materializes the score matrix")},
+			{"cache", pBool(true, "Whether this block owns the inference cache. Latent attention caches a compressed vector instead.")},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			v := "head_dim"
@@ -631,7 +635,7 @@ var Primitives = []*BlockDef{
 			{"experts", pInt(1, "Routed experts to choose from")},
 			{"top_k", pInt(1, "Experts each token is sent to")},
 			{"bias", pBool(false, "Per-expert routing bias (DeepSeek's score correction)")},
-			{"normalize", pBool(true, "Renormalise the chosen weights to sum to one")},
+			{"normalize", pBool(true, "Renormalize the chosen weights to sum to one")},
 		},
 		Ports: Ports{
 			In:  map[string]PortSpec{"x": Port("... d_model")},

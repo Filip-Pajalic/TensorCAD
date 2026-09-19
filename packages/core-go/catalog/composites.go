@@ -365,8 +365,10 @@ var mlaAttention = &BlockDef{
 	},
 	Docs: BlockDocs{
 		Summary: "Multi-head latent attention. Keys and values are compressed to one small vector per token, and only that vector is cached.",
-		Formula: "params = d_model*q_lora + q_lora + q_lora*heads*(nope+rope) + d_model*(kv_lora+rope) + kv_lora + kv_lora*heads*(nope+v_dim) + heads*v_dim*d_model",
-		Refs:    []string{"https://arxiv.org/abs/2405.04434", "https://arxiv.org/abs/2412.19437"},
+		Formula: "params = d_model*q_lora + q_lora + q_lora*heads*(nope+rope) + " +
+			"d_model*(kv_lora+rope) + kv_lora + kv_lora*heads*(nope+v_dim) + " +
+			"heads*v_dim*d_model; cache = layers*(kv_lora+rope)*bytes per token",
+		Refs: []string{"https://arxiv.org/abs/2405.04434", "https://arxiv.org/abs/2412.19437"},
 	},
 }
 
@@ -636,7 +638,7 @@ var transformerBlock = &BlockDef{
 		{"v_dim", pIntD(0, 0, "")},
 		{"norm", pEnum([]string{"rmsnorm", "layernorm"}, "rmsnorm", "")},
 		{"norm_bias", pBool(true, "Bias on layernorm; ignored for rmsnorm")},
-		{"post_norm", pBool(false, "Also normalise each sublayer's output before the residual add (Gemma 2/3)")},
+		{"post_norm", pBool(false, "Also normalize each sublayer's output before the residual add (Gemma 2/3)")},
 		{"mlp", pEnum([]string{"gated", "dense", "moe"}, "gated", "")},
 		{"experts", pIntD(0, 0, "Routed experts, when mlp is moe")},
 		{"top_k", pIntD(1, 1, "")},
@@ -762,7 +764,7 @@ var repeatContainer = &BlockDef{
 	Params: ParamList{
 		{"count", pInt(1, "How many times the subgraph is stacked")},
 		{"pattern", ParamSpec{Type: ParamStr, Default: nil, HasDefault: true,
-			Doc: "Optional variant pattern for hybrid stacks"}},
+			Doc: "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"}},
 	},
 	Docs: BlockDocs{
 		Summary: "Stacks its subgraph count times. The subgraph's input and output shapes must match.",

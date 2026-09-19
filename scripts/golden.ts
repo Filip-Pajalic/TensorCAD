@@ -32,9 +32,12 @@ import {
   shapeToString,
   validate,
   generateTorch,
+  explainAll,
+  scaleDesign,
   RULES,
   type AnalysisOptions,
   type TorchOptions,
+  type ScaleOptions,
   type InferResult,
 } from "@tensorcad/core";
 
@@ -785,3 +788,101 @@ for (const name of PRESET_NAMES) {
   writeFileSync(join(codegenDir, `${name}.json`), JSON.stringify({ preset: name, cases }, null, 2) + "\n");
 }
 console.log(`  and ${codegenCases} generated PyTorch files`);
+
+/**
+ * Explain and scale.
+ *
+ * Explain is the learning surface, so what it says about a block matters as
+ * much as the numbers under it: the expression a person wrote beside the value
+ * it came to, and the block's own documentation. Scale is a search, and a search
+ * is where two engines drift most easily — the same binary search over the same
+ * rounding has to land on the same widths, not merely near them.
+ */
+const SCALE_CASES: { label: string; preset: string; options: ScaleOptions }[] = [
+  { label: "30m", preset: "gpt2-small", options: { targetParams: 30e6 } },
+  { label: "30m-nonembed", preset: "llama-3-8b", options: { targetParams: 30e6, targetBasis: "non-embedding", vocab: 8192, tieHead: true } },
+  { label: "100m-keepdepth", preset: "llama-3-8b", options: { targetParams: 100e6, keepDepth: true } },
+  { label: "50m-moe", preset: "mixtral-8x7b", options: { targetParams: 50e6, vocab: 4096 } },
+  { label: "20m-mla", preset: "deepseek-v3", options: { targetParams: 20e6, vocab: 4096 } },
+  { label: "10m-mamba", preset: "nemotron-h-8b", options: { targetParams: 10e6, vocab: 4096 } },
+];
+
+const explained = PRESET_NAMES.map((name) => {
+  const doc = getPreset(name);
+  const all = explainAll(doc);
+  return {
+    preset: name,
+    // The top eight: a whole design's worth of explanations for twenty presets
+    // would be a megabyte of golden file to say the same thing twenty times.
+    blocks: all.slice(0, 8).map((e) => ({
+      path: e.path,
+      type: e.type,
+      kind: e.kind,
+      docs: e.docs,
+      copies: e.copies,
+      params: Object.entries(e.params).map(([k, v]) => [k, v.expression, v.value, v.doc ?? null]),
+      shapes: e.shapes,
+      contributes: e.contributes,
+      breakdown: e.breakdown,
+    })),
+  };
+});
+writeFileSync(join(root, "explain.json"), JSON.stringify({ cases: explained }, null, 2) + "\n");
+
+const scaled = SCALE_CASES.map(({ label, preset, options }) => {
+  const r = scaleDesign(getPreset(preset), options);
+  return {
+    label,
+    preset,
+    achieved: r.achieved,
+    target: r.target,
+    changes: Object.entries(r.changes)
+      .sort(([a], [b]) => (a < b ? -1 : 1))
+      .map(([k, v]) => [k, v.from, v.to]),
+    notes: r.notes,
+    name: r.doc.meta.name,
+    notesOnDoc: r.doc.meta.notes,
+    published: r.doc.meta.published ?? null,
+    // The symbols the scaled document ends up with, which is what a bench run
+    // would actually build.
+    symbols: Object.entries(resolveSymbols(r.doc).designValues).sort(([a], [b]) => (a < b ? -1 : 1)),
+  };
+});
+writeFileSync(join(root, "scale.json"), JSON.stringify({ cases: scaled }, null, 2) + "\n");
+console.log(`  and ${explained.length} explanations and ${scaled.length} scaled designs`);
+
+/**
+ * The catalog's prose.
+ *
+ * Every block's summary, formula and sources, and every parameter's one-line
+ * documentation. This is what the inspector shows and what `explain` reads out,
+ * so it is part of the engine's output, not decoration around it — and it is
+ * the easiest thing to lose in a port, because nothing computes with it.
+ */
+const catalogDocs = Object.keys(CATALOG)
+  .sort()
+  .map((type) => {
+    const def = CATALOG[type] as never as {
+      kind: string;
+      category: string;
+      docs: { summary?: string; formula?: string; refs?: string[] };
+      params?: Record<string, { type: string; doc?: string; default?: unknown; values?: string[] }>;
+    };
+    return {
+      type,
+      kind: def.kind,
+      category: def.category,
+      summary: def.docs?.summary ?? "",
+      formula: def.docs?.formula ?? "",
+      refs: def.docs?.refs ?? [],
+      // In declaration order, which is the order the inspector lays them out.
+      params: Object.entries(def.params ?? {}).map(([name, spec]) => [
+        name,
+        spec.type,
+        spec.doc ?? "",
+        spec.values ?? null,
+      ]),
+    };
+  });
+writeFileSync(join(root, "catalog-docs.json"), JSON.stringify({ blocks: catalogDocs }, null, 2) + "\n");
+console.log(`  and the prose of ${catalogDocs.length} blocks`);

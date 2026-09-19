@@ -11,6 +11,7 @@ import (
 
 	"github.com/tensorcad/core/infer"
 	"github.com/tensorcad/core/ir"
+	"github.com/tensorcad/core/presets"
 	"github.com/tensorcad/core/shapes"
 )
 
@@ -48,31 +49,23 @@ type goldenFile struct {
 
 func presetNames(t *testing.T) []string {
 	t.Helper()
-	b, err := os.ReadFile(filepath.Join("..", "testdata", "presets.json"))
+	names, err := presets.Names()
 	if err != nil {
 		t.Fatalf("read preset index: %v", err)
 	}
-	var names []string
-	if err := json.Unmarshal(b, &names); err != nil {
-		t.Fatalf("parse preset index: %v", err)
-	}
 	if len(names) == 0 {
-		t.Fatal("preset index is empty")
+		t.Fatal("the preset library is empty")
 	}
 	return names
 }
 
 func loadDoc(t *testing.T, name string) *ir.Doc {
 	t.Helper()
-	b, err := os.ReadFile(filepath.Join("..", "testdata", "presets", name+".json"))
+	doc, err := presets.Get(name)
 	if err != nil {
-		t.Fatalf("read preset %s: %v", name, err)
+		t.Fatal(err)
 	}
-	var doc ir.Doc
-	if err := json.Unmarshal(b, &doc); err != nil {
-		t.Fatalf("parse preset %s: %v", name, err)
-	}
-	return &doc
+	return doc
 }
 
 func loadGolden(t *testing.T, name string) goldenFile {

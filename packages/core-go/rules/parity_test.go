@@ -8,6 +8,7 @@ import (
 
 	"github.com/tensorcad/core/analysis"
 	"github.com/tensorcad/core/ir"
+	"github.com/tensorcad/core/presets"
 	"github.com/tensorcad/core/rules"
 )
 
@@ -178,28 +179,23 @@ func variants() map[string]analysis.Options {
 
 func presetNames(t *testing.T) []string {
 	t.Helper()
-	raw, err := os.ReadFile(filepath.Join("..", "testdata", "presets.json"))
+	names, err := presets.Names()
 	if err != nil {
 		t.Fatalf("read preset index: %v", err)
 	}
-	var names []string
-	if err := json.Unmarshal(raw, &names); err != nil {
-		t.Fatalf("parse preset index: %v", err)
+	if len(names) == 0 {
+		t.Fatal("the preset library is empty")
 	}
 	return names
 }
 
 func loadDoc(t *testing.T, name string) *ir.Doc {
 	t.Helper()
-	raw, err := os.ReadFile(filepath.Join("..", "testdata", "presets", name+".json"))
+	doc, err := presets.Get(name)
 	if err != nil {
-		t.Fatalf("read preset %s: %v", name, err)
+		t.Fatal(err)
 	}
-	var doc ir.Doc
-	if err := json.Unmarshal(raw, &doc); err != nil {
-		t.Fatalf("parse preset %s: %v", name, err)
-	}
-	return &doc
+	return doc
 }
 
 // TestBrokenDesignsMatchTypeScript covers the rules a correct preset never

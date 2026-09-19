@@ -33,12 +33,18 @@ Two cross-checks worth knowing:
 
 - **The engine is moving to Go.** `packages/core-go` is replacing `packages/core`; the
   frontend becomes a client of it over Wails bindings rather than running the analysis in the
-  window. `docs/index.md` has the stages, what is done, and how each one is proven —
-  the TypeScript writes golden files for all seventeen presets and the Go tests have to
-  reproduce them exactly, including the printed form of every polynomial. Until a stage
-  lands, `packages/core` is still the engine and still the specification. Do not "improve"
-  the port as you go: it is bug-compatible on purpose, and the one deliberate divergence is
-  documented.
+  window. Done so far: the IR and symbol table, the shape algebra, the block catalog, shape
+  inference, the whole analysis, the eighteen design rules and PyTorch generation. Still
+  TypeScript only: `explain`, `scaleDesign` and the Hugging Face importer.
+  `bun run scripts/golden.ts` writes down what the TypeScript says for all twenty presets
+  and the Go tests have to reproduce it exactly — including the printed form of every
+  polynomial and every byte of a generated `model.py`. Until a stage lands, `packages/core`
+  is still the engine and still the specification. Do not "improve" the port as you go: it is
+  bug-compatible on purpose, and every deliberate divergence is documented where it is made.
+- **A preset is a document, not a builder.** `packages/core-go/presets/data` holds the
+  library as JSON, embedded into the binary. `packages/core/src/presets` still builds those
+  documents and is what `scripts/golden.ts` runs; when the TypeScript goes, the JSON stays and
+  nothing has to be ported.
 - `packages/core` — pure TypeScript, **zero runtime dependencies**. IR, symbolic shapes, block catalog, design rules, analysis, code generation. Everything else is a client of this.
 - `packages/ui` — React + React Flow editor. `state/unfold.ts` turns one flat level into the
   nested drawing the published figures use: containers become frames around their contents and

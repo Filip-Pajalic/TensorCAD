@@ -39,7 +39,11 @@ import {
 } from "@tensorcad/core";
 
 const root = join(import.meta.dir, "..", "packages", "core-go", "testdata");
-const docsDir = join(root, "presets");
+// The preset documents are not test data: they are the library the Go engine
+// ships, embedded into its binary. The builders that produce them are the last
+// thing in the TypeScript core with no Go counterpart, and they will not get
+// one — a preset is a document, and a document is the IR.
+const docsDir = join(import.meta.dir, "..", "packages", "core-go", "presets", "data");
 const goldenDir = join(root, "golden");
 const analysisDir = join(root, "analysis");
 const rulesDir = join(root, "rules");
@@ -122,7 +126,7 @@ for (const name of PRESET_NAMES) {
   index.push(name);
 }
 
-writeFileSync(join(root, "presets.json"), JSON.stringify(index, null, 2) + "\n");
+writeFileSync(join(docsDir, "index.json"), JSON.stringify(index, null, 2) + "\n");
 /**
  * The expression algebra, pinned separately.
  *

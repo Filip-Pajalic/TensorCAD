@@ -9,6 +9,7 @@ import (
 
 	"github.com/tensorcad/core/codegen"
 	"github.com/tensorcad/core/ir"
+	"github.com/tensorcad/core/presets"
 )
 
 // The generated PyTorch against the TypeScript, byte for byte.
@@ -134,28 +135,23 @@ func itoa(v int) string {
 
 func presetNames(t *testing.T) []string {
 	t.Helper()
-	raw, err := os.ReadFile(filepath.Join("..", "testdata", "presets.json"))
+	names, err := presets.Names()
 	if err != nil {
 		t.Fatalf("read preset index: %v", err)
 	}
-	var names []string
-	if err := json.Unmarshal(raw, &names); err != nil {
-		t.Fatalf("parse preset index: %v", err)
+	if len(names) == 0 {
+		t.Fatal("the preset library is empty")
 	}
 	return names
 }
 
 func loadDoc(t *testing.T, name string) *ir.Doc {
 	t.Helper()
-	raw, err := os.ReadFile(filepath.Join("..", "testdata", "presets", name+".json"))
+	doc, err := presets.Get(name)
 	if err != nil {
-		t.Fatalf("read preset %s: %v", name, err)
+		t.Fatal(err)
 	}
-	var doc ir.Doc
-	if err := json.Unmarshal(raw, &doc); err != nil {
-		t.Fatalf("parse preset %s: %v", name, err)
-	}
-	return &doc
+	return doc
 }
 
 func loadCodegen(t *testing.T, name string) []goldenCase {

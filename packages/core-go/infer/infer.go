@@ -282,6 +282,7 @@ type walker struct {
 // Shapes walks a document and reports the shape on every port.
 func Shapes(doc *ir.Doc, symbols *ir.SymbolTable, opts Options) *Result {
 	result := &Result{
+		Issues:     []Issue{},
 		Outputs:    map[string]shapes.Shape{},
 		Inputs:     map[string]shapes.Shape{},
 		ProducerOf: map[string]string{},

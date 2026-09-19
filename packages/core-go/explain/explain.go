@@ -220,7 +220,7 @@ func build(
 	}
 
 	var paramSum, activeSum, flopSum, activationSum, cacheToken, cacheSeq float64
-	var breakdown []Line
+	breakdown := []Line{}
 
 	for _, node := range nodes {
 		p := result.Params.ByPath[node.Path]

@@ -46,7 +46,7 @@ type ThroughputOptions struct {
 
 // AnalyzeThroughput runs the roofline.
 func AnalyzeThroughput(o ThroughputOptions) *ThroughputResult {
-	var notes []string
+	notes := []string{}
 	ridgePoint := o.Peak / o.Hardware.Bandwidth
 
 	kvBytes := KvBytesFor(o.Kv, o.Seq, o.Batch)

@@ -121,7 +121,9 @@ func elementsPerToken(shape shapes.Shape, env map[string]float64) (float64, bool
 // References: ZeRO (arXiv 1910.02054) and Korthikanti et al. on activation
 // recomputation (arXiv 2205.05198).
 func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
-	var notes, errs []string
+	// Empty rather than nil: these cross to the editor as JSON, where a nil
+	// slice is null and every reader would have to defend against it.
+	notes, errs := []string{}, []string{}
 	ctx, par := opts.Ctx, opts.Parallel
 	tokens := ctx.B * ctx.T
 

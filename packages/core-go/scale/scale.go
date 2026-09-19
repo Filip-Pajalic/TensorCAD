@@ -116,7 +116,7 @@ func applyScale(base *ir.Doc, factor float64, opts Options) (*ir.Doc, []string, 
 	if err != nil {
 		return nil, nil, err
 	}
-	var notes []string
+	notes := []string{}
 
 	widthNames := opts.WidthSymbols
 	if widthNames == nil {

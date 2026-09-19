@@ -23,7 +23,16 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+      # The engine is Go compiled to WebAssembly, and the suite runs the
+      # compiled module against the TypeScript it replaces, so the toolchain is
+      # needed here too.
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache-dependency-path: packages/core-go/go.sum
       - run: bun install --frozen-lockfile
+      - name: Build the engine
+        run: bun run build:wasm
       - name: Type-check
         run: bun run typecheck
       - name: Test

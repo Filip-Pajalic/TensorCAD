@@ -58,7 +58,9 @@ type File struct {
 
 // Generated is everything the emitter produced.
 type Generated struct {
-	Files    []File   `json:"files"`
+	Files []File `json:"files"`
+	// Warnings is never nil: an empty list means the design generated cleanly,
+	// and null would mean the same thing in a way every reader has to handle.
 	Warnings []string `json:"warnings"`
 }
 

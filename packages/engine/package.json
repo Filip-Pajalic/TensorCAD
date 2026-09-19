@@ -1,0 +1,28 @@
+{
+  "name": "@tensorcad/engine",
+  "version": "0.0.1",
+  "description": "The TensorCAD analysis engine, compiled from Go to WebAssembly, with its TypeScript client",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./wasm_exec": "./vendor/wasm_exec.js",
+    "./tensorcad.wasm": "./wasm/tensorcad.wasm"
+  },
+  "files": [
+    "src",
+    "vendor",
+    "wasm"
+  ],
+  "scripts": {
+    "build": "bun run ../../scripts/build-wasm.ts",
+    "test": "bun test ../../packages/engine/test",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "MIT",
+  "sideEffects": [
+    "./vendor/wasm_exec.js"
+  ]
+}

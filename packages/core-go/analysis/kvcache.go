@@ -22,7 +22,7 @@ type KvResult struct {
 
 // CountKvCache adds up the inference state.
 func CountKvCache(flat *FlatResult, ctx catalog.AnalysisCtx) *KvResult {
-	res := &KvResult{ByPath: map[string]float64{}}
+	res := &KvResult{ByPath: map[string]float64{}, Errors: []string{}}
 
 	for i := range flat.Nodes {
 		node := &flat.Nodes[i]

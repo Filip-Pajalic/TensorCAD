@@ -40,6 +40,10 @@
       "name": "@tensorcad/core",
       "version": "0.0.1",
     },
+    "packages/engine": {
+      "name": "@tensorcad/engine",
+      "version": "0.0.1",
+    },
     "packages/mcp": {
       "name": "@tensorcad/mcp",
       "version": "0.0.1",
@@ -296,6 +300,8 @@
     "@tensorcad/core": ["@tensorcad/core@workspace:packages/core"],
 
     "@tensorcad/desktop-frontend": ["@tensorcad/desktop-frontend@workspace:desktop/frontend"],
+
+    "@tensorcad/engine": ["@tensorcad/engine@workspace:packages/engine"],
 
     "@tensorcad/mcp": ["@tensorcad/mcp@workspace:packages/mcp"],
 

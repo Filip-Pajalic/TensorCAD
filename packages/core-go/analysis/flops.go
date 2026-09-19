@@ -56,6 +56,7 @@ func CountFlops(flat *FlatResult, opts FlopsOptions) *FlopsResult {
 		RuleOfThumb6N: 6 * opts.NonEmbeddingActive,
 		ByPath:        map[string]float64{},
 		ByCategory:    map[string]float64{},
+		Errors:        []string{},
 	}
 
 	for i := range flat.Nodes {

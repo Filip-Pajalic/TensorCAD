@@ -79,7 +79,7 @@ func b(v bool) *bool       { return &v }
 // Import reads a config.json into a design. An empty name takes the model's
 // own _name_or_path.
 func Import(config Config, name string) (*Result, error) {
-	var warnings []string
+	warnings := []string{}
 
 	typ, _ := config["model_type"].(string)
 	typ = strings.ToLower(typ)

@@ -10,6 +10,7 @@ import (
 	"github.com/tensorcad/core/explain"
 	"github.com/tensorcad/core/hf"
 	"github.com/tensorcad/core/ir"
+	"github.com/tensorcad/core/jsonx"
 	"github.com/tensorcad/core/presets"
 	"github.com/tensorcad/core/rules"
 	"github.com/tensorcad/core/scale"
@@ -103,8 +104,13 @@ func decodeOptions(text string) (analysis.Options, error) {
 	return out, nil
 }
 
+// encode writes a report for the other side of the boundary.
+//
+// Through jsonx rather than encoding/json, because a design whose symbols fail
+// to evaluate produces NaN, and a report that cannot be sent leaves the editor
+// blank where it should be showing the error.
 func encode(v any) (string, error) {
-	raw, err := json.Marshal(v)
+	raw, err := jsonx.Marshal(v)
 	if err != nil {
 		return "", fmt.Errorf("could not write the result: %w", err)
 	}

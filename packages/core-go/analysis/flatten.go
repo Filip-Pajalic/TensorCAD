@@ -64,7 +64,7 @@ type FlatResult struct {
 func Flatten(doc *ir.Doc, symbols *ir.SymbolTable) *FlatResult {
 	// A design may define blocks of its own, so the catalog is the document's.
 	cat := catalog.Of(doc)
-	out := &FlatResult{}
+	out := &FlatResult{Errors: []string{}}
 	seen := map[string]bool{}
 
 	var walk func(graph *ir.Graph, prefix string, multiplier, activeMultiplier float64, container string, depth int)

@@ -36,3 +36,4 @@ runs/
 
 # Task runner checksum cache
 .task/
+packages/engine/wasm/

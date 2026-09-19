@@ -210,10 +210,13 @@ type StateBytes struct {
 }
 
 // BlockDocs is what a block says for a reader.
+//
+// Tagged, because this crosses to the editor as JSON: an inspector reading
+// `summary` would find nothing under `Summary`.
 type BlockDocs struct {
-	Summary string
-	Formula string
-	Refs    []string
+	Summary string   `json:"summary,omitempty"`
+	Formula string   `json:"formula,omitempty"`
+	Refs    []string `json:"refs,omitempty"`
 }
 
 // BlockDef is a catalog entry.

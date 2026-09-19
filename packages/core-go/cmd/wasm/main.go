@@ -29,6 +29,7 @@ import (
 	"github.com/tensorcad/core/ir"
 	"github.com/tensorcad/core/jsonx"
 	"github.com/tensorcad/core/presets"
+	"github.com/tensorcad/core/report"
 	"github.com/tensorcad/core/rules"
 	"github.com/tensorcad/core/scale"
 )
@@ -41,7 +42,12 @@ func main() {
 		"version":  wrap(0, version),
 		"analyze":  wrap(2, analyze),
 		"validate": wrap(2, validate),
-		"explain":  wrap(3, explainOne),
+		// One call for the editor: the findings and the shapes come from the
+		// same walk, and asking separately would walk the graph twice per
+		// keystroke.
+		"derive":  wrap(2, derive),
+		"infer":   wrap(2, inferShapes),
+		"explain": wrap(3, explainOne),
 		// The whole model at once, for the panel that lists every block.
 		"explainAll":    wrap(2, explainAll),
 		"generateTorch": wrap(2, generateTorch),
@@ -183,6 +189,34 @@ func decodeOptions(text string) (analysis.Options, error) {
 		}
 	}
 	return out, nil
+}
+
+func derive(args []string) (string, error) {
+	doc, err := decodeDoc(args[0])
+	if err != nil {
+		return "", err
+	}
+	opts, err := decodeOptions(args[1])
+	if err != nil {
+		return "", err
+	}
+	out, err := report.Derive(doc, opts)
+	if err != nil {
+		return "", err
+	}
+	return encode(out)
+}
+
+func inferShapes(args []string) (string, error) {
+	doc, err := decodeDoc(args[0])
+	if err != nil {
+		return "", err
+	}
+	out, err := report.Infer(doc, args[1] == "expanded")
+	if err != nil {
+		return "", err
+	}
+	return encode(out)
 }
 
 func version([]string) (string, error) {

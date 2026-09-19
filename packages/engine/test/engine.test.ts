@@ -13,7 +13,17 @@ import { beforeAll, describe, expect, it } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { analyze, generateTorch, getPreset, PRESET_NAMES, scaleDesign, validate } from "@tensorcad/core";
+import {
+  analyze,
+  generateTorch,
+  getPreset,
+  inferShapes,
+  PRESET_NAMES,
+  resolveSymbols,
+  scaleDesign,
+  shapeToString,
+  validate,
+} from "@tensorcad/core";
 import { createEngine, EngineError, type Doc as EngineDoc, type Engine } from "../src/index.js";
 import "../vendor/wasm_exec.js";
 
@@ -133,6 +143,47 @@ describe("the compiled engine", () => {
     expect(fromWasm.changes).toEqual(fromCore.changes);
     expect(fromWasm.notes).toEqual(fromCore.notes);
     expect(fromWasm.doc.meta.name).toBe(fromCore.doc.meta.name);
+  });
+
+  // The editor's own call: one walk, both answers. The shapes come back as
+  // text in both forms, because only the engine holds the polynomial and the
+  // canvas needs to be able to write either one on a wire.
+  it("derives the findings and the shapes together", () => {
+    for (const name of PRESET_NAMES) {
+      const doc = getPreset(name);
+      const derived = engine.derive(asDoc(doc));
+      const fromCore = validate(doc);
+      const inferred = inferShapes(doc, resolveSymbols(doc), { expandComposites: true });
+
+      expect({ name, ok: derived.report.ok }).toEqual({ name, ok: fromCore.ok });
+      expect(derived.report.findings.map(line)).toEqual(fromCore.findings.map(line));
+
+      const wantOutputs = [...inferred.outputs].map(([k, v]) => [k, shapeToString(v)]).sort();
+      const gotOutputs = Object.entries(derived.infer.outputs)
+        .map(([k, v]) => [k, v.symbolic])
+        .sort();
+      expect({ name, shapes: gotOutputs }).toEqual({ name, shapes: wantOutputs });
+    }
+  });
+
+  it("writes a shape in both the forms the canvas uses", () => {
+    const derived = engine.derive(asDoc(getPreset("gpt2-small")));
+    const stream = derived.infer.outputs["embed:y"];
+    // The runtime symbols stay symbols in both; only the design ones resolve.
+    expect(stream.symbolic).toBe("B T D");
+    expect(stream.numeric).toBe("B T 768");
+  });
+
+  it("infers shapes on their own, for the wire the pointer is over", () => {
+    const doc = getPreset("gpt2-small");
+    const flat = engine.infer(asDoc(doc));
+    const fromCore = inferShapes(doc, resolveSymbols(doc));
+    expect(flat.issues.length).toBe(fromCore.issues.length);
+    expect(Object.keys(flat.outputs).sort()).toEqual([...fromCore.outputs.keys()].sort());
+    // A parameter arrives with the symbol it was written as, not just its value.
+    expect(flat.resolved["head"].p.vocab).toBe(50257);
+    expect(flat.resolved["head"].s.vocab).toBe("V");
+    expect(flat.ports["embed"].out.y.shape).toBe("... dim");
   });
 
   it("explains a block the same way", () => {

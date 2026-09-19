@@ -15,11 +15,13 @@ import type {
   AnalysisOptions,
   AnalysisResult,
   CatalogEntry,
+  Derived,
   Doc,
   Explanation,
   GeneratedCode,
   HardwareProfile,
   ImportResult,
+  Inference,
   ScaleOptions,
   ScaleResult,
   TorchOptions,
@@ -47,6 +49,18 @@ export interface Engine {
   analyze(doc: Doc, options?: AnalysisOptions): AnalysisResult;
   /** Runs the design rules and returns the analysis they were drawn from. */
   validate(doc: Doc, options?: AnalysisOptions): ValidationReport;
+  /**
+   * The editor's entry point: the findings and the shapes together.
+   *
+   * One call rather than two, because both come from the same walk of the same
+   * graph and asking separately would walk it twice on every keystroke.
+   */
+  derive(doc: Doc, options?: AnalysisOptions): Derived;
+  /**
+   * Shape inference alone, which is what answers "would this wire type-check"
+   * for every handle the pointer passes over.
+   */
+  infer(doc: Doc, mode?: "flat" | "expanded"): Inference;
   explain(doc: Doc, path: string, options?: AnalysisOptions): Explanation;
   /** Every block, largest contribution first. */
   explainAll(doc: Doc, options?: AnalysisOptions): Explanation[];
@@ -67,6 +81,8 @@ interface Exports {
   version(): string;
   analyze(doc: string, options: string): string;
   validate(doc: string, options: string): string;
+  derive(doc: string, options: string): string;
+  infer(doc: string, mode: string): string;
   explain(doc: string, path: string, options: string): string;
   explainAll(doc: string, options: string): string;
   generateTorch(doc: string, options: string): string;
@@ -179,6 +195,8 @@ function wrap(api: Exports): Engine {
     version: () => unwrap(api.version()) as EngineVersion,
     analyze: (doc, options) => unwrap(api.analyze(JSON.stringify(doc), point(options))) as AnalysisResult,
     validate: (doc, options) => unwrap(api.validate(JSON.stringify(doc), point(options))) as ValidationReport,
+    derive: (doc, options) => unwrap(api.derive(JSON.stringify(doc), point(options))) as Derived,
+    infer: (doc, mode) => unwrap(api.infer(JSON.stringify(doc), mode ?? "flat")) as Inference,
     explain: (doc, path, options) =>
       unwrap(api.explain(JSON.stringify(doc), path, point(options))) as Explanation,
     explainAll: (doc, options) =>

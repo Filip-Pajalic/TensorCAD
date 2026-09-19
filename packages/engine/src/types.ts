@@ -489,3 +489,73 @@ export interface ImportResult {
   /** What the import could not represent faithfully. */
   warnings: string[];
 }
+
+// ---------------------------------------------------------------------------
+// Shape inference
+// ---------------------------------------------------------------------------
+
+/**
+ * One tensor shape, in both the forms the editor shows.
+ *
+ * Symbolic is the honest one: `B T D` says the residual stream is D wide
+ * whatever D is. Numeric substitutes the design symbols and leaves the runtime
+ * ones alone, which is the quickest way to watch a symbol edit travel through a
+ * design. Both come from the engine, because only it holds the polynomial.
+ */
+export interface Shape {
+  symbolic: string;
+  numeric: string;
+}
+
+/** One pin, as the canvas draws it. */
+export interface ResolvedPort {
+  shape: string;
+  dtype: string;
+  anchor: "flow" | "side";
+  optional?: boolean;
+  showName?: boolean;
+  doc?: string;
+}
+
+export interface ResolvedPorts {
+  in: Record<string, ResolvedPort>;
+  out: Record<string, ResolvedPort>;
+}
+
+/** A node's parameters after evaluation. */
+export interface Resolved {
+  type: string;
+  /** The concrete value of each parameter. */
+  p: Record<string, ParamValue>;
+  /** The symbolic form, so a width can be labelled "D" rather than 4096. */
+  s: Record<string, string>;
+}
+
+/** Something wrong with the wiring, addressed to a node. */
+export interface InferIssue {
+  path: string;
+  port?: string;
+  message: string;
+  severity: "error" | "warning";
+  /** The block's own rule id, when the issue came from a block constraint. */
+  rule?: string;
+  param?: string;
+}
+
+/** Every shape in a design, keyed by `"path:port"`. */
+export interface Inference {
+  outputs: Record<string, Shape>;
+  inputs: Record<string, Shape>;
+  /** Consumer `"path:port"` to producer `"path:port"`. */
+  producerOf: Record<string, string>;
+  ports: Record<string, ResolvedPorts>;
+  resolved: Record<string, Resolved>;
+  issues: InferIssue[];
+}
+
+/** Everything the editor needs for one document at one operating point. */
+export interface Derived {
+  report: ValidationReport;
+  /** Shape inference with composites expanded, so interiors can be opened. */
+  infer: Inference;
+}

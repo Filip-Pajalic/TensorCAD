@@ -12,6 +12,7 @@ import (
 	"github.com/tensorcad/core/ir"
 	"github.com/tensorcad/core/jsonx"
 	"github.com/tensorcad/core/presets"
+	"github.com/tensorcad/core/report"
 	"github.com/tensorcad/core/rules"
 	"github.com/tensorcad/core/scale"
 )
@@ -150,6 +151,38 @@ func (s *EngineService) Validate(document string, operatingPoint string) (string
 		return "", err
 	}
 	return encode(report)
+}
+
+// Derive is the editor's entry point: the design rules and the shapes, from one
+// walk of the graph.
+func (s *EngineService) Derive(document string, operatingPoint string) (string, error) {
+	doc, err := decodeDoc(document)
+	if err != nil {
+		return "", err
+	}
+	opts, err := decodeOptions(operatingPoint)
+	if err != nil {
+		return "", err
+	}
+	out, err := report.Derive(doc, opts)
+	if err != nil {
+		return "", err
+	}
+	return encode(out)
+}
+
+// Infer runs shape inference alone, which is what answers "would this wire
+// type-check" for every handle the pointer passes over.
+func (s *EngineService) Infer(document string, mode string) (string, error) {
+	doc, err := decodeDoc(document)
+	if err != nil {
+		return "", err
+	}
+	out, err := report.Infer(doc, mode == "expanded")
+	if err != nil {
+		return "", err
+	}
+	return encode(out)
 }
 
 // Explain describes one block: its parameters as written and as evaluated, its

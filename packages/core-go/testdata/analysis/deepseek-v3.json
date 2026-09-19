@@ -1,0 +1,1723 @@
+{
+  "preset": "deepseek-v3",
+  "cases": [
+    {
+      "label": "default",
+      "options": {
+        "T": 4096,
+        "B": 1,
+        "dtype": "bf16",
+        "inferenceDtype": "bf16",
+        "kvDtype": "bf16",
+        "hardware": "h100-sxm",
+        "gpus": 1,
+        "parallel": {
+          "dp": 1,
+          "tp": 1,
+          "pp": 1,
+          "ep": 1,
+          "zero": 0,
+          "sequenceParallel": false
+        },
+        "optimizer": "adamw",
+        "recompute": "none",
+        "flash": true,
+        "tokens": 732512368640,
+        "tokensWereDefaulted": true,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 1
+      },
+      "params": {
+        "total": 671026419200,
+        "active": 37552297472,
+        "embedding": 926679040,
+        "head": 926679040,
+        "nonEmbedding": 670099740160,
+        "nonEmbeddingActive": 36625618432,
+        "byPath": [
+          [
+            "dense_layers/block/attn/k_up",
+            25165824
+          ],
+          [
+            "dense_layers/block/attn/kv_down",
+            12386304
+          ],
+          [
+            "dense_layers/block/attn/kv_norm",
+            1536
+          ],
+          [
+            "dense_layers/block/attn/o_proj",
+            352321536
+          ],
+          [
+            "dense_layers/block/attn/q_down",
+            33030144
+          ],
+          [
+            "dense_layers/block/attn/q_norm",
+            4608
+          ],
+          [
+            "dense_layers/block/attn/q_up",
+            113246208
+          ],
+          [
+            "dense_layers/block/attn/v_up",
+            25165824
+          ],
+          [
+            "dense_layers/block/mlp/down",
+            396361728
+          ],
+          [
+            "dense_layers/block/mlp/gate",
+            396361728
+          ],
+          [
+            "dense_layers/block/mlp/up",
+            396361728
+          ],
+          [
+            "dense_layers/block/norm1",
+            21504
+          ],
+          [
+            "dense_layers/block/norm2",
+            21504
+          ],
+          [
+            "embed",
+            926679040
+          ],
+          [
+            "final_norm",
+            7168
+          ],
+          [
+            "head",
+            926679040
+          ],
+          [
+            "layers/block/attn/k_up",
+            486539264
+          ],
+          [
+            "layers/block/attn/kv_down",
+            239468544
+          ],
+          [
+            "layers/block/attn/kv_norm",
+            29696
+          ],
+          [
+            "layers/block/attn/o_proj",
+            6811549696
+          ],
+          [
+            "layers/block/attn/q_down",
+            638582784
+          ],
+          [
+            "layers/block/attn/q_norm",
+            89088
+          ],
+          [
+            "layers/block/attn/q_up",
+            2189426688
+          ],
+          [
+            "layers/block/attn/v_up",
+            486539264
+          ],
+          [
+            "layers/block/mlp/experts/expert/down",
+            217969590272
+          ],
+          [
+            "layers/block/mlp/experts/expert/gate",
+            217969590272
+          ],
+          [
+            "layers/block/mlp/experts/expert/up",
+            217969590272
+          ],
+          [
+            "layers/block/mlp/router",
+            106445312
+          ],
+          [
+            "layers/block/mlp/shared/down",
+            851443712
+          ],
+          [
+            "layers/block/mlp/shared/gate",
+            851443712
+          ],
+          [
+            "layers/block/mlp/shared/up",
+            851443712
+          ],
+          [
+            "layers/block/norm1",
+            415744
+          ],
+          [
+            "layers/block/norm2",
+            415744
+          ]
+        ],
+        "byCategory": [
+          [
+            "embedding",
+            926679040
+          ],
+          [
+            "head",
+            926679040
+          ],
+          [
+            "linear",
+            669065609216
+          ],
+          [
+            "moe",
+            106445312
+          ],
+          [
+            "norm",
+            1006592
+          ]
+        ],
+        "byType": [
+          [
+            "embedding",
+            926679040
+          ],
+          [
+            "linear",
+            669065609216
+          ],
+          [
+            "lm_head",
+            926679040
+          ],
+          [
+            "rmsnorm",
+            1006592
+          ],
+          [
+            "topk_router",
+            106445312
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 73249193984,
+        "fwdAttention": 12280922112,
+        "fwdAttentionUnmasked": 24561844224,
+        "fwdTotal": 85530116096,
+        "fwdTotalUnmasked": 97811038208,
+        "elementwise": 18386944,
+        "trainPerToken": 256590348288,
+        "attentionShare": 0.1435859399303954,
+        "ruleOfThumb2N": 73251236864,
+        "ruleOfThumb6N": 219753710592,
+        "byPath": [
+          [
+            "dense_layers/block/attn/attn",
+            603979776
+          ],
+          [
+            "dense_layers/block/attn/k_up",
+            50331648
+          ],
+          [
+            "dense_layers/block/attn/kv_down",
+            24772608
+          ],
+          [
+            "dense_layers/block/attn/o_proj",
+            704643072
+          ],
+          [
+            "dense_layers/block/attn/q_down",
+            66060288
+          ],
+          [
+            "dense_layers/block/attn/q_up",
+            226492416
+          ],
+          [
+            "dense_layers/block/attn/v_up",
+            50331648
+          ],
+          [
+            "dense_layers/block/mlp/down",
+            792723456
+          ],
+          [
+            "dense_layers/block/mlp/gate",
+            792723456
+          ],
+          [
+            "dense_layers/block/mlp/up",
+            792723456
+          ],
+          [
+            "head",
+            1853358080
+          ],
+          [
+            "layers/block/attn/attn",
+            11676942336
+          ],
+          [
+            "layers/block/attn/k_up",
+            973078528
+          ],
+          [
+            "layers/block/attn/kv_down",
+            478937088
+          ],
+          [
+            "layers/block/attn/o_proj",
+            13623099392
+          ],
+          [
+            "layers/block/attn/q_down",
+            1277165568
+          ],
+          [
+            "layers/block/attn/q_up",
+            4378853376
+          ],
+          [
+            "layers/block/attn/v_up",
+            973078528
+          ],
+          [
+            "layers/block/mlp/experts/expert/down",
+            13623099392
+          ],
+          [
+            "layers/block/mlp/experts/expert/gate",
+            13623099392
+          ],
+          [
+            "layers/block/mlp/experts/expert/up",
+            13623099392
+          ],
+          [
+            "layers/block/mlp/router",
+            212860928
+          ],
+          [
+            "layers/block/mlp/shared/down",
+            1702887424
+          ],
+          [
+            "layers/block/mlp/shared/gate",
+            1702887424
+          ],
+          [
+            "layers/block/mlp/shared/up",
+            1702887424
+          ]
+        ],
+        "byCategory": [
+          [
+            "attention",
+            12280922112
+          ],
+          [
+            "head",
+            1853358080
+          ],
+          [
+            "linear",
+            71182974976
+          ],
+          [
+            "moe",
+            212860928
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 70272,
+        "bytesPerSequenceFixed": 0,
+        "byPath": [
+          [
+            "dense_layers/block/attn/latent",
+            3456
+          ],
+          [
+            "layers/block/attn/latent",
+            66816
+          ]
+        ]
+      },
+      "memory": {
+        "weightsBytes": 1342052838400,
+        "train": {
+          "weights": 1342052838400,
+          "grads": 1342052838400,
+          "optimizer": 8052317030400,
+          "activations": 136415543296,
+          "logits": 3177185280,
+          "total": 10872838250496,
+          "perGpu": {
+            "weights": 1342052838400,
+            "grads": 1342052838400,
+            "optimizer": 8052317030400,
+            "activations": 136415543296,
+            "total": 10872838250496
+          },
+          "activationsByPath": [
+            [
+              "dense_layers/block/_in",
+              176160768
+            ],
+            [
+              "dense_layers/block/attn/_in",
+              176160768
+            ],
+            [
+              "dense_layers/block/attn/attn",
+              408944640
+            ],
+            [
+              "dense_layers/block/attn/k_cat",
+              603979776
+            ],
+            [
+              "dense_layers/block/attn/kv_norm",
+              12582912
+            ],
+            [
+              "dense_layers/block/attn/kv_split",
+              12582912
+            ],
+            [
+              "dense_layers/block/attn/o_merge",
+              402653184
+            ],
+            [
+              "dense_layers/block/attn/q_down",
+              37748736
+            ],
+            [
+              "dense_layers/block/attn/q_heads",
+              603979776
+            ],
+            [
+              "dense_layers/block/attn/q_norm",
+              37748736
+            ],
+            [
+              "dense_layers/block/attn/v_heads",
+              402653184
+            ],
+            [
+              "dense_layers/block/mlp/_in",
+              176160768
+            ],
+            [
+              "dense_layers/block/mlp/act",
+              452984832
+            ],
+            [
+              "dense_layers/block/mlp/gate",
+              452984832
+            ],
+            [
+              "dense_layers/block/mlp/gated",
+              452984832
+            ],
+            [
+              "dense_layers/block/mlp/up",
+              452984832
+            ],
+            [
+              "dense_layers/block/resid1",
+              176160768
+            ],
+            [
+              "final_norm",
+              58720256
+            ],
+            [
+              "head",
+              3177185280
+            ],
+            [
+              "layers",
+              58720256
+            ],
+            [
+              "layers/block/_in",
+              3405774848
+            ],
+            [
+              "layers/block/attn/_in",
+              3405774848
+            ],
+            [
+              "layers/block/attn/attn",
+              7906263040
+            ],
+            [
+              "layers/block/attn/k_cat",
+              11676942336
+            ],
+            [
+              "layers/block/attn/kv_norm",
+              243269632
+            ],
+            [
+              "layers/block/attn/kv_split",
+              243269632
+            ],
+            [
+              "layers/block/attn/o_merge",
+              7784628224
+            ],
+            [
+              "layers/block/attn/q_down",
+              729808896
+            ],
+            [
+              "layers/block/attn/q_heads",
+              11676942336
+            ],
+            [
+              "layers/block/attn/q_norm",
+              729808896
+            ],
+            [
+              "layers/block/attn/v_heads",
+              7784628224
+            ],
+            [
+              "layers/block/mlp/_in",
+              3405774848
+            ],
+            [
+              "layers/block/mlp/experts/expert/_in",
+              27246198784
+            ],
+            [
+              "layers/block/mlp/experts/expert/act",
+              7784628224
+            ],
+            [
+              "layers/block/mlp/experts/expert/gate",
+              7784628224
+            ],
+            [
+              "layers/block/mlp/experts/expert/gated",
+              7784628224
+            ],
+            [
+              "layers/block/mlp/experts/expert/up",
+              7784628224
+            ],
+            [
+              "layers/block/mlp/shared/_in",
+              3405774848
+            ],
+            [
+              "layers/block/mlp/shared/act",
+              973078528
+            ],
+            [
+              "layers/block/mlp/shared/gate",
+              973078528
+            ],
+            [
+              "layers/block/mlp/shared/gated",
+              973078528
+            ],
+            [
+              "layers/block/mlp/shared/up",
+              973078528
+            ],
+            [
+              "layers/block/resid1",
+              3405774848
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 1342052838400,
+          "kv": 287834112,
+          "overhead": 268468134502.40002,
+          "total": 1610808807014.4
+        },
+        "optimizerLabel": "AdamW, mixed precision (16 B/param)",
+        "notes": []
+      },
+      "throughput": {
+        "ridgePoint": 295.2238805970149,
+        "decodeBytesPerStep": 75392429056,
+        "decodeFlopsPerStep": 85530116096,
+        "decodeSecondsPerStep": 0.022505202703283583,
+        "decodeTokensPerSecond": 44.434169875488244,
+        "memoryBound": true,
+        "prefillSeconds": 0.8855696550283518,
+        "notes": [
+          "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
+        ]
+      },
+      "cost": {
+        "totalFlops": 1.8795560379460545e+23,
+        "gpuHours": 131976.46598317986,
+        "wallClockHours": 131976.46598317986,
+        "dollars": 329941.16495794966,
+        "tokens": 732512368640,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 732512368640,
+        "tokensPerParam": 1.0916296999353674,
+        "tokensPerActiveParam": 19.506459469921403,
+        "overTrainingRatio": 1,
+        "predictedLoss": [
+          [
+            "epoch",
+            2.014577056486992
+          ],
+          [
+            "hoffmann",
+            1.9896593754664014
+          ]
+        ],
+        "verdict": "Close to compute-optimal."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 89,
+        "blocks": 100,
+        "repeats": [
+          {
+            "path": "dense_layers",
+            "type": "repeat",
+            "count": 3,
+            "active": 3
+          },
+          {
+            "path": "layers",
+            "type": "repeat",
+            "count": 58,
+            "active": 58
+          },
+          {
+            "path": "layers/block/mlp/experts",
+            "type": "moe_experts",
+            "count": 256,
+            "active": 8
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "sharded",
+      "options": {
+        "T": 4096,
+        "B": 1,
+        "dtype": "fp8",
+        "inferenceDtype": "fp8",
+        "kvDtype": "fp8",
+        "hardware": "h100-sxm",
+        "gpus": 64,
+        "parallel": {
+          "dp": 4,
+          "tp": 8,
+          "pp": 2,
+          "ep": 1,
+          "zero": 3,
+          "sequenceParallel": true
+        },
+        "optimizer": "adamw8bit",
+        "recompute": "full",
+        "flash": true,
+        "tokens": 15000000000000,
+        "tokensWereDefaulted": false,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 32
+      },
+      "params": {
+        "total": 671026419200,
+        "active": 37552297472,
+        "embedding": 926679040,
+        "head": 926679040,
+        "nonEmbedding": 670099740160,
+        "nonEmbeddingActive": 36625618432,
+        "byPath": [
+          [
+            "dense_layers/block/attn/k_up",
+            25165824
+          ],
+          [
+            "dense_layers/block/attn/kv_down",
+            12386304
+          ],
+          [
+            "dense_layers/block/attn/kv_norm",
+            1536
+          ],
+          [
+            "dense_layers/block/attn/o_proj",
+            352321536
+          ],
+          [
+            "dense_layers/block/attn/q_down",
+            33030144
+          ],
+          [
+            "dense_layers/block/attn/q_norm",
+            4608
+          ],
+          [
+            "dense_layers/block/attn/q_up",
+            113246208
+          ],
+          [
+            "dense_layers/block/attn/v_up",
+            25165824
+          ],
+          [
+            "dense_layers/block/mlp/down",
+            396361728
+          ],
+          [
+            "dense_layers/block/mlp/gate",
+            396361728
+          ],
+          [
+            "dense_layers/block/mlp/up",
+            396361728
+          ],
+          [
+            "dense_layers/block/norm1",
+            21504
+          ],
+          [
+            "dense_layers/block/norm2",
+            21504
+          ],
+          [
+            "embed",
+            926679040
+          ],
+          [
+            "final_norm",
+            7168
+          ],
+          [
+            "head",
+            926679040
+          ],
+          [
+            "layers/block/attn/k_up",
+            486539264
+          ],
+          [
+            "layers/block/attn/kv_down",
+            239468544
+          ],
+          [
+            "layers/block/attn/kv_norm",
+            29696
+          ],
+          [
+            "layers/block/attn/o_proj",
+            6811549696
+          ],
+          [
+            "layers/block/attn/q_down",
+            638582784
+          ],
+          [
+            "layers/block/attn/q_norm",
+            89088
+          ],
+          [
+            "layers/block/attn/q_up",
+            2189426688
+          ],
+          [
+            "layers/block/attn/v_up",
+            486539264
+          ],
+          [
+            "layers/block/mlp/experts/expert/down",
+            217969590272
+          ],
+          [
+            "layers/block/mlp/experts/expert/gate",
+            217969590272
+          ],
+          [
+            "layers/block/mlp/experts/expert/up",
+            217969590272
+          ],
+          [
+            "layers/block/mlp/router",
+            106445312
+          ],
+          [
+            "layers/block/mlp/shared/down",
+            851443712
+          ],
+          [
+            "layers/block/mlp/shared/gate",
+            851443712
+          ],
+          [
+            "layers/block/mlp/shared/up",
+            851443712
+          ],
+          [
+            "layers/block/norm1",
+            415744
+          ],
+          [
+            "layers/block/norm2",
+            415744
+          ]
+        ],
+        "byCategory": [
+          [
+            "embedding",
+            926679040
+          ],
+          [
+            "head",
+            926679040
+          ],
+          [
+            "linear",
+            669065609216
+          ],
+          [
+            "moe",
+            106445312
+          ],
+          [
+            "norm",
+            1006592
+          ]
+        ],
+        "byType": [
+          [
+            "embedding",
+            926679040
+          ],
+          [
+            "linear",
+            669065609216
+          ],
+          [
+            "lm_head",
+            926679040
+          ],
+          [
+            "rmsnorm",
+            1006592
+          ],
+          [
+            "topk_router",
+            106445312
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 73249193984,
+        "fwdAttention": 12280922112,
+        "fwdAttentionUnmasked": 24561844224,
+        "fwdTotal": 85530116096,
+        "fwdTotalUnmasked": 97811038208,
+        "elementwise": 18386944,
+        "trainPerToken": 342120464384,
+        "attentionShare": 0.1435859399303954,
+        "ruleOfThumb2N": 73251236864,
+        "ruleOfThumb6N": 219753710592,
+        "byPath": [
+          [
+            "dense_layers/block/attn/attn",
+            603979776
+          ],
+          [
+            "dense_layers/block/attn/k_up",
+            50331648
+          ],
+          [
+            "dense_layers/block/attn/kv_down",
+            24772608
+          ],
+          [
+            "dense_layers/block/attn/o_proj",
+            704643072
+          ],
+          [
+            "dense_layers/block/attn/q_down",
+            66060288
+          ],
+          [
+            "dense_layers/block/attn/q_up",
+            226492416
+          ],
+          [
+            "dense_layers/block/attn/v_up",
+            50331648
+          ],
+          [
+            "dense_layers/block/mlp/down",
+            792723456
+          ],
+          [
+            "dense_layers/block/mlp/gate",
+            792723456
+          ],
+          [
+            "dense_layers/block/mlp/up",
+            792723456
+          ],
+          [
+            "head",
+            1853358080
+          ],
+          [
+            "layers/block/attn/attn",
+            11676942336
+          ],
+          [
+            "layers/block/attn/k_up",
+            973078528
+          ],
+          [
+            "layers/block/attn/kv_down",
+            478937088
+          ],
+          [
+            "layers/block/attn/o_proj",
+            13623099392
+          ],
+          [
+            "layers/block/attn/q_down",
+            1277165568
+          ],
+          [
+            "layers/block/attn/q_up",
+            4378853376
+          ],
+          [
+            "layers/block/attn/v_up",
+            973078528
+          ],
+          [
+            "layers/block/mlp/experts/expert/down",
+            13623099392
+          ],
+          [
+            "layers/block/mlp/experts/expert/gate",
+            13623099392
+          ],
+          [
+            "layers/block/mlp/experts/expert/up",
+            13623099392
+          ],
+          [
+            "layers/block/mlp/router",
+            212860928
+          ],
+          [
+            "layers/block/mlp/shared/down",
+            1702887424
+          ],
+          [
+            "layers/block/mlp/shared/gate",
+            1702887424
+          ],
+          [
+            "layers/block/mlp/shared/up",
+            1702887424
+          ]
+        ],
+        "byCategory": [
+          [
+            "attention",
+            12280922112
+          ],
+          [
+            "head",
+            1853358080
+          ],
+          [
+            "linear",
+            71182974976
+          ],
+          [
+            "moe",
+            212860928
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 35136,
+        "bytesPerSequenceFixed": 0,
+        "byPath": [
+          [
+            "dense_layers/block/attn/latent",
+            1728
+          ],
+          [
+            "layers/block/attn/latent",
+            33408
+          ]
+        ]
+      },
+      "memory": {
+        "weightsBytes": 1342052838400,
+        "train": {
+          "weights": 1342052838400,
+          "grads": 1342052838400,
+          "optimizer": 4026158515200,
+          "activations": 4497342464,
+          "logits": 2647654400,
+          "total": 6714761534464,
+          "perGpu": {
+            "weights": 20969575600,
+            "grads": 20969575600,
+            "optimizer": 62908726800,
+            "activations": 562167808,
+            "total": 105410045808
+          },
+          "activationsByPath": [
+            [
+              "dense_layers",
+              88080384
+            ],
+            [
+              "final_norm",
+              29360128
+            ],
+            [
+              "head",
+              2647654400
+            ],
+            [
+              "layers",
+              1702887424
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 671026419200,
+          "kv": 4605345792,
+          "overhead": 135126352998.40001,
+          "total": 810758117990.4
+        },
+        "optimizerLabel": "8-bit AdamW (10 B/param)",
+        "notes": [
+          "Full recomputation keeps only each layer's input, at the cost of one extra forward pass (8N instead of 6N).",
+          "Pipeline parallelism divides the weights but not the activations of the first stage: under 1F1B it holds one micro-batch worth of the whole model."
+        ]
+      },
+      "throughput": {
+        "ridgePoint": 590.7462686567164,
+        "decodeBytesPerStep": 42157643264,
+        "decodeFlopsPerStep": 2736963715072,
+        "decodeSecondsPerStep": 0.01258437112358209,
+        "decodeTokensPerSecond": 2542.836641239434,
+        "memoryBound": true,
+        "prefillSeconds": 14.161954746001657,
+        "notes": [
+          "Decoding is memory-bound at batch 32. It stays that way until the batch passes this device's ridge point of about 591 FLOP per byte."
+        ]
+      },
+      "cost": {
+        "totalFlops": 5.13180696576e+24,
+        "gpuHours": 1800785.6681825838,
+        "wallClockHours": 28137.27606535287,
+        "dollars": 4501964.17045646,
+        "tokens": 15000000000000,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 732512368640,
+        "tokensPerParam": 22.35381435187463,
+        "tokensPerActiveParam": 399.4429371780622,
+        "overTrainingRatio": 20.47746992702575,
+        "predictedLoss": [
+          [
+            "epoch",
+            1.950865049352181
+          ],
+          [
+            "hoffmann",
+            1.8780442936645787
+          ]
+        ],
+        "verdict": "Heavily over-trained, in the range of small models trained on very large corpora."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 89,
+        "blocks": 100,
+        "repeats": [
+          {
+            "path": "dense_layers",
+            "type": "repeat",
+            "count": 3,
+            "active": 3
+          },
+          {
+            "path": "layers",
+            "type": "repeat",
+            "count": 58,
+            "active": 58
+          },
+          {
+            "path": "layers/block/mlp/experts",
+            "type": "moe_experts",
+            "count": 256,
+            "active": 8
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "eager",
+      "options": {
+        "T": 8192,
+        "B": 4,
+        "dtype": "bf16",
+        "inferenceDtype": "bf16",
+        "kvDtype": "fp8",
+        "hardware": "h100-sxm",
+        "gpus": 8,
+        "parallel": {
+          "dp": 1,
+          "tp": 1,
+          "pp": 1,
+          "ep": 1,
+          "zero": 0,
+          "sequenceParallel": false
+        },
+        "optimizer": "adamw",
+        "recompute": "selective",
+        "flash": false,
+        "tokens": 732512368640,
+        "tokensWereDefaulted": true,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 1
+      },
+      "params": {
+        "total": 671026419200,
+        "active": 37552297472,
+        "embedding": 926679040,
+        "head": 926679040,
+        "nonEmbedding": 670099740160,
+        "nonEmbeddingActive": 36625618432,
+        "byPath": [
+          [
+            "dense_layers/block/attn/k_up",
+            25165824
+          ],
+          [
+            "dense_layers/block/attn/kv_down",
+            12386304
+          ],
+          [
+            "dense_layers/block/attn/kv_norm",
+            1536
+          ],
+          [
+            "dense_layers/block/attn/o_proj",
+            352321536
+          ],
+          [
+            "dense_layers/block/attn/q_down",
+            33030144
+          ],
+          [
+            "dense_layers/block/attn/q_norm",
+            4608
+          ],
+          [
+            "dense_layers/block/attn/q_up",
+            113246208
+          ],
+          [
+            "dense_layers/block/attn/v_up",
+            25165824
+          ],
+          [
+            "dense_layers/block/mlp/down",
+            396361728
+          ],
+          [
+            "dense_layers/block/mlp/gate",
+            396361728
+          ],
+          [
+            "dense_layers/block/mlp/up",
+            396361728
+          ],
+          [
+            "dense_layers/block/norm1",
+            21504
+          ],
+          [
+            "dense_layers/block/norm2",
+            21504
+          ],
+          [
+            "embed",
+            926679040
+          ],
+          [
+            "final_norm",
+            7168
+          ],
+          [
+            "head",
+            926679040
+          ],
+          [
+            "layers/block/attn/k_up",
+            486539264
+          ],
+          [
+            "layers/block/attn/kv_down",
+            239468544
+          ],
+          [
+            "layers/block/attn/kv_norm",
+            29696
+          ],
+          [
+            "layers/block/attn/o_proj",
+            6811549696
+          ],
+          [
+            "layers/block/attn/q_down",
+            638582784
+          ],
+          [
+            "layers/block/attn/q_norm",
+            89088
+          ],
+          [
+            "layers/block/attn/q_up",
+            2189426688
+          ],
+          [
+            "layers/block/attn/v_up",
+            486539264
+          ],
+          [
+            "layers/block/mlp/experts/expert/down",
+            217969590272
+          ],
+          [
+            "layers/block/mlp/experts/expert/gate",
+            217969590272
+          ],
+          [
+            "layers/block/mlp/experts/expert/up",
+            217969590272
+          ],
+          [
+            "layers/block/mlp/router",
+            106445312
+          ],
+          [
+            "layers/block/mlp/shared/down",
+            851443712
+          ],
+          [
+            "layers/block/mlp/shared/gate",
+            851443712
+          ],
+          [
+            "layers/block/mlp/shared/up",
+            851443712
+          ],
+          [
+            "layers/block/norm1",
+            415744
+          ],
+          [
+            "layers/block/norm2",
+            415744
+          ]
+        ],
+        "byCategory": [
+          [
+            "embedding",
+            926679040
+          ],
+          [
+            "head",
+            926679040
+          ],
+          [
+            "linear",
+            669065609216
+          ],
+          [
+            "moe",
+            106445312
+          ],
+          [
+            "norm",
+            1006592
+          ]
+        ],
+        "byType": [
+          [
+            "embedding",
+            926679040
+          ],
+          [
+            "linear",
+            669065609216
+          ],
+          [
+            "lm_head",
+            926679040
+          ],
+          [
+            "rmsnorm",
+            1006592
+          ],
+          [
+            "topk_router",
+            106445312
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 73249193984,
+        "fwdAttention": 24561844224,
+        "fwdAttentionUnmasked": 49123688448,
+        "fwdTotal": 97811038208,
+        "fwdTotalUnmasked": 122372882432,
+        "elementwise": 18386944,
+        "trainPerToken": 293433114624,
+        "attentionShare": 0.2511152593204054,
+        "ruleOfThumb2N": 73251236864,
+        "ruleOfThumb6N": 219753710592,
+        "byPath": [
+          [
+            "dense_layers/block/attn/attn",
+            1207959552
+          ],
+          [
+            "dense_layers/block/attn/k_up",
+            50331648
+          ],
+          [
+            "dense_layers/block/attn/kv_down",
+            24772608
+          ],
+          [
+            "dense_layers/block/attn/o_proj",
+            704643072
+          ],
+          [
+            "dense_layers/block/attn/q_down",
+            66060288
+          ],
+          [
+            "dense_layers/block/attn/q_up",
+            226492416
+          ],
+          [
+            "dense_layers/block/attn/v_up",
+            50331648
+          ],
+          [
+            "dense_layers/block/mlp/down",
+            792723456
+          ],
+          [
+            "dense_layers/block/mlp/gate",
+            792723456
+          ],
+          [
+            "dense_layers/block/mlp/up",
+            792723456
+          ],
+          [
+            "head",
+            1853358080
+          ],
+          [
+            "layers/block/attn/attn",
+            23353884672
+          ],
+          [
+            "layers/block/attn/k_up",
+            973078528
+          ],
+          [
+            "layers/block/attn/kv_down",
+            478937088
+          ],
+          [
+            "layers/block/attn/o_proj",
+            13623099392
+          ],
+          [
+            "layers/block/attn/q_down",
+            1277165568
+          ],
+          [
+            "layers/block/attn/q_up",
+            4378853376
+          ],
+          [
+            "layers/block/attn/v_up",
+            973078528
+          ],
+          [
+            "layers/block/mlp/experts/expert/down",
+            13623099392
+          ],
+          [
+            "layers/block/mlp/experts/expert/gate",
+            13623099392
+          ],
+          [
+            "layers/block/mlp/experts/expert/up",
+            13623099392
+          ],
+          [
+            "layers/block/mlp/router",
+            212860928
+          ],
+          [
+            "layers/block/mlp/shared/down",
+            1702887424
+          ],
+          [
+            "layers/block/mlp/shared/gate",
+            1702887424
+          ],
+          [
+            "layers/block/mlp/shared/up",
+            1702887424
+          ]
+        ],
+        "byCategory": [
+          [
+            "attention",
+            24561844224
+          ],
+          [
+            "head",
+            1853358080
+          ],
+          [
+            "linear",
+            71182974976
+          ],
+          [
+            "moe",
+            212860928
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 35136,
+        "bytesPerSequenceFixed": 0,
+        "byPath": [
+          [
+            "dense_layers/block/attn/latent",
+            1728
+          ],
+          [
+            "layers/block/attn/latent",
+            33408
+          ]
+        ]
+      },
+      "memory": {
+        "weightsBytes": 1342052838400,
+        "train": {
+          "weights": 1342052838400,
+          "grads": 1342052838400,
+          "optimizer": 8052317030400,
+          "activations": 1091324346368,
+          "logits": 25417482240,
+          "total": 11827747053568,
+          "perGpu": {
+            "weights": 1342052838400,
+            "grads": 1342052838400,
+            "optimizer": 8052317030400,
+            "activations": 1091324346368,
+            "total": 11827747053568
+          },
+          "activationsByPath": [
+            [
+              "dense_layers/block/_in",
+              1409286144
+            ],
+            [
+              "dense_layers/block/attn/_in",
+              1409286144
+            ],
+            [
+              "dense_layers/block/attn/attn",
+              3271557120
+            ],
+            [
+              "dense_layers/block/attn/k_cat",
+              4831838208
+            ],
+            [
+              "dense_layers/block/attn/kv_norm",
+              100663296
+            ],
+            [
+              "dense_layers/block/attn/kv_split",
+              100663296
+            ],
+            [
+              "dense_layers/block/attn/o_merge",
+              3221225472
+            ],
+            [
+              "dense_layers/block/attn/q_down",
+              301989888
+            ],
+            [
+              "dense_layers/block/attn/q_heads",
+              4831838208
+            ],
+            [
+              "dense_layers/block/attn/q_norm",
+              301989888
+            ],
+            [
+              "dense_layers/block/attn/v_heads",
+              3221225472
+            ],
+            [
+              "dense_layers/block/mlp/_in",
+              1409286144
+            ],
+            [
+              "dense_layers/block/mlp/act",
+              3623878656
+            ],
+            [
+              "dense_layers/block/mlp/gate",
+              3623878656
+            ],
+            [
+              "dense_layers/block/mlp/gated",
+              3623878656
+            ],
+            [
+              "dense_layers/block/mlp/up",
+              3623878656
+            ],
+            [
+              "dense_layers/block/resid1",
+              1409286144
+            ],
+            [
+              "final_norm",
+              469762048
+            ],
+            [
+              "head",
+              25417482240
+            ],
+            [
+              "layers",
+              469762048
+            ],
+            [
+              "layers/block/_in",
+              27246198784
+            ],
+            [
+              "layers/block/attn/_in",
+              27246198784
+            ],
+            [
+              "layers/block/attn/attn",
+              63250104320
+            ],
+            [
+              "layers/block/attn/k_cat",
+              93415538688
+            ],
+            [
+              "layers/block/attn/kv_norm",
+              1946157056
+            ],
+            [
+              "layers/block/attn/kv_split",
+              1946157056
+            ],
+            [
+              "layers/block/attn/o_merge",
+              62277025792
+            ],
+            [
+              "layers/block/attn/q_down",
+              5838471168
+            ],
+            [
+              "layers/block/attn/q_heads",
+              93415538688
+            ],
+            [
+              "layers/block/attn/q_norm",
+              5838471168
+            ],
+            [
+              "layers/block/attn/v_heads",
+              62277025792
+            ],
+            [
+              "layers/block/mlp/_in",
+              27246198784
+            ],
+            [
+              "layers/block/mlp/experts/expert/_in",
+              217969590272
+            ],
+            [
+              "layers/block/mlp/experts/expert/act",
+              62277025792
+            ],
+            [
+              "layers/block/mlp/experts/expert/gate",
+              62277025792
+            ],
+            [
+              "layers/block/mlp/experts/expert/gated",
+              62277025792
+            ],
+            [
+              "layers/block/mlp/experts/expert/up",
+              62277025792
+            ],
+            [
+              "layers/block/mlp/shared/_in",
+              27246198784
+            ],
+            [
+              "layers/block/mlp/shared/act",
+              7784628224
+            ],
+            [
+              "layers/block/mlp/shared/gate",
+              7784628224
+            ],
+            [
+              "layers/block/mlp/shared/gated",
+              7784628224
+            ],
+            [
+              "layers/block/mlp/shared/up",
+              7784628224
+            ],
+            [
+              "layers/block/resid1",
+              27246198784
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 1342052838400,
+          "kv": 287834112,
+          "overhead": 268468134502.40002,
+          "total": 1610808807014.4
+        },
+        "optimizerLabel": "AdamW, mixed precision (16 B/param)",
+        "notes": [
+          "Selective recomputation drops the attention score matrix. A memory-efficient attention kernel already does this, so the two coincide here."
+        ]
+      },
+      "throughput": {
+        "ridgePoint": 295.2238805970149,
+        "decodeBytesPerStep": 75392429056,
+        "decodeFlopsPerStep": 97811038208,
+        "decodeSecondsPerStep": 0.022505202703283583,
+        "decodeTokensPerSecond": 44.434169875488244,
+        "memoryBound": true,
+        "prefillSeconds": 2.0254500126388675,
+        "notes": [
+          "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
+        ]
+      },
+      "cost": {
+        "totalFlops": 2.1494338583063886e+23,
+        "gpuHours": 150926.4309000666,
+        "wallClockHours": 18865.803862508325,
+        "dollars": 377316.0772501665,
+        "tokens": 732512368640,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 732512368640,
+        "tokensPerParam": 1.0916296999353674,
+        "tokensPerActiveParam": 19.506459469921403,
+        "overTrainingRatio": 1,
+        "predictedLoss": [
+          [
+            "epoch",
+            2.014577056486992
+          ],
+          [
+            "hoffmann",
+            1.9896593754664014
+          ]
+        ],
+        "verdict": "Close to compute-optimal."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 89,
+        "blocks": 100,
+        "repeats": [
+          {
+            "path": "dense_layers",
+            "type": "repeat",
+            "count": 3,
+            "active": 3
+          },
+          {
+            "path": "layers",
+            "type": "repeat",
+            "count": 58,
+            "active": 58
+          },
+          {
+            "path": "layers/block/mlp/experts",
+            "type": "moe_experts",
+            "count": 256,
+            "active": 8
+          }
+        ],
+        "errors": []
+      }
+    }
+  ]
+}

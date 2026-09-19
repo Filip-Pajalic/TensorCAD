@@ -243,10 +243,15 @@ var Primitives = []*BlockDef{
 			return FlopsPerToken{Fwd: 2 * r.Num("vocab") * r.Num("dim")}
 		},
 		Retains: func(*Resolved) []string { return []string{"x"} },
+		// bf16 logits plus the fp32 softmax/cross-entropy buffer.
+		ExtraActivationBytes: func(r *Resolved, c AnalysisCtx) float64 {
+			return r.Num("vocab") * (c.Bytes + 4)
+		},
 		Docs: BlockDocs{
 			Summary: "Output projection to vocabulary logits.",
-			Formula: "params = 0 when tied, else vocab*dim; FLOPs/token = 2*vocab*dim",
-			Refs:    []string{"https://blog.eleuther.ai/transformer-math/"},
+			Formula: "params = 0 when tied, else vocab*dim; FLOPs/token = 2*vocab*dim; " +
+				"logits cost vocab*(bytes+4) per token",
+			Refs: []string{"https://blog.eleuther.ai/transformer-math/"},
 		},
 	},
 
@@ -554,7 +559,28 @@ var Primitives = []*BlockDef{
 			unmasked := 4 * tEff * r.Num("heads") * r.Num("head_dim")
 			return FlopsPerToken{FwdSeq: unmasked * causal, FwdSeqUnmasked: unmasked}
 		},
+		// q, k and v arrive on edges and are counted there; the output and the
+		// kernel's own statistics are not on any edge the backward pass reads.
 		Retains: func(*Resolved) []string { return []string{"q", "k", "v"} },
+		ExtraActivationBytes: func(r *Resolved, c AnalysisCtx) float64 {
+			tEff := c.T
+			if w := r.Num("window"); w > 0 {
+				tEff = fmin(c.T, w)
+			}
+			vDim := r.Num("v_head_dim")
+			if vDim == 0 {
+				vDim = r.Num("head_dim")
+			}
+			output := r.Num("heads") * vDim * c.Bytes
+			if c.Flash && r.Bool("flash") {
+				// A fused kernel keeps the output and the log-sum-exp
+				// statistics only.
+				return output + r.Num("heads")*4
+			}
+			// Otherwise the score matrix row and the softmax output are both
+			// kept.
+			return output + 2*r.Num("heads")*tEff*c.Bytes
+		},
 		StateBytes: func(r *Resolved, c AnalysisCtx) StateBytes {
 			if v, ok := r.P["cache"].(bool); ok && !v {
 				return StateBytes{}

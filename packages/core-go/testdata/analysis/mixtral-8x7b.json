@@ -1,0 +1,1061 @@
+{
+  "preset": "mixtral-8x7b",
+  "cases": [
+    {
+      "label": "default",
+      "options": {
+        "T": 32768,
+        "B": 1,
+        "dtype": "bf16",
+        "inferenceDtype": "bf16",
+        "kvDtype": "bf16",
+        "hardware": "h100-sxm",
+        "gpus": 1,
+        "parallel": {
+          "dp": 1,
+          "tp": 1,
+          "pp": 1,
+          "ep": 1,
+          "zero": 0,
+          "sequenceParallel": false
+        },
+        "optimizer": "adamw",
+        "recompute": "none",
+        "flash": true,
+        "tokens": 254977064960,
+        "tokensWereDefaulted": true,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 1
+      },
+      "params": {
+        "total": 46702792704,
+        "active": 12879925248,
+        "embedding": 131072000,
+        "head": 131072000,
+        "nonEmbedding": 46571720704,
+        "nonEmbeddingActive": 12748853248,
+        "byPath": [
+          [
+            "embed",
+            131072000
+          ],
+          [
+            "final_norm",
+            4096
+          ],
+          [
+            "head",
+            131072000
+          ],
+          [
+            "layers/block/attn/k_proj",
+            134217728
+          ],
+          [
+            "layers/block/attn/o_proj",
+            536870912
+          ],
+          [
+            "layers/block/attn/q_proj",
+            536870912
+          ],
+          [
+            "layers/block/attn/v_proj",
+            134217728
+          ],
+          [
+            "layers/block/mlp/experts/expert/down",
+            15032385536
+          ],
+          [
+            "layers/block/mlp/experts/expert/gate",
+            15032385536
+          ],
+          [
+            "layers/block/mlp/experts/expert/up",
+            15032385536
+          ],
+          [
+            "layers/block/mlp/router",
+            1048576
+          ],
+          [
+            "layers/block/norm1",
+            131072
+          ],
+          [
+            "layers/block/norm2",
+            131072
+          ]
+        ],
+        "byCategory": [
+          [
+            "embedding",
+            131072000
+          ],
+          [
+            "head",
+            131072000
+          ],
+          [
+            "linear",
+            46439333888
+          ],
+          [
+            "moe",
+            1048576
+          ],
+          [
+            "norm",
+            266240
+          ]
+        ],
+        "byType": [
+          [
+            "embedding",
+            131072000
+          ],
+          [
+            "linear",
+            46439333888
+          ],
+          [
+            "lm_head",
+            131072000
+          ],
+          [
+            "rmsnorm",
+            266240
+          ],
+          [
+            "topk_router",
+            1048576
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 25497174016,
+        "fwdAttention": 8589934592,
+        "fwdAttentionUnmasked": 17179869184,
+        "fwdTotal": 34087108608,
+        "fwdTotalUnmasked": 42677043200,
+        "elementwise": 8077312,
+        "trainPerToken": 102261325824,
+        "attentionShare": 0.2519995078134613,
+        "ruleOfThumb2N": 25497706496,
+        "ruleOfThumb6N": 76493119488,
+        "byPath": [
+          [
+            "head",
+            262144000
+          ],
+          [
+            "layers/block/attn/attn",
+            8589934592
+          ],
+          [
+            "layers/block/attn/k_proj",
+            268435456
+          ],
+          [
+            "layers/block/attn/o_proj",
+            1073741824
+          ],
+          [
+            "layers/block/attn/q_proj",
+            1073741824
+          ],
+          [
+            "layers/block/attn/v_proj",
+            268435456
+          ],
+          [
+            "layers/block/mlp/experts/expert/down",
+            7516192768
+          ],
+          [
+            "layers/block/mlp/experts/expert/gate",
+            7516192768
+          ],
+          [
+            "layers/block/mlp/experts/expert/up",
+            7516192768
+          ],
+          [
+            "layers/block/mlp/router",
+            2097152
+          ]
+        ],
+        "byCategory": [
+          [
+            "attention",
+            8589934592
+          ],
+          [
+            "head",
+            262144000
+          ],
+          [
+            "linear",
+            25232932864
+          ],
+          [
+            "moe",
+            2097152
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 131072,
+        "bytesPerSequenceFixed": 0,
+        "byPath": [
+          [
+            "layers/block/attn/attn",
+            131072
+          ]
+        ]
+      },
+      "memory": {
+        "weightsBytes": 93405585408,
+        "train": {
+          "weights": 93405585408,
+          "grads": 93405585408,
+          "optimizer": 560433512448,
+          "activations": 329085091840,
+          "logits": 6291456000,
+          "total": 1076329775104,
+          "perGpu": {
+            "weights": 93405585408,
+            "grads": 93405585408,
+            "optimizer": 560433512448,
+            "activations": 329085091840,
+            "total": 1076329775104
+          },
+          "activationsByPath": [
+            [
+              "final_norm",
+              268435456
+            ],
+            [
+              "head",
+              6291456000
+            ],
+            [
+              "layers",
+              268435456
+            ],
+            [
+              "layers/block/_in",
+              8589934592
+            ],
+            [
+              "layers/block/attn/_in",
+              8589934592
+            ],
+            [
+              "layers/block/attn/attn",
+              8724152320
+            ],
+            [
+              "layers/block/attn/o_merge",
+              8589934592
+            ],
+            [
+              "layers/block/attn/rope_k",
+              2147483648
+            ],
+            [
+              "layers/block/attn/rope_q",
+              8589934592
+            ],
+            [
+              "layers/block/attn/v_heads",
+              2147483648
+            ],
+            [
+              "layers/block/mlp/_in",
+              8589934592
+            ],
+            [
+              "layers/block/mlp/experts/expert/_in",
+              17179869184
+            ],
+            [
+              "layers/block/mlp/experts/expert/act",
+              60129542144
+            ],
+            [
+              "layers/block/mlp/experts/expert/gate",
+              60129542144
+            ],
+            [
+              "layers/block/mlp/experts/expert/gated",
+              60129542144
+            ],
+            [
+              "layers/block/mlp/experts/expert/up",
+              60129542144
+            ],
+            [
+              "layers/block/resid1",
+              8589934592
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 93405585408,
+          "kv": 4294967296,
+          "overhead": 19540110540.8,
+          "total": 117240663244.8
+        },
+        "optimizerLabel": "AdamW, mixed precision (16 B/param)",
+        "notes": []
+      },
+      "throughput": {
+        "ridgePoint": 295.2238805970149,
+        "decodeBytesPerStep": 30054817792,
+        "decodeFlopsPerStep": 34087108608,
+        "decodeSecondsPerStep": 0.008971587400597015,
+        "decodeTokensPerSecond": 111.46299482446717,
+        "memoryBound": true,
+        "prefillSeconds": 2.8234741528486955,
+        "notes": [
+          "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
+        ]
+      },
+      "cost": {
+        "totalFlops": 2.6074292717521774e+22,
+        "gpuHours": 18308.5416789699,
+        "wallClockHours": 18308.5416789699,
+        "dollars": 45771.35419742475,
+        "tokens": 254977064960,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 254977064960,
+        "tokensPerParam": 5.459567837324677,
+        "tokensPerActiveParam": 19.796470868461984,
+        "overTrainingRatio": 1,
+        "predictedLoss": [
+          [
+            "epoch",
+            2.104741518009805
+          ],
+          [
+            "hoffmann",
+            2.1018160083807746
+          ]
+        ],
+        "verdict": "Close to compute-optimal."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 39,
+        "blocks": 45,
+        "repeats": [
+          {
+            "path": "layers",
+            "type": "repeat",
+            "count": 32,
+            "active": 32
+          },
+          {
+            "path": "layers/block/mlp/experts",
+            "type": "moe_experts",
+            "count": 8,
+            "active": 2
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "sharded",
+      "options": {
+        "T": 32768,
+        "B": 1,
+        "dtype": "fp8",
+        "inferenceDtype": "fp8",
+        "kvDtype": "fp8",
+        "hardware": "h100-sxm",
+        "gpus": 64,
+        "parallel": {
+          "dp": 4,
+          "tp": 8,
+          "pp": 2,
+          "ep": 1,
+          "zero": 3,
+          "sequenceParallel": true
+        },
+        "optimizer": "adamw8bit",
+        "recompute": "full",
+        "flash": true,
+        "tokens": 15000000000000,
+        "tokensWereDefaulted": false,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 32
+      },
+      "params": {
+        "total": 46702792704,
+        "active": 12879925248,
+        "embedding": 131072000,
+        "head": 131072000,
+        "nonEmbedding": 46571720704,
+        "nonEmbeddingActive": 12748853248,
+        "byPath": [
+          [
+            "embed",
+            131072000
+          ],
+          [
+            "final_norm",
+            4096
+          ],
+          [
+            "head",
+            131072000
+          ],
+          [
+            "layers/block/attn/k_proj",
+            134217728
+          ],
+          [
+            "layers/block/attn/o_proj",
+            536870912
+          ],
+          [
+            "layers/block/attn/q_proj",
+            536870912
+          ],
+          [
+            "layers/block/attn/v_proj",
+            134217728
+          ],
+          [
+            "layers/block/mlp/experts/expert/down",
+            15032385536
+          ],
+          [
+            "layers/block/mlp/experts/expert/gate",
+            15032385536
+          ],
+          [
+            "layers/block/mlp/experts/expert/up",
+            15032385536
+          ],
+          [
+            "layers/block/mlp/router",
+            1048576
+          ],
+          [
+            "layers/block/norm1",
+            131072
+          ],
+          [
+            "layers/block/norm2",
+            131072
+          ]
+        ],
+        "byCategory": [
+          [
+            "embedding",
+            131072000
+          ],
+          [
+            "head",
+            131072000
+          ],
+          [
+            "linear",
+            46439333888
+          ],
+          [
+            "moe",
+            1048576
+          ],
+          [
+            "norm",
+            266240
+          ]
+        ],
+        "byType": [
+          [
+            "embedding",
+            131072000
+          ],
+          [
+            "linear",
+            46439333888
+          ],
+          [
+            "lm_head",
+            131072000
+          ],
+          [
+            "rmsnorm",
+            266240
+          ],
+          [
+            "topk_router",
+            1048576
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 25497174016,
+        "fwdAttention": 8589934592,
+        "fwdAttentionUnmasked": 17179869184,
+        "fwdTotal": 34087108608,
+        "fwdTotalUnmasked": 42677043200,
+        "elementwise": 8077312,
+        "trainPerToken": 136348434432,
+        "attentionShare": 0.2519995078134613,
+        "ruleOfThumb2N": 25497706496,
+        "ruleOfThumb6N": 76493119488,
+        "byPath": [
+          [
+            "head",
+            262144000
+          ],
+          [
+            "layers/block/attn/attn",
+            8589934592
+          ],
+          [
+            "layers/block/attn/k_proj",
+            268435456
+          ],
+          [
+            "layers/block/attn/o_proj",
+            1073741824
+          ],
+          [
+            "layers/block/attn/q_proj",
+            1073741824
+          ],
+          [
+            "layers/block/attn/v_proj",
+            268435456
+          ],
+          [
+            "layers/block/mlp/experts/expert/down",
+            7516192768
+          ],
+          [
+            "layers/block/mlp/experts/expert/gate",
+            7516192768
+          ],
+          [
+            "layers/block/mlp/experts/expert/up",
+            7516192768
+          ],
+          [
+            "layers/block/mlp/router",
+            2097152
+          ]
+        ],
+        "byCategory": [
+          [
+            "attention",
+            8589934592
+          ],
+          [
+            "head",
+            262144000
+          ],
+          [
+            "linear",
+            25232932864
+          ],
+          [
+            "moe",
+            2097152
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 65536,
+        "bytesPerSequenceFixed": 0,
+        "byPath": [
+          [
+            "layers/block/attn/attn",
+            65536
+          ]
+        ]
+      },
+      "memory": {
+        "weightsBytes": 93405585408,
+        "train": {
+          "weights": 93405585408,
+          "grads": 93405585408,
+          "optimizer": 280216756224,
+          "activations": 9806282752,
+          "logits": 5242880000,
+          "total": 476834209792,
+          "perGpu": {
+            "weights": 1459462272,
+            "grads": 1459462272,
+            "optimizer": 4378386816,
+            "activations": 1225785344,
+            "total": 8523096704
+          },
+          "activationsByPath": [
+            [
+              "final_norm",
+              134217728
+            ],
+            [
+              "head",
+              5242880000
+            ],
+            [
+              "layers",
+              4294967296
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 46702792704,
+          "kv": 68719476736,
+          "overhead": 23084453888,
+          "total": 138506723328
+        },
+        "optimizerLabel": "8-bit AdamW (10 B/param)",
+        "notes": [
+          "Full recomputation keeps only each layer's input, at the cost of one extra forward pass (8N instead of 6N).",
+          "Pipeline parallelism divides the weights but not the activations of the first stage: under 1F1B it holds one micro-batch worth of the whole model."
+        ]
+      },
+      "throughput": {
+        "ridgePoint": 590.7462686567164,
+        "decodeBytesPerStep": 81599401984,
+        "decodeFlopsPerStep": 1090787475456,
+        "decodeSecondsPerStep": 0.024358030442985075,
+        "decodeTokensPerSecond": 1313.735118071328,
+        "memoryBound": true,
+        "prefillSeconds": 45.15275896379764,
+        "notes": [
+          "Decoding is memory-bound at batch 32. It stays that way until the batch passes this device's ridge point of about 591 FLOP per byte."
+        ]
+      },
+      "cost": {
+        "totalFlops": 2.04522651648e+24,
+        "gpuHours": 717683.7756442648,
+        "wallClockHours": 11213.808994441637,
+        "dollars": 1794209.4391106619,
+        "tokens": 15000000000000,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 254977064960,
+        "tokensPerParam": 321.17993660613104,
+        "tokensPerActiveParam": 1164.6030323296486,
+        "overTrainingRatio": 58.82882055432379,
+        "predictedLoss": [
+          [
+            "epoch",
+            1.99613558975515
+          ],
+          [
+            "hoffmann",
+            1.9229565515584515
+          ]
+        ],
+        "verdict": "Heavily over-trained, in the range of small models trained on very large corpora."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 39,
+        "blocks": 45,
+        "repeats": [
+          {
+            "path": "layers",
+            "type": "repeat",
+            "count": 32,
+            "active": 32
+          },
+          {
+            "path": "layers/block/mlp/experts",
+            "type": "moe_experts",
+            "count": 8,
+            "active": 2
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "eager",
+      "options": {
+        "T": 8192,
+        "B": 4,
+        "dtype": "bf16",
+        "inferenceDtype": "bf16",
+        "kvDtype": "fp8",
+        "hardware": "h100-sxm",
+        "gpus": 8,
+        "parallel": {
+          "dp": 1,
+          "tp": 1,
+          "pp": 1,
+          "ep": 1,
+          "zero": 0,
+          "sequenceParallel": false
+        },
+        "optimizer": "adamw",
+        "recompute": "selective",
+        "flash": false,
+        "tokens": 254977064960,
+        "tokensWereDefaulted": true,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 1
+      },
+      "params": {
+        "total": 46702792704,
+        "active": 12879925248,
+        "embedding": 131072000,
+        "head": 131072000,
+        "nonEmbedding": 46571720704,
+        "nonEmbeddingActive": 12748853248,
+        "byPath": [
+          [
+            "embed",
+            131072000
+          ],
+          [
+            "final_norm",
+            4096
+          ],
+          [
+            "head",
+            131072000
+          ],
+          [
+            "layers/block/attn/k_proj",
+            134217728
+          ],
+          [
+            "layers/block/attn/o_proj",
+            536870912
+          ],
+          [
+            "layers/block/attn/q_proj",
+            536870912
+          ],
+          [
+            "layers/block/attn/v_proj",
+            134217728
+          ],
+          [
+            "layers/block/mlp/experts/expert/down",
+            15032385536
+          ],
+          [
+            "layers/block/mlp/experts/expert/gate",
+            15032385536
+          ],
+          [
+            "layers/block/mlp/experts/expert/up",
+            15032385536
+          ],
+          [
+            "layers/block/mlp/router",
+            1048576
+          ],
+          [
+            "layers/block/norm1",
+            131072
+          ],
+          [
+            "layers/block/norm2",
+            131072
+          ]
+        ],
+        "byCategory": [
+          [
+            "embedding",
+            131072000
+          ],
+          [
+            "head",
+            131072000
+          ],
+          [
+            "linear",
+            46439333888
+          ],
+          [
+            "moe",
+            1048576
+          ],
+          [
+            "norm",
+            266240
+          ]
+        ],
+        "byType": [
+          [
+            "embedding",
+            131072000
+          ],
+          [
+            "linear",
+            46439333888
+          ],
+          [
+            "lm_head",
+            131072000
+          ],
+          [
+            "rmsnorm",
+            266240
+          ],
+          [
+            "topk_router",
+            1048576
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 25497174016,
+        "fwdAttention": 2147483648,
+        "fwdAttentionUnmasked": 4294967296,
+        "fwdTotal": 27644657664,
+        "fwdTotalUnmasked": 29792141312,
+        "elementwise": 8077312,
+        "trainPerToken": 82933972992,
+        "attentionShare": 0.07768168714914277,
+        "ruleOfThumb2N": 25497706496,
+        "ruleOfThumb6N": 76493119488,
+        "byPath": [
+          [
+            "head",
+            262144000
+          ],
+          [
+            "layers/block/attn/attn",
+            2147483648
+          ],
+          [
+            "layers/block/attn/k_proj",
+            268435456
+          ],
+          [
+            "layers/block/attn/o_proj",
+            1073741824
+          ],
+          [
+            "layers/block/attn/q_proj",
+            1073741824
+          ],
+          [
+            "layers/block/attn/v_proj",
+            268435456
+          ],
+          [
+            "layers/block/mlp/experts/expert/down",
+            7516192768
+          ],
+          [
+            "layers/block/mlp/experts/expert/gate",
+            7516192768
+          ],
+          [
+            "layers/block/mlp/experts/expert/up",
+            7516192768
+          ],
+          [
+            "layers/block/mlp/router",
+            2097152
+          ]
+        ],
+        "byCategory": [
+          [
+            "attention",
+            2147483648
+          ],
+          [
+            "head",
+            262144000
+          ],
+          [
+            "linear",
+            25232932864
+          ],
+          [
+            "moe",
+            2097152
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 65536,
+        "bytesPerSequenceFixed": 0,
+        "byPath": [
+          [
+            "layers/block/attn/attn",
+            65536
+          ]
+        ]
+      },
+      "memory": {
+        "weightsBytes": 93405585408,
+        "train": {
+          "weights": 93405585408,
+          "grads": 93405585408,
+          "optimizer": 560433512448,
+          "activations": 329085091840,
+          "logits": 6291456000,
+          "total": 1076329775104,
+          "perGpu": {
+            "weights": 93405585408,
+            "grads": 93405585408,
+            "optimizer": 560433512448,
+            "activations": 329085091840,
+            "total": 1076329775104
+          },
+          "activationsByPath": [
+            [
+              "final_norm",
+              268435456
+            ],
+            [
+              "head",
+              6291456000
+            ],
+            [
+              "layers",
+              268435456
+            ],
+            [
+              "layers/block/_in",
+              8589934592
+            ],
+            [
+              "layers/block/attn/_in",
+              8589934592
+            ],
+            [
+              "layers/block/attn/attn",
+              8724152320
+            ],
+            [
+              "layers/block/attn/o_merge",
+              8589934592
+            ],
+            [
+              "layers/block/attn/rope_k",
+              2147483648
+            ],
+            [
+              "layers/block/attn/rope_q",
+              8589934592
+            ],
+            [
+              "layers/block/attn/v_heads",
+              2147483648
+            ],
+            [
+              "layers/block/mlp/_in",
+              8589934592
+            ],
+            [
+              "layers/block/mlp/experts/expert/_in",
+              17179869184
+            ],
+            [
+              "layers/block/mlp/experts/expert/act",
+              60129542144
+            ],
+            [
+              "layers/block/mlp/experts/expert/gate",
+              60129542144
+            ],
+            [
+              "layers/block/mlp/experts/expert/gated",
+              60129542144
+            ],
+            [
+              "layers/block/mlp/experts/expert/up",
+              60129542144
+            ],
+            [
+              "layers/block/resid1",
+              8589934592
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 93405585408,
+          "kv": 536870912,
+          "overhead": 18788491264,
+          "total": 112730947584
+        },
+        "optimizerLabel": "AdamW, mixed precision (16 B/param)",
+        "notes": [
+          "Selective recomputation drops the attention score matrix. A memory-efficient attention kernel already does this, so the two coincide here."
+        ]
+      },
+      "throughput": {
+        "ridgePoint": 295.2238805970149,
+        "decodeBytesPerStep": 26296721408,
+        "decodeFlopsPerStep": 27644657664,
+        "decodeSecondsPerStep": 0.007849767584477613,
+        "decodeTokensPerSecond": 127.39230674516182,
+        "memoryBound": true,
+        "prefillSeconds": 0.5724596450543175,
+        "notes": [
+          "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
+        ]
+      },
+      "cost": {
+        "totalFlops": 2.114626101897207e+22,
+        "gpuHours": 14848.234060057908,
+        "wallClockHours": 1856.0292575072385,
+        "dollars": 37120.58515014477,
+        "tokens": 254977064960,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 254977064960,
+        "tokensPerParam": 5.459567837324677,
+        "tokensPerActiveParam": 19.796470868461984,
+        "overTrainingRatio": 1,
+        "predictedLoss": [
+          [
+            "epoch",
+            2.104741518009805
+          ],
+          [
+            "hoffmann",
+            2.1018160083807746
+          ]
+        ],
+        "verdict": "Close to compute-optimal."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 39,
+        "blocks": 45,
+        "repeats": [
+          {
+            "path": "layers",
+            "type": "repeat",
+            "count": 32,
+            "active": 32
+          },
+          {
+            "path": "layers/block/mlp/experts",
+            "type": "moe_experts",
+            "count": 8,
+            "active": 2
+          }
+        ],
+        "errors": []
+      }
+    }
+  ]
+}

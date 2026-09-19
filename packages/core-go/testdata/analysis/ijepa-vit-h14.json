@@ -1,0 +1,1627 @@
+{
+  "preset": "ijepa-vit-h14",
+  "cases": [
+    {
+      "label": "default",
+      "options": {
+        "T": 256,
+        "B": 1,
+        "dtype": "bf16",
+        "inferenceDtype": "bf16",
+        "kvDtype": "bf16",
+        "hardware": "h100-sxm",
+        "gpus": 1,
+        "parallel": {
+          "dp": 1,
+          "tp": 1,
+          "pp": 1,
+          "ep": 1,
+          "zero": 0,
+          "sequenceParallel": false
+        },
+        "optimizer": "adamw",
+        "recompute": "none",
+        "flash": true,
+        "tokens": 25662970880,
+        "tokensWereDefaulted": true,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 1
+      },
+      "params": {
+        "total": 1283148544,
+        "active": 1283148544,
+        "embedding": 0,
+        "head": 0,
+        "nonEmbedding": 1283148544,
+        "nonEmbeddingActive": 1283148544,
+        "byPath": [
+          [
+            "context/block/attn/k_proj",
+            52469760
+          ],
+          [
+            "context/block/attn/o_proj",
+            52469760
+          ],
+          [
+            "context/block/attn/q_proj",
+            52469760
+          ],
+          [
+            "context/block/attn/v_proj",
+            52469760
+          ],
+          [
+            "context/block/mlp/down",
+            209756160
+          ],
+          [
+            "context/block/mlp/up",
+            209879040
+          ],
+          [
+            "context/block/norm1",
+            81920
+          ],
+          [
+            "context/block/norm2",
+            81920
+          ],
+          [
+            "context_norm",
+            2560
+          ],
+          [
+            "mask_token",
+            384
+          ],
+          [
+            "patchify",
+            753920
+          ],
+          [
+            "pred_norm",
+            768
+          ],
+          [
+            "predictor/block/attn/k_proj",
+            1774080
+          ],
+          [
+            "predictor/block/attn/o_proj",
+            1774080
+          ],
+          [
+            "predictor/block/attn/q_proj",
+            1774080
+          ],
+          [
+            "predictor/block/attn/v_proj",
+            1774080
+          ],
+          [
+            "predictor/block/mlp/down",
+            7082496
+          ],
+          [
+            "predictor/block/mlp/up",
+            7096320
+          ],
+          [
+            "predictor/block/norm1",
+            9216
+          ],
+          [
+            "predictor/block/norm2",
+            9216
+          ],
+          [
+            "target/block/attn/k_proj",
+            52469760
+          ],
+          [
+            "target/block/attn/o_proj",
+            52469760
+          ],
+          [
+            "target/block/attn/q_proj",
+            52469760
+          ],
+          [
+            "target/block/attn/v_proj",
+            52469760
+          ],
+          [
+            "target/block/mlp/down",
+            209756160
+          ],
+          [
+            "target/block/mlp/up",
+            209879040
+          ],
+          [
+            "target/block/norm1",
+            81920
+          ],
+          [
+            "target/block/norm2",
+            81920
+          ],
+          [
+            "target_norm",
+            2560
+          ],
+          [
+            "target_patchify",
+            753920
+          ],
+          [
+            "to_embed",
+            492800
+          ],
+          [
+            "to_pred",
+            491904
+          ]
+        ],
+        "byCategory": [
+          [
+            "embedding",
+            384
+          ],
+          [
+            "linear",
+            1282796160
+          ],
+          [
+            "norm",
+            352000
+          ]
+        ],
+        "byType": [
+          [
+            "layernorm",
+            352000
+          ],
+          [
+            "learned_tokens",
+            384
+          ],
+          [
+            "linear",
+            1282796160
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 2564026368,
+        "fwdAttention": 88604672,
+        "fwdAttentionUnmasked": 88604672,
+        "fwdTotal": 2652631040,
+        "fwdTotalUnmasked": 2652631040,
+        "elementwise": 3998336,
+        "trainPerToken": 7957893120,
+        "attentionShare": 0.03340256170718714,
+        "ruleOfThumb2N": 2566297088,
+        "ruleOfThumb6N": 7698891264,
+        "byPath": [
+          [
+            "context/block/attn/attn",
+            41943040
+          ],
+          [
+            "context/block/attn/k_proj",
+            104857600
+          ],
+          [
+            "context/block/attn/o_proj",
+            104857600
+          ],
+          [
+            "context/block/attn/q_proj",
+            104857600
+          ],
+          [
+            "context/block/attn/v_proj",
+            104857600
+          ],
+          [
+            "context/block/mlp/down",
+            419430400
+          ],
+          [
+            "context/block/mlp/up",
+            419430400
+          ],
+          [
+            "patchify",
+            1505280
+          ],
+          [
+            "predictor/block/attn/attn",
+            4718592
+          ],
+          [
+            "predictor/block/attn/k_proj",
+            3538944
+          ],
+          [
+            "predictor/block/attn/o_proj",
+            3538944
+          ],
+          [
+            "predictor/block/attn/q_proj",
+            3538944
+          ],
+          [
+            "predictor/block/attn/v_proj",
+            3538944
+          ],
+          [
+            "predictor/block/mlp/down",
+            14155776
+          ],
+          [
+            "predictor/block/mlp/up",
+            14155776
+          ],
+          [
+            "target/block/attn/attn",
+            41943040
+          ],
+          [
+            "target/block/attn/k_proj",
+            104857600
+          ],
+          [
+            "target/block/attn/o_proj",
+            104857600
+          ],
+          [
+            "target/block/attn/q_proj",
+            104857600
+          ],
+          [
+            "target/block/attn/v_proj",
+            104857600
+          ],
+          [
+            "target/block/mlp/down",
+            419430400
+          ],
+          [
+            "target/block/mlp/up",
+            419430400
+          ],
+          [
+            "target_patchify",
+            1505280
+          ],
+          [
+            "to_embed",
+            983040
+          ],
+          [
+            "to_pred",
+            983040
+          ]
+        ],
+        "byCategory": [
+          [
+            "attention",
+            88604672
+          ],
+          [
+            "linear",
+            2564026368
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 346112,
+        "bytesPerSequenceFixed": 0,
+        "byPath": [
+          [
+            "context/block/attn/attn",
+            163840
+          ],
+          [
+            "predictor/block/attn/attn",
+            18432
+          ],
+          [
+            "target/block/attn/attn",
+            163840
+          ]
+        ]
+      },
+      "memory": {
+        "weightsBytes": 2566297088,
+        "train": {
+          "weights": 2566297088,
+          "grads": 2566297088,
+          "optimizer": 15397782528,
+          "activations": 757045248,
+          "logits": 0,
+          "total": 21287421952,
+          "perGpu": {
+            "weights": 2566297088,
+            "grads": 2566297088,
+            "optimizer": 15397782528,
+            "activations": 757045248,
+            "total": 21287421952
+          },
+          "activationsByPath": [
+            [
+              "context",
+              655360
+            ],
+            [
+              "context/block/_in",
+              20971520
+            ],
+            [
+              "context/block/attn/_in",
+              20971520
+            ],
+            [
+              "context/block/attn/attn",
+              21495808
+            ],
+            [
+              "context/block/attn/k_heads",
+              20971520
+            ],
+            [
+              "context/block/attn/o_merge",
+              20971520
+            ],
+            [
+              "context/block/attn/q_heads",
+              20971520
+            ],
+            [
+              "context/block/attn/v_heads",
+              20971520
+            ],
+            [
+              "context/block/mlp/_in",
+              20971520
+            ],
+            [
+              "context/block/mlp/act",
+              83886080
+            ],
+            [
+              "context/block/mlp/up",
+              83886080
+            ],
+            [
+              "context/block/resid1",
+              20971520
+            ],
+            [
+              "context_norm",
+              655360
+            ],
+            [
+              "image",
+              301056
+            ],
+            [
+              "pred_norm",
+              196608
+            ],
+            [
+              "predictor",
+              196608
+            ],
+            [
+              "predictor/block/_in",
+              2359296
+            ],
+            [
+              "predictor/block/attn/_in",
+              2359296
+            ],
+            [
+              "predictor/block/attn/attn",
+              2555904
+            ],
+            [
+              "predictor/block/attn/k_heads",
+              2359296
+            ],
+            [
+              "predictor/block/attn/o_merge",
+              2359296
+            ],
+            [
+              "predictor/block/attn/q_heads",
+              2359296
+            ],
+            [
+              "predictor/block/attn/v_heads",
+              2359296
+            ],
+            [
+              "predictor/block/mlp/_in",
+              2359296
+            ],
+            [
+              "predictor/block/mlp/act",
+              9437184
+            ],
+            [
+              "predictor/block/mlp/up",
+              9437184
+            ],
+            [
+              "predictor/block/resid1",
+              2359296
+            ],
+            [
+              "target",
+              655360
+            ],
+            [
+              "target/block/_in",
+              20971520
+            ],
+            [
+              "target/block/attn/_in",
+              20971520
+            ],
+            [
+              "target/block/attn/attn",
+              21495808
+            ],
+            [
+              "target/block/attn/k_heads",
+              20971520
+            ],
+            [
+              "target/block/attn/o_merge",
+              20971520
+            ],
+            [
+              "target/block/attn/q_heads",
+              20971520
+            ],
+            [
+              "target/block/attn/v_heads",
+              20971520
+            ],
+            [
+              "target/block/mlp/_in",
+              20971520
+            ],
+            [
+              "target/block/mlp/act",
+              83886080
+            ],
+            [
+              "target/block/mlp/up",
+              83886080
+            ],
+            [
+              "target/block/resid1",
+              20971520
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 2566297088,
+          "kv": 88604672,
+          "overhead": 530980352,
+          "total": 3185882112
+        },
+        "optimizerLabel": "AdamW, mixed precision (16 B/param)",
+        "notes": []
+      },
+      "throughput": {
+        "ridgePoint": 295.2238805970149,
+        "decodeBytesPerStep": 2654901760,
+        "decodeFlopsPerStep": 2652631040,
+        "decodeSecondsPerStep": 0.0007925079880597015,
+        "decodeTokensPerSecond": 1261.816934423969,
+        "memoryBound": true,
+        "prefillSeconds": 0.0017165660926188068,
+        "notes": [
+          "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
+        ]
+      },
+      "cost": {
+        "totalFlops": 204223179404712350000,
+        "gpuHours": 143.39904182445255,
+        "wallClockHours": 143.39904182445255,
+        "dollars": 358.49760456113137,
+        "tokens": 25662970880,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 25662970880,
+        "tokensPerParam": 20,
+        "tokensPerActiveParam": 20,
+        "overTrainingRatio": 1,
+        "predictedLoss": [
+          [
+            "epoch",
+            2.46938112823803
+          ],
+          [
+            "hoffmann",
+            2.5151327752178463
+          ]
+        ],
+        "verdict": "Close to compute-optimal."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 84,
+        "blocks": 96,
+        "repeats": [
+          {
+            "path": "context",
+            "type": "repeat",
+            "count": 32,
+            "active": 32
+          },
+          {
+            "path": "predictor",
+            "type": "repeat",
+            "count": 12,
+            "active": 12
+          },
+          {
+            "path": "target",
+            "type": "repeat",
+            "count": 32,
+            "active": 32
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "sharded",
+      "options": {
+        "T": 256,
+        "B": 1,
+        "dtype": "fp8",
+        "inferenceDtype": "fp8",
+        "kvDtype": "fp8",
+        "hardware": "h100-sxm",
+        "gpus": 64,
+        "parallel": {
+          "dp": 4,
+          "tp": 8,
+          "pp": 2,
+          "ep": 1,
+          "zero": 3,
+          "sequenceParallel": true
+        },
+        "optimizer": "adamw8bit",
+        "recompute": "full",
+        "flash": true,
+        "tokens": 15000000000000,
+        "tokensWereDefaulted": false,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 32
+      },
+      "params": {
+        "total": 1283148544,
+        "active": 1283148544,
+        "embedding": 0,
+        "head": 0,
+        "nonEmbedding": 1283148544,
+        "nonEmbeddingActive": 1283148544,
+        "byPath": [
+          [
+            "context/block/attn/k_proj",
+            52469760
+          ],
+          [
+            "context/block/attn/o_proj",
+            52469760
+          ],
+          [
+            "context/block/attn/q_proj",
+            52469760
+          ],
+          [
+            "context/block/attn/v_proj",
+            52469760
+          ],
+          [
+            "context/block/mlp/down",
+            209756160
+          ],
+          [
+            "context/block/mlp/up",
+            209879040
+          ],
+          [
+            "context/block/norm1",
+            81920
+          ],
+          [
+            "context/block/norm2",
+            81920
+          ],
+          [
+            "context_norm",
+            2560
+          ],
+          [
+            "mask_token",
+            384
+          ],
+          [
+            "patchify",
+            753920
+          ],
+          [
+            "pred_norm",
+            768
+          ],
+          [
+            "predictor/block/attn/k_proj",
+            1774080
+          ],
+          [
+            "predictor/block/attn/o_proj",
+            1774080
+          ],
+          [
+            "predictor/block/attn/q_proj",
+            1774080
+          ],
+          [
+            "predictor/block/attn/v_proj",
+            1774080
+          ],
+          [
+            "predictor/block/mlp/down",
+            7082496
+          ],
+          [
+            "predictor/block/mlp/up",
+            7096320
+          ],
+          [
+            "predictor/block/norm1",
+            9216
+          ],
+          [
+            "predictor/block/norm2",
+            9216
+          ],
+          [
+            "target/block/attn/k_proj",
+            52469760
+          ],
+          [
+            "target/block/attn/o_proj",
+            52469760
+          ],
+          [
+            "target/block/attn/q_proj",
+            52469760
+          ],
+          [
+            "target/block/attn/v_proj",
+            52469760
+          ],
+          [
+            "target/block/mlp/down",
+            209756160
+          ],
+          [
+            "target/block/mlp/up",
+            209879040
+          ],
+          [
+            "target/block/norm1",
+            81920
+          ],
+          [
+            "target/block/norm2",
+            81920
+          ],
+          [
+            "target_norm",
+            2560
+          ],
+          [
+            "target_patchify",
+            753920
+          ],
+          [
+            "to_embed",
+            492800
+          ],
+          [
+            "to_pred",
+            491904
+          ]
+        ],
+        "byCategory": [
+          [
+            "embedding",
+            384
+          ],
+          [
+            "linear",
+            1282796160
+          ],
+          [
+            "norm",
+            352000
+          ]
+        ],
+        "byType": [
+          [
+            "layernorm",
+            352000
+          ],
+          [
+            "learned_tokens",
+            384
+          ],
+          [
+            "linear",
+            1282796160
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 2564026368,
+        "fwdAttention": 88604672,
+        "fwdAttentionUnmasked": 88604672,
+        "fwdTotal": 2652631040,
+        "fwdTotalUnmasked": 2652631040,
+        "elementwise": 3998336,
+        "trainPerToken": 10610524160,
+        "attentionShare": 0.03340256170718714,
+        "ruleOfThumb2N": 2566297088,
+        "ruleOfThumb6N": 7698891264,
+        "byPath": [
+          [
+            "context/block/attn/attn",
+            41943040
+          ],
+          [
+            "context/block/attn/k_proj",
+            104857600
+          ],
+          [
+            "context/block/attn/o_proj",
+            104857600
+          ],
+          [
+            "context/block/attn/q_proj",
+            104857600
+          ],
+          [
+            "context/block/attn/v_proj",
+            104857600
+          ],
+          [
+            "context/block/mlp/down",
+            419430400
+          ],
+          [
+            "context/block/mlp/up",
+            419430400
+          ],
+          [
+            "patchify",
+            1505280
+          ],
+          [
+            "predictor/block/attn/attn",
+            4718592
+          ],
+          [
+            "predictor/block/attn/k_proj",
+            3538944
+          ],
+          [
+            "predictor/block/attn/o_proj",
+            3538944
+          ],
+          [
+            "predictor/block/attn/q_proj",
+            3538944
+          ],
+          [
+            "predictor/block/attn/v_proj",
+            3538944
+          ],
+          [
+            "predictor/block/mlp/down",
+            14155776
+          ],
+          [
+            "predictor/block/mlp/up",
+            14155776
+          ],
+          [
+            "target/block/attn/attn",
+            41943040
+          ],
+          [
+            "target/block/attn/k_proj",
+            104857600
+          ],
+          [
+            "target/block/attn/o_proj",
+            104857600
+          ],
+          [
+            "target/block/attn/q_proj",
+            104857600
+          ],
+          [
+            "target/block/attn/v_proj",
+            104857600
+          ],
+          [
+            "target/block/mlp/down",
+            419430400
+          ],
+          [
+            "target/block/mlp/up",
+            419430400
+          ],
+          [
+            "target_patchify",
+            1505280
+          ],
+          [
+            "to_embed",
+            983040
+          ],
+          [
+            "to_pred",
+            983040
+          ]
+        ],
+        "byCategory": [
+          [
+            "attention",
+            88604672
+          ],
+          [
+            "linear",
+            2564026368
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 173056,
+        "bytesPerSequenceFixed": 0,
+        "byPath": [
+          [
+            "context/block/attn/attn",
+            81920
+          ],
+          [
+            "predictor/block/attn/attn",
+            9216
+          ],
+          [
+            "target/block/attn/attn",
+            81920
+          ]
+        ]
+      },
+      "memory": {
+        "weightsBytes": 2566297088,
+        "train": {
+          "weights": 2566297088,
+          "grads": 2566297088,
+          "optimizer": 7698891264,
+          "activations": 23481344,
+          "logits": 0,
+          "total": 12854966784,
+          "perGpu": {
+            "weights": 40098392,
+            "grads": 40098392,
+            "optimizer": 120295176,
+            "activations": 2935168,
+            "total": 203427128
+          },
+          "activationsByPath": [
+            [
+              "context",
+              10485760
+            ],
+            [
+              "context_norm",
+              327680
+            ],
+            [
+              "image",
+              150528
+            ],
+            [
+              "pred_norm",
+              98304
+            ],
+            [
+              "predictor",
+              1179648
+            ],
+            [
+              "target",
+              10485760
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 1283148544,
+          "kv": 1417674752,
+          "overhead": 540164659.2,
+          "total": 3240987955.2
+        },
+        "optimizerLabel": "8-bit AdamW (10 B/param)",
+        "notes": [
+          "Full recomputation keeps only each layer's input, at the cost of one extra forward pass (8N instead of 6N).",
+          "Pipeline parallelism divides the weights but not the activations of the first stage: under 1F1B it holds one micro-batch worth of the whole model."
+        ]
+      },
+      "throughput": {
+        "ridgePoint": 590.7462686567164,
+        "decodeBytesPerStep": 2700823296,
+        "decodeFlopsPerStep": 84884193280,
+        "decodeSecondsPerStep": 0.0008062159092537313,
+        "decodeTokensPerSecond": 39691.600764391515,
+        "memoryBound": true,
+        "prefillSeconds": 0.027451179231531075,
+        "notes": [
+          "Decoding is memory-bound at batch 32. It stays that way until the batch passes this device's ridge point of about 591 FLOP per byte."
+        ]
+      },
+      "cost": {
+        "totalFlops": 1.591578624e+23,
+        "gpuHours": 55849.5671214418,
+        "wallClockHours": 872.6494862725282,
+        "dollars": 139623.9178036045,
+        "tokens": 15000000000000,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 25662970880,
+        "tokensPerParam": 11689.994950420954,
+        "tokensPerActiveParam": 11689.994950420954,
+        "overTrainingRatio": 584.4997475210478,
+        "predictedLoss": [
+          [
+            "epoch",
+            2.1762672306895703
+          ],
+          [
+            "hoffmann",
+            2.099180136028184
+          ]
+        ],
+        "verdict": "Heavily over-trained, in the range of small models trained on very large corpora."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 84,
+        "blocks": 96,
+        "repeats": [
+          {
+            "path": "context",
+            "type": "repeat",
+            "count": 32,
+            "active": 32
+          },
+          {
+            "path": "predictor",
+            "type": "repeat",
+            "count": 12,
+            "active": 12
+          },
+          {
+            "path": "target",
+            "type": "repeat",
+            "count": 32,
+            "active": 32
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "eager",
+      "options": {
+        "T": 8192,
+        "B": 4,
+        "dtype": "bf16",
+        "inferenceDtype": "bf16",
+        "kvDtype": "fp8",
+        "hardware": "h100-sxm",
+        "gpus": 8,
+        "parallel": {
+          "dp": 1,
+          "tp": 1,
+          "pp": 1,
+          "ep": 1,
+          "zero": 0,
+          "sequenceParallel": false
+        },
+        "optimizer": "adamw",
+        "recompute": "selective",
+        "flash": false,
+        "tokens": 25662970880,
+        "tokensWereDefaulted": true,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 1
+      },
+      "params": {
+        "total": 1283148544,
+        "active": 1283148544,
+        "embedding": 0,
+        "head": 0,
+        "nonEmbedding": 1283148544,
+        "nonEmbeddingActive": 1283148544,
+        "byPath": [
+          [
+            "context/block/attn/k_proj",
+            52469760
+          ],
+          [
+            "context/block/attn/o_proj",
+            52469760
+          ],
+          [
+            "context/block/attn/q_proj",
+            52469760
+          ],
+          [
+            "context/block/attn/v_proj",
+            52469760
+          ],
+          [
+            "context/block/mlp/down",
+            209756160
+          ],
+          [
+            "context/block/mlp/up",
+            209879040
+          ],
+          [
+            "context/block/norm1",
+            81920
+          ],
+          [
+            "context/block/norm2",
+            81920
+          ],
+          [
+            "context_norm",
+            2560
+          ],
+          [
+            "mask_token",
+            384
+          ],
+          [
+            "patchify",
+            753920
+          ],
+          [
+            "pred_norm",
+            768
+          ],
+          [
+            "predictor/block/attn/k_proj",
+            1774080
+          ],
+          [
+            "predictor/block/attn/o_proj",
+            1774080
+          ],
+          [
+            "predictor/block/attn/q_proj",
+            1774080
+          ],
+          [
+            "predictor/block/attn/v_proj",
+            1774080
+          ],
+          [
+            "predictor/block/mlp/down",
+            7082496
+          ],
+          [
+            "predictor/block/mlp/up",
+            7096320
+          ],
+          [
+            "predictor/block/norm1",
+            9216
+          ],
+          [
+            "predictor/block/norm2",
+            9216
+          ],
+          [
+            "target/block/attn/k_proj",
+            52469760
+          ],
+          [
+            "target/block/attn/o_proj",
+            52469760
+          ],
+          [
+            "target/block/attn/q_proj",
+            52469760
+          ],
+          [
+            "target/block/attn/v_proj",
+            52469760
+          ],
+          [
+            "target/block/mlp/down",
+            209756160
+          ],
+          [
+            "target/block/mlp/up",
+            209879040
+          ],
+          [
+            "target/block/norm1",
+            81920
+          ],
+          [
+            "target/block/norm2",
+            81920
+          ],
+          [
+            "target_norm",
+            2560
+          ],
+          [
+            "target_patchify",
+            753920
+          ],
+          [
+            "to_embed",
+            492800
+          ],
+          [
+            "to_pred",
+            491904
+          ]
+        ],
+        "byCategory": [
+          [
+            "embedding",
+            384
+          ],
+          [
+            "linear",
+            1282796160
+          ],
+          [
+            "norm",
+            352000
+          ]
+        ],
+        "byType": [
+          [
+            "layernorm",
+            352000
+          ],
+          [
+            "learned_tokens",
+            384
+          ],
+          [
+            "linear",
+            1282796160
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 2564026368,
+        "fwdAttention": 2835349504,
+        "fwdAttentionUnmasked": 2835349504,
+        "fwdTotal": 5399375872,
+        "fwdTotalUnmasked": 5399375872,
+        "elementwise": 3998336,
+        "trainPerToken": 16198127616,
+        "attentionShare": 0.5251254165696283,
+        "ruleOfThumb2N": 2566297088,
+        "ruleOfThumb6N": 7698891264,
+        "byPath": [
+          [
+            "context/block/attn/attn",
+            1342177280
+          ],
+          [
+            "context/block/attn/k_proj",
+            104857600
+          ],
+          [
+            "context/block/attn/o_proj",
+            104857600
+          ],
+          [
+            "context/block/attn/q_proj",
+            104857600
+          ],
+          [
+            "context/block/attn/v_proj",
+            104857600
+          ],
+          [
+            "context/block/mlp/down",
+            419430400
+          ],
+          [
+            "context/block/mlp/up",
+            419430400
+          ],
+          [
+            "patchify",
+            1505280
+          ],
+          [
+            "predictor/block/attn/attn",
+            150994944
+          ],
+          [
+            "predictor/block/attn/k_proj",
+            3538944
+          ],
+          [
+            "predictor/block/attn/o_proj",
+            3538944
+          ],
+          [
+            "predictor/block/attn/q_proj",
+            3538944
+          ],
+          [
+            "predictor/block/attn/v_proj",
+            3538944
+          ],
+          [
+            "predictor/block/mlp/down",
+            14155776
+          ],
+          [
+            "predictor/block/mlp/up",
+            14155776
+          ],
+          [
+            "target/block/attn/attn",
+            1342177280
+          ],
+          [
+            "target/block/attn/k_proj",
+            104857600
+          ],
+          [
+            "target/block/attn/o_proj",
+            104857600
+          ],
+          [
+            "target/block/attn/q_proj",
+            104857600
+          ],
+          [
+            "target/block/attn/v_proj",
+            104857600
+          ],
+          [
+            "target/block/mlp/down",
+            419430400
+          ],
+          [
+            "target/block/mlp/up",
+            419430400
+          ],
+          [
+            "target_patchify",
+            1505280
+          ],
+          [
+            "to_embed",
+            983040
+          ],
+          [
+            "to_pred",
+            983040
+          ]
+        ],
+        "byCategory": [
+          [
+            "attention",
+            2835349504
+          ],
+          [
+            "linear",
+            2564026368
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 173056,
+        "bytesPerSequenceFixed": 0,
+        "byPath": [
+          [
+            "context/block/attn/attn",
+            81920
+          ],
+          [
+            "predictor/block/attn/attn",
+            9216
+          ],
+          [
+            "target/block/attn/attn",
+            81920
+          ]
+        ]
+      },
+      "memory": {
+        "weightsBytes": 2566297088,
+        "train": {
+          "weights": 2566297088,
+          "grads": 2566297088,
+          "optimizer": 15397782528,
+          "activations": 96901791744,
+          "logits": 0,
+          "total": 117432168448,
+          "perGpu": {
+            "weights": 2566297088,
+            "grads": 2566297088,
+            "optimizer": 15397782528,
+            "activations": 96901791744,
+            "total": 117432168448
+          },
+          "activationsByPath": [
+            [
+              "context",
+              83886080
+            ],
+            [
+              "context/block/_in",
+              2684354560
+            ],
+            [
+              "context/block/attn/_in",
+              2684354560
+            ],
+            [
+              "context/block/attn/attn",
+              2751463424
+            ],
+            [
+              "context/block/attn/k_heads",
+              2684354560
+            ],
+            [
+              "context/block/attn/o_merge",
+              2684354560
+            ],
+            [
+              "context/block/attn/q_heads",
+              2684354560
+            ],
+            [
+              "context/block/attn/v_heads",
+              2684354560
+            ],
+            [
+              "context/block/mlp/_in",
+              2684354560
+            ],
+            [
+              "context/block/mlp/act",
+              10737418240
+            ],
+            [
+              "context/block/mlp/up",
+              10737418240
+            ],
+            [
+              "context/block/resid1",
+              2684354560
+            ],
+            [
+              "context_norm",
+              83886080
+            ],
+            [
+              "image",
+              38535168
+            ],
+            [
+              "pred_norm",
+              25165824
+            ],
+            [
+              "predictor",
+              25165824
+            ],
+            [
+              "predictor/block/_in",
+              301989888
+            ],
+            [
+              "predictor/block/attn/_in",
+              301989888
+            ],
+            [
+              "predictor/block/attn/attn",
+              327155712
+            ],
+            [
+              "predictor/block/attn/k_heads",
+              301989888
+            ],
+            [
+              "predictor/block/attn/o_merge",
+              301989888
+            ],
+            [
+              "predictor/block/attn/q_heads",
+              301989888
+            ],
+            [
+              "predictor/block/attn/v_heads",
+              301989888
+            ],
+            [
+              "predictor/block/mlp/_in",
+              301989888
+            ],
+            [
+              "predictor/block/mlp/act",
+              1207959552
+            ],
+            [
+              "predictor/block/mlp/up",
+              1207959552
+            ],
+            [
+              "predictor/block/resid1",
+              301989888
+            ],
+            [
+              "target",
+              83886080
+            ],
+            [
+              "target/block/_in",
+              2684354560
+            ],
+            [
+              "target/block/attn/_in",
+              2684354560
+            ],
+            [
+              "target/block/attn/attn",
+              2751463424
+            ],
+            [
+              "target/block/attn/k_heads",
+              2684354560
+            ],
+            [
+              "target/block/attn/o_merge",
+              2684354560
+            ],
+            [
+              "target/block/attn/q_heads",
+              2684354560
+            ],
+            [
+              "target/block/attn/v_heads",
+              2684354560
+            ],
+            [
+              "target/block/mlp/_in",
+              2684354560
+            ],
+            [
+              "target/block/mlp/act",
+              10737418240
+            ],
+            [
+              "target/block/mlp/up",
+              10737418240
+            ],
+            [
+              "target/block/resid1",
+              2684354560
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 2566297088,
+          "kv": 1417674752,
+          "overhead": 796794368,
+          "total": 4780766208
+        },
+        "optimizerLabel": "AdamW, mixed precision (16 B/param)",
+        "notes": [
+          "Selective recomputation drops the attention score matrix. A memory-efficient attention kernel already does this, so the two coincide here."
+        ]
+      },
+      "throughput": {
+        "ridgePoint": 295.2238805970149,
+        "decodeBytesPerStep": 3983971840,
+        "decodeFlopsPerStep": 5399375872,
+        "decodeSecondsPerStep": 0.0011892453253731343,
+        "decodeTokensPerSecond": 840.8693973097963,
+        "memoryBound": true,
+        "prefillSeconds": 0.11180911815830132,
+        "notes": [
+          "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
+        ]
+      },
+      "cost": {
+        "totalFlops": 415692077319931800000,
+        "gpuHours": 291.8857974665289,
+        "wallClockHours": 36.485724683316114,
+        "dollars": 729.7144936663223,
+        "tokens": 25662970880,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 25662970880,
+        "tokensPerParam": 20,
+        "tokensPerActiveParam": 20,
+        "overTrainingRatio": 1,
+        "predictedLoss": [
+          [
+            "epoch",
+            2.46938112823803
+          ],
+          [
+            "hoffmann",
+            2.5151327752178463
+          ]
+        ],
+        "verdict": "Close to compute-optimal."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 84,
+        "blocks": 96,
+        "repeats": [
+          {
+            "path": "context",
+            "type": "repeat",
+            "count": 32,
+            "active": 32
+          },
+          {
+            "path": "predictor",
+            "type": "repeat",
+            "count": 12,
+            "active": 12
+          },
+          {
+            "path": "target",
+            "type": "repeat",
+            "count": 32,
+            "active": 32
+          }
+        ],
+        "errors": []
+      }
+    }
+  ]
+}

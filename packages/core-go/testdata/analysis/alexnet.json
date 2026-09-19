@@ -1,0 +1,811 @@
+{
+  "preset": "alexnet",
+  "cases": [
+    {
+      "label": "default",
+      "options": {
+        "T": 1,
+        "B": 1,
+        "dtype": "bf16",
+        "inferenceDtype": "bf16",
+        "kvDtype": "bf16",
+        "hardware": "h100-sxm",
+        "gpus": 1,
+        "parallel": {
+          "dp": 1,
+          "tp": 1,
+          "pp": 1,
+          "ep": 1,
+          "zero": 0,
+          "sequenceParallel": false
+        },
+        "optimizer": "adamw",
+        "recompute": "none",
+        "flash": true,
+        "tokens": 1222016800,
+        "tokensWereDefaulted": true,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 1
+      },
+      "params": {
+        "total": 61100840,
+        "active": 61100840,
+        "embedding": 0,
+        "head": 0,
+        "nonEmbedding": 61100840,
+        "nonEmbeddingActive": 61100840,
+        "byPath": [
+          [
+            "conv1",
+            23296
+          ],
+          [
+            "conv2",
+            307392
+          ],
+          [
+            "conv3",
+            663936
+          ],
+          [
+            "conv4",
+            884992
+          ],
+          [
+            "conv5",
+            590080
+          ],
+          [
+            "fc1",
+            37752832
+          ],
+          [
+            "fc2",
+            16781312
+          ],
+          [
+            "fc3",
+            4097000
+          ]
+        ],
+        "byCategory": [
+          [
+            "linear",
+            61100840
+          ]
+        ],
+        "byType": [
+          [
+            "conv2d",
+            2469696
+          ],
+          [
+            "linear",
+            58631144
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 1428376960,
+        "fwdAttention": 0,
+        "fwdAttentionUnmasked": 0,
+        "fwdTotal": 1428376960,
+        "fwdTotalUnmasked": 1428376960,
+        "elementwise": 1288064,
+        "trainPerToken": 4285130880,
+        "attentionShare": 0,
+        "ruleOfThumb2N": 122201680,
+        "ruleOfThumb6N": 366605040,
+        "byPath": [
+          [
+            "conv1",
+            140553600
+          ],
+          [
+            "conv2",
+            447897600
+          ],
+          [
+            "conv3",
+            224280576
+          ],
+          [
+            "conv4",
+            299040768
+          ],
+          [
+            "conv5",
+            199360512
+          ],
+          [
+            "fc1",
+            75497472
+          ],
+          [
+            "fc2",
+            33554432
+          ],
+          [
+            "fc3",
+            8192000
+          ]
+        ],
+        "byCategory": [
+          [
+            "linear",
+            1428376960
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 0,
+        "bytesPerSequenceFixed": 0,
+        "byPath": []
+      },
+      "memory": {
+        "weightsBytes": 122201680,
+        "train": {
+          "weights": 122201680,
+          "grads": 122201680,
+          "optimizer": 733210080,
+          "activations": 1480448,
+          "logits": 0,
+          "total": 979093888,
+          "perGpu": {
+            "weights": 122201680,
+            "grads": 122201680,
+            "optimizer": 733210080,
+            "activations": 1480448,
+            "total": 979093888
+          },
+          "activationsByPath": [
+            [
+              "act1",
+              8192
+            ],
+            [
+              "act2",
+              8192
+            ],
+            [
+              "conv1",
+              387200
+            ],
+            [
+              "conv2",
+              279936
+            ],
+            [
+              "conv3",
+              129792
+            ],
+            [
+              "conv4",
+              86528
+            ],
+            [
+              "conv5",
+              86528
+            ],
+            [
+              "fc1",
+              8192
+            ],
+            [
+              "fc2",
+              8192
+            ],
+            [
+              "flatten",
+              18432
+            ],
+            [
+              "image",
+              301056
+            ],
+            [
+              "pool1",
+              93312
+            ],
+            [
+              "pool2",
+              64896
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 122201680,
+          "kv": 0,
+          "overhead": 24440336,
+          "total": 146642016
+        },
+        "optimizerLabel": "AdamW, mixed precision (16 B/param)",
+        "notes": []
+      },
+      "throughput": {
+        "ridgePoint": 295.2238805970149,
+        "decodeBytesPerStep": 122201680,
+        "decodeFlopsPerStep": 1428376960,
+        "decodeSecondsPerStep": 0.00003647811343283582,
+        "decodeTokensPerSecond": 27413.698404146326,
+        "memoryBound": true,
+        "prefillSeconds": 0.0000036106596562184026,
+        "notes": [
+          "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
+        ]
+      },
+      "cost": {
+        "totalFlops": 5236501925558784000,
+        "gpuHours": 3.67690563248426,
+        "wallClockHours": 3.67690563248426,
+        "dollars": 9.19226408121065,
+        "tokens": 1222016800,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 1222016800,
+        "tokensPerParam": 20,
+        "tokensPerActiveParam": 20,
+        "overTrainingRatio": 1,
+        "predictedLoss": [
+          [
+            "epoch",
+            3.750288689490356
+          ],
+          [
+            "hoffmann",
+            3.7781645178088725
+          ]
+        ],
+        "verdict": "Close to compute-optimal."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 16,
+        "blocks": 16,
+        "repeats": [],
+        "errors": []
+      }
+    },
+    {
+      "label": "sharded",
+      "options": {
+        "T": 1,
+        "B": 1,
+        "dtype": "fp8",
+        "inferenceDtype": "fp8",
+        "kvDtype": "fp8",
+        "hardware": "h100-sxm",
+        "gpus": 64,
+        "parallel": {
+          "dp": 4,
+          "tp": 8,
+          "pp": 2,
+          "ep": 1,
+          "zero": 3,
+          "sequenceParallel": true
+        },
+        "optimizer": "adamw8bit",
+        "recompute": "full",
+        "flash": true,
+        "tokens": 15000000000000,
+        "tokensWereDefaulted": false,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 32
+      },
+      "params": {
+        "total": 61100840,
+        "active": 61100840,
+        "embedding": 0,
+        "head": 0,
+        "nonEmbedding": 61100840,
+        "nonEmbeddingActive": 61100840,
+        "byPath": [
+          [
+            "conv1",
+            23296
+          ],
+          [
+            "conv2",
+            307392
+          ],
+          [
+            "conv3",
+            663936
+          ],
+          [
+            "conv4",
+            884992
+          ],
+          [
+            "conv5",
+            590080
+          ],
+          [
+            "fc1",
+            37752832
+          ],
+          [
+            "fc2",
+            16781312
+          ],
+          [
+            "fc3",
+            4097000
+          ]
+        ],
+        "byCategory": [
+          [
+            "linear",
+            61100840
+          ]
+        ],
+        "byType": [
+          [
+            "conv2d",
+            2469696
+          ],
+          [
+            "linear",
+            58631144
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 1428376960,
+        "fwdAttention": 0,
+        "fwdAttentionUnmasked": 0,
+        "fwdTotal": 1428376960,
+        "fwdTotalUnmasked": 1428376960,
+        "elementwise": 1288064,
+        "trainPerToken": 5713507840,
+        "attentionShare": 0,
+        "ruleOfThumb2N": 122201680,
+        "ruleOfThumb6N": 366605040,
+        "byPath": [
+          [
+            "conv1",
+            140553600
+          ],
+          [
+            "conv2",
+            447897600
+          ],
+          [
+            "conv3",
+            224280576
+          ],
+          [
+            "conv4",
+            299040768
+          ],
+          [
+            "conv5",
+            199360512
+          ],
+          [
+            "fc1",
+            75497472
+          ],
+          [
+            "fc2",
+            33554432
+          ],
+          [
+            "fc3",
+            8192000
+          ]
+        ],
+        "byCategory": [
+          [
+            "linear",
+            1428376960
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 0,
+        "bytesPerSequenceFixed": 0,
+        "byPath": []
+      },
+      "memory": {
+        "weightsBytes": 122201680,
+        "train": {
+          "weights": 122201680,
+          "grads": 122201680,
+          "optimizer": 366605040,
+          "activations": 740224,
+          "logits": 0,
+          "total": 611748624,
+          "perGpu": {
+            "weights": 1909401.25,
+            "grads": 1909401.25,
+            "optimizer": 5728203.75,
+            "activations": 92528,
+            "total": 9639534.25
+          },
+          "activationsByPath": [
+            [
+              "act1",
+              4096
+            ],
+            [
+              "act2",
+              4096
+            ],
+            [
+              "conv1",
+              193600
+            ],
+            [
+              "conv2",
+              139968
+            ],
+            [
+              "conv3",
+              64896
+            ],
+            [
+              "conv4",
+              43264
+            ],
+            [
+              "conv5",
+              43264
+            ],
+            [
+              "fc1",
+              4096
+            ],
+            [
+              "fc2",
+              4096
+            ],
+            [
+              "flatten",
+              9216
+            ],
+            [
+              "image",
+              150528
+            ],
+            [
+              "pool1",
+              46656
+            ],
+            [
+              "pool2",
+              32448
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 61100840,
+          "kv": 0,
+          "overhead": 12220168,
+          "total": 73321008
+        },
+        "optimizerLabel": "8-bit AdamW (10 B/param)",
+        "notes": [
+          "Full recomputation keeps only each layer's input, at the cost of one extra forward pass (8N instead of 6N).",
+          "Pipeline parallelism divides the weights but not the activations of the first stage: under 1F1B it holds one micro-batch worth of the whole model."
+        ]
+      },
+      "throughput": {
+        "ridgePoint": 590.7462686567164,
+        "decodeBytesPerStep": 61100840,
+        "decodeFlopsPerStep": 45708062720,
+        "decodeSecondsPerStep": 0.00007698848361125147,
+        "decodeTokensPerSecond": 415646.58113779715,
+        "memoryBound": false,
+        "prefillSeconds": 0.0000577413627084386,
+        "notes": [
+          "Decoding is compute-bound at batch 32."
+        ]
+      },
+      "cost": {
+        "totalFlops": 8.57026176e+22,
+        "gpuHours": 30073.62641064511,
+        "wallClockHours": 469.9004126663298,
+        "dollars": 75184.06602661277,
+        "tokens": 15000000000000,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 1222016800,
+        "tokensPerParam": 245495.80660429545,
+        "tokensPerActiveParam": 245495.80660429545,
+        "overTrainingRatio": 12274.790330214773,
+        "predictedLoss": [
+          [
+            "epoch",
+            2.792988297137515
+          ],
+          [
+            "hoffmann",
+            2.6895712376037353
+          ]
+        ],
+        "verdict": "Heavily over-trained, in the range of small models trained on very large corpora."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 16,
+        "blocks": 16,
+        "repeats": [],
+        "errors": []
+      }
+    },
+    {
+      "label": "eager",
+      "options": {
+        "T": 8192,
+        "B": 4,
+        "dtype": "bf16",
+        "inferenceDtype": "bf16",
+        "kvDtype": "fp8",
+        "hardware": "h100-sxm",
+        "gpus": 8,
+        "parallel": {
+          "dp": 1,
+          "tp": 1,
+          "pp": 1,
+          "ep": 1,
+          "zero": 0,
+          "sequenceParallel": false
+        },
+        "optimizer": "adamw",
+        "recompute": "selective",
+        "flash": false,
+        "tokens": 1222016800,
+        "tokensWereDefaulted": true,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 1
+      },
+      "params": {
+        "total": 61100840,
+        "active": 61100840,
+        "embedding": 0,
+        "head": 0,
+        "nonEmbedding": 61100840,
+        "nonEmbeddingActive": 61100840,
+        "byPath": [
+          [
+            "conv1",
+            23296
+          ],
+          [
+            "conv2",
+            307392
+          ],
+          [
+            "conv3",
+            663936
+          ],
+          [
+            "conv4",
+            884992
+          ],
+          [
+            "conv5",
+            590080
+          ],
+          [
+            "fc1",
+            37752832
+          ],
+          [
+            "fc2",
+            16781312
+          ],
+          [
+            "fc3",
+            4097000
+          ]
+        ],
+        "byCategory": [
+          [
+            "linear",
+            61100840
+          ]
+        ],
+        "byType": [
+          [
+            "conv2d",
+            2469696
+          ],
+          [
+            "linear",
+            58631144
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 1428376960,
+        "fwdAttention": 0,
+        "fwdAttentionUnmasked": 0,
+        "fwdTotal": 1428376960,
+        "fwdTotalUnmasked": 1428376960,
+        "elementwise": 1288064,
+        "trainPerToken": 4285130880,
+        "attentionShare": 0,
+        "ruleOfThumb2N": 122201680,
+        "ruleOfThumb6N": 366605040,
+        "byPath": [
+          [
+            "conv1",
+            140553600
+          ],
+          [
+            "conv2",
+            447897600
+          ],
+          [
+            "conv3",
+            224280576
+          ],
+          [
+            "conv4",
+            299040768
+          ],
+          [
+            "conv5",
+            199360512
+          ],
+          [
+            "fc1",
+            75497472
+          ],
+          [
+            "fc2",
+            33554432
+          ],
+          [
+            "fc3",
+            8192000
+          ]
+        ],
+        "byCategory": [
+          [
+            "linear",
+            1428376960
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 0,
+        "bytesPerSequenceFixed": 0,
+        "byPath": []
+      },
+      "memory": {
+        "weightsBytes": 122201680,
+        "train": {
+          "weights": 122201680,
+          "grads": 122201680,
+          "optimizer": 733210080,
+          "activations": 48511320064,
+          "logits": 0,
+          "total": 49488933504,
+          "perGpu": {
+            "weights": 122201680,
+            "grads": 122201680,
+            "optimizer": 733210080,
+            "activations": 48511320064,
+            "total": 49488933504
+          },
+          "activationsByPath": [
+            [
+              "act1",
+              268435456
+            ],
+            [
+              "act2",
+              268435456
+            ],
+            [
+              "conv1",
+              12687769600
+            ],
+            [
+              "conv2",
+              9172942848
+            ],
+            [
+              "conv3",
+              4253024256
+            ],
+            [
+              "conv4",
+              2835349504
+            ],
+            [
+              "conv5",
+              2835349504
+            ],
+            [
+              "fc1",
+              268435456
+            ],
+            [
+              "fc2",
+              268435456
+            ],
+            [
+              "flatten",
+              603979776
+            ],
+            [
+              "image",
+              9865003008
+            ],
+            [
+              "pool1",
+              3057647616
+            ],
+            [
+              "pool2",
+              2126512128
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 122201680,
+          "kv": 0,
+          "overhead": 24440336,
+          "total": 146642016
+        },
+        "optimizerLabel": "AdamW, mixed precision (16 B/param)",
+        "notes": [
+          "Selective recomputation drops the attention score matrix. A memory-efficient attention kernel already does this, so the two coincide here."
+        ]
+      },
+      "throughput": {
+        "ridgePoint": 295.2238805970149,
+        "decodeBytesPerStep": 122201680,
+        "decodeFlopsPerStep": 1428376960,
+        "decodeSecondsPerStep": 0.00003647811343283582,
+        "decodeTokensPerSecond": 27413.698404146326,
+        "memoryBound": true,
+        "prefillSeconds": 0.029578523903741154,
+        "notes": [
+          "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
+        ]
+      },
+      "cost": {
+        "totalFlops": 5236501925558784000,
+        "gpuHours": 3.67690563248426,
+        "wallClockHours": 0.4596132040605325,
+        "dollars": 9.19226408121065,
+        "tokens": 1222016800,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 1222016800,
+        "tokensPerParam": 20,
+        "tokensPerActiveParam": 20,
+        "overTrainingRatio": 1,
+        "predictedLoss": [
+          [
+            "epoch",
+            3.750288689490356
+          ],
+          [
+            "hoffmann",
+            3.7781645178088725
+          ]
+        ],
+        "verdict": "Close to compute-optimal."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 16,
+        "blocks": 16,
+        "repeats": [],
+        "errors": []
+      }
+    }
+  ]
+}

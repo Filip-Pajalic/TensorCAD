@@ -28,6 +28,7 @@
       "paramCount": null,
       "flops": null,
       "retains": null,
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -47,6 +48,7 @@
       "paramCount": null,
       "flops": null,
       "retains": null,
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -74,6 +76,7 @@
       "paramCount": null,
       "flops": null,
       "retains": null,
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -101,6 +104,7 @@
       "paramCount": null,
       "flops": null,
       "retains": null,
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -130,6 +134,7 @@
         "fwd": 0
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -160,6 +165,7 @@
         "elementwise": 768
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -189,6 +195,7 @@
         "fwd": 0
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -218,6 +225,7 @@
         "fwd": 0
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -251,6 +259,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -284,6 +293,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -319,6 +329,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": 769536,
       "stateBytes": null,
       "constraints": []
     },
@@ -354,6 +365,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": 769536,
       "stateBytes": null,
       "constraints": []
     },
@@ -400,6 +412,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -446,6 +459,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -485,6 +499,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -516,6 +531,7 @@
         "fwd": 0
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -548,6 +564,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -581,6 +598,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -614,6 +632,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -647,6 +666,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -679,6 +699,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -711,6 +732,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -742,6 +764,7 @@
         "elementwise": 4096
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -776,6 +799,7 @@
         "a",
         "b"
       ],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -805,6 +829,7 @@
         "fwd": 0
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -840,6 +865,7 @@
         "elementwise": 24576
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -875,6 +901,7 @@
         "elementwise": 24384
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": [
         "ROPE-01: RoPE needs an even head_dim, got 127"
@@ -922,6 +949,7 @@
         "k",
         "v"
       ],
+      "extraActivationBytes": 8320,
       "stateBytes": {
         "perToken": 4096,
         "perSeq": 0
@@ -970,6 +998,7 @@
         "k",
         "v"
       ],
+      "extraActivationBytes": 8320,
       "stateBytes": {
         "perToken": 4096,
         "perSeq": 0
@@ -1018,6 +1047,7 @@
         "k",
         "v"
       ],
+      "extraActivationBytes": 8320,
       "stateBytes": {
         "perToken": 0,
         "perSeq": 16777216
@@ -1065,6 +1095,7 @@
         "k",
         "v"
       ],
+      "extraActivationBytes": 8320,
       "stateBytes": {
         "perToken": 3584,
         "perSeq": 0
@@ -1115,6 +1146,7 @@
         "k",
         "v"
       ],
+      "extraActivationBytes": 8320,
       "stateBytes": {
         "perToken": 0,
         "perSeq": 0
@@ -1156,6 +1188,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -1193,6 +1226,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": [
         "ROUTER-01: top_k (9) cannot exceed the number of experts (8)"
@@ -1226,6 +1260,7 @@
         "elementwise": 32768
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -1263,6 +1298,7 @@
         "fwd": 0
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -1300,6 +1336,7 @@
         "fwd": 0
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -1338,6 +1375,7 @@
         "fwd": 0
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -1367,6 +1405,7 @@
         "fwd": 0
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
     },
@@ -1394,6 +1433,7 @@
         "fwd": 0
       },
       "retains": [],
+      "extraActivationBytes": null,
       "stateBytes": {
         "perToken": 1152,
         "perSeq": 0
@@ -1430,6 +1470,7 @@
       "retains": [
         "x"
       ],
+      "extraActivationBytes": null,
       "stateBytes": {
         "perToken": 0,
         "perSeq": 49152
@@ -1475,6 +1516,7 @@
         "xbc",
         "dt"
       ],
+      "extraActivationBytes": null,
       "stateBytes": {
         "perToken": 0,
         "perSeq": 2097152
@@ -1520,6 +1562,7 @@
         "xbc",
         "dt"
       ],
+      "extraActivationBytes": null,
       "stateBytes": {
         "perToken": 0,
         "perSeq": 2129920

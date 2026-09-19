@@ -196,11 +196,15 @@ type BlockDef struct {
 	Ports   Ports
 	PortsFn func(r *Resolved) Ports
 
-	ParamCount  func(r *Resolved) float64
-	Flops       func(r *Resolved, ctx AnalysisCtx) FlopsPerToken
-	Retains     func(r *Resolved) []string
-	StateBytes  func(r *Resolved, ctx AnalysisCtx) StateBytes
-	Constraints func(r *Resolved) []BlockFinding
+	ParamCount func(r *Resolved) float64
+	Flops      func(r *Resolved, ctx AnalysisCtx) FlopsPerToken
+	Retains    func(r *Resolved) []string
+	// ExtraActivationBytes is what a block keeps per token beyond the tensors on
+	// its edges: a fused attention kernel's log-sum-exp statistics, or the
+	// logits buffer.
+	ExtraActivationBytes func(r *Resolved, ctx AnalysisCtx) float64
+	StateBytes           func(r *Resolved, ctx AnalysisCtx) StateBytes
+	Constraints          func(r *Resolved) []BlockFinding
 
 	Docs BlockDocs
 

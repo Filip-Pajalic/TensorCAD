@@ -18,6 +18,7 @@ import { join } from "node:path";
 import {
   PRESET_NAMES,
   Sym,
+  analyze,
   evalExpr,
   getPreset,
   inferShapes,
@@ -29,14 +30,17 @@ import {
   resolveNodeParams,
   portsOf,
   shapeToString,
+  type AnalysisOptions,
   type InferResult,
 } from "@tensorcad/core";
 
 const root = join(import.meta.dir, "..", "packages", "core-go", "testdata");
 const docsDir = join(root, "presets");
 const goldenDir = join(root, "golden");
+const analysisDir = join(root, "analysis");
 mkdirSync(docsDir, { recursive: true });
 mkdirSync(goldenDir, { recursive: true });
+mkdirSync(analysisDir, { recursive: true });
 
 /** JSON has no NaN, and a NaN here would mean the preset itself is broken. */
 function finite(label: string, values: Record<string, number>): Record<string, number> {
@@ -352,6 +356,7 @@ const primitives = PRIMITIVE_CASES.map(({ type, params }) => {
     paramCount?: (r: unknown) => number;
     flops?: (r: unknown, c: unknown) => Record<string, number>;
     retains?: (r: unknown) => string[];
+    extraActivationBytes?: (r: unknown, c: unknown) => number;
     stateBytes?: (r: unknown, c: unknown) => Record<string, number>;
     constraints?: (r: unknown) => { id: string; message: string }[];
   };
@@ -365,6 +370,7 @@ const primitives = PRIMITIVE_CASES.map(({ type, params }) => {
     paramCount: prim.paramCount ? prim.paramCount(r) : null,
     flops: prim.flops ? prim.flops(r, primCtx) : null,
     retains: prim.retains ? prim.retains(r) : null,
+    extraActivationBytes: prim.extraActivationBytes ? prim.extraActivationBytes(r, primCtx) : null,
     stateBytes: prim.stateBytes ? prim.stateBytes(r, primCtx) : null,
     constraints: prim.constraints ? prim.constraints(r).map((c) => `${c.id}: ${c.message}`) : [],
   };
@@ -429,3 +435,144 @@ const composites = COMPOSITE_CASES.map(({ type, params }) => {
 });
 writeFileSync(join(root, "composites.json"), JSON.stringify({ cases: composites }, null, 2) + "\n");
 console.log(`  and ${composites.length} composite expansions`);
+
+/**
+ * The analysis, at three operating points per preset.
+ *
+ * One would not be enough: the default point never exercises sharding, full
+ * recomputation or an eager attention kernel, and those are three of the places
+ * the arithmetic is easiest to get subtly wrong. Each case records the resolved
+ * options as well as the answers, so if the Go test's own copy of a variant
+ * ever drifts from this one, the resolved options disagree and say so in the
+ * first line of the failure rather than as a wrong number somewhere downstream.
+ */
+const ANALYSIS_VARIANTS: { label: string; options: AnalysisOptions }[] = [
+  { label: "default", options: {} },
+  {
+    label: "sharded",
+    options: {
+      dtype: "fp8",
+      inferenceDtype: "fp8",
+      recompute: "full",
+      optimizer: "adamw8bit",
+      parallel: { tp: 8, pp: 2, dp: 4, zero: 3, sequenceParallel: true },
+      gpus: 64,
+      concurrency: 32,
+      tokens: 15e12,
+      mfu: 0.4,
+    },
+  },
+  {
+    label: "eager",
+    options: { T: 8192, B: 4, flash: false, recompute: "selective", kvDtype: "fp8", gpus: 8 },
+  },
+];
+
+/** A map as a sorted list of pairs, so neither engine's key order matters. */
+function pairs(m: Record<string, number>): [string, number][] {
+  return Object.entries(m).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+}
+
+let analysisCases = 0;
+for (const name of PRESET_NAMES) {
+  const doc = getPreset(name);
+  const cases = ANALYSIS_VARIANTS.map(({ label, options }) => {
+    const a = analyze(doc, options);
+    analysisCases++;
+    return {
+      label,
+      options: {
+        T: a.options.T,
+        B: a.options.B,
+        dtype: a.options.dtype,
+        inferenceDtype: a.options.inferenceDtype,
+        kvDtype: a.options.kvDtype,
+        hardware: a.options.hardware.id,
+        gpus: a.options.gpus,
+        parallel: a.options.parallel,
+        optimizer: a.options.optimizer,
+        recompute: a.options.recompute,
+        flash: a.options.flash,
+        tokens: a.options.tokens,
+        tokensWereDefaulted: a.options.tokensWereDefaulted,
+        mfu: a.options.mfu,
+        decodeEfficiency: a.options.decodeEfficiency,
+        concurrency: a.options.concurrency,
+      },
+      params: {
+        total: a.params.total,
+        active: a.params.active,
+        embedding: a.params.embedding,
+        head: a.params.head,
+        nonEmbedding: a.params.nonEmbedding,
+        nonEmbeddingActive: a.params.nonEmbeddingActive,
+        byPath: pairs(a.params.byPath),
+        byCategory: pairs(a.params.byCategory),
+        byType: pairs(a.params.byType),
+      },
+      flops: {
+        fwdDense: a.flops.fwdDense,
+        fwdAttention: a.flops.fwdAttention,
+        fwdAttentionUnmasked: a.flops.fwdAttentionUnmasked,
+        fwdTotal: a.flops.fwdTotal,
+        fwdTotalUnmasked: a.flops.fwdTotalUnmasked,
+        elementwise: a.flops.elementwise,
+        trainPerToken: a.flops.trainPerToken,
+        attentionShare: a.flops.attentionShare,
+        ruleOfThumb2N: a.flops.ruleOfThumb2N,
+        ruleOfThumb6N: a.flops.ruleOfThumb6N,
+        byPath: pairs(a.flops.byPath),
+        byCategory: pairs(a.flops.byCategory),
+      },
+      kv: {
+        bytesPerToken: a.kv.bytesPerToken,
+        bytesPerSequenceFixed: a.kv.bytesPerSequenceFixed,
+        byPath: pairs(a.kv.byPath),
+      },
+      memory: {
+        weightsBytes: a.memory.weightsBytes,
+        train: {
+          weights: a.memory.train.weights,
+          grads: a.memory.train.grads,
+          optimizer: a.memory.train.optimizer,
+          activations: a.memory.train.activations,
+          logits: a.memory.train.logits,
+          total: a.memory.train.total,
+          perGpu: a.memory.train.perGpu,
+          activationsByPath: pairs(a.memory.train.activationsByPath),
+        },
+        infer: a.memory.infer,
+        optimizerLabel: a.memory.optimizerLabel,
+        notes: a.memory.notes,
+      },
+      throughput: {
+        ridgePoint: a.throughput.ridgePoint,
+        decodeBytesPerStep: a.throughput.decodeBytesPerStep,
+        decodeFlopsPerStep: a.throughput.decodeFlopsPerStep,
+        decodeSecondsPerStep: a.throughput.decodeSecondsPerStep,
+        decodeTokensPerSecond: a.throughput.decodeTokensPerSecond,
+        memoryBound: a.throughput.memoryBound,
+        prefillSeconds: a.throughput.prefillSeconds,
+        notes: a.throughput.notes,
+      },
+      cost: a.cost,
+      chinchilla: {
+        optimalTokens: a.chinchilla.optimalTokens,
+        tokensPerParam: a.chinchilla.tokensPerParam,
+        tokensPerActiveParam: a.chinchilla.tokensPerActiveParam,
+        overTrainingRatio: a.chinchilla.overTrainingRatio,
+        predictedLoss: pairs(a.chinchilla.predictedLoss),
+        verdict: a.chinchilla.verdict,
+      },
+      errors: a.errors,
+      flat: {
+        nodes: a.flat.nodes.length,
+        blocks: a.flat.blocks.length,
+        repeats: a.flat.repeats.map((r) => ({ path: r.path, type: r.type, count: r.count, active: r.active })),
+        errors: a.flat.errors,
+      },
+    };
+  });
+  writeFileSync(join(analysisDir, `${name}.json`), JSON.stringify({ preset: name, cases }, null, 2) + "\n");
+}
+console.log(`  and ${analysisCases} analysis cases`);

@@ -27,17 +27,18 @@ type primPorts struct {
 }
 
 type primCase struct {
-	Type        string             `json:"type"`
-	Params      map[string]any     `json:"params"`
-	Resolved    map[string]any     `json:"resolved"`
-	Errors      []string           `json:"errors"`
-	Ports       *primPorts         `json:"ports"`
-	PortError   string             `json:"portError"`
-	ParamCount  *float64           `json:"paramCount"`
-	Flops       map[string]float64 `json:"flops"`
-	Retains     []string           `json:"retains"`
-	StateBytes  map[string]float64 `json:"stateBytes"`
-	Constraints []string           `json:"constraints"`
+	Type                 string             `json:"type"`
+	Params               map[string]any     `json:"params"`
+	Resolved             map[string]any     `json:"resolved"`
+	Errors               []string           `json:"errors"`
+	Ports                *primPorts         `json:"ports"`
+	PortError            string             `json:"portError"`
+	ParamCount           *float64           `json:"paramCount"`
+	Flops                map[string]float64 `json:"flops"`
+	Retains              []string           `json:"retains"`
+	ExtraActivationBytes *float64           `json:"extraActivationBytes"`
+	StateBytes           map[string]float64 `json:"stateBytes"`
+	Constraints          []string           `json:"constraints"`
 }
 
 type primGolden struct {
@@ -139,6 +140,16 @@ func TestPrimitivesMatchTypeScript(t *testing.T) {
 				if !sameStringSets(def.Retains(r), c.Retains) {
 					t.Errorf("retains: got %v, want %v", def.Retains(r), c.Retains)
 				}
+			}
+
+			// A block that keeps something beyond its edges has to keep the same
+			// thing in both engines, and a block that keeps nothing has to keep
+			// nothing: an unimplemented formula would otherwise read as free.
+			if (c.ExtraActivationBytes != nil) != (def.ExtraActivationBytes != nil) {
+				t.Errorf("extraActivationBytes: Go has %v, TypeScript has %v",
+					def.ExtraActivationBytes != nil, c.ExtraActivationBytes != nil)
+			} else if c.ExtraActivationBytes != nil {
+				checkFlop(t, "extraActivationBytes", def.ExtraActivationBytes(r, ctx), *c.ExtraActivationBytes)
 			}
 
 			if c.StateBytes != nil && def.StateBytes != nil {

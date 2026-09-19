@@ -32,18 +32,25 @@ project's conscience.
 ## Before you open a pull request
 
 ```bash
-bun test packages                                    # tests
-bun x tsc -p packages/core/tsconfig.json --noEmit    # core types
-bun x tsc -p packages/ui/tsconfig.json --noEmit      # ui types
-go test ./packages/core-go/...                       # the Go port
-bun run scripts/report.ts                            # presets unchanged
+bun run build:wasm            # the engine; everything else needs it
+bun test                      # the whole suite, both engines
+bun run typecheck             # types
+go test ./...                 # from packages/core-go
+bun run scripts/report.ts     # presets unchanged
 ```
+
+`bun run test:all` is the three of them in order.
 
 If you touched the desktop app:
 
 ```bash
 cd desktop && wails3 task build
 ```
+
+The engine is Go compiled to WebAssembly, and the editor, the command line, the
+MCP server and the desktop shell all load the same module. If you change a
+formula, rebuild it — a stale `.wasm` is the one way to see an answer the source
+does not give.
 
 ## The invariants
 
@@ -129,9 +136,10 @@ approximate, never vague.
 
 - **Presets.** V-JEPA 2 needs only the existing builder with `frames` and
   `tubelet`. ResNet and VGG need the conv primitives that already exist.
-- **The Go migration.** `packages/core-go/` has the shape algebra and the IR;
-  shape inference, the catalog, the analysis, the rules and codegen are still to
-  come, and each is provable against the golden files in `testdata/`.
+- **The Go engine.** `packages/core-go/` is the whole analysis now, and
+  `packages/core/` is the TypeScript it was ported from, kept as the oracle the
+  golden files are written by. Adding a block still means adding it to both
+  until that oracle goes.
 - **Known gaps** in [`ROADMAP.md`](./ROADMAP.md): linear attention (gated
   DeltaNet), multi-token prediction, Gemma's alternating local/global attention.
 - **Instancing in the 3D view.** It is currently one mesh and one material per

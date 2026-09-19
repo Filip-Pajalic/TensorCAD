@@ -38,10 +38,14 @@ convolutional classifiers too, because the same machinery turned out to work.
 
 ## Quick start
 
+Needs [Bun](https://bun.sh) and [Go](https://go.dev) 1.25 or later. The analysis
+engine is Go compiled to WebAssembly, which is the one build step:
+
 ```bash
 git clone https://github.com/Filip-Pajalic/TensorCAD
 cd TensorCAD
 bun install
+bun run build:wasm
 ```
 
 Every number in the project comes out of one command:
@@ -73,6 +77,9 @@ Open the editor:
 bun run --cwd packages/ui dev      # browser
 cd desktop && wails3 task build    # desktop app (Wails v3 + Go)
 ```
+
+Both load the same engine. So do the command line and the MCP server, which is
+the point: the numbers cannot depend on where you asked for them.
 
 ## What it does
 

@@ -38,7 +38,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: packages/core-go/go.sum
+          # The engine has no dependencies outside the standard library, so
+          # there is no go.sum and nothing to cache.
+          cache: false
       - run: bun install --frozen-lockfile
       - run: bun run build:wasm
       - run: go test ./...
@@ -57,7 +59,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: packages/core-go/go.sum
+          # The engine has no dependencies outside the standard library, so
+          # there is no go.sum and nothing to cache.
+          cache: false
       - run: bun install --frozen-lockfile
       - run: bun run build:wasm
       # The loader comes from the same Go release that built the module, so the

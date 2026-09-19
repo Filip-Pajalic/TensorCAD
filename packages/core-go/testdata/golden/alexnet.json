@@ -32,5 +32,383 @@
       "Fc": "Width of the fully-connected layers"
     },
     "errors": []
+  },
+  "infer": {
+    "outputs": [
+      [
+        "act1:y",
+        "B Fc"
+      ],
+      [
+        "act2:y",
+        "B Fc"
+      ],
+      [
+        "conv1:y",
+        "B 64 55 55"
+      ],
+      [
+        "conv2:y",
+        "B 192 27 27"
+      ],
+      [
+        "conv3:y",
+        "B 384 13 13"
+      ],
+      [
+        "conv4:y",
+        "B 256 13 13"
+      ],
+      [
+        "conv5:y",
+        "B 256 13 13"
+      ],
+      [
+        "fc1:y",
+        "B Fc"
+      ],
+      [
+        "fc2:y",
+        "B Fc"
+      ],
+      [
+        "fc3:y",
+        "B Ccls"
+      ],
+      [
+        "flatten:y",
+        "B 9216"
+      ],
+      [
+        "image:x",
+        "B 3 224 224"
+      ],
+      [
+        "pool1:y",
+        "B 64 27 27"
+      ],
+      [
+        "pool2:y",
+        "B 192 13 13"
+      ],
+      [
+        "pool3:y",
+        "B 256 6 6"
+      ]
+    ],
+    "inputs": [
+      [
+        "act1:x",
+        "B Fc"
+      ],
+      [
+        "act2:x",
+        "B Fc"
+      ],
+      [
+        "conv1:x",
+        "B 3 224 224"
+      ],
+      [
+        "conv2:x",
+        "B 64 27 27"
+      ],
+      [
+        "conv3:x",
+        "B 192 13 13"
+      ],
+      [
+        "conv4:x",
+        "B 384 13 13"
+      ],
+      [
+        "conv5:x",
+        "B 256 13 13"
+      ],
+      [
+        "fc1:x",
+        "B 9216"
+      ],
+      [
+        "fc2:x",
+        "B Fc"
+      ],
+      [
+        "fc3:x",
+        "B Fc"
+      ],
+      [
+        "flatten:x",
+        "B 256 6 6"
+      ],
+      [
+        "pool1:x",
+        "B 64 55 55"
+      ],
+      [
+        "pool2:x",
+        "B 192 27 27"
+      ],
+      [
+        "pool3:x",
+        "B 256 13 13"
+      ],
+      [
+        "scores:x",
+        "B Ccls"
+      ]
+    ],
+    "producerOf": [
+      [
+        "act1:x",
+        "fc1:y"
+      ],
+      [
+        "act2:x",
+        "fc2:y"
+      ],
+      [
+        "conv1:x",
+        "image:x"
+      ],
+      [
+        "conv2:x",
+        "pool1:y"
+      ],
+      [
+        "conv3:x",
+        "pool2:y"
+      ],
+      [
+        "conv4:x",
+        "conv3:y"
+      ],
+      [
+        "conv5:x",
+        "conv4:y"
+      ],
+      [
+        "fc1:x",
+        "flatten:y"
+      ],
+      [
+        "fc2:x",
+        "act1:y"
+      ],
+      [
+        "fc3:x",
+        "act2:y"
+      ],
+      [
+        "flatten:x",
+        "pool3:y"
+      ],
+      [
+        "pool1:x",
+        "conv1:y"
+      ],
+      [
+        "pool2:x",
+        "conv2:y"
+      ],
+      [
+        "pool3:x",
+        "conv5:y"
+      ],
+      [
+        "scores:x",
+        "fc3:y"
+      ]
+    ],
+    "issues": []
+  },
+  "inferExpanded": {
+    "outputs": [
+      [
+        "act1:y",
+        "B Fc"
+      ],
+      [
+        "act2:y",
+        "B Fc"
+      ],
+      [
+        "conv1:y",
+        "B 64 55 55"
+      ],
+      [
+        "conv2:y",
+        "B 192 27 27"
+      ],
+      [
+        "conv3:y",
+        "B 384 13 13"
+      ],
+      [
+        "conv4:y",
+        "B 256 13 13"
+      ],
+      [
+        "conv5:y",
+        "B 256 13 13"
+      ],
+      [
+        "fc1:y",
+        "B Fc"
+      ],
+      [
+        "fc2:y",
+        "B Fc"
+      ],
+      [
+        "fc3:y",
+        "B Ccls"
+      ],
+      [
+        "flatten:y",
+        "B 9216"
+      ],
+      [
+        "image:x",
+        "B 3 224 224"
+      ],
+      [
+        "pool1:y",
+        "B 64 27 27"
+      ],
+      [
+        "pool2:y",
+        "B 192 13 13"
+      ],
+      [
+        "pool3:y",
+        "B 256 6 6"
+      ]
+    ],
+    "inputs": [
+      [
+        "act1:x",
+        "B Fc"
+      ],
+      [
+        "act2:x",
+        "B Fc"
+      ],
+      [
+        "conv1:x",
+        "B 3 224 224"
+      ],
+      [
+        "conv2:x",
+        "B 64 27 27"
+      ],
+      [
+        "conv3:x",
+        "B 192 13 13"
+      ],
+      [
+        "conv4:x",
+        "B 384 13 13"
+      ],
+      [
+        "conv5:x",
+        "B 256 13 13"
+      ],
+      [
+        "fc1:x",
+        "B 9216"
+      ],
+      [
+        "fc2:x",
+        "B Fc"
+      ],
+      [
+        "fc3:x",
+        "B Fc"
+      ],
+      [
+        "flatten:x",
+        "B 256 6 6"
+      ],
+      [
+        "pool1:x",
+        "B 64 55 55"
+      ],
+      [
+        "pool2:x",
+        "B 192 27 27"
+      ],
+      [
+        "pool3:x",
+        "B 256 13 13"
+      ],
+      [
+        "scores:x",
+        "B Ccls"
+      ]
+    ],
+    "producerOf": [
+      [
+        "act1:x",
+        "fc1:y"
+      ],
+      [
+        "act2:x",
+        "fc2:y"
+      ],
+      [
+        "conv1:x",
+        "image:x"
+      ],
+      [
+        "conv2:x",
+        "pool1:y"
+      ],
+      [
+        "conv3:x",
+        "pool2:y"
+      ],
+      [
+        "conv4:x",
+        "conv3:y"
+      ],
+      [
+        "conv5:x",
+        "conv4:y"
+      ],
+      [
+        "fc1:x",
+        "flatten:y"
+      ],
+      [
+        "fc2:x",
+        "act1:y"
+      ],
+      [
+        "fc3:x",
+        "act2:y"
+      ],
+      [
+        "flatten:x",
+        "pool3:y"
+      ],
+      [
+        "pool1:x",
+        "conv1:y"
+      ],
+      [
+        "pool2:x",
+        "conv2:y"
+      ],
+      [
+        "pool3:x",
+        "conv5:y"
+      ],
+      [
+        "scores:x",
+        "fc3:y"
+      ]
+    ],
+    "issues": []
   }
 }

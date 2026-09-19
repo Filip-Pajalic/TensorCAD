@@ -20,6 +20,7 @@ import {
   Sym,
   evalExpr,
   getPreset,
+  inferShapes,
   instantiate,
   matchPattern,
   parsePattern,
@@ -28,6 +29,7 @@ import {
   resolveNodeParams,
   portsOf,
   shapeToString,
+  type InferResult,
 } from "@tensorcad/core";
 
 const root = join(import.meta.dir, "..", "packages", "core-go", "testdata");
@@ -46,6 +48,44 @@ function finite(label: string, values: Record<string, number>): Record<string, n
 
 const index: string[] = [];
 
+/** Sorts entries by key, because neither engine's map order is meaningful. */
+function byKey(entries: [string, string][]): [string, string][] {
+  return entries.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+}
+
+/**
+ * What shape inference decided, written down so the Go walk has to agree.
+ *
+ * Shapes are compared as text: a shape is a polynomial, and its printed form is
+ * what the editor puts on the wire, so agreeing on the string is agreeing on
+ * both the value and how it reads. `... D` arriving as `B T 4096` rather than
+ * `B T D` would be a correct number and a wrong answer.
+ *
+ * The ports map is deliberately absent: it is already pinned block by block in
+ * primitives.json, and a container's derived ports show up here anyway, as the
+ * shapes of everything downstream of them.
+ */
+function inferGolden(res: InferResult) {
+  return {
+    outputs: byKey([...res.outputs].map(([k, v]) => [k, shapeToString(v)])),
+    inputs: byKey([...res.inputs].map(([k, v]) => [k, shapeToString(v)])),
+    producerOf: byKey([...res.producerOf]),
+    // Issues sorted, not in report order: the TypeScript visits a block's ports
+    // in declaration order and a Go map has none, so the set is the contract
+    // and the sequence is not.
+    issues: res.issues
+      .map((i) => ({
+        path: i.path,
+        port: i.port,
+        message: i.message,
+        severity: i.severity,
+        rule: i.rule,
+        param: i.param,
+      }))
+      .sort((a, b) => (JSON.stringify(a) < JSON.stringify(b) ? -1 : 1)),
+  };
+}
+
 for (const name of PRESET_NAMES) {
   const doc = getPreset(name);
   writeFileSync(join(docsDir, `${name}.json`), JSON.stringify(doc, null, 2) + "\n");
@@ -61,6 +101,10 @@ for (const name of PRESET_NAMES) {
       docs: table.docs,
       errors: table.errors,
     },
+    // Both modes, because both are used: the rule engine and the canvas walk
+    // the graph as written, and the analysis walks it expanded.
+    infer: inferGolden(inferShapes(doc, table)),
+    inferExpanded: inferGolden(inferShapes(doc, table, { expandComposites: true })),
   };
   writeFileSync(join(goldenDir, `${name}.json`), JSON.stringify(golden, null, 2) + "\n");
   index.push(name);
@@ -217,7 +261,7 @@ const patterns = {
 writeFileSync(join(root, "patterns.json"), JSON.stringify(patterns, null, 2) + "\n");
 
 console.log(
-  `wrote ${index.length} presets, their golden symbol tables, ` +
+  `wrote ${index.length} presets, their golden symbol tables and inferred shapes, ` +
     `${CASES.length + ERRORS.length} expression cases, and ` +
     `${PATTERNS.length + PATTERN_ERRORS.length + MATCHES.length} pattern cases`,
 );

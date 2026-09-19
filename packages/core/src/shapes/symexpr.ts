@@ -98,6 +98,22 @@ function monoDegree(m: Mono): number {
   return d;
 }
 
+/**
+ * Orders two monomials for display: by their letters, with case only breaking
+ * a tie, so `drope + Kl` rather than `Kl + drope`.
+ *
+ * Written out rather than left to `localeCompare`, which sorts by whatever
+ * locale the host happens to have. The printed form of a shape is what the
+ * editor draws on a wire and what the Go engine has to reproduce exactly, so it
+ * cannot depend on the machine it is printed on.
+ */
+function compareNames(a: string, b: string): number {
+  const la = a.toLowerCase();
+  const lb = b.toLowerCase();
+  if (la !== lb) return la < lb ? -1 : 1;
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
 interface Term {
   readonly c: Rat;
   readonly m: Mono;
@@ -294,7 +310,7 @@ export class Sym {
       const da = monoDegree(a.m);
       const db = monoDegree(b.m);
       if (da !== db) return db - da;
-      return monoKey(a.m).localeCompare(monoKey(b.m));
+      return compareNames(monoKey(a.m), monoKey(b.m));
     });
     let out = "";
     for (let i = 0; i < list.length; i++) {

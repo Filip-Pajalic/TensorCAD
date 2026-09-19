@@ -64,5 +64,1347 @@
       "P": "Values in one patch (3 x 14 x 14)"
     },
     "errors": []
+  },
+  "infer": {
+    "outputs": [
+      [
+        "context/_in:x",
+        "B T D"
+      ],
+      [
+        "context/block:y",
+        "B T D"
+      ],
+      [
+        "context:x",
+        "B T D"
+      ],
+      [
+        "context_norm:y",
+        "B T D"
+      ],
+      [
+        "image:x",
+        "B T P"
+      ],
+      [
+        "mask_token:y",
+        "B T Dp"
+      ],
+      [
+        "patchify:y",
+        "B T D"
+      ],
+      [
+        "pred_norm:y",
+        "B T Dp"
+      ],
+      [
+        "predictor/_in:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block:y",
+        "B T Dp"
+      ],
+      [
+        "predictor:x",
+        "B T Dp"
+      ],
+      [
+        "target/_in:x",
+        "B T D"
+      ],
+      [
+        "target/block:y",
+        "B T D"
+      ],
+      [
+        "target:x",
+        "B T D"
+      ],
+      [
+        "target_norm:y",
+        "B T D"
+      ],
+      [
+        "target_patchify:y",
+        "B T D"
+      ],
+      [
+        "to_embed:y",
+        "B T D"
+      ],
+      [
+        "to_pred:y",
+        "B T Dp"
+      ],
+      [
+        "with_masks:y",
+        "B T Dp"
+      ]
+    ],
+    "inputs": [
+      [
+        "context/_out:x",
+        "B T D"
+      ],
+      [
+        "context/block:x",
+        "B T D"
+      ],
+      [
+        "context:x",
+        "B T D"
+      ],
+      [
+        "context_norm:x",
+        "B T D"
+      ],
+      [
+        "patchify:x",
+        "B T P"
+      ],
+      [
+        "pred_norm:x",
+        "B T Dp"
+      ],
+      [
+        "prediction:x",
+        "B T D"
+      ],
+      [
+        "predictor/_out:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block:x",
+        "B T Dp"
+      ],
+      [
+        "predictor:x",
+        "B T Dp"
+      ],
+      [
+        "target/_out:x",
+        "B T D"
+      ],
+      [
+        "target/block:x",
+        "B T D"
+      ],
+      [
+        "target:x",
+        "B T D"
+      ],
+      [
+        "target_norm:x",
+        "B T D"
+      ],
+      [
+        "target_patchify:x",
+        "B T P"
+      ],
+      [
+        "targets:x",
+        "B T D"
+      ],
+      [
+        "to_embed:x",
+        "B T Dp"
+      ],
+      [
+        "to_pred:x",
+        "B T D"
+      ],
+      [
+        "with_masks:a",
+        "B T Dp"
+      ],
+      [
+        "with_masks:b",
+        "B T Dp"
+      ]
+    ],
+    "producerOf": [
+      [
+        "context/_out:x",
+        "context/block:y"
+      ],
+      [
+        "context/block:x",
+        "context/_in:x"
+      ],
+      [
+        "context:x",
+        "patchify:y"
+      ],
+      [
+        "context_norm:x",
+        "context:x"
+      ],
+      [
+        "patchify:x",
+        "image:x"
+      ],
+      [
+        "pred_norm:x",
+        "predictor:x"
+      ],
+      [
+        "prediction:x",
+        "to_embed:y"
+      ],
+      [
+        "predictor/_out:x",
+        "predictor/block:y"
+      ],
+      [
+        "predictor/block:x",
+        "predictor/_in:x"
+      ],
+      [
+        "predictor:x",
+        "with_masks:y"
+      ],
+      [
+        "target/_out:x",
+        "target/block:y"
+      ],
+      [
+        "target/block:x",
+        "target/_in:x"
+      ],
+      [
+        "target:x",
+        "target_patchify:y"
+      ],
+      [
+        "target_norm:x",
+        "target:x"
+      ],
+      [
+        "target_patchify:x",
+        "image:x"
+      ],
+      [
+        "targets:x",
+        "target_norm:y"
+      ],
+      [
+        "to_embed:x",
+        "pred_norm:y"
+      ],
+      [
+        "to_pred:x",
+        "context_norm:y"
+      ],
+      [
+        "with_masks:a",
+        "to_pred:y"
+      ],
+      [
+        "with_masks:b",
+        "mask_token:y"
+      ]
+    ],
+    "issues": []
+  },
+  "inferExpanded": {
+    "outputs": [
+      [
+        "context/_in:x",
+        "B T D"
+      ],
+      [
+        "context/block/_in:x",
+        "B T D"
+      ],
+      [
+        "context/block/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "context/block/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "context/block/attn/k_heads:y",
+        "B H T dh"
+      ],
+      [
+        "context/block/attn/k_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "context/block/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "context/block/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "context/block/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "context/block/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "context/block/attn/v_heads:y",
+        "B H T dh"
+      ],
+      [
+        "context/block/attn/v_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "context/block/attn:y",
+        "B T D"
+      ],
+      [
+        "context/block/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "context/block/mlp/act:y",
+        "B T F"
+      ],
+      [
+        "context/block/mlp/down:y",
+        "B T D"
+      ],
+      [
+        "context/block/mlp/up:y",
+        "B T F"
+      ],
+      [
+        "context/block/mlp:y",
+        "B T D"
+      ],
+      [
+        "context/block/norm1:y",
+        "B T D"
+      ],
+      [
+        "context/block/norm2:y",
+        "B T D"
+      ],
+      [
+        "context/block/resid1:y",
+        "B T D"
+      ],
+      [
+        "context/block/resid2:y",
+        "B T D"
+      ],
+      [
+        "context/block:y",
+        "B T D"
+      ],
+      [
+        "context:x",
+        "B T D"
+      ],
+      [
+        "context_norm:y",
+        "B T D"
+      ],
+      [
+        "image:x",
+        "B T P"
+      ],
+      [
+        "mask_token:y",
+        "B T Dp"
+      ],
+      [
+        "patchify:y",
+        "B T D"
+      ],
+      [
+        "pred_norm:y",
+        "B T Dp"
+      ],
+      [
+        "predictor/_in:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/_in:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/attn/_in:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/attn/attn:y",
+        "B Hp T dhp"
+      ],
+      [
+        "predictor/block/attn/k_heads:y",
+        "B Hp T dhp"
+      ],
+      [
+        "predictor/block/attn/k_proj:y",
+        "B T Hp*dhp"
+      ],
+      [
+        "predictor/block/attn/o_merge:y",
+        "B T Hp*dhp"
+      ],
+      [
+        "predictor/block/attn/o_proj:y",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/attn/q_heads:y",
+        "B Hp T dhp"
+      ],
+      [
+        "predictor/block/attn/q_proj:y",
+        "B T Hp*dhp"
+      ],
+      [
+        "predictor/block/attn/v_heads:y",
+        "B Hp T dhp"
+      ],
+      [
+        "predictor/block/attn/v_proj:y",
+        "B T Hp*dhp"
+      ],
+      [
+        "predictor/block/attn:y",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/mlp/_in:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/mlp/act:y",
+        "B T Fp"
+      ],
+      [
+        "predictor/block/mlp/down:y",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/mlp/up:y",
+        "B T Fp"
+      ],
+      [
+        "predictor/block/mlp:y",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/norm1:y",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/norm2:y",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/resid1:y",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/resid2:y",
+        "B T Dp"
+      ],
+      [
+        "predictor/block:y",
+        "B T Dp"
+      ],
+      [
+        "predictor:x",
+        "B T Dp"
+      ],
+      [
+        "target/_in:x",
+        "B T D"
+      ],
+      [
+        "target/block/_in:x",
+        "B T D"
+      ],
+      [
+        "target/block/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "target/block/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "target/block/attn/k_heads:y",
+        "B H T dh"
+      ],
+      [
+        "target/block/attn/k_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "target/block/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "target/block/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "target/block/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "target/block/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "target/block/attn/v_heads:y",
+        "B H T dh"
+      ],
+      [
+        "target/block/attn/v_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "target/block/attn:y",
+        "B T D"
+      ],
+      [
+        "target/block/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "target/block/mlp/act:y",
+        "B T F"
+      ],
+      [
+        "target/block/mlp/down:y",
+        "B T D"
+      ],
+      [
+        "target/block/mlp/up:y",
+        "B T F"
+      ],
+      [
+        "target/block/mlp:y",
+        "B T D"
+      ],
+      [
+        "target/block/norm1:y",
+        "B T D"
+      ],
+      [
+        "target/block/norm2:y",
+        "B T D"
+      ],
+      [
+        "target/block/resid1:y",
+        "B T D"
+      ],
+      [
+        "target/block/resid2:y",
+        "B T D"
+      ],
+      [
+        "target/block:y",
+        "B T D"
+      ],
+      [
+        "target:x",
+        "B T D"
+      ],
+      [
+        "target_norm:y",
+        "B T D"
+      ],
+      [
+        "target_patchify:y",
+        "B T D"
+      ],
+      [
+        "to_embed:y",
+        "B T D"
+      ],
+      [
+        "to_pred:y",
+        "B T Dp"
+      ],
+      [
+        "with_masks:y",
+        "B T Dp"
+      ]
+    ],
+    "inputs": [
+      [
+        "context/_out:x",
+        "B T D"
+      ],
+      [
+        "context/block/_out:y",
+        "B T D"
+      ],
+      [
+        "context/block/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "context/block/attn/attn:k",
+        "B H T dh"
+      ],
+      [
+        "context/block/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "context/block/attn/attn:v",
+        "B H T dh"
+      ],
+      [
+        "context/block/attn/k_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "context/block/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "context/block/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "context/block/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "context/block/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "context/block/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "context/block/attn/v_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "context/block/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "context/block/attn:x",
+        "B T D"
+      ],
+      [
+        "context/block/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "context/block/mlp/act:x",
+        "B T F"
+      ],
+      [
+        "context/block/mlp/down:x",
+        "B T F"
+      ],
+      [
+        "context/block/mlp/up:x",
+        "B T D"
+      ],
+      [
+        "context/block/mlp:x",
+        "B T D"
+      ],
+      [
+        "context/block/norm1:x",
+        "B T D"
+      ],
+      [
+        "context/block/norm2:x",
+        "B T D"
+      ],
+      [
+        "context/block/resid1:a",
+        "B T D"
+      ],
+      [
+        "context/block/resid1:b",
+        "B T D"
+      ],
+      [
+        "context/block/resid2:a",
+        "B T D"
+      ],
+      [
+        "context/block/resid2:b",
+        "B T D"
+      ],
+      [
+        "context/block:x",
+        "B T D"
+      ],
+      [
+        "context:x",
+        "B T D"
+      ],
+      [
+        "context_norm:x",
+        "B T D"
+      ],
+      [
+        "patchify:x",
+        "B T P"
+      ],
+      [
+        "pred_norm:x",
+        "B T Dp"
+      ],
+      [
+        "prediction:x",
+        "B T D"
+      ],
+      [
+        "predictor/_out:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/_out:y",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/attn/_out:y",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/attn/attn:k",
+        "B Hp T dhp"
+      ],
+      [
+        "predictor/block/attn/attn:q",
+        "B Hp T dhp"
+      ],
+      [
+        "predictor/block/attn/attn:v",
+        "B Hp T dhp"
+      ],
+      [
+        "predictor/block/attn/k_heads:x",
+        "B T Hp*dhp"
+      ],
+      [
+        "predictor/block/attn/k_proj:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/attn/o_merge:x",
+        "B Hp T dhp"
+      ],
+      [
+        "predictor/block/attn/o_proj:x",
+        "B T Hp*dhp"
+      ],
+      [
+        "predictor/block/attn/q_heads:x",
+        "B T Hp*dhp"
+      ],
+      [
+        "predictor/block/attn/q_proj:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/attn/v_heads:x",
+        "B T Hp*dhp"
+      ],
+      [
+        "predictor/block/attn/v_proj:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/attn:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/mlp/_out:y",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/mlp/act:x",
+        "B T Fp"
+      ],
+      [
+        "predictor/block/mlp/down:x",
+        "B T Fp"
+      ],
+      [
+        "predictor/block/mlp/up:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/mlp:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/norm1:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/norm2:x",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/resid1:a",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/resid1:b",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/resid2:a",
+        "B T Dp"
+      ],
+      [
+        "predictor/block/resid2:b",
+        "B T Dp"
+      ],
+      [
+        "predictor/block:x",
+        "B T Dp"
+      ],
+      [
+        "predictor:x",
+        "B T Dp"
+      ],
+      [
+        "target/_out:x",
+        "B T D"
+      ],
+      [
+        "target/block/_out:y",
+        "B T D"
+      ],
+      [
+        "target/block/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "target/block/attn/attn:k",
+        "B H T dh"
+      ],
+      [
+        "target/block/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "target/block/attn/attn:v",
+        "B H T dh"
+      ],
+      [
+        "target/block/attn/k_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "target/block/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "target/block/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "target/block/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "target/block/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "target/block/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "target/block/attn/v_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "target/block/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "target/block/attn:x",
+        "B T D"
+      ],
+      [
+        "target/block/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "target/block/mlp/act:x",
+        "B T F"
+      ],
+      [
+        "target/block/mlp/down:x",
+        "B T F"
+      ],
+      [
+        "target/block/mlp/up:x",
+        "B T D"
+      ],
+      [
+        "target/block/mlp:x",
+        "B T D"
+      ],
+      [
+        "target/block/norm1:x",
+        "B T D"
+      ],
+      [
+        "target/block/norm2:x",
+        "B T D"
+      ],
+      [
+        "target/block/resid1:a",
+        "B T D"
+      ],
+      [
+        "target/block/resid1:b",
+        "B T D"
+      ],
+      [
+        "target/block/resid2:a",
+        "B T D"
+      ],
+      [
+        "target/block/resid2:b",
+        "B T D"
+      ],
+      [
+        "target/block:x",
+        "B T D"
+      ],
+      [
+        "target:x",
+        "B T D"
+      ],
+      [
+        "target_norm:x",
+        "B T D"
+      ],
+      [
+        "target_patchify:x",
+        "B T P"
+      ],
+      [
+        "targets:x",
+        "B T D"
+      ],
+      [
+        "to_embed:x",
+        "B T Dp"
+      ],
+      [
+        "to_pred:x",
+        "B T D"
+      ],
+      [
+        "with_masks:a",
+        "B T Dp"
+      ],
+      [
+        "with_masks:b",
+        "B T Dp"
+      ]
+    ],
+    "producerOf": [
+      [
+        "context/_out:x",
+        "context/block:y"
+      ],
+      [
+        "context/block/_out:y",
+        "context/block/resid2:y"
+      ],
+      [
+        "context/block/attn/_out:y",
+        "context/block/attn/o_proj:y"
+      ],
+      [
+        "context/block/attn/attn:k",
+        "context/block/attn/k_heads:y"
+      ],
+      [
+        "context/block/attn/attn:q",
+        "context/block/attn/q_heads:y"
+      ],
+      [
+        "context/block/attn/attn:v",
+        "context/block/attn/v_heads:y"
+      ],
+      [
+        "context/block/attn/k_heads:x",
+        "context/block/attn/k_proj:y"
+      ],
+      [
+        "context/block/attn/k_proj:x",
+        "context/block/attn/_in:x"
+      ],
+      [
+        "context/block/attn/o_merge:x",
+        "context/block/attn/attn:y"
+      ],
+      [
+        "context/block/attn/o_proj:x",
+        "context/block/attn/o_merge:y"
+      ],
+      [
+        "context/block/attn/q_heads:x",
+        "context/block/attn/q_proj:y"
+      ],
+      [
+        "context/block/attn/q_proj:x",
+        "context/block/attn/_in:x"
+      ],
+      [
+        "context/block/attn/v_heads:x",
+        "context/block/attn/v_proj:y"
+      ],
+      [
+        "context/block/attn/v_proj:x",
+        "context/block/attn/_in:x"
+      ],
+      [
+        "context/block/attn:x",
+        "context/block/norm1:y"
+      ],
+      [
+        "context/block/mlp/_out:y",
+        "context/block/mlp/down:y"
+      ],
+      [
+        "context/block/mlp/act:x",
+        "context/block/mlp/up:y"
+      ],
+      [
+        "context/block/mlp/down:x",
+        "context/block/mlp/act:y"
+      ],
+      [
+        "context/block/mlp/up:x",
+        "context/block/mlp/_in:x"
+      ],
+      [
+        "context/block/mlp:x",
+        "context/block/norm2:y"
+      ],
+      [
+        "context/block/norm1:x",
+        "context/block/_in:x"
+      ],
+      [
+        "context/block/norm2:x",
+        "context/block/resid1:y"
+      ],
+      [
+        "context/block/resid1:a",
+        "context/block/attn:y"
+      ],
+      [
+        "context/block/resid1:b",
+        "context/block/_in:x"
+      ],
+      [
+        "context/block/resid2:a",
+        "context/block/mlp:y"
+      ],
+      [
+        "context/block/resid2:b",
+        "context/block/resid1:y"
+      ],
+      [
+        "context/block:x",
+        "context/_in:x"
+      ],
+      [
+        "context:x",
+        "patchify:y"
+      ],
+      [
+        "context_norm:x",
+        "context:x"
+      ],
+      [
+        "patchify:x",
+        "image:x"
+      ],
+      [
+        "pred_norm:x",
+        "predictor:x"
+      ],
+      [
+        "prediction:x",
+        "to_embed:y"
+      ],
+      [
+        "predictor/_out:x",
+        "predictor/block:y"
+      ],
+      [
+        "predictor/block/_out:y",
+        "predictor/block/resid2:y"
+      ],
+      [
+        "predictor/block/attn/_out:y",
+        "predictor/block/attn/o_proj:y"
+      ],
+      [
+        "predictor/block/attn/attn:k",
+        "predictor/block/attn/k_heads:y"
+      ],
+      [
+        "predictor/block/attn/attn:q",
+        "predictor/block/attn/q_heads:y"
+      ],
+      [
+        "predictor/block/attn/attn:v",
+        "predictor/block/attn/v_heads:y"
+      ],
+      [
+        "predictor/block/attn/k_heads:x",
+        "predictor/block/attn/k_proj:y"
+      ],
+      [
+        "predictor/block/attn/k_proj:x",
+        "predictor/block/attn/_in:x"
+      ],
+      [
+        "predictor/block/attn/o_merge:x",
+        "predictor/block/attn/attn:y"
+      ],
+      [
+        "predictor/block/attn/o_proj:x",
+        "predictor/block/attn/o_merge:y"
+      ],
+      [
+        "predictor/block/attn/q_heads:x",
+        "predictor/block/attn/q_proj:y"
+      ],
+      [
+        "predictor/block/attn/q_proj:x",
+        "predictor/block/attn/_in:x"
+      ],
+      [
+        "predictor/block/attn/v_heads:x",
+        "predictor/block/attn/v_proj:y"
+      ],
+      [
+        "predictor/block/attn/v_proj:x",
+        "predictor/block/attn/_in:x"
+      ],
+      [
+        "predictor/block/attn:x",
+        "predictor/block/norm1:y"
+      ],
+      [
+        "predictor/block/mlp/_out:y",
+        "predictor/block/mlp/down:y"
+      ],
+      [
+        "predictor/block/mlp/act:x",
+        "predictor/block/mlp/up:y"
+      ],
+      [
+        "predictor/block/mlp/down:x",
+        "predictor/block/mlp/act:y"
+      ],
+      [
+        "predictor/block/mlp/up:x",
+        "predictor/block/mlp/_in:x"
+      ],
+      [
+        "predictor/block/mlp:x",
+        "predictor/block/norm2:y"
+      ],
+      [
+        "predictor/block/norm1:x",
+        "predictor/block/_in:x"
+      ],
+      [
+        "predictor/block/norm2:x",
+        "predictor/block/resid1:y"
+      ],
+      [
+        "predictor/block/resid1:a",
+        "predictor/block/attn:y"
+      ],
+      [
+        "predictor/block/resid1:b",
+        "predictor/block/_in:x"
+      ],
+      [
+        "predictor/block/resid2:a",
+        "predictor/block/mlp:y"
+      ],
+      [
+        "predictor/block/resid2:b",
+        "predictor/block/resid1:y"
+      ],
+      [
+        "predictor/block:x",
+        "predictor/_in:x"
+      ],
+      [
+        "predictor:x",
+        "with_masks:y"
+      ],
+      [
+        "target/_out:x",
+        "target/block:y"
+      ],
+      [
+        "target/block/_out:y",
+        "target/block/resid2:y"
+      ],
+      [
+        "target/block/attn/_out:y",
+        "target/block/attn/o_proj:y"
+      ],
+      [
+        "target/block/attn/attn:k",
+        "target/block/attn/k_heads:y"
+      ],
+      [
+        "target/block/attn/attn:q",
+        "target/block/attn/q_heads:y"
+      ],
+      [
+        "target/block/attn/attn:v",
+        "target/block/attn/v_heads:y"
+      ],
+      [
+        "target/block/attn/k_heads:x",
+        "target/block/attn/k_proj:y"
+      ],
+      [
+        "target/block/attn/k_proj:x",
+        "target/block/attn/_in:x"
+      ],
+      [
+        "target/block/attn/o_merge:x",
+        "target/block/attn/attn:y"
+      ],
+      [
+        "target/block/attn/o_proj:x",
+        "target/block/attn/o_merge:y"
+      ],
+      [
+        "target/block/attn/q_heads:x",
+        "target/block/attn/q_proj:y"
+      ],
+      [
+        "target/block/attn/q_proj:x",
+        "target/block/attn/_in:x"
+      ],
+      [
+        "target/block/attn/v_heads:x",
+        "target/block/attn/v_proj:y"
+      ],
+      [
+        "target/block/attn/v_proj:x",
+        "target/block/attn/_in:x"
+      ],
+      [
+        "target/block/attn:x",
+        "target/block/norm1:y"
+      ],
+      [
+        "target/block/mlp/_out:y",
+        "target/block/mlp/down:y"
+      ],
+      [
+        "target/block/mlp/act:x",
+        "target/block/mlp/up:y"
+      ],
+      [
+        "target/block/mlp/down:x",
+        "target/block/mlp/act:y"
+      ],
+      [
+        "target/block/mlp/up:x",
+        "target/block/mlp/_in:x"
+      ],
+      [
+        "target/block/mlp:x",
+        "target/block/norm2:y"
+      ],
+      [
+        "target/block/norm1:x",
+        "target/block/_in:x"
+      ],
+      [
+        "target/block/norm2:x",
+        "target/block/resid1:y"
+      ],
+      [
+        "target/block/resid1:a",
+        "target/block/attn:y"
+      ],
+      [
+        "target/block/resid1:b",
+        "target/block/_in:x"
+      ],
+      [
+        "target/block/resid2:a",
+        "target/block/mlp:y"
+      ],
+      [
+        "target/block/resid2:b",
+        "target/block/resid1:y"
+      ],
+      [
+        "target/block:x",
+        "target/_in:x"
+      ],
+      [
+        "target:x",
+        "target_patchify:y"
+      ],
+      [
+        "target_norm:x",
+        "target:x"
+      ],
+      [
+        "target_patchify:x",
+        "image:x"
+      ],
+      [
+        "targets:x",
+        "target_norm:y"
+      ],
+      [
+        "to_embed:x",
+        "pred_norm:y"
+      ],
+      [
+        "to_pred:x",
+        "context_norm:y"
+      ],
+      [
+        "with_masks:a",
+        "to_pred:y"
+      ],
+      [
+        "with_masks:b",
+        "mask_token:y"
+      ]
+    ],
+    "issues": []
   }
 }

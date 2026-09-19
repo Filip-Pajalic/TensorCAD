@@ -92,5 +92,1327 @@
       "Lm": "Sparse layers"
     },
     "errors": []
+  },
+  "infer": {
+    "outputs": [
+      [
+        "dense_layers/_in:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block:y",
+        "B T D"
+      ],
+      [
+        "dense_layers:x",
+        "B T D"
+      ],
+      [
+        "embed:y",
+        "B T D"
+      ],
+      [
+        "final_norm:y",
+        "B T D"
+      ],
+      [
+        "head:y",
+        "B T V"
+      ],
+      [
+        "layers/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block:y",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "tokens:x",
+        "B T"
+      ]
+    ],
+    "inputs": [
+      [
+        "dense_layers/_out:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block:x",
+        "B T D"
+      ],
+      [
+        "dense_layers:x",
+        "B T D"
+      ],
+      [
+        "embed:ids",
+        "B T"
+      ],
+      [
+        "final_norm:x",
+        "B T D"
+      ],
+      [
+        "head:x",
+        "B T D"
+      ],
+      [
+        "layers/_out:x",
+        "B T D"
+      ],
+      [
+        "layers/block:x",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "logits:x",
+        "B T V"
+      ]
+    ],
+    "producerOf": [
+      [
+        "dense_layers/_out:x",
+        "dense_layers/block:y"
+      ],
+      [
+        "dense_layers/block:x",
+        "dense_layers/_in:x"
+      ],
+      [
+        "dense_layers:x",
+        "embed:y"
+      ],
+      [
+        "embed:ids",
+        "tokens:x"
+      ],
+      [
+        "final_norm:x",
+        "layers:x"
+      ],
+      [
+        "head:x",
+        "final_norm:y"
+      ],
+      [
+        "layers/_out:x",
+        "layers/block:y"
+      ],
+      [
+        "layers/block:x",
+        "layers/_in:x"
+      ],
+      [
+        "layers:x",
+        "dense_layers:x"
+      ],
+      [
+        "logits:x",
+        "head:y"
+      ]
+    ],
+    "issues": []
+  },
+  "inferExpanded": {
+    "outputs": [
+      [
+        "dense_layers/_in:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/_in:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/attn/attn:y",
+        "B H T dv"
+      ],
+      [
+        "dense_layers/block/attn/k_cat:y",
+        "B H T dnope + drope"
+      ],
+      [
+        "dense_layers/block/attn/k_nope_heads:y",
+        "B H T dnope"
+      ],
+      [
+        "dense_layers/block/attn/k_rope:y",
+        "B H T drope"
+      ],
+      [
+        "dense_layers/block/attn/k_rope_shared:y",
+        "B H T drope"
+      ],
+      [
+        "dense_layers/block/attn/k_up:y",
+        "B T H*dnope"
+      ],
+      [
+        "dense_layers/block/attn/kv_down:y",
+        "B T drope + Kl"
+      ],
+      [
+        "dense_layers/block/attn/kv_norm:y",
+        "B T Kl"
+      ],
+      [
+        "dense_layers/block/attn/kv_split:y0",
+        "B T Kl"
+      ],
+      [
+        "dense_layers/block/attn/kv_split:y1",
+        "B T drope"
+      ],
+      [
+        "dense_layers/block/attn/latent:y",
+        "B T drope + Kl"
+      ],
+      [
+        "dense_layers/block/attn/o_merge:y",
+        "B T H*dv"
+      ],
+      [
+        "dense_layers/block/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/attn/q_down:y",
+        "B T Ql"
+      ],
+      [
+        "dense_layers/block/attn/q_heads:y",
+        "B H T dnope + drope"
+      ],
+      [
+        "dense_layers/block/attn/q_norm:y",
+        "B T Ql"
+      ],
+      [
+        "dense_layers/block/attn/q_up:y",
+        "B T H*dnope + H*drope"
+      ],
+      [
+        "dense_layers/block/attn/v_heads:y",
+        "B H T dv"
+      ],
+      [
+        "dense_layers/block/attn/v_up:y",
+        "B T H*dv"
+      ],
+      [
+        "dense_layers/block/attn:y",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/mlp/act:y",
+        "B T F"
+      ],
+      [
+        "dense_layers/block/mlp/down:y",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/mlp/gate:y",
+        "B T F"
+      ],
+      [
+        "dense_layers/block/mlp/gated:y",
+        "B T F"
+      ],
+      [
+        "dense_layers/block/mlp/up:y",
+        "B T F"
+      ],
+      [
+        "dense_layers/block/mlp:y",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/norm1:y",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/norm2:y",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/resid1:y",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/resid2:y",
+        "B T D"
+      ],
+      [
+        "dense_layers/block:y",
+        "B T D"
+      ],
+      [
+        "dense_layers:x",
+        "B T D"
+      ],
+      [
+        "embed:y",
+        "B T D"
+      ],
+      [
+        "final_norm:y",
+        "B T D"
+      ],
+      [
+        "head:y",
+        "B T V"
+      ],
+      [
+        "layers/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/attn:y",
+        "B H T dv"
+      ],
+      [
+        "layers/block/attn/k_cat:y",
+        "B H T dnope + drope"
+      ],
+      [
+        "layers/block/attn/k_nope_heads:y",
+        "B H T dnope"
+      ],
+      [
+        "layers/block/attn/k_rope:y",
+        "B H T drope"
+      ],
+      [
+        "layers/block/attn/k_rope_shared:y",
+        "B H T drope"
+      ],
+      [
+        "layers/block/attn/k_up:y",
+        "B T H*dnope"
+      ],
+      [
+        "layers/block/attn/kv_down:y",
+        "B T drope + Kl"
+      ],
+      [
+        "layers/block/attn/kv_norm:y",
+        "B T Kl"
+      ],
+      [
+        "layers/block/attn/kv_split:y0",
+        "B T Kl"
+      ],
+      [
+        "layers/block/attn/kv_split:y1",
+        "B T drope"
+      ],
+      [
+        "layers/block/attn/latent:y",
+        "B T drope + Kl"
+      ],
+      [
+        "layers/block/attn/o_merge:y",
+        "B T H*dv"
+      ],
+      [
+        "layers/block/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/q_down:y",
+        "B T Ql"
+      ],
+      [
+        "layers/block/attn/q_heads:y",
+        "B H T dnope + drope"
+      ],
+      [
+        "layers/block/attn/q_norm:y",
+        "B T Ql"
+      ],
+      [
+        "layers/block/attn/q_up:y",
+        "B T H*dnope + H*drope"
+      ],
+      [
+        "layers/block/attn/v_heads:y",
+        "B H T dv"
+      ],
+      [
+        "layers/block/attn/v_up:y",
+        "B T H*dv"
+      ],
+      [
+        "layers/block/attn:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/combine:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/expert/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/expert/act:y",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert/down:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gate:y",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gated:y",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert/up:y",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/merge:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/router:weights",
+        "B T K"
+      ],
+      [
+        "layers/block/mlp/shared/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/shared/act:y",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/shared/down:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/shared/gate:y",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/shared/gated:y",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/shared/up:y",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/shared:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp:y",
+        "B T D"
+      ],
+      [
+        "layers/block/norm1:y",
+        "B T D"
+      ],
+      [
+        "layers/block/norm2:y",
+        "B T D"
+      ],
+      [
+        "layers/block/resid1:y",
+        "B T D"
+      ],
+      [
+        "layers/block/resid2:y",
+        "B T D"
+      ],
+      [
+        "layers/block:y",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "tokens:x",
+        "B T"
+      ]
+    ],
+    "inputs": [
+      [
+        "dense_layers/_out:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/_out:y",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/attn/attn:k",
+        "B H T dnope + drope"
+      ],
+      [
+        "dense_layers/block/attn/attn:q",
+        "B H T dnope + drope"
+      ],
+      [
+        "dense_layers/block/attn/attn:v",
+        "B H T dv"
+      ],
+      [
+        "dense_layers/block/attn/k_cat:y0",
+        "B H T dnope"
+      ],
+      [
+        "dense_layers/block/attn/k_cat:y1",
+        "B H T drope"
+      ],
+      [
+        "dense_layers/block/attn/k_nope_heads:x",
+        "B T H*dnope"
+      ],
+      [
+        "dense_layers/block/attn/k_rope:x",
+        "B H T drope"
+      ],
+      [
+        "dense_layers/block/attn/k_rope_shared:x",
+        "B T drope"
+      ],
+      [
+        "dense_layers/block/attn/k_up:x",
+        "B T Kl"
+      ],
+      [
+        "dense_layers/block/attn/kv_down:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/attn/kv_norm:x",
+        "B T Kl"
+      ],
+      [
+        "dense_layers/block/attn/kv_split:x",
+        "B T drope + Kl"
+      ],
+      [
+        "dense_layers/block/attn/latent:x",
+        "B T drope + Kl"
+      ],
+      [
+        "dense_layers/block/attn/o_merge:x",
+        "B H T dv"
+      ],
+      [
+        "dense_layers/block/attn/o_proj:x",
+        "B T H*dv"
+      ],
+      [
+        "dense_layers/block/attn/q_down:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/attn/q_heads:x",
+        "B T H*dnope + H*drope"
+      ],
+      [
+        "dense_layers/block/attn/q_norm:x",
+        "B T Ql"
+      ],
+      [
+        "dense_layers/block/attn/q_up:x",
+        "B T Ql"
+      ],
+      [
+        "dense_layers/block/attn/v_heads:x",
+        "B T H*dv"
+      ],
+      [
+        "dense_layers/block/attn/v_up:x",
+        "B T Kl"
+      ],
+      [
+        "dense_layers/block/attn:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/mlp/act:x",
+        "B T F"
+      ],
+      [
+        "dense_layers/block/mlp/down:x",
+        "B T F"
+      ],
+      [
+        "dense_layers/block/mlp/gate:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/mlp/gated:a",
+        "B T F"
+      ],
+      [
+        "dense_layers/block/mlp/gated:b",
+        "B T F"
+      ],
+      [
+        "dense_layers/block/mlp/up:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/mlp:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/norm1:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/norm2:x",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/resid1:a",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/resid1:b",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/resid2:a",
+        "B T D"
+      ],
+      [
+        "dense_layers/block/resid2:b",
+        "B T D"
+      ],
+      [
+        "dense_layers/block:x",
+        "B T D"
+      ],
+      [
+        "dense_layers:x",
+        "B T D"
+      ],
+      [
+        "embed:ids",
+        "B T"
+      ],
+      [
+        "final_norm:x",
+        "B T D"
+      ],
+      [
+        "head:x",
+        "B T D"
+      ],
+      [
+        "layers/_out:x",
+        "B T D"
+      ],
+      [
+        "layers/block/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/attn:k",
+        "B H T dnope + drope"
+      ],
+      [
+        "layers/block/attn/attn:q",
+        "B H T dnope + drope"
+      ],
+      [
+        "layers/block/attn/attn:v",
+        "B H T dv"
+      ],
+      [
+        "layers/block/attn/k_cat:y0",
+        "B H T dnope"
+      ],
+      [
+        "layers/block/attn/k_cat:y1",
+        "B H T drope"
+      ],
+      [
+        "layers/block/attn/k_nope_heads:x",
+        "B T H*dnope"
+      ],
+      [
+        "layers/block/attn/k_rope:x",
+        "B H T drope"
+      ],
+      [
+        "layers/block/attn/k_rope_shared:x",
+        "B T drope"
+      ],
+      [
+        "layers/block/attn/k_up:x",
+        "B T Kl"
+      ],
+      [
+        "layers/block/attn/kv_down:x",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/kv_norm:x",
+        "B T Kl"
+      ],
+      [
+        "layers/block/attn/kv_split:x",
+        "B T drope + Kl"
+      ],
+      [
+        "layers/block/attn/latent:x",
+        "B T drope + Kl"
+      ],
+      [
+        "layers/block/attn/o_merge:x",
+        "B H T dv"
+      ],
+      [
+        "layers/block/attn/o_proj:x",
+        "B T H*dv"
+      ],
+      [
+        "layers/block/attn/q_down:x",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/q_heads:x",
+        "B T H*dnope + H*drope"
+      ],
+      [
+        "layers/block/attn/q_norm:x",
+        "B T Ql"
+      ],
+      [
+        "layers/block/attn/q_up:x",
+        "B T Ql"
+      ],
+      [
+        "layers/block/attn/v_heads:x",
+        "B T H*dv"
+      ],
+      [
+        "layers/block/attn/v_up:x",
+        "B T Kl"
+      ],
+      [
+        "layers/block/attn:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/combine:weights",
+        "B T K"
+      ],
+      [
+        "layers/block/mlp/combine:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/expert/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/expert/act:x",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert/down:x",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gate:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gated:a",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gated:b",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert/up:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/expert:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/merge:a",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/merge:b",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/router:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/shared/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/shared/act:x",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/shared/down:x",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/shared/gate:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/shared/gated:a",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/shared/gated:b",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/shared/up:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/shared:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp:x",
+        "B T D"
+      ],
+      [
+        "layers/block/norm1:x",
+        "B T D"
+      ],
+      [
+        "layers/block/norm2:x",
+        "B T D"
+      ],
+      [
+        "layers/block/resid1:a",
+        "B T D"
+      ],
+      [
+        "layers/block/resid1:b",
+        "B T D"
+      ],
+      [
+        "layers/block/resid2:a",
+        "B T D"
+      ],
+      [
+        "layers/block/resid2:b",
+        "B T D"
+      ],
+      [
+        "layers/block:x",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "logits:x",
+        "B T V"
+      ]
+    ],
+    "producerOf": [
+      [
+        "dense_layers/_out:x",
+        "dense_layers/block:y"
+      ],
+      [
+        "dense_layers/block/_out:y",
+        "dense_layers/block/resid2:y"
+      ],
+      [
+        "dense_layers/block/attn/_out:y",
+        "dense_layers/block/attn/o_proj:y"
+      ],
+      [
+        "dense_layers/block/attn/attn:k",
+        "dense_layers/block/attn/k_cat:y"
+      ],
+      [
+        "dense_layers/block/attn/attn:q",
+        "dense_layers/block/attn/q_heads:y"
+      ],
+      [
+        "dense_layers/block/attn/attn:v",
+        "dense_layers/block/attn/v_heads:y"
+      ],
+      [
+        "dense_layers/block/attn/k_cat:y0",
+        "dense_layers/block/attn/k_nope_heads:y"
+      ],
+      [
+        "dense_layers/block/attn/k_cat:y1",
+        "dense_layers/block/attn/k_rope:y"
+      ],
+      [
+        "dense_layers/block/attn/k_nope_heads:x",
+        "dense_layers/block/attn/k_up:y"
+      ],
+      [
+        "dense_layers/block/attn/k_rope:x",
+        "dense_layers/block/attn/k_rope_shared:y"
+      ],
+      [
+        "dense_layers/block/attn/k_rope_shared:x",
+        "dense_layers/block/attn/kv_split:y1"
+      ],
+      [
+        "dense_layers/block/attn/k_up:x",
+        "dense_layers/block/attn/kv_norm:y"
+      ],
+      [
+        "dense_layers/block/attn/kv_down:x",
+        "dense_layers/block/attn/_in:x"
+      ],
+      [
+        "dense_layers/block/attn/kv_norm:x",
+        "dense_layers/block/attn/kv_split:y0"
+      ],
+      [
+        "dense_layers/block/attn/kv_split:x",
+        "dense_layers/block/attn/latent:y"
+      ],
+      [
+        "dense_layers/block/attn/latent:x",
+        "dense_layers/block/attn/kv_down:y"
+      ],
+      [
+        "dense_layers/block/attn/o_merge:x",
+        "dense_layers/block/attn/attn:y"
+      ],
+      [
+        "dense_layers/block/attn/o_proj:x",
+        "dense_layers/block/attn/o_merge:y"
+      ],
+      [
+        "dense_layers/block/attn/q_down:x",
+        "dense_layers/block/attn/_in:x"
+      ],
+      [
+        "dense_layers/block/attn/q_heads:x",
+        "dense_layers/block/attn/q_up:y"
+      ],
+      [
+        "dense_layers/block/attn/q_norm:x",
+        "dense_layers/block/attn/q_down:y"
+      ],
+      [
+        "dense_layers/block/attn/q_up:x",
+        "dense_layers/block/attn/q_norm:y"
+      ],
+      [
+        "dense_layers/block/attn/v_heads:x",
+        "dense_layers/block/attn/v_up:y"
+      ],
+      [
+        "dense_layers/block/attn/v_up:x",
+        "dense_layers/block/attn/kv_norm:y"
+      ],
+      [
+        "dense_layers/block/attn:x",
+        "dense_layers/block/norm1:y"
+      ],
+      [
+        "dense_layers/block/mlp/_out:y",
+        "dense_layers/block/mlp/down:y"
+      ],
+      [
+        "dense_layers/block/mlp/act:x",
+        "dense_layers/block/mlp/gate:y"
+      ],
+      [
+        "dense_layers/block/mlp/down:x",
+        "dense_layers/block/mlp/gated:y"
+      ],
+      [
+        "dense_layers/block/mlp/gate:x",
+        "dense_layers/block/mlp/_in:x"
+      ],
+      [
+        "dense_layers/block/mlp/gated:a",
+        "dense_layers/block/mlp/act:y"
+      ],
+      [
+        "dense_layers/block/mlp/gated:b",
+        "dense_layers/block/mlp/up:y"
+      ],
+      [
+        "dense_layers/block/mlp/up:x",
+        "dense_layers/block/mlp/_in:x"
+      ],
+      [
+        "dense_layers/block/mlp:x",
+        "dense_layers/block/norm2:y"
+      ],
+      [
+        "dense_layers/block/norm1:x",
+        "dense_layers/block/_in:x"
+      ],
+      [
+        "dense_layers/block/norm2:x",
+        "dense_layers/block/resid1:y"
+      ],
+      [
+        "dense_layers/block/resid1:a",
+        "dense_layers/block/attn:y"
+      ],
+      [
+        "dense_layers/block/resid1:b",
+        "dense_layers/block/_in:x"
+      ],
+      [
+        "dense_layers/block/resid2:a",
+        "dense_layers/block/mlp:y"
+      ],
+      [
+        "dense_layers/block/resid2:b",
+        "dense_layers/block/resid1:y"
+      ],
+      [
+        "dense_layers/block:x",
+        "dense_layers/_in:x"
+      ],
+      [
+        "dense_layers:x",
+        "embed:y"
+      ],
+      [
+        "embed:ids",
+        "tokens:x"
+      ],
+      [
+        "final_norm:x",
+        "layers:x"
+      ],
+      [
+        "head:x",
+        "final_norm:y"
+      ],
+      [
+        "layers/_out:x",
+        "layers/block:y"
+      ],
+      [
+        "layers/block/_out:y",
+        "layers/block/resid2:y"
+      ],
+      [
+        "layers/block/attn/_out:y",
+        "layers/block/attn/o_proj:y"
+      ],
+      [
+        "layers/block/attn/attn:k",
+        "layers/block/attn/k_cat:y"
+      ],
+      [
+        "layers/block/attn/attn:q",
+        "layers/block/attn/q_heads:y"
+      ],
+      [
+        "layers/block/attn/attn:v",
+        "layers/block/attn/v_heads:y"
+      ],
+      [
+        "layers/block/attn/k_cat:y0",
+        "layers/block/attn/k_nope_heads:y"
+      ],
+      [
+        "layers/block/attn/k_cat:y1",
+        "layers/block/attn/k_rope:y"
+      ],
+      [
+        "layers/block/attn/k_nope_heads:x",
+        "layers/block/attn/k_up:y"
+      ],
+      [
+        "layers/block/attn/k_rope:x",
+        "layers/block/attn/k_rope_shared:y"
+      ],
+      [
+        "layers/block/attn/k_rope_shared:x",
+        "layers/block/attn/kv_split:y1"
+      ],
+      [
+        "layers/block/attn/k_up:x",
+        "layers/block/attn/kv_norm:y"
+      ],
+      [
+        "layers/block/attn/kv_down:x",
+        "layers/block/attn/_in:x"
+      ],
+      [
+        "layers/block/attn/kv_norm:x",
+        "layers/block/attn/kv_split:y0"
+      ],
+      [
+        "layers/block/attn/kv_split:x",
+        "layers/block/attn/latent:y"
+      ],
+      [
+        "layers/block/attn/latent:x",
+        "layers/block/attn/kv_down:y"
+      ],
+      [
+        "layers/block/attn/o_merge:x",
+        "layers/block/attn/attn:y"
+      ],
+      [
+        "layers/block/attn/o_proj:x",
+        "layers/block/attn/o_merge:y"
+      ],
+      [
+        "layers/block/attn/q_down:x",
+        "layers/block/attn/_in:x"
+      ],
+      [
+        "layers/block/attn/q_heads:x",
+        "layers/block/attn/q_up:y"
+      ],
+      [
+        "layers/block/attn/q_norm:x",
+        "layers/block/attn/q_down:y"
+      ],
+      [
+        "layers/block/attn/q_up:x",
+        "layers/block/attn/q_norm:y"
+      ],
+      [
+        "layers/block/attn/v_heads:x",
+        "layers/block/attn/v_up:y"
+      ],
+      [
+        "layers/block/attn/v_up:x",
+        "layers/block/attn/kv_norm:y"
+      ],
+      [
+        "layers/block/attn:x",
+        "layers/block/norm1:y"
+      ],
+      [
+        "layers/block/mlp/_out:y",
+        "layers/block/mlp/merge:y"
+      ],
+      [
+        "layers/block/mlp/combine:weights",
+        "layers/block/mlp/router:weights"
+      ],
+      [
+        "layers/block/mlp/combine:x",
+        "layers/block/mlp/experts:y"
+      ],
+      [
+        "layers/block/mlp/experts/_out:y",
+        "layers/block/mlp/experts/expert:y"
+      ],
+      [
+        "layers/block/mlp/experts/expert/_out:y",
+        "layers/block/mlp/experts/expert/down:y"
+      ],
+      [
+        "layers/block/mlp/experts/expert/act:x",
+        "layers/block/mlp/experts/expert/gate:y"
+      ],
+      [
+        "layers/block/mlp/experts/expert/down:x",
+        "layers/block/mlp/experts/expert/gated:y"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gate:x",
+        "layers/block/mlp/experts/expert/_in:x"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gated:a",
+        "layers/block/mlp/experts/expert/act:y"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gated:b",
+        "layers/block/mlp/experts/expert/up:y"
+      ],
+      [
+        "layers/block/mlp/experts/expert/up:x",
+        "layers/block/mlp/experts/expert/_in:x"
+      ],
+      [
+        "layers/block/mlp/experts/expert:x",
+        "layers/block/mlp/experts/_in:x"
+      ],
+      [
+        "layers/block/mlp/experts:x",
+        "layers/block/mlp/_in:x"
+      ],
+      [
+        "layers/block/mlp/merge:a",
+        "layers/block/mlp/combine:y"
+      ],
+      [
+        "layers/block/mlp/merge:b",
+        "layers/block/mlp/shared:y"
+      ],
+      [
+        "layers/block/mlp/router:x",
+        "layers/block/mlp/_in:x"
+      ],
+      [
+        "layers/block/mlp/shared/_out:y",
+        "layers/block/mlp/shared/down:y"
+      ],
+      [
+        "layers/block/mlp/shared/act:x",
+        "layers/block/mlp/shared/gate:y"
+      ],
+      [
+        "layers/block/mlp/shared/down:x",
+        "layers/block/mlp/shared/gated:y"
+      ],
+      [
+        "layers/block/mlp/shared/gate:x",
+        "layers/block/mlp/shared/_in:x"
+      ],
+      [
+        "layers/block/mlp/shared/gated:a",
+        "layers/block/mlp/shared/act:y"
+      ],
+      [
+        "layers/block/mlp/shared/gated:b",
+        "layers/block/mlp/shared/up:y"
+      ],
+      [
+        "layers/block/mlp/shared/up:x",
+        "layers/block/mlp/shared/_in:x"
+      ],
+      [
+        "layers/block/mlp/shared:x",
+        "layers/block/mlp/_in:x"
+      ],
+      [
+        "layers/block/mlp:x",
+        "layers/block/norm2:y"
+      ],
+      [
+        "layers/block/norm1:x",
+        "layers/block/_in:x"
+      ],
+      [
+        "layers/block/norm2:x",
+        "layers/block/resid1:y"
+      ],
+      [
+        "layers/block/resid1:a",
+        "layers/block/attn:y"
+      ],
+      [
+        "layers/block/resid1:b",
+        "layers/block/_in:x"
+      ],
+      [
+        "layers/block/resid2:a",
+        "layers/block/mlp:y"
+      ],
+      [
+        "layers/block/resid2:b",
+        "layers/block/resid1:y"
+      ],
+      [
+        "layers/block:x",
+        "layers/_in:x"
+      ],
+      [
+        "layers:x",
+        "dense_layers:x"
+      ],
+      [
+        "logits:x",
+        "head:y"
+      ]
+    ],
+    "issues": []
   }
 }

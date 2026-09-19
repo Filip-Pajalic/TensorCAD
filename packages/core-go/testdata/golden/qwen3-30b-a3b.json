@@ -60,5 +60,635 @@
       "Fe": "Hidden width of one expert"
     },
     "errors": []
+  },
+  "infer": {
+    "outputs": [
+      [
+        "embed:y",
+        "B T D"
+      ],
+      [
+        "final_norm:y",
+        "B T D"
+      ],
+      [
+        "head:y",
+        "B T V"
+      ],
+      [
+        "layers/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block:y",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "tokens:x",
+        "B T"
+      ]
+    ],
+    "inputs": [
+      [
+        "embed:ids",
+        "B T"
+      ],
+      [
+        "final_norm:x",
+        "B T D"
+      ],
+      [
+        "head:x",
+        "B T D"
+      ],
+      [
+        "layers/_out:x",
+        "B T D"
+      ],
+      [
+        "layers/block:x",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "logits:x",
+        "B T V"
+      ]
+    ],
+    "producerOf": [
+      [
+        "embed:ids",
+        "tokens:x"
+      ],
+      [
+        "final_norm:x",
+        "layers:x"
+      ],
+      [
+        "head:x",
+        "final_norm:y"
+      ],
+      [
+        "layers/_out:x",
+        "layers/block:y"
+      ],
+      [
+        "layers/block:x",
+        "layers/_in:x"
+      ],
+      [
+        "layers:x",
+        "embed:y"
+      ],
+      [
+        "logits:x",
+        "head:y"
+      ]
+    ],
+    "issues": []
+  },
+  "inferExpanded": {
+    "outputs": [
+      [
+        "embed:y",
+        "B T D"
+      ],
+      [
+        "final_norm:y",
+        "B T D"
+      ],
+      [
+        "head:y",
+        "B T V"
+      ],
+      [
+        "layers/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "layers/block/attn/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/block/attn/k_norm:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/block/attn/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/block/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/block/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "layers/block/attn/q_norm:y",
+        "B H T dh"
+      ],
+      [
+        "layers/block/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/block/attn/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/block/attn/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "layers/block/attn/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/block/attn/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/block/attn:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/combine:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/expert/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/expert/act:y",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert/down:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gate:y",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gated:y",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert/up:y",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/router:weights",
+        "B T K"
+      ],
+      [
+        "layers/block/mlp:y",
+        "B T D"
+      ],
+      [
+        "layers/block/norm1:y",
+        "B T D"
+      ],
+      [
+        "layers/block/norm2:y",
+        "B T D"
+      ],
+      [
+        "layers/block/resid1:y",
+        "B T D"
+      ],
+      [
+        "layers/block/resid2:y",
+        "B T D"
+      ],
+      [
+        "layers/block:y",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "tokens:x",
+        "B T"
+      ]
+    ],
+    "inputs": [
+      [
+        "embed:ids",
+        "B T"
+      ],
+      [
+        "final_norm:x",
+        "B T D"
+      ],
+      [
+        "head:x",
+        "B T D"
+      ],
+      [
+        "layers/_out:x",
+        "B T D"
+      ],
+      [
+        "layers/block/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/block/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "layers/block/attn/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/block/attn/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/block/attn/k_norm:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/block/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "layers/block/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/block/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/block/attn/q_norm:x",
+        "B H T dh"
+      ],
+      [
+        "layers/block/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/block/attn/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "layers/block/attn/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/block/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/block/attn:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/combine:weights",
+        "B T K"
+      ],
+      [
+        "layers/block/mlp/combine:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/expert/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/expert/act:x",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert/down:x",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gate:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gated:a",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gated:b",
+        "B T Fe"
+      ],
+      [
+        "layers/block/mlp/experts/expert/up:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts/expert:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/experts:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/router:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp:x",
+        "B T D"
+      ],
+      [
+        "layers/block/norm1:x",
+        "B T D"
+      ],
+      [
+        "layers/block/norm2:x",
+        "B T D"
+      ],
+      [
+        "layers/block/resid1:a",
+        "B T D"
+      ],
+      [
+        "layers/block/resid1:b",
+        "B T D"
+      ],
+      [
+        "layers/block/resid2:a",
+        "B T D"
+      ],
+      [
+        "layers/block/resid2:b",
+        "B T D"
+      ],
+      [
+        "layers/block:x",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "logits:x",
+        "B T V"
+      ]
+    ],
+    "producerOf": [
+      [
+        "embed:ids",
+        "tokens:x"
+      ],
+      [
+        "final_norm:x",
+        "layers:x"
+      ],
+      [
+        "head:x",
+        "final_norm:y"
+      ],
+      [
+        "layers/_out:x",
+        "layers/block:y"
+      ],
+      [
+        "layers/block/_out:y",
+        "layers/block/resid2:y"
+      ],
+      [
+        "layers/block/attn/_out:y",
+        "layers/block/attn/o_proj:y"
+      ],
+      [
+        "layers/block/attn/attn:k",
+        "layers/block/attn/rope_k:y"
+      ],
+      [
+        "layers/block/attn/attn:q",
+        "layers/block/attn/rope_q:y"
+      ],
+      [
+        "layers/block/attn/attn:v",
+        "layers/block/attn/v_heads:y"
+      ],
+      [
+        "layers/block/attn/k_heads:x",
+        "layers/block/attn/k_proj:y"
+      ],
+      [
+        "layers/block/attn/k_norm:x",
+        "layers/block/attn/k_heads:y"
+      ],
+      [
+        "layers/block/attn/k_proj:x",
+        "layers/block/attn/_in:x"
+      ],
+      [
+        "layers/block/attn/o_merge:x",
+        "layers/block/attn/attn:y"
+      ],
+      [
+        "layers/block/attn/o_proj:x",
+        "layers/block/attn/o_merge:y"
+      ],
+      [
+        "layers/block/attn/q_heads:x",
+        "layers/block/attn/q_proj:y"
+      ],
+      [
+        "layers/block/attn/q_norm:x",
+        "layers/block/attn/q_heads:y"
+      ],
+      [
+        "layers/block/attn/q_proj:x",
+        "layers/block/attn/_in:x"
+      ],
+      [
+        "layers/block/attn/rope_k:x",
+        "layers/block/attn/k_norm:y"
+      ],
+      [
+        "layers/block/attn/rope_q:x",
+        "layers/block/attn/q_norm:y"
+      ],
+      [
+        "layers/block/attn/v_heads:x",
+        "layers/block/attn/v_proj:y"
+      ],
+      [
+        "layers/block/attn/v_proj:x",
+        "layers/block/attn/_in:x"
+      ],
+      [
+        "layers/block/attn:x",
+        "layers/block/norm1:y"
+      ],
+      [
+        "layers/block/mlp/_out:y",
+        "layers/block/mlp/combine:y"
+      ],
+      [
+        "layers/block/mlp/combine:weights",
+        "layers/block/mlp/router:weights"
+      ],
+      [
+        "layers/block/mlp/combine:x",
+        "layers/block/mlp/experts:y"
+      ],
+      [
+        "layers/block/mlp/experts/_out:y",
+        "layers/block/mlp/experts/expert:y"
+      ],
+      [
+        "layers/block/mlp/experts/expert/_out:y",
+        "layers/block/mlp/experts/expert/down:y"
+      ],
+      [
+        "layers/block/mlp/experts/expert/act:x",
+        "layers/block/mlp/experts/expert/gate:y"
+      ],
+      [
+        "layers/block/mlp/experts/expert/down:x",
+        "layers/block/mlp/experts/expert/gated:y"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gate:x",
+        "layers/block/mlp/experts/expert/_in:x"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gated:a",
+        "layers/block/mlp/experts/expert/act:y"
+      ],
+      [
+        "layers/block/mlp/experts/expert/gated:b",
+        "layers/block/mlp/experts/expert/up:y"
+      ],
+      [
+        "layers/block/mlp/experts/expert/up:x",
+        "layers/block/mlp/experts/expert/_in:x"
+      ],
+      [
+        "layers/block/mlp/experts/expert:x",
+        "layers/block/mlp/experts/_in:x"
+      ],
+      [
+        "layers/block/mlp/experts:x",
+        "layers/block/mlp/_in:x"
+      ],
+      [
+        "layers/block/mlp/router:x",
+        "layers/block/mlp/_in:x"
+      ],
+      [
+        "layers/block/mlp:x",
+        "layers/block/norm2:y"
+      ],
+      [
+        "layers/block/norm1:x",
+        "layers/block/_in:x"
+      ],
+      [
+        "layers/block/norm2:x",
+        "layers/block/resid1:y"
+      ],
+      [
+        "layers/block/resid1:a",
+        "layers/block/attn:y"
+      ],
+      [
+        "layers/block/resid1:b",
+        "layers/block/_in:x"
+      ],
+      [
+        "layers/block/resid2:a",
+        "layers/block/mlp:y"
+      ],
+      [
+        "layers/block/resid2:b",
+        "layers/block/resid1:y"
+      ],
+      [
+        "layers/block:x",
+        "layers/_in:x"
+      ],
+      [
+        "layers:x",
+        "embed:y"
+      ],
+      [
+        "logits:x",
+        "head:y"
+      ]
+    ],
+    "issues": []
   }
 }

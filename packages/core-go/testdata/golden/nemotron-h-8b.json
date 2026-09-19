@@ -48,5 +48,9991 @@
       "V": "Vocabulary size"
     },
     "errors": []
+  },
+  "infer": {
+    "outputs": [
+      [
+        "embed:y",
+        "B T D"
+      ],
+      [
+        "final_norm:y",
+        "B T D"
+      ],
+      [
+        "head:y",
+        "B T V"
+      ],
+      [
+        "layers/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/add0:y",
+        "B T D"
+      ],
+      [
+        "layers/add10:y",
+        "B T D"
+      ],
+      [
+        "layers/add11:y",
+        "B T D"
+      ],
+      [
+        "layers/add12:y",
+        "B T D"
+      ],
+      [
+        "layers/add13:y",
+        "B T D"
+      ],
+      [
+        "layers/add14:y",
+        "B T D"
+      ],
+      [
+        "layers/add15:y",
+        "B T D"
+      ],
+      [
+        "layers/add16:y",
+        "B T D"
+      ],
+      [
+        "layers/add17:y",
+        "B T D"
+      ],
+      [
+        "layers/add18:y",
+        "B T D"
+      ],
+      [
+        "layers/add19:y",
+        "B T D"
+      ],
+      [
+        "layers/add1:y",
+        "B T D"
+      ],
+      [
+        "layers/add20:y",
+        "B T D"
+      ],
+      [
+        "layers/add21:y",
+        "B T D"
+      ],
+      [
+        "layers/add22:y",
+        "B T D"
+      ],
+      [
+        "layers/add23:y",
+        "B T D"
+      ],
+      [
+        "layers/add24:y",
+        "B T D"
+      ],
+      [
+        "layers/add25:y",
+        "B T D"
+      ],
+      [
+        "layers/add26:y",
+        "B T D"
+      ],
+      [
+        "layers/add27:y",
+        "B T D"
+      ],
+      [
+        "layers/add28:y",
+        "B T D"
+      ],
+      [
+        "layers/add29:y",
+        "B T D"
+      ],
+      [
+        "layers/add2:y",
+        "B T D"
+      ],
+      [
+        "layers/add30:y",
+        "B T D"
+      ],
+      [
+        "layers/add31:y",
+        "B T D"
+      ],
+      [
+        "layers/add32:y",
+        "B T D"
+      ],
+      [
+        "layers/add33:y",
+        "B T D"
+      ],
+      [
+        "layers/add34:y",
+        "B T D"
+      ],
+      [
+        "layers/add35:y",
+        "B T D"
+      ],
+      [
+        "layers/add36:y",
+        "B T D"
+      ],
+      [
+        "layers/add37:y",
+        "B T D"
+      ],
+      [
+        "layers/add38:y",
+        "B T D"
+      ],
+      [
+        "layers/add39:y",
+        "B T D"
+      ],
+      [
+        "layers/add3:y",
+        "B T D"
+      ],
+      [
+        "layers/add40:y",
+        "B T D"
+      ],
+      [
+        "layers/add41:y",
+        "B T D"
+      ],
+      [
+        "layers/add42:y",
+        "B T D"
+      ],
+      [
+        "layers/add43:y",
+        "B T D"
+      ],
+      [
+        "layers/add44:y",
+        "B T D"
+      ],
+      [
+        "layers/add45:y",
+        "B T D"
+      ],
+      [
+        "layers/add46:y",
+        "B T D"
+      ],
+      [
+        "layers/add47:y",
+        "B T D"
+      ],
+      [
+        "layers/add48:y",
+        "B T D"
+      ],
+      [
+        "layers/add49:y",
+        "B T D"
+      ],
+      [
+        "layers/add4:y",
+        "B T D"
+      ],
+      [
+        "layers/add50:y",
+        "B T D"
+      ],
+      [
+        "layers/add51:y",
+        "B T D"
+      ],
+      [
+        "layers/add5:y",
+        "B T D"
+      ],
+      [
+        "layers/add6:y",
+        "B T D"
+      ],
+      [
+        "layers/add7:y",
+        "B T D"
+      ],
+      [
+        "layers/add8:y",
+        "B T D"
+      ],
+      [
+        "layers/add9:y",
+        "B T D"
+      ],
+      [
+        "layers/blk0:y",
+        "B T D"
+      ],
+      [
+        "layers/blk10:y",
+        "B T D"
+      ],
+      [
+        "layers/blk11:y",
+        "B T D"
+      ],
+      [
+        "layers/blk12:y",
+        "B T D"
+      ],
+      [
+        "layers/blk13:y",
+        "B T D"
+      ],
+      [
+        "layers/blk14:y",
+        "B T D"
+      ],
+      [
+        "layers/blk15:y",
+        "B T D"
+      ],
+      [
+        "layers/blk16:y",
+        "B T D"
+      ],
+      [
+        "layers/blk17:y",
+        "B T D"
+      ],
+      [
+        "layers/blk18:y",
+        "B T D"
+      ],
+      [
+        "layers/blk19:y",
+        "B T D"
+      ],
+      [
+        "layers/blk1:y",
+        "B T D"
+      ],
+      [
+        "layers/blk20:y",
+        "B T D"
+      ],
+      [
+        "layers/blk21:y",
+        "B T D"
+      ],
+      [
+        "layers/blk22:y",
+        "B T D"
+      ],
+      [
+        "layers/blk23:y",
+        "B T D"
+      ],
+      [
+        "layers/blk24:y",
+        "B T D"
+      ],
+      [
+        "layers/blk25:y",
+        "B T D"
+      ],
+      [
+        "layers/blk26:y",
+        "B T D"
+      ],
+      [
+        "layers/blk27:y",
+        "B T D"
+      ],
+      [
+        "layers/blk28:y",
+        "B T D"
+      ],
+      [
+        "layers/blk29:y",
+        "B T D"
+      ],
+      [
+        "layers/blk2:y",
+        "B T D"
+      ],
+      [
+        "layers/blk30:y",
+        "B T D"
+      ],
+      [
+        "layers/blk31:y",
+        "B T D"
+      ],
+      [
+        "layers/blk32:y",
+        "B T D"
+      ],
+      [
+        "layers/blk33:y",
+        "B T D"
+      ],
+      [
+        "layers/blk34:y",
+        "B T D"
+      ],
+      [
+        "layers/blk35:y",
+        "B T D"
+      ],
+      [
+        "layers/blk36:y",
+        "B T D"
+      ],
+      [
+        "layers/blk37:y",
+        "B T D"
+      ],
+      [
+        "layers/blk38:y",
+        "B T D"
+      ],
+      [
+        "layers/blk39:y",
+        "B T D"
+      ],
+      [
+        "layers/blk3:y",
+        "B T D"
+      ],
+      [
+        "layers/blk40:y",
+        "B T D"
+      ],
+      [
+        "layers/blk41:y",
+        "B T D"
+      ],
+      [
+        "layers/blk42:y",
+        "B T D"
+      ],
+      [
+        "layers/blk43:y",
+        "B T D"
+      ],
+      [
+        "layers/blk44:y",
+        "B T D"
+      ],
+      [
+        "layers/blk45:y",
+        "B T D"
+      ],
+      [
+        "layers/blk46:y",
+        "B T D"
+      ],
+      [
+        "layers/blk47:y",
+        "B T D"
+      ],
+      [
+        "layers/blk48:y",
+        "B T D"
+      ],
+      [
+        "layers/blk49:y",
+        "B T D"
+      ],
+      [
+        "layers/blk4:y",
+        "B T D"
+      ],
+      [
+        "layers/blk50:y",
+        "B T D"
+      ],
+      [
+        "layers/blk51:y",
+        "B T D"
+      ],
+      [
+        "layers/blk5:y",
+        "B T D"
+      ],
+      [
+        "layers/blk6:y",
+        "B T D"
+      ],
+      [
+        "layers/blk7:y",
+        "B T D"
+      ],
+      [
+        "layers/blk8:y",
+        "B T D"
+      ],
+      [
+        "layers/blk9:y",
+        "B T D"
+      ],
+      [
+        "layers/norm0:y",
+        "B T D"
+      ],
+      [
+        "layers/norm10:y",
+        "B T D"
+      ],
+      [
+        "layers/norm11:y",
+        "B T D"
+      ],
+      [
+        "layers/norm12:y",
+        "B T D"
+      ],
+      [
+        "layers/norm13:y",
+        "B T D"
+      ],
+      [
+        "layers/norm14:y",
+        "B T D"
+      ],
+      [
+        "layers/norm15:y",
+        "B T D"
+      ],
+      [
+        "layers/norm16:y",
+        "B T D"
+      ],
+      [
+        "layers/norm17:y",
+        "B T D"
+      ],
+      [
+        "layers/norm18:y",
+        "B T D"
+      ],
+      [
+        "layers/norm19:y",
+        "B T D"
+      ],
+      [
+        "layers/norm1:y",
+        "B T D"
+      ],
+      [
+        "layers/norm20:y",
+        "B T D"
+      ],
+      [
+        "layers/norm21:y",
+        "B T D"
+      ],
+      [
+        "layers/norm22:y",
+        "B T D"
+      ],
+      [
+        "layers/norm23:y",
+        "B T D"
+      ],
+      [
+        "layers/norm24:y",
+        "B T D"
+      ],
+      [
+        "layers/norm25:y",
+        "B T D"
+      ],
+      [
+        "layers/norm26:y",
+        "B T D"
+      ],
+      [
+        "layers/norm27:y",
+        "B T D"
+      ],
+      [
+        "layers/norm28:y",
+        "B T D"
+      ],
+      [
+        "layers/norm29:y",
+        "B T D"
+      ],
+      [
+        "layers/norm2:y",
+        "B T D"
+      ],
+      [
+        "layers/norm30:y",
+        "B T D"
+      ],
+      [
+        "layers/norm31:y",
+        "B T D"
+      ],
+      [
+        "layers/norm32:y",
+        "B T D"
+      ],
+      [
+        "layers/norm33:y",
+        "B T D"
+      ],
+      [
+        "layers/norm34:y",
+        "B T D"
+      ],
+      [
+        "layers/norm35:y",
+        "B T D"
+      ],
+      [
+        "layers/norm36:y",
+        "B T D"
+      ],
+      [
+        "layers/norm37:y",
+        "B T D"
+      ],
+      [
+        "layers/norm38:y",
+        "B T D"
+      ],
+      [
+        "layers/norm39:y",
+        "B T D"
+      ],
+      [
+        "layers/norm3:y",
+        "B T D"
+      ],
+      [
+        "layers/norm40:y",
+        "B T D"
+      ],
+      [
+        "layers/norm41:y",
+        "B T D"
+      ],
+      [
+        "layers/norm42:y",
+        "B T D"
+      ],
+      [
+        "layers/norm43:y",
+        "B T D"
+      ],
+      [
+        "layers/norm44:y",
+        "B T D"
+      ],
+      [
+        "layers/norm45:y",
+        "B T D"
+      ],
+      [
+        "layers/norm46:y",
+        "B T D"
+      ],
+      [
+        "layers/norm47:y",
+        "B T D"
+      ],
+      [
+        "layers/norm48:y",
+        "B T D"
+      ],
+      [
+        "layers/norm49:y",
+        "B T D"
+      ],
+      [
+        "layers/norm4:y",
+        "B T D"
+      ],
+      [
+        "layers/norm50:y",
+        "B T D"
+      ],
+      [
+        "layers/norm51:y",
+        "B T D"
+      ],
+      [
+        "layers/norm5:y",
+        "B T D"
+      ],
+      [
+        "layers/norm6:y",
+        "B T D"
+      ],
+      [
+        "layers/norm7:y",
+        "B T D"
+      ],
+      [
+        "layers/norm8:y",
+        "B T D"
+      ],
+      [
+        "layers/norm9:y",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "tokens:x",
+        "B T"
+      ]
+    ],
+    "inputs": [
+      [
+        "embed:ids",
+        "B T"
+      ],
+      [
+        "final_norm:x",
+        "B T D"
+      ],
+      [
+        "head:x",
+        "B T D"
+      ],
+      [
+        "layers/_out:x",
+        "B T D"
+      ],
+      [
+        "layers/add0:a",
+        "B T D"
+      ],
+      [
+        "layers/add0:b",
+        "B T D"
+      ],
+      [
+        "layers/add10:a",
+        "B T D"
+      ],
+      [
+        "layers/add10:b",
+        "B T D"
+      ],
+      [
+        "layers/add11:a",
+        "B T D"
+      ],
+      [
+        "layers/add11:b",
+        "B T D"
+      ],
+      [
+        "layers/add12:a",
+        "B T D"
+      ],
+      [
+        "layers/add12:b",
+        "B T D"
+      ],
+      [
+        "layers/add13:a",
+        "B T D"
+      ],
+      [
+        "layers/add13:b",
+        "B T D"
+      ],
+      [
+        "layers/add14:a",
+        "B T D"
+      ],
+      [
+        "layers/add14:b",
+        "B T D"
+      ],
+      [
+        "layers/add15:a",
+        "B T D"
+      ],
+      [
+        "layers/add15:b",
+        "B T D"
+      ],
+      [
+        "layers/add16:a",
+        "B T D"
+      ],
+      [
+        "layers/add16:b",
+        "B T D"
+      ],
+      [
+        "layers/add17:a",
+        "B T D"
+      ],
+      [
+        "layers/add17:b",
+        "B T D"
+      ],
+      [
+        "layers/add18:a",
+        "B T D"
+      ],
+      [
+        "layers/add18:b",
+        "B T D"
+      ],
+      [
+        "layers/add19:a",
+        "B T D"
+      ],
+      [
+        "layers/add19:b",
+        "B T D"
+      ],
+      [
+        "layers/add1:a",
+        "B T D"
+      ],
+      [
+        "layers/add1:b",
+        "B T D"
+      ],
+      [
+        "layers/add20:a",
+        "B T D"
+      ],
+      [
+        "layers/add20:b",
+        "B T D"
+      ],
+      [
+        "layers/add21:a",
+        "B T D"
+      ],
+      [
+        "layers/add21:b",
+        "B T D"
+      ],
+      [
+        "layers/add22:a",
+        "B T D"
+      ],
+      [
+        "layers/add22:b",
+        "B T D"
+      ],
+      [
+        "layers/add23:a",
+        "B T D"
+      ],
+      [
+        "layers/add23:b",
+        "B T D"
+      ],
+      [
+        "layers/add24:a",
+        "B T D"
+      ],
+      [
+        "layers/add24:b",
+        "B T D"
+      ],
+      [
+        "layers/add25:a",
+        "B T D"
+      ],
+      [
+        "layers/add25:b",
+        "B T D"
+      ],
+      [
+        "layers/add26:a",
+        "B T D"
+      ],
+      [
+        "layers/add26:b",
+        "B T D"
+      ],
+      [
+        "layers/add27:a",
+        "B T D"
+      ],
+      [
+        "layers/add27:b",
+        "B T D"
+      ],
+      [
+        "layers/add28:a",
+        "B T D"
+      ],
+      [
+        "layers/add28:b",
+        "B T D"
+      ],
+      [
+        "layers/add29:a",
+        "B T D"
+      ],
+      [
+        "layers/add29:b",
+        "B T D"
+      ],
+      [
+        "layers/add2:a",
+        "B T D"
+      ],
+      [
+        "layers/add2:b",
+        "B T D"
+      ],
+      [
+        "layers/add30:a",
+        "B T D"
+      ],
+      [
+        "layers/add30:b",
+        "B T D"
+      ],
+      [
+        "layers/add31:a",
+        "B T D"
+      ],
+      [
+        "layers/add31:b",
+        "B T D"
+      ],
+      [
+        "layers/add32:a",
+        "B T D"
+      ],
+      [
+        "layers/add32:b",
+        "B T D"
+      ],
+      [
+        "layers/add33:a",
+        "B T D"
+      ],
+      [
+        "layers/add33:b",
+        "B T D"
+      ],
+      [
+        "layers/add34:a",
+        "B T D"
+      ],
+      [
+        "layers/add34:b",
+        "B T D"
+      ],
+      [
+        "layers/add35:a",
+        "B T D"
+      ],
+      [
+        "layers/add35:b",
+        "B T D"
+      ],
+      [
+        "layers/add36:a",
+        "B T D"
+      ],
+      [
+        "layers/add36:b",
+        "B T D"
+      ],
+      [
+        "layers/add37:a",
+        "B T D"
+      ],
+      [
+        "layers/add37:b",
+        "B T D"
+      ],
+      [
+        "layers/add38:a",
+        "B T D"
+      ],
+      [
+        "layers/add38:b",
+        "B T D"
+      ],
+      [
+        "layers/add39:a",
+        "B T D"
+      ],
+      [
+        "layers/add39:b",
+        "B T D"
+      ],
+      [
+        "layers/add3:a",
+        "B T D"
+      ],
+      [
+        "layers/add3:b",
+        "B T D"
+      ],
+      [
+        "layers/add40:a",
+        "B T D"
+      ],
+      [
+        "layers/add40:b",
+        "B T D"
+      ],
+      [
+        "layers/add41:a",
+        "B T D"
+      ],
+      [
+        "layers/add41:b",
+        "B T D"
+      ],
+      [
+        "layers/add42:a",
+        "B T D"
+      ],
+      [
+        "layers/add42:b",
+        "B T D"
+      ],
+      [
+        "layers/add43:a",
+        "B T D"
+      ],
+      [
+        "layers/add43:b",
+        "B T D"
+      ],
+      [
+        "layers/add44:a",
+        "B T D"
+      ],
+      [
+        "layers/add44:b",
+        "B T D"
+      ],
+      [
+        "layers/add45:a",
+        "B T D"
+      ],
+      [
+        "layers/add45:b",
+        "B T D"
+      ],
+      [
+        "layers/add46:a",
+        "B T D"
+      ],
+      [
+        "layers/add46:b",
+        "B T D"
+      ],
+      [
+        "layers/add47:a",
+        "B T D"
+      ],
+      [
+        "layers/add47:b",
+        "B T D"
+      ],
+      [
+        "layers/add48:a",
+        "B T D"
+      ],
+      [
+        "layers/add48:b",
+        "B T D"
+      ],
+      [
+        "layers/add49:a",
+        "B T D"
+      ],
+      [
+        "layers/add49:b",
+        "B T D"
+      ],
+      [
+        "layers/add4:a",
+        "B T D"
+      ],
+      [
+        "layers/add4:b",
+        "B T D"
+      ],
+      [
+        "layers/add50:a",
+        "B T D"
+      ],
+      [
+        "layers/add50:b",
+        "B T D"
+      ],
+      [
+        "layers/add51:a",
+        "B T D"
+      ],
+      [
+        "layers/add51:b",
+        "B T D"
+      ],
+      [
+        "layers/add5:a",
+        "B T D"
+      ],
+      [
+        "layers/add5:b",
+        "B T D"
+      ],
+      [
+        "layers/add6:a",
+        "B T D"
+      ],
+      [
+        "layers/add6:b",
+        "B T D"
+      ],
+      [
+        "layers/add7:a",
+        "B T D"
+      ],
+      [
+        "layers/add7:b",
+        "B T D"
+      ],
+      [
+        "layers/add8:a",
+        "B T D"
+      ],
+      [
+        "layers/add8:b",
+        "B T D"
+      ],
+      [
+        "layers/add9:a",
+        "B T D"
+      ],
+      [
+        "layers/add9:b",
+        "B T D"
+      ],
+      [
+        "layers/blk0:x",
+        "B T D"
+      ],
+      [
+        "layers/blk10:x",
+        "B T D"
+      ],
+      [
+        "layers/blk11:x",
+        "B T D"
+      ],
+      [
+        "layers/blk12:x",
+        "B T D"
+      ],
+      [
+        "layers/blk13:x",
+        "B T D"
+      ],
+      [
+        "layers/blk14:x",
+        "B T D"
+      ],
+      [
+        "layers/blk15:x",
+        "B T D"
+      ],
+      [
+        "layers/blk16:x",
+        "B T D"
+      ],
+      [
+        "layers/blk17:x",
+        "B T D"
+      ],
+      [
+        "layers/blk18:x",
+        "B T D"
+      ],
+      [
+        "layers/blk19:x",
+        "B T D"
+      ],
+      [
+        "layers/blk1:x",
+        "B T D"
+      ],
+      [
+        "layers/blk20:x",
+        "B T D"
+      ],
+      [
+        "layers/blk21:x",
+        "B T D"
+      ],
+      [
+        "layers/blk22:x",
+        "B T D"
+      ],
+      [
+        "layers/blk23:x",
+        "B T D"
+      ],
+      [
+        "layers/blk24:x",
+        "B T D"
+      ],
+      [
+        "layers/blk25:x",
+        "B T D"
+      ],
+      [
+        "layers/blk26:x",
+        "B T D"
+      ],
+      [
+        "layers/blk27:x",
+        "B T D"
+      ],
+      [
+        "layers/blk28:x",
+        "B T D"
+      ],
+      [
+        "layers/blk29:x",
+        "B T D"
+      ],
+      [
+        "layers/blk2:x",
+        "B T D"
+      ],
+      [
+        "layers/blk30:x",
+        "B T D"
+      ],
+      [
+        "layers/blk31:x",
+        "B T D"
+      ],
+      [
+        "layers/blk32:x",
+        "B T D"
+      ],
+      [
+        "layers/blk33:x",
+        "B T D"
+      ],
+      [
+        "layers/blk34:x",
+        "B T D"
+      ],
+      [
+        "layers/blk35:x",
+        "B T D"
+      ],
+      [
+        "layers/blk36:x",
+        "B T D"
+      ],
+      [
+        "layers/blk37:x",
+        "B T D"
+      ],
+      [
+        "layers/blk38:x",
+        "B T D"
+      ],
+      [
+        "layers/blk39:x",
+        "B T D"
+      ],
+      [
+        "layers/blk3:x",
+        "B T D"
+      ],
+      [
+        "layers/blk40:x",
+        "B T D"
+      ],
+      [
+        "layers/blk41:x",
+        "B T D"
+      ],
+      [
+        "layers/blk42:x",
+        "B T D"
+      ],
+      [
+        "layers/blk43:x",
+        "B T D"
+      ],
+      [
+        "layers/blk44:x",
+        "B T D"
+      ],
+      [
+        "layers/blk45:x",
+        "B T D"
+      ],
+      [
+        "layers/blk46:x",
+        "B T D"
+      ],
+      [
+        "layers/blk47:x",
+        "B T D"
+      ],
+      [
+        "layers/blk48:x",
+        "B T D"
+      ],
+      [
+        "layers/blk49:x",
+        "B T D"
+      ],
+      [
+        "layers/blk4:x",
+        "B T D"
+      ],
+      [
+        "layers/blk50:x",
+        "B T D"
+      ],
+      [
+        "layers/blk51:x",
+        "B T D"
+      ],
+      [
+        "layers/blk5:x",
+        "B T D"
+      ],
+      [
+        "layers/blk6:x",
+        "B T D"
+      ],
+      [
+        "layers/blk7:x",
+        "B T D"
+      ],
+      [
+        "layers/blk8:x",
+        "B T D"
+      ],
+      [
+        "layers/blk9:x",
+        "B T D"
+      ],
+      [
+        "layers/norm0:x",
+        "B T D"
+      ],
+      [
+        "layers/norm10:x",
+        "B T D"
+      ],
+      [
+        "layers/norm11:x",
+        "B T D"
+      ],
+      [
+        "layers/norm12:x",
+        "B T D"
+      ],
+      [
+        "layers/norm13:x",
+        "B T D"
+      ],
+      [
+        "layers/norm14:x",
+        "B T D"
+      ],
+      [
+        "layers/norm15:x",
+        "B T D"
+      ],
+      [
+        "layers/norm16:x",
+        "B T D"
+      ],
+      [
+        "layers/norm17:x",
+        "B T D"
+      ],
+      [
+        "layers/norm18:x",
+        "B T D"
+      ],
+      [
+        "layers/norm19:x",
+        "B T D"
+      ],
+      [
+        "layers/norm1:x",
+        "B T D"
+      ],
+      [
+        "layers/norm20:x",
+        "B T D"
+      ],
+      [
+        "layers/norm21:x",
+        "B T D"
+      ],
+      [
+        "layers/norm22:x",
+        "B T D"
+      ],
+      [
+        "layers/norm23:x",
+        "B T D"
+      ],
+      [
+        "layers/norm24:x",
+        "B T D"
+      ],
+      [
+        "layers/norm25:x",
+        "B T D"
+      ],
+      [
+        "layers/norm26:x",
+        "B T D"
+      ],
+      [
+        "layers/norm27:x",
+        "B T D"
+      ],
+      [
+        "layers/norm28:x",
+        "B T D"
+      ],
+      [
+        "layers/norm29:x",
+        "B T D"
+      ],
+      [
+        "layers/norm2:x",
+        "B T D"
+      ],
+      [
+        "layers/norm30:x",
+        "B T D"
+      ],
+      [
+        "layers/norm31:x",
+        "B T D"
+      ],
+      [
+        "layers/norm32:x",
+        "B T D"
+      ],
+      [
+        "layers/norm33:x",
+        "B T D"
+      ],
+      [
+        "layers/norm34:x",
+        "B T D"
+      ],
+      [
+        "layers/norm35:x",
+        "B T D"
+      ],
+      [
+        "layers/norm36:x",
+        "B T D"
+      ],
+      [
+        "layers/norm37:x",
+        "B T D"
+      ],
+      [
+        "layers/norm38:x",
+        "B T D"
+      ],
+      [
+        "layers/norm39:x",
+        "B T D"
+      ],
+      [
+        "layers/norm3:x",
+        "B T D"
+      ],
+      [
+        "layers/norm40:x",
+        "B T D"
+      ],
+      [
+        "layers/norm41:x",
+        "B T D"
+      ],
+      [
+        "layers/norm42:x",
+        "B T D"
+      ],
+      [
+        "layers/norm43:x",
+        "B T D"
+      ],
+      [
+        "layers/norm44:x",
+        "B T D"
+      ],
+      [
+        "layers/norm45:x",
+        "B T D"
+      ],
+      [
+        "layers/norm46:x",
+        "B T D"
+      ],
+      [
+        "layers/norm47:x",
+        "B T D"
+      ],
+      [
+        "layers/norm48:x",
+        "B T D"
+      ],
+      [
+        "layers/norm49:x",
+        "B T D"
+      ],
+      [
+        "layers/norm4:x",
+        "B T D"
+      ],
+      [
+        "layers/norm50:x",
+        "B T D"
+      ],
+      [
+        "layers/norm51:x",
+        "B T D"
+      ],
+      [
+        "layers/norm5:x",
+        "B T D"
+      ],
+      [
+        "layers/norm6:x",
+        "B T D"
+      ],
+      [
+        "layers/norm7:x",
+        "B T D"
+      ],
+      [
+        "layers/norm8:x",
+        "B T D"
+      ],
+      [
+        "layers/norm9:x",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "logits:x",
+        "B T V"
+      ]
+    ],
+    "producerOf": [
+      [
+        "embed:ids",
+        "tokens:x"
+      ],
+      [
+        "final_norm:x",
+        "layers:x"
+      ],
+      [
+        "head:x",
+        "final_norm:y"
+      ],
+      [
+        "layers/_out:x",
+        "layers/add51:y"
+      ],
+      [
+        "layers/add0:a",
+        "layers/blk0:y"
+      ],
+      [
+        "layers/add0:b",
+        "layers/_in:x"
+      ],
+      [
+        "layers/add10:a",
+        "layers/blk10:y"
+      ],
+      [
+        "layers/add10:b",
+        "layers/add9:y"
+      ],
+      [
+        "layers/add11:a",
+        "layers/blk11:y"
+      ],
+      [
+        "layers/add11:b",
+        "layers/add10:y"
+      ],
+      [
+        "layers/add12:a",
+        "layers/blk12:y"
+      ],
+      [
+        "layers/add12:b",
+        "layers/add11:y"
+      ],
+      [
+        "layers/add13:a",
+        "layers/blk13:y"
+      ],
+      [
+        "layers/add13:b",
+        "layers/add12:y"
+      ],
+      [
+        "layers/add14:a",
+        "layers/blk14:y"
+      ],
+      [
+        "layers/add14:b",
+        "layers/add13:y"
+      ],
+      [
+        "layers/add15:a",
+        "layers/blk15:y"
+      ],
+      [
+        "layers/add15:b",
+        "layers/add14:y"
+      ],
+      [
+        "layers/add16:a",
+        "layers/blk16:y"
+      ],
+      [
+        "layers/add16:b",
+        "layers/add15:y"
+      ],
+      [
+        "layers/add17:a",
+        "layers/blk17:y"
+      ],
+      [
+        "layers/add17:b",
+        "layers/add16:y"
+      ],
+      [
+        "layers/add18:a",
+        "layers/blk18:y"
+      ],
+      [
+        "layers/add18:b",
+        "layers/add17:y"
+      ],
+      [
+        "layers/add19:a",
+        "layers/blk19:y"
+      ],
+      [
+        "layers/add19:b",
+        "layers/add18:y"
+      ],
+      [
+        "layers/add1:a",
+        "layers/blk1:y"
+      ],
+      [
+        "layers/add1:b",
+        "layers/add0:y"
+      ],
+      [
+        "layers/add20:a",
+        "layers/blk20:y"
+      ],
+      [
+        "layers/add20:b",
+        "layers/add19:y"
+      ],
+      [
+        "layers/add21:a",
+        "layers/blk21:y"
+      ],
+      [
+        "layers/add21:b",
+        "layers/add20:y"
+      ],
+      [
+        "layers/add22:a",
+        "layers/blk22:y"
+      ],
+      [
+        "layers/add22:b",
+        "layers/add21:y"
+      ],
+      [
+        "layers/add23:a",
+        "layers/blk23:y"
+      ],
+      [
+        "layers/add23:b",
+        "layers/add22:y"
+      ],
+      [
+        "layers/add24:a",
+        "layers/blk24:y"
+      ],
+      [
+        "layers/add24:b",
+        "layers/add23:y"
+      ],
+      [
+        "layers/add25:a",
+        "layers/blk25:y"
+      ],
+      [
+        "layers/add25:b",
+        "layers/add24:y"
+      ],
+      [
+        "layers/add26:a",
+        "layers/blk26:y"
+      ],
+      [
+        "layers/add26:b",
+        "layers/add25:y"
+      ],
+      [
+        "layers/add27:a",
+        "layers/blk27:y"
+      ],
+      [
+        "layers/add27:b",
+        "layers/add26:y"
+      ],
+      [
+        "layers/add28:a",
+        "layers/blk28:y"
+      ],
+      [
+        "layers/add28:b",
+        "layers/add27:y"
+      ],
+      [
+        "layers/add29:a",
+        "layers/blk29:y"
+      ],
+      [
+        "layers/add29:b",
+        "layers/add28:y"
+      ],
+      [
+        "layers/add2:a",
+        "layers/blk2:y"
+      ],
+      [
+        "layers/add2:b",
+        "layers/add1:y"
+      ],
+      [
+        "layers/add30:a",
+        "layers/blk30:y"
+      ],
+      [
+        "layers/add30:b",
+        "layers/add29:y"
+      ],
+      [
+        "layers/add31:a",
+        "layers/blk31:y"
+      ],
+      [
+        "layers/add31:b",
+        "layers/add30:y"
+      ],
+      [
+        "layers/add32:a",
+        "layers/blk32:y"
+      ],
+      [
+        "layers/add32:b",
+        "layers/add31:y"
+      ],
+      [
+        "layers/add33:a",
+        "layers/blk33:y"
+      ],
+      [
+        "layers/add33:b",
+        "layers/add32:y"
+      ],
+      [
+        "layers/add34:a",
+        "layers/blk34:y"
+      ],
+      [
+        "layers/add34:b",
+        "layers/add33:y"
+      ],
+      [
+        "layers/add35:a",
+        "layers/blk35:y"
+      ],
+      [
+        "layers/add35:b",
+        "layers/add34:y"
+      ],
+      [
+        "layers/add36:a",
+        "layers/blk36:y"
+      ],
+      [
+        "layers/add36:b",
+        "layers/add35:y"
+      ],
+      [
+        "layers/add37:a",
+        "layers/blk37:y"
+      ],
+      [
+        "layers/add37:b",
+        "layers/add36:y"
+      ],
+      [
+        "layers/add38:a",
+        "layers/blk38:y"
+      ],
+      [
+        "layers/add38:b",
+        "layers/add37:y"
+      ],
+      [
+        "layers/add39:a",
+        "layers/blk39:y"
+      ],
+      [
+        "layers/add39:b",
+        "layers/add38:y"
+      ],
+      [
+        "layers/add3:a",
+        "layers/blk3:y"
+      ],
+      [
+        "layers/add3:b",
+        "layers/add2:y"
+      ],
+      [
+        "layers/add40:a",
+        "layers/blk40:y"
+      ],
+      [
+        "layers/add40:b",
+        "layers/add39:y"
+      ],
+      [
+        "layers/add41:a",
+        "layers/blk41:y"
+      ],
+      [
+        "layers/add41:b",
+        "layers/add40:y"
+      ],
+      [
+        "layers/add42:a",
+        "layers/blk42:y"
+      ],
+      [
+        "layers/add42:b",
+        "layers/add41:y"
+      ],
+      [
+        "layers/add43:a",
+        "layers/blk43:y"
+      ],
+      [
+        "layers/add43:b",
+        "layers/add42:y"
+      ],
+      [
+        "layers/add44:a",
+        "layers/blk44:y"
+      ],
+      [
+        "layers/add44:b",
+        "layers/add43:y"
+      ],
+      [
+        "layers/add45:a",
+        "layers/blk45:y"
+      ],
+      [
+        "layers/add45:b",
+        "layers/add44:y"
+      ],
+      [
+        "layers/add46:a",
+        "layers/blk46:y"
+      ],
+      [
+        "layers/add46:b",
+        "layers/add45:y"
+      ],
+      [
+        "layers/add47:a",
+        "layers/blk47:y"
+      ],
+      [
+        "layers/add47:b",
+        "layers/add46:y"
+      ],
+      [
+        "layers/add48:a",
+        "layers/blk48:y"
+      ],
+      [
+        "layers/add48:b",
+        "layers/add47:y"
+      ],
+      [
+        "layers/add49:a",
+        "layers/blk49:y"
+      ],
+      [
+        "layers/add49:b",
+        "layers/add48:y"
+      ],
+      [
+        "layers/add4:a",
+        "layers/blk4:y"
+      ],
+      [
+        "layers/add4:b",
+        "layers/add3:y"
+      ],
+      [
+        "layers/add50:a",
+        "layers/blk50:y"
+      ],
+      [
+        "layers/add50:b",
+        "layers/add49:y"
+      ],
+      [
+        "layers/add51:a",
+        "layers/blk51:y"
+      ],
+      [
+        "layers/add51:b",
+        "layers/add50:y"
+      ],
+      [
+        "layers/add5:a",
+        "layers/blk5:y"
+      ],
+      [
+        "layers/add5:b",
+        "layers/add4:y"
+      ],
+      [
+        "layers/add6:a",
+        "layers/blk6:y"
+      ],
+      [
+        "layers/add6:b",
+        "layers/add5:y"
+      ],
+      [
+        "layers/add7:a",
+        "layers/blk7:y"
+      ],
+      [
+        "layers/add7:b",
+        "layers/add6:y"
+      ],
+      [
+        "layers/add8:a",
+        "layers/blk8:y"
+      ],
+      [
+        "layers/add8:b",
+        "layers/add7:y"
+      ],
+      [
+        "layers/add9:a",
+        "layers/blk9:y"
+      ],
+      [
+        "layers/add9:b",
+        "layers/add8:y"
+      ],
+      [
+        "layers/blk0:x",
+        "layers/norm0:y"
+      ],
+      [
+        "layers/blk10:x",
+        "layers/norm10:y"
+      ],
+      [
+        "layers/blk11:x",
+        "layers/norm11:y"
+      ],
+      [
+        "layers/blk12:x",
+        "layers/norm12:y"
+      ],
+      [
+        "layers/blk13:x",
+        "layers/norm13:y"
+      ],
+      [
+        "layers/blk14:x",
+        "layers/norm14:y"
+      ],
+      [
+        "layers/blk15:x",
+        "layers/norm15:y"
+      ],
+      [
+        "layers/blk16:x",
+        "layers/norm16:y"
+      ],
+      [
+        "layers/blk17:x",
+        "layers/norm17:y"
+      ],
+      [
+        "layers/blk18:x",
+        "layers/norm18:y"
+      ],
+      [
+        "layers/blk19:x",
+        "layers/norm19:y"
+      ],
+      [
+        "layers/blk1:x",
+        "layers/norm1:y"
+      ],
+      [
+        "layers/blk20:x",
+        "layers/norm20:y"
+      ],
+      [
+        "layers/blk21:x",
+        "layers/norm21:y"
+      ],
+      [
+        "layers/blk22:x",
+        "layers/norm22:y"
+      ],
+      [
+        "layers/blk23:x",
+        "layers/norm23:y"
+      ],
+      [
+        "layers/blk24:x",
+        "layers/norm24:y"
+      ],
+      [
+        "layers/blk25:x",
+        "layers/norm25:y"
+      ],
+      [
+        "layers/blk26:x",
+        "layers/norm26:y"
+      ],
+      [
+        "layers/blk27:x",
+        "layers/norm27:y"
+      ],
+      [
+        "layers/blk28:x",
+        "layers/norm28:y"
+      ],
+      [
+        "layers/blk29:x",
+        "layers/norm29:y"
+      ],
+      [
+        "layers/blk2:x",
+        "layers/norm2:y"
+      ],
+      [
+        "layers/blk30:x",
+        "layers/norm30:y"
+      ],
+      [
+        "layers/blk31:x",
+        "layers/norm31:y"
+      ],
+      [
+        "layers/blk32:x",
+        "layers/norm32:y"
+      ],
+      [
+        "layers/blk33:x",
+        "layers/norm33:y"
+      ],
+      [
+        "layers/blk34:x",
+        "layers/norm34:y"
+      ],
+      [
+        "layers/blk35:x",
+        "layers/norm35:y"
+      ],
+      [
+        "layers/blk36:x",
+        "layers/norm36:y"
+      ],
+      [
+        "layers/blk37:x",
+        "layers/norm37:y"
+      ],
+      [
+        "layers/blk38:x",
+        "layers/norm38:y"
+      ],
+      [
+        "layers/blk39:x",
+        "layers/norm39:y"
+      ],
+      [
+        "layers/blk3:x",
+        "layers/norm3:y"
+      ],
+      [
+        "layers/blk40:x",
+        "layers/norm40:y"
+      ],
+      [
+        "layers/blk41:x",
+        "layers/norm41:y"
+      ],
+      [
+        "layers/blk42:x",
+        "layers/norm42:y"
+      ],
+      [
+        "layers/blk43:x",
+        "layers/norm43:y"
+      ],
+      [
+        "layers/blk44:x",
+        "layers/norm44:y"
+      ],
+      [
+        "layers/blk45:x",
+        "layers/norm45:y"
+      ],
+      [
+        "layers/blk46:x",
+        "layers/norm46:y"
+      ],
+      [
+        "layers/blk47:x",
+        "layers/norm47:y"
+      ],
+      [
+        "layers/blk48:x",
+        "layers/norm48:y"
+      ],
+      [
+        "layers/blk49:x",
+        "layers/norm49:y"
+      ],
+      [
+        "layers/blk4:x",
+        "layers/norm4:y"
+      ],
+      [
+        "layers/blk50:x",
+        "layers/norm50:y"
+      ],
+      [
+        "layers/blk51:x",
+        "layers/norm51:y"
+      ],
+      [
+        "layers/blk5:x",
+        "layers/norm5:y"
+      ],
+      [
+        "layers/blk6:x",
+        "layers/norm6:y"
+      ],
+      [
+        "layers/blk7:x",
+        "layers/norm7:y"
+      ],
+      [
+        "layers/blk8:x",
+        "layers/norm8:y"
+      ],
+      [
+        "layers/blk9:x",
+        "layers/norm9:y"
+      ],
+      [
+        "layers/norm0:x",
+        "layers/_in:x"
+      ],
+      [
+        "layers/norm10:x",
+        "layers/add9:y"
+      ],
+      [
+        "layers/norm11:x",
+        "layers/add10:y"
+      ],
+      [
+        "layers/norm12:x",
+        "layers/add11:y"
+      ],
+      [
+        "layers/norm13:x",
+        "layers/add12:y"
+      ],
+      [
+        "layers/norm14:x",
+        "layers/add13:y"
+      ],
+      [
+        "layers/norm15:x",
+        "layers/add14:y"
+      ],
+      [
+        "layers/norm16:x",
+        "layers/add15:y"
+      ],
+      [
+        "layers/norm17:x",
+        "layers/add16:y"
+      ],
+      [
+        "layers/norm18:x",
+        "layers/add17:y"
+      ],
+      [
+        "layers/norm19:x",
+        "layers/add18:y"
+      ],
+      [
+        "layers/norm1:x",
+        "layers/add0:y"
+      ],
+      [
+        "layers/norm20:x",
+        "layers/add19:y"
+      ],
+      [
+        "layers/norm21:x",
+        "layers/add20:y"
+      ],
+      [
+        "layers/norm22:x",
+        "layers/add21:y"
+      ],
+      [
+        "layers/norm23:x",
+        "layers/add22:y"
+      ],
+      [
+        "layers/norm24:x",
+        "layers/add23:y"
+      ],
+      [
+        "layers/norm25:x",
+        "layers/add24:y"
+      ],
+      [
+        "layers/norm26:x",
+        "layers/add25:y"
+      ],
+      [
+        "layers/norm27:x",
+        "layers/add26:y"
+      ],
+      [
+        "layers/norm28:x",
+        "layers/add27:y"
+      ],
+      [
+        "layers/norm29:x",
+        "layers/add28:y"
+      ],
+      [
+        "layers/norm2:x",
+        "layers/add1:y"
+      ],
+      [
+        "layers/norm30:x",
+        "layers/add29:y"
+      ],
+      [
+        "layers/norm31:x",
+        "layers/add30:y"
+      ],
+      [
+        "layers/norm32:x",
+        "layers/add31:y"
+      ],
+      [
+        "layers/norm33:x",
+        "layers/add32:y"
+      ],
+      [
+        "layers/norm34:x",
+        "layers/add33:y"
+      ],
+      [
+        "layers/norm35:x",
+        "layers/add34:y"
+      ],
+      [
+        "layers/norm36:x",
+        "layers/add35:y"
+      ],
+      [
+        "layers/norm37:x",
+        "layers/add36:y"
+      ],
+      [
+        "layers/norm38:x",
+        "layers/add37:y"
+      ],
+      [
+        "layers/norm39:x",
+        "layers/add38:y"
+      ],
+      [
+        "layers/norm3:x",
+        "layers/add2:y"
+      ],
+      [
+        "layers/norm40:x",
+        "layers/add39:y"
+      ],
+      [
+        "layers/norm41:x",
+        "layers/add40:y"
+      ],
+      [
+        "layers/norm42:x",
+        "layers/add41:y"
+      ],
+      [
+        "layers/norm43:x",
+        "layers/add42:y"
+      ],
+      [
+        "layers/norm44:x",
+        "layers/add43:y"
+      ],
+      [
+        "layers/norm45:x",
+        "layers/add44:y"
+      ],
+      [
+        "layers/norm46:x",
+        "layers/add45:y"
+      ],
+      [
+        "layers/norm47:x",
+        "layers/add46:y"
+      ],
+      [
+        "layers/norm48:x",
+        "layers/add47:y"
+      ],
+      [
+        "layers/norm49:x",
+        "layers/add48:y"
+      ],
+      [
+        "layers/norm4:x",
+        "layers/add3:y"
+      ],
+      [
+        "layers/norm50:x",
+        "layers/add49:y"
+      ],
+      [
+        "layers/norm51:x",
+        "layers/add50:y"
+      ],
+      [
+        "layers/norm5:x",
+        "layers/add4:y"
+      ],
+      [
+        "layers/norm6:x",
+        "layers/add5:y"
+      ],
+      [
+        "layers/norm7:x",
+        "layers/add6:y"
+      ],
+      [
+        "layers/norm8:x",
+        "layers/add7:y"
+      ],
+      [
+        "layers/norm9:x",
+        "layers/add8:y"
+      ],
+      [
+        "layers:x",
+        "embed:y"
+      ],
+      [
+        "logits:x",
+        "head:y"
+      ]
+    ],
+    "issues": []
+  },
+  "inferExpanded": {
+    "outputs": [
+      [
+        "embed:y",
+        "B T D"
+      ],
+      [
+        "final_norm:y",
+        "B T D"
+      ],
+      [
+        "head:y",
+        "B T V"
+      ],
+      [
+        "layers/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/add0:y",
+        "B T D"
+      ],
+      [
+        "layers/add10:y",
+        "B T D"
+      ],
+      [
+        "layers/add11:y",
+        "B T D"
+      ],
+      [
+        "layers/add12:y",
+        "B T D"
+      ],
+      [
+        "layers/add13:y",
+        "B T D"
+      ],
+      [
+        "layers/add14:y",
+        "B T D"
+      ],
+      [
+        "layers/add15:y",
+        "B T D"
+      ],
+      [
+        "layers/add16:y",
+        "B T D"
+      ],
+      [
+        "layers/add17:y",
+        "B T D"
+      ],
+      [
+        "layers/add18:y",
+        "B T D"
+      ],
+      [
+        "layers/add19:y",
+        "B T D"
+      ],
+      [
+        "layers/add1:y",
+        "B T D"
+      ],
+      [
+        "layers/add20:y",
+        "B T D"
+      ],
+      [
+        "layers/add21:y",
+        "B T D"
+      ],
+      [
+        "layers/add22:y",
+        "B T D"
+      ],
+      [
+        "layers/add23:y",
+        "B T D"
+      ],
+      [
+        "layers/add24:y",
+        "B T D"
+      ],
+      [
+        "layers/add25:y",
+        "B T D"
+      ],
+      [
+        "layers/add26:y",
+        "B T D"
+      ],
+      [
+        "layers/add27:y",
+        "B T D"
+      ],
+      [
+        "layers/add28:y",
+        "B T D"
+      ],
+      [
+        "layers/add29:y",
+        "B T D"
+      ],
+      [
+        "layers/add2:y",
+        "B T D"
+      ],
+      [
+        "layers/add30:y",
+        "B T D"
+      ],
+      [
+        "layers/add31:y",
+        "B T D"
+      ],
+      [
+        "layers/add32:y",
+        "B T D"
+      ],
+      [
+        "layers/add33:y",
+        "B T D"
+      ],
+      [
+        "layers/add34:y",
+        "B T D"
+      ],
+      [
+        "layers/add35:y",
+        "B T D"
+      ],
+      [
+        "layers/add36:y",
+        "B T D"
+      ],
+      [
+        "layers/add37:y",
+        "B T D"
+      ],
+      [
+        "layers/add38:y",
+        "B T D"
+      ],
+      [
+        "layers/add39:y",
+        "B T D"
+      ],
+      [
+        "layers/add3:y",
+        "B T D"
+      ],
+      [
+        "layers/add40:y",
+        "B T D"
+      ],
+      [
+        "layers/add41:y",
+        "B T D"
+      ],
+      [
+        "layers/add42:y",
+        "B T D"
+      ],
+      [
+        "layers/add43:y",
+        "B T D"
+      ],
+      [
+        "layers/add44:y",
+        "B T D"
+      ],
+      [
+        "layers/add45:y",
+        "B T D"
+      ],
+      [
+        "layers/add46:y",
+        "B T D"
+      ],
+      [
+        "layers/add47:y",
+        "B T D"
+      ],
+      [
+        "layers/add48:y",
+        "B T D"
+      ],
+      [
+        "layers/add49:y",
+        "B T D"
+      ],
+      [
+        "layers/add4:y",
+        "B T D"
+      ],
+      [
+        "layers/add50:y",
+        "B T D"
+      ],
+      [
+        "layers/add51:y",
+        "B T D"
+      ],
+      [
+        "layers/add5:y",
+        "B T D"
+      ],
+      [
+        "layers/add6:y",
+        "B T D"
+      ],
+      [
+        "layers/add7:y",
+        "B T D"
+      ],
+      [
+        "layers/add8:y",
+        "B T D"
+      ],
+      [
+        "layers/add9:y",
+        "B T D"
+      ],
+      [
+        "layers/blk0/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk0/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk0/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk0/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk0/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk0/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk0/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk0/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk0/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk0/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk0/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk0/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk0:y",
+        "B T D"
+      ],
+      [
+        "layers/blk1/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk1/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk1/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk1/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk10/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk10/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk10/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk10/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk10:y",
+        "B T D"
+      ],
+      [
+        "layers/blk11/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk11/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk11/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk11/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk11/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk11/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk11/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk11/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk11/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk11/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk11/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk11/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk11:y",
+        "B T D"
+      ],
+      [
+        "layers/blk12/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk12/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk12/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk12/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk12:y",
+        "B T D"
+      ],
+      [
+        "layers/blk13/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk13/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk13/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk13/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk13/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk13/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk13/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk13/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk13/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk13/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk13/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk13/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk13:y",
+        "B T D"
+      ],
+      [
+        "layers/blk14/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk14/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk14/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk14/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk14:y",
+        "B T D"
+      ],
+      [
+        "layers/blk15/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk15/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk15/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk15/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk15/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk15/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk15/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk15/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk15/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk15/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk15/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk15/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk15:y",
+        "B T D"
+      ],
+      [
+        "layers/blk16/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk16/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk16/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk16/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk16:y",
+        "B T D"
+      ],
+      [
+        "layers/blk17/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk17/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk17/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk17/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk17/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk17/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk17/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk17/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk17/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk17/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk17/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk17/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk17:y",
+        "B T D"
+      ],
+      [
+        "layers/blk18/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk18/attn:y",
+        "B H T dh"
+      ],
+      [
+        "layers/blk18/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk18/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk18/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk18/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk18/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "layers/blk18/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk18/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk18/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "layers/blk18/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk18/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk18:y",
+        "B T D"
+      ],
+      [
+        "layers/blk19/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk19/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk19/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk19/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk19:y",
+        "B T D"
+      ],
+      [
+        "layers/blk1:y",
+        "B T D"
+      ],
+      [
+        "layers/blk2/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk2/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk2/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk2/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk2/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk2/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk2/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk2/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk2/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk2/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk2/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk2/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk20/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk20/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk20/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk20/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk20/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk20/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk20/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk20/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk20/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk20/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk20/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk20/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk20:y",
+        "B T D"
+      ],
+      [
+        "layers/blk21/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk21/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk21/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk21/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk21:y",
+        "B T D"
+      ],
+      [
+        "layers/blk22/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk22/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk22/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk22/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk22/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk22/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk22/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk22/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk22/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk22/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk22/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk22/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk22:y",
+        "B T D"
+      ],
+      [
+        "layers/blk23/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk23/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk23/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk23/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk23:y",
+        "B T D"
+      ],
+      [
+        "layers/blk24/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk24/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk24/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk24/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk24/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk24/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk24/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk24/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk24/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk24/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk24/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk24/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk24:y",
+        "B T D"
+      ],
+      [
+        "layers/blk25/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk25/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk25/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk25/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk25:y",
+        "B T D"
+      ],
+      [
+        "layers/blk26/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk26/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk26/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk26/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk26/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk26/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk26/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk26/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk26/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk26/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk26/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk26/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk26:y",
+        "B T D"
+      ],
+      [
+        "layers/blk27/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk27/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk27/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk27/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk27:y",
+        "B T D"
+      ],
+      [
+        "layers/blk28/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk28/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk28/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk28/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk28/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk28/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk28/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk28/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk28/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk28/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk28/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk28/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk28:y",
+        "B T D"
+      ],
+      [
+        "layers/blk29/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk29/attn:y",
+        "B H T dh"
+      ],
+      [
+        "layers/blk29/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk29/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk29/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk29/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk29/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "layers/blk29/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk29/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk29/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "layers/blk29/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk29/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk29:y",
+        "B T D"
+      ],
+      [
+        "layers/blk2:y",
+        "B T D"
+      ],
+      [
+        "layers/blk3/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk3/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk3/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk3/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk30/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk30/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk30/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk30/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk30:y",
+        "B T D"
+      ],
+      [
+        "layers/blk31/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk31/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk31/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk31/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk31/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk31/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk31/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk31/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk31/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk31/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk31/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk31/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk31:y",
+        "B T D"
+      ],
+      [
+        "layers/blk32/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk32/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk32/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk32/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk32:y",
+        "B T D"
+      ],
+      [
+        "layers/blk33/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk33/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk33/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk33/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk33/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk33/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk33/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk33/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk33/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk33/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk33/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk33/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk33:y",
+        "B T D"
+      ],
+      [
+        "layers/blk34/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk34/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk34/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk34/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk34:y",
+        "B T D"
+      ],
+      [
+        "layers/blk35/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk35/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk35/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk35/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk35/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk35/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk35/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk35/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk35/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk35/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk35/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk35/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk35:y",
+        "B T D"
+      ],
+      [
+        "layers/blk36/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk36/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk36/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk36/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk36:y",
+        "B T D"
+      ],
+      [
+        "layers/blk37/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk37/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk37/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk37/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk37/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk37/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk37/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk37/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk37/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk37/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk37/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk37/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk37:y",
+        "B T D"
+      ],
+      [
+        "layers/blk38/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk38/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk38/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk38/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk38:y",
+        "B T D"
+      ],
+      [
+        "layers/blk39/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk39/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk39/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk39/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk39/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk39/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk39/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk39/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk39/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk39/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk39/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk39/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk39:y",
+        "B T D"
+      ],
+      [
+        "layers/blk3:y",
+        "B T D"
+      ],
+      [
+        "layers/blk4/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk4/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk4/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk4/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk4/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk4/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk4/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk4/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk4/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk4/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk4/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk4/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk40/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk40/attn:y",
+        "B H T dh"
+      ],
+      [
+        "layers/blk40/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk40/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk40/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk40/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk40/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "layers/blk40/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk40/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk40/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "layers/blk40/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk40/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk40:y",
+        "B T D"
+      ],
+      [
+        "layers/blk41/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk41/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk41/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk41/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk41:y",
+        "B T D"
+      ],
+      [
+        "layers/blk42/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk42/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk42/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk42/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk42/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk42/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk42/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk42/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk42/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk42/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk42/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk42/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk42:y",
+        "B T D"
+      ],
+      [
+        "layers/blk43/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk43/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk43/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk43/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk43:y",
+        "B T D"
+      ],
+      [
+        "layers/blk44/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk44/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk44/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk44/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk44/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk44/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk44/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk44/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk44/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk44/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk44/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk44/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk44:y",
+        "B T D"
+      ],
+      [
+        "layers/blk45/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk45/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk45/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk45/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk45:y",
+        "B T D"
+      ],
+      [
+        "layers/blk46/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk46/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk46/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk46/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk46/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk46/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk46/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk46/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk46/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk46/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk46/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk46/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk46:y",
+        "B T D"
+      ],
+      [
+        "layers/blk47/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk47/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk47/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk47/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk47:y",
+        "B T D"
+      ],
+      [
+        "layers/blk48/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk48/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk48/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk48/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk48/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk48/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk48/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk48/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk48/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk48/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk48/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk48/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk48:y",
+        "B T D"
+      ],
+      [
+        "layers/blk49/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk49/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk49/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk49/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk49:y",
+        "B T D"
+      ],
+      [
+        "layers/blk4:y",
+        "B T D"
+      ],
+      [
+        "layers/blk5/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk5/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk5/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk5/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk50/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk50/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk50/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk50/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk50/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk50/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk50/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk50/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk50/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk50/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk50/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk50/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk50:y",
+        "B T D"
+      ],
+      [
+        "layers/blk51/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk51/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk51/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk51/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk51:y",
+        "B T D"
+      ],
+      [
+        "layers/blk5:y",
+        "B T D"
+      ],
+      [
+        "layers/blk6/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk6/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk6/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk6/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk6/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk6/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk6/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk6/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk6/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk6/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk6/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk6/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk6:y",
+        "B T D"
+      ],
+      [
+        "layers/blk7/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk7/attn:y",
+        "B H T dh"
+      ],
+      [
+        "layers/blk7/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk7/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk7/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk7/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk7/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "layers/blk7/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk7/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk7/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "layers/blk7/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk7/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk7:y",
+        "B T D"
+      ],
+      [
+        "layers/blk8/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk8/act:y",
+        "B T F"
+      ],
+      [
+        "layers/blk8/down:y",
+        "B T D"
+      ],
+      [
+        "layers/blk8/up:y",
+        "B T F"
+      ],
+      [
+        "layers/blk8:y",
+        "B T D"
+      ],
+      [
+        "layers/blk9/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/blk9/conv:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk9/conv_act:y",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk9/gate:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk9/gate_act:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk9/in_proj:y",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk9/norm:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk9/out_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/blk9/scan:y",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk9/split:y0",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk9/split:y1",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk9/split:y2",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk9:y",
+        "B T D"
+      ],
+      [
+        "layers/norm0:y",
+        "B T D"
+      ],
+      [
+        "layers/norm10:y",
+        "B T D"
+      ],
+      [
+        "layers/norm11:y",
+        "B T D"
+      ],
+      [
+        "layers/norm12:y",
+        "B T D"
+      ],
+      [
+        "layers/norm13:y",
+        "B T D"
+      ],
+      [
+        "layers/norm14:y",
+        "B T D"
+      ],
+      [
+        "layers/norm15:y",
+        "B T D"
+      ],
+      [
+        "layers/norm16:y",
+        "B T D"
+      ],
+      [
+        "layers/norm17:y",
+        "B T D"
+      ],
+      [
+        "layers/norm18:y",
+        "B T D"
+      ],
+      [
+        "layers/norm19:y",
+        "B T D"
+      ],
+      [
+        "layers/norm1:y",
+        "B T D"
+      ],
+      [
+        "layers/norm20:y",
+        "B T D"
+      ],
+      [
+        "layers/norm21:y",
+        "B T D"
+      ],
+      [
+        "layers/norm22:y",
+        "B T D"
+      ],
+      [
+        "layers/norm23:y",
+        "B T D"
+      ],
+      [
+        "layers/norm24:y",
+        "B T D"
+      ],
+      [
+        "layers/norm25:y",
+        "B T D"
+      ],
+      [
+        "layers/norm26:y",
+        "B T D"
+      ],
+      [
+        "layers/norm27:y",
+        "B T D"
+      ],
+      [
+        "layers/norm28:y",
+        "B T D"
+      ],
+      [
+        "layers/norm29:y",
+        "B T D"
+      ],
+      [
+        "layers/norm2:y",
+        "B T D"
+      ],
+      [
+        "layers/norm30:y",
+        "B T D"
+      ],
+      [
+        "layers/norm31:y",
+        "B T D"
+      ],
+      [
+        "layers/norm32:y",
+        "B T D"
+      ],
+      [
+        "layers/norm33:y",
+        "B T D"
+      ],
+      [
+        "layers/norm34:y",
+        "B T D"
+      ],
+      [
+        "layers/norm35:y",
+        "B T D"
+      ],
+      [
+        "layers/norm36:y",
+        "B T D"
+      ],
+      [
+        "layers/norm37:y",
+        "B T D"
+      ],
+      [
+        "layers/norm38:y",
+        "B T D"
+      ],
+      [
+        "layers/norm39:y",
+        "B T D"
+      ],
+      [
+        "layers/norm3:y",
+        "B T D"
+      ],
+      [
+        "layers/norm40:y",
+        "B T D"
+      ],
+      [
+        "layers/norm41:y",
+        "B T D"
+      ],
+      [
+        "layers/norm42:y",
+        "B T D"
+      ],
+      [
+        "layers/norm43:y",
+        "B T D"
+      ],
+      [
+        "layers/norm44:y",
+        "B T D"
+      ],
+      [
+        "layers/norm45:y",
+        "B T D"
+      ],
+      [
+        "layers/norm46:y",
+        "B T D"
+      ],
+      [
+        "layers/norm47:y",
+        "B T D"
+      ],
+      [
+        "layers/norm48:y",
+        "B T D"
+      ],
+      [
+        "layers/norm49:y",
+        "B T D"
+      ],
+      [
+        "layers/norm4:y",
+        "B T D"
+      ],
+      [
+        "layers/norm50:y",
+        "B T D"
+      ],
+      [
+        "layers/norm51:y",
+        "B T D"
+      ],
+      [
+        "layers/norm5:y",
+        "B T D"
+      ],
+      [
+        "layers/norm6:y",
+        "B T D"
+      ],
+      [
+        "layers/norm7:y",
+        "B T D"
+      ],
+      [
+        "layers/norm8:y",
+        "B T D"
+      ],
+      [
+        "layers/norm9:y",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "tokens:x",
+        "B T"
+      ]
+    ],
+    "inputs": [
+      [
+        "embed:ids",
+        "B T"
+      ],
+      [
+        "final_norm:x",
+        "B T D"
+      ],
+      [
+        "head:x",
+        "B T D"
+      ],
+      [
+        "layers/_out:x",
+        "B T D"
+      ],
+      [
+        "layers/add0:a",
+        "B T D"
+      ],
+      [
+        "layers/add0:b",
+        "B T D"
+      ],
+      [
+        "layers/add10:a",
+        "B T D"
+      ],
+      [
+        "layers/add10:b",
+        "B T D"
+      ],
+      [
+        "layers/add11:a",
+        "B T D"
+      ],
+      [
+        "layers/add11:b",
+        "B T D"
+      ],
+      [
+        "layers/add12:a",
+        "B T D"
+      ],
+      [
+        "layers/add12:b",
+        "B T D"
+      ],
+      [
+        "layers/add13:a",
+        "B T D"
+      ],
+      [
+        "layers/add13:b",
+        "B T D"
+      ],
+      [
+        "layers/add14:a",
+        "B T D"
+      ],
+      [
+        "layers/add14:b",
+        "B T D"
+      ],
+      [
+        "layers/add15:a",
+        "B T D"
+      ],
+      [
+        "layers/add15:b",
+        "B T D"
+      ],
+      [
+        "layers/add16:a",
+        "B T D"
+      ],
+      [
+        "layers/add16:b",
+        "B T D"
+      ],
+      [
+        "layers/add17:a",
+        "B T D"
+      ],
+      [
+        "layers/add17:b",
+        "B T D"
+      ],
+      [
+        "layers/add18:a",
+        "B T D"
+      ],
+      [
+        "layers/add18:b",
+        "B T D"
+      ],
+      [
+        "layers/add19:a",
+        "B T D"
+      ],
+      [
+        "layers/add19:b",
+        "B T D"
+      ],
+      [
+        "layers/add1:a",
+        "B T D"
+      ],
+      [
+        "layers/add1:b",
+        "B T D"
+      ],
+      [
+        "layers/add20:a",
+        "B T D"
+      ],
+      [
+        "layers/add20:b",
+        "B T D"
+      ],
+      [
+        "layers/add21:a",
+        "B T D"
+      ],
+      [
+        "layers/add21:b",
+        "B T D"
+      ],
+      [
+        "layers/add22:a",
+        "B T D"
+      ],
+      [
+        "layers/add22:b",
+        "B T D"
+      ],
+      [
+        "layers/add23:a",
+        "B T D"
+      ],
+      [
+        "layers/add23:b",
+        "B T D"
+      ],
+      [
+        "layers/add24:a",
+        "B T D"
+      ],
+      [
+        "layers/add24:b",
+        "B T D"
+      ],
+      [
+        "layers/add25:a",
+        "B T D"
+      ],
+      [
+        "layers/add25:b",
+        "B T D"
+      ],
+      [
+        "layers/add26:a",
+        "B T D"
+      ],
+      [
+        "layers/add26:b",
+        "B T D"
+      ],
+      [
+        "layers/add27:a",
+        "B T D"
+      ],
+      [
+        "layers/add27:b",
+        "B T D"
+      ],
+      [
+        "layers/add28:a",
+        "B T D"
+      ],
+      [
+        "layers/add28:b",
+        "B T D"
+      ],
+      [
+        "layers/add29:a",
+        "B T D"
+      ],
+      [
+        "layers/add29:b",
+        "B T D"
+      ],
+      [
+        "layers/add2:a",
+        "B T D"
+      ],
+      [
+        "layers/add2:b",
+        "B T D"
+      ],
+      [
+        "layers/add30:a",
+        "B T D"
+      ],
+      [
+        "layers/add30:b",
+        "B T D"
+      ],
+      [
+        "layers/add31:a",
+        "B T D"
+      ],
+      [
+        "layers/add31:b",
+        "B T D"
+      ],
+      [
+        "layers/add32:a",
+        "B T D"
+      ],
+      [
+        "layers/add32:b",
+        "B T D"
+      ],
+      [
+        "layers/add33:a",
+        "B T D"
+      ],
+      [
+        "layers/add33:b",
+        "B T D"
+      ],
+      [
+        "layers/add34:a",
+        "B T D"
+      ],
+      [
+        "layers/add34:b",
+        "B T D"
+      ],
+      [
+        "layers/add35:a",
+        "B T D"
+      ],
+      [
+        "layers/add35:b",
+        "B T D"
+      ],
+      [
+        "layers/add36:a",
+        "B T D"
+      ],
+      [
+        "layers/add36:b",
+        "B T D"
+      ],
+      [
+        "layers/add37:a",
+        "B T D"
+      ],
+      [
+        "layers/add37:b",
+        "B T D"
+      ],
+      [
+        "layers/add38:a",
+        "B T D"
+      ],
+      [
+        "layers/add38:b",
+        "B T D"
+      ],
+      [
+        "layers/add39:a",
+        "B T D"
+      ],
+      [
+        "layers/add39:b",
+        "B T D"
+      ],
+      [
+        "layers/add3:a",
+        "B T D"
+      ],
+      [
+        "layers/add3:b",
+        "B T D"
+      ],
+      [
+        "layers/add40:a",
+        "B T D"
+      ],
+      [
+        "layers/add40:b",
+        "B T D"
+      ],
+      [
+        "layers/add41:a",
+        "B T D"
+      ],
+      [
+        "layers/add41:b",
+        "B T D"
+      ],
+      [
+        "layers/add42:a",
+        "B T D"
+      ],
+      [
+        "layers/add42:b",
+        "B T D"
+      ],
+      [
+        "layers/add43:a",
+        "B T D"
+      ],
+      [
+        "layers/add43:b",
+        "B T D"
+      ],
+      [
+        "layers/add44:a",
+        "B T D"
+      ],
+      [
+        "layers/add44:b",
+        "B T D"
+      ],
+      [
+        "layers/add45:a",
+        "B T D"
+      ],
+      [
+        "layers/add45:b",
+        "B T D"
+      ],
+      [
+        "layers/add46:a",
+        "B T D"
+      ],
+      [
+        "layers/add46:b",
+        "B T D"
+      ],
+      [
+        "layers/add47:a",
+        "B T D"
+      ],
+      [
+        "layers/add47:b",
+        "B T D"
+      ],
+      [
+        "layers/add48:a",
+        "B T D"
+      ],
+      [
+        "layers/add48:b",
+        "B T D"
+      ],
+      [
+        "layers/add49:a",
+        "B T D"
+      ],
+      [
+        "layers/add49:b",
+        "B T D"
+      ],
+      [
+        "layers/add4:a",
+        "B T D"
+      ],
+      [
+        "layers/add4:b",
+        "B T D"
+      ],
+      [
+        "layers/add50:a",
+        "B T D"
+      ],
+      [
+        "layers/add50:b",
+        "B T D"
+      ],
+      [
+        "layers/add51:a",
+        "B T D"
+      ],
+      [
+        "layers/add51:b",
+        "B T D"
+      ],
+      [
+        "layers/add5:a",
+        "B T D"
+      ],
+      [
+        "layers/add5:b",
+        "B T D"
+      ],
+      [
+        "layers/add6:a",
+        "B T D"
+      ],
+      [
+        "layers/add6:b",
+        "B T D"
+      ],
+      [
+        "layers/add7:a",
+        "B T D"
+      ],
+      [
+        "layers/add7:b",
+        "B T D"
+      ],
+      [
+        "layers/add8:a",
+        "B T D"
+      ],
+      [
+        "layers/add8:b",
+        "B T D"
+      ],
+      [
+        "layers/add9:a",
+        "B T D"
+      ],
+      [
+        "layers/add9:b",
+        "B T D"
+      ],
+      [
+        "layers/blk0/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk0/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk0/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk0/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk0/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk0/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk0/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk0/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk0/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk0/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk0/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk0/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk0:x",
+        "B T D"
+      ],
+      [
+        "layers/blk1/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk1/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk1/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk1/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk10/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk10/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk10/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk10/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk10:x",
+        "B T D"
+      ],
+      [
+        "layers/blk11/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk11/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk11/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk11/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk11/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk11/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk11/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk11/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk11/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk11/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk11/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk11/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk11:x",
+        "B T D"
+      ],
+      [
+        "layers/blk12/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk12/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk12/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk12/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk12:x",
+        "B T D"
+      ],
+      [
+        "layers/blk13/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk13/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk13/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk13/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk13/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk13/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk13/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk13/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk13/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk13/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk13/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk13/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk13:x",
+        "B T D"
+      ],
+      [
+        "layers/blk14/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk14/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk14/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk14/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk14:x",
+        "B T D"
+      ],
+      [
+        "layers/blk15/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk15/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk15/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk15/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk15/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk15/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk15/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk15/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk15/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk15/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk15/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk15/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk15:x",
+        "B T D"
+      ],
+      [
+        "layers/blk16/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk16/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk16/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk16/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk16:x",
+        "B T D"
+      ],
+      [
+        "layers/blk17/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk17/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk17/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk17/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk17/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk17/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk17/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk17/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk17/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk17/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk17/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk17/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk17:x",
+        "B T D"
+      ],
+      [
+        "layers/blk18/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk18/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk18/attn:q",
+        "B H T dh"
+      ],
+      [
+        "layers/blk18/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk18/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk18/k_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk18/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "layers/blk18/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk18/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk18/q_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk18/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk18/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "layers/blk18/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk18/v_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk18:x",
+        "B T D"
+      ],
+      [
+        "layers/blk19/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk19/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk19/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk19/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk19:x",
+        "B T D"
+      ],
+      [
+        "layers/blk1:x",
+        "B T D"
+      ],
+      [
+        "layers/blk2/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk2/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk2/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk2/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk2/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk2/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk2/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk2/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk2/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk2/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk2/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk2/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk20/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk20/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk20/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk20/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk20/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk20/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk20/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk20/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk20/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk20/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk20/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk20/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk20:x",
+        "B T D"
+      ],
+      [
+        "layers/blk21/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk21/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk21/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk21/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk21:x",
+        "B T D"
+      ],
+      [
+        "layers/blk22/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk22/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk22/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk22/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk22/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk22/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk22/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk22/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk22/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk22/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk22/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk22/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk22:x",
+        "B T D"
+      ],
+      [
+        "layers/blk23/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk23/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk23/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk23/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk23:x",
+        "B T D"
+      ],
+      [
+        "layers/blk24/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk24/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk24/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk24/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk24/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk24/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk24/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk24/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk24/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk24/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk24/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk24/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk24:x",
+        "B T D"
+      ],
+      [
+        "layers/blk25/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk25/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk25/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk25/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk25:x",
+        "B T D"
+      ],
+      [
+        "layers/blk26/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk26/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk26/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk26/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk26/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk26/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk26/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk26/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk26/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk26/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk26/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk26/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk26:x",
+        "B T D"
+      ],
+      [
+        "layers/blk27/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk27/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk27/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk27/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk27:x",
+        "B T D"
+      ],
+      [
+        "layers/blk28/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk28/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk28/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk28/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk28/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk28/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk28/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk28/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk28/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk28/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk28/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk28/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk28:x",
+        "B T D"
+      ],
+      [
+        "layers/blk29/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk29/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk29/attn:q",
+        "B H T dh"
+      ],
+      [
+        "layers/blk29/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk29/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk29/k_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk29/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "layers/blk29/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk29/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk29/q_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk29/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk29/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "layers/blk29/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk29/v_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk29:x",
+        "B T D"
+      ],
+      [
+        "layers/blk2:x",
+        "B T D"
+      ],
+      [
+        "layers/blk3/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk3/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk3/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk3/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk30/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk30/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk30/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk30/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk30:x",
+        "B T D"
+      ],
+      [
+        "layers/blk31/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk31/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk31/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk31/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk31/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk31/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk31/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk31/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk31/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk31/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk31/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk31/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk31:x",
+        "B T D"
+      ],
+      [
+        "layers/blk32/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk32/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk32/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk32/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk32:x",
+        "B T D"
+      ],
+      [
+        "layers/blk33/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk33/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk33/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk33/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk33/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk33/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk33/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk33/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk33/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk33/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk33/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk33/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk33:x",
+        "B T D"
+      ],
+      [
+        "layers/blk34/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk34/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk34/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk34/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk34:x",
+        "B T D"
+      ],
+      [
+        "layers/blk35/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk35/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk35/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk35/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk35/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk35/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk35/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk35/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk35/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk35/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk35/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk35/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk35:x",
+        "B T D"
+      ],
+      [
+        "layers/blk36/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk36/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk36/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk36/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk36:x",
+        "B T D"
+      ],
+      [
+        "layers/blk37/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk37/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk37/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk37/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk37/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk37/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk37/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk37/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk37/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk37/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk37/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk37/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk37:x",
+        "B T D"
+      ],
+      [
+        "layers/blk38/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk38/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk38/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk38/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk38:x",
+        "B T D"
+      ],
+      [
+        "layers/blk39/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk39/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk39/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk39/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk39/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk39/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk39/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk39/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk39/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk39/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk39/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk39/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk39:x",
+        "B T D"
+      ],
+      [
+        "layers/blk3:x",
+        "B T D"
+      ],
+      [
+        "layers/blk4/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk4/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk4/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk4/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk4/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk4/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk4/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk4/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk4/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk4/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk4/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk4/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk40/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk40/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk40/attn:q",
+        "B H T dh"
+      ],
+      [
+        "layers/blk40/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk40/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk40/k_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk40/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "layers/blk40/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk40/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk40/q_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk40/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk40/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "layers/blk40/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk40/v_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk40:x",
+        "B T D"
+      ],
+      [
+        "layers/blk41/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk41/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk41/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk41/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk41:x",
+        "B T D"
+      ],
+      [
+        "layers/blk42/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk42/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk42/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk42/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk42/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk42/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk42/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk42/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk42/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk42/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk42/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk42/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk42:x",
+        "B T D"
+      ],
+      [
+        "layers/blk43/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk43/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk43/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk43/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk43:x",
+        "B T D"
+      ],
+      [
+        "layers/blk44/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk44/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk44/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk44/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk44/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk44/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk44/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk44/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk44/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk44/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk44/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk44/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk44:x",
+        "B T D"
+      ],
+      [
+        "layers/blk45/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk45/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk45/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk45/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk45:x",
+        "B T D"
+      ],
+      [
+        "layers/blk46/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk46/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk46/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk46/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk46/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk46/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk46/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk46/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk46/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk46/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk46/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk46/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk46:x",
+        "B T D"
+      ],
+      [
+        "layers/blk47/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk47/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk47/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk47/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk47:x",
+        "B T D"
+      ],
+      [
+        "layers/blk48/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk48/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk48/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk48/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk48/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk48/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk48/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk48/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk48/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk48/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk48/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk48/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk48:x",
+        "B T D"
+      ],
+      [
+        "layers/blk49/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk49/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk49/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk49/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk49:x",
+        "B T D"
+      ],
+      [
+        "layers/blk4:x",
+        "B T D"
+      ],
+      [
+        "layers/blk5/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk5/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk5/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk5/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk50/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk50/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk50/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk50/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk50/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk50/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk50/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk50/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk50/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk50/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk50/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk50/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk50:x",
+        "B T D"
+      ],
+      [
+        "layers/blk51/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk51/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk51/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk51/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk51:x",
+        "B T D"
+      ],
+      [
+        "layers/blk5:x",
+        "B T D"
+      ],
+      [
+        "layers/blk6/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk6/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk6/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk6/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk6/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk6/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk6/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk6/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk6/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk6/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk6/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk6/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk6:x",
+        "B T D"
+      ],
+      [
+        "layers/blk7/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk7/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk7/attn:q",
+        "B H T dh"
+      ],
+      [
+        "layers/blk7/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk7/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk7/k_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk7/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "layers/blk7/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk7/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/blk7/q_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk7/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/blk7/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "layers/blk7/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/blk7/v_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk7:x",
+        "B T D"
+      ],
+      [
+        "layers/blk8/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk8/act:x",
+        "B T F"
+      ],
+      [
+        "layers/blk8/down:x",
+        "B T F"
+      ],
+      [
+        "layers/blk8/up:x",
+        "B T D"
+      ],
+      [
+        "layers/blk8:x",
+        "B T D"
+      ],
+      [
+        "layers/blk9/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/blk9/conv:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk9/conv_act:x",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk9/gate:a",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk9/gate:b",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk9/gate_act:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk9/in_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/blk9/norm:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk9/out_proj:x",
+        "B T 2*D"
+      ],
+      [
+        "layers/blk9/scan:dt",
+        "B T 1/32*D"
+      ],
+      [
+        "layers/blk9/scan:xbc",
+        "B T 2*D + 2048"
+      ],
+      [
+        "layers/blk9/split:x",
+        "B T 129/32*D + 2048"
+      ],
+      [
+        "layers/blk9:x",
+        "B T D"
+      ],
+      [
+        "layers/norm0:x",
+        "B T D"
+      ],
+      [
+        "layers/norm10:x",
+        "B T D"
+      ],
+      [
+        "layers/norm11:x",
+        "B T D"
+      ],
+      [
+        "layers/norm12:x",
+        "B T D"
+      ],
+      [
+        "layers/norm13:x",
+        "B T D"
+      ],
+      [
+        "layers/norm14:x",
+        "B T D"
+      ],
+      [
+        "layers/norm15:x",
+        "B T D"
+      ],
+      [
+        "layers/norm16:x",
+        "B T D"
+      ],
+      [
+        "layers/norm17:x",
+        "B T D"
+      ],
+      [
+        "layers/norm18:x",
+        "B T D"
+      ],
+      [
+        "layers/norm19:x",
+        "B T D"
+      ],
+      [
+        "layers/norm1:x",
+        "B T D"
+      ],
+      [
+        "layers/norm20:x",
+        "B T D"
+      ],
+      [
+        "layers/norm21:x",
+        "B T D"
+      ],
+      [
+        "layers/norm22:x",
+        "B T D"
+      ],
+      [
+        "layers/norm23:x",
+        "B T D"
+      ],
+      [
+        "layers/norm24:x",
+        "B T D"
+      ],
+      [
+        "layers/norm25:x",
+        "B T D"
+      ],
+      [
+        "layers/norm26:x",
+        "B T D"
+      ],
+      [
+        "layers/norm27:x",
+        "B T D"
+      ],
+      [
+        "layers/norm28:x",
+        "B T D"
+      ],
+      [
+        "layers/norm29:x",
+        "B T D"
+      ],
+      [
+        "layers/norm2:x",
+        "B T D"
+      ],
+      [
+        "layers/norm30:x",
+        "B T D"
+      ],
+      [
+        "layers/norm31:x",
+        "B T D"
+      ],
+      [
+        "layers/norm32:x",
+        "B T D"
+      ],
+      [
+        "layers/norm33:x",
+        "B T D"
+      ],
+      [
+        "layers/norm34:x",
+        "B T D"
+      ],
+      [
+        "layers/norm35:x",
+        "B T D"
+      ],
+      [
+        "layers/norm36:x",
+        "B T D"
+      ],
+      [
+        "layers/norm37:x",
+        "B T D"
+      ],
+      [
+        "layers/norm38:x",
+        "B T D"
+      ],
+      [
+        "layers/norm39:x",
+        "B T D"
+      ],
+      [
+        "layers/norm3:x",
+        "B T D"
+      ],
+      [
+        "layers/norm40:x",
+        "B T D"
+      ],
+      [
+        "layers/norm41:x",
+        "B T D"
+      ],
+      [
+        "layers/norm42:x",
+        "B T D"
+      ],
+      [
+        "layers/norm43:x",
+        "B T D"
+      ],
+      [
+        "layers/norm44:x",
+        "B T D"
+      ],
+      [
+        "layers/norm45:x",
+        "B T D"
+      ],
+      [
+        "layers/norm46:x",
+        "B T D"
+      ],
+      [
+        "layers/norm47:x",
+        "B T D"
+      ],
+      [
+        "layers/norm48:x",
+        "B T D"
+      ],
+      [
+        "layers/norm49:x",
+        "B T D"
+      ],
+      [
+        "layers/norm4:x",
+        "B T D"
+      ],
+      [
+        "layers/norm50:x",
+        "B T D"
+      ],
+      [
+        "layers/norm51:x",
+        "B T D"
+      ],
+      [
+        "layers/norm5:x",
+        "B T D"
+      ],
+      [
+        "layers/norm6:x",
+        "B T D"
+      ],
+      [
+        "layers/norm7:x",
+        "B T D"
+      ],
+      [
+        "layers/norm8:x",
+        "B T D"
+      ],
+      [
+        "layers/norm9:x",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "logits:x",
+        "B T V"
+      ]
+    ],
+    "producerOf": [
+      [
+        "embed:ids",
+        "tokens:x"
+      ],
+      [
+        "final_norm:x",
+        "layers:x"
+      ],
+      [
+        "head:x",
+        "final_norm:y"
+      ],
+      [
+        "layers/_out:x",
+        "layers/add51:y"
+      ],
+      [
+        "layers/add0:a",
+        "layers/blk0:y"
+      ],
+      [
+        "layers/add0:b",
+        "layers/_in:x"
+      ],
+      [
+        "layers/add10:a",
+        "layers/blk10:y"
+      ],
+      [
+        "layers/add10:b",
+        "layers/add9:y"
+      ],
+      [
+        "layers/add11:a",
+        "layers/blk11:y"
+      ],
+      [
+        "layers/add11:b",
+        "layers/add10:y"
+      ],
+      [
+        "layers/add12:a",
+        "layers/blk12:y"
+      ],
+      [
+        "layers/add12:b",
+        "layers/add11:y"
+      ],
+      [
+        "layers/add13:a",
+        "layers/blk13:y"
+      ],
+      [
+        "layers/add13:b",
+        "layers/add12:y"
+      ],
+      [
+        "layers/add14:a",
+        "layers/blk14:y"
+      ],
+      [
+        "layers/add14:b",
+        "layers/add13:y"
+      ],
+      [
+        "layers/add15:a",
+        "layers/blk15:y"
+      ],
+      [
+        "layers/add15:b",
+        "layers/add14:y"
+      ],
+      [
+        "layers/add16:a",
+        "layers/blk16:y"
+      ],
+      [
+        "layers/add16:b",
+        "layers/add15:y"
+      ],
+      [
+        "layers/add17:a",
+        "layers/blk17:y"
+      ],
+      [
+        "layers/add17:b",
+        "layers/add16:y"
+      ],
+      [
+        "layers/add18:a",
+        "layers/blk18:y"
+      ],
+      [
+        "layers/add18:b",
+        "layers/add17:y"
+      ],
+      [
+        "layers/add19:a",
+        "layers/blk19:y"
+      ],
+      [
+        "layers/add19:b",
+        "layers/add18:y"
+      ],
+      [
+        "layers/add1:a",
+        "layers/blk1:y"
+      ],
+      [
+        "layers/add1:b",
+        "layers/add0:y"
+      ],
+      [
+        "layers/add20:a",
+        "layers/blk20:y"
+      ],
+      [
+        "layers/add20:b",
+        "layers/add19:y"
+      ],
+      [
+        "layers/add21:a",
+        "layers/blk21:y"
+      ],
+      [
+        "layers/add21:b",
+        "layers/add20:y"
+      ],
+      [
+        "layers/add22:a",
+        "layers/blk22:y"
+      ],
+      [
+        "layers/add22:b",
+        "layers/add21:y"
+      ],
+      [
+        "layers/add23:a",
+        "layers/blk23:y"
+      ],
+      [
+        "layers/add23:b",
+        "layers/add22:y"
+      ],
+      [
+        "layers/add24:a",
+        "layers/blk24:y"
+      ],
+      [
+        "layers/add24:b",
+        "layers/add23:y"
+      ],
+      [
+        "layers/add25:a",
+        "layers/blk25:y"
+      ],
+      [
+        "layers/add25:b",
+        "layers/add24:y"
+      ],
+      [
+        "layers/add26:a",
+        "layers/blk26:y"
+      ],
+      [
+        "layers/add26:b",
+        "layers/add25:y"
+      ],
+      [
+        "layers/add27:a",
+        "layers/blk27:y"
+      ],
+      [
+        "layers/add27:b",
+        "layers/add26:y"
+      ],
+      [
+        "layers/add28:a",
+        "layers/blk28:y"
+      ],
+      [
+        "layers/add28:b",
+        "layers/add27:y"
+      ],
+      [
+        "layers/add29:a",
+        "layers/blk29:y"
+      ],
+      [
+        "layers/add29:b",
+        "layers/add28:y"
+      ],
+      [
+        "layers/add2:a",
+        "layers/blk2:y"
+      ],
+      [
+        "layers/add2:b",
+        "layers/add1:y"
+      ],
+      [
+        "layers/add30:a",
+        "layers/blk30:y"
+      ],
+      [
+        "layers/add30:b",
+        "layers/add29:y"
+      ],
+      [
+        "layers/add31:a",
+        "layers/blk31:y"
+      ],
+      [
+        "layers/add31:b",
+        "layers/add30:y"
+      ],
+      [
+        "layers/add32:a",
+        "layers/blk32:y"
+      ],
+      [
+        "layers/add32:b",
+        "layers/add31:y"
+      ],
+      [
+        "layers/add33:a",
+        "layers/blk33:y"
+      ],
+      [
+        "layers/add33:b",
+        "layers/add32:y"
+      ],
+      [
+        "layers/add34:a",
+        "layers/blk34:y"
+      ],
+      [
+        "layers/add34:b",
+        "layers/add33:y"
+      ],
+      [
+        "layers/add35:a",
+        "layers/blk35:y"
+      ],
+      [
+        "layers/add35:b",
+        "layers/add34:y"
+      ],
+      [
+        "layers/add36:a",
+        "layers/blk36:y"
+      ],
+      [
+        "layers/add36:b",
+        "layers/add35:y"
+      ],
+      [
+        "layers/add37:a",
+        "layers/blk37:y"
+      ],
+      [
+        "layers/add37:b",
+        "layers/add36:y"
+      ],
+      [
+        "layers/add38:a",
+        "layers/blk38:y"
+      ],
+      [
+        "layers/add38:b",
+        "layers/add37:y"
+      ],
+      [
+        "layers/add39:a",
+        "layers/blk39:y"
+      ],
+      [
+        "layers/add39:b",
+        "layers/add38:y"
+      ],
+      [
+        "layers/add3:a",
+        "layers/blk3:y"
+      ],
+      [
+        "layers/add3:b",
+        "layers/add2:y"
+      ],
+      [
+        "layers/add40:a",
+        "layers/blk40:y"
+      ],
+      [
+        "layers/add40:b",
+        "layers/add39:y"
+      ],
+      [
+        "layers/add41:a",
+        "layers/blk41:y"
+      ],
+      [
+        "layers/add41:b",
+        "layers/add40:y"
+      ],
+      [
+        "layers/add42:a",
+        "layers/blk42:y"
+      ],
+      [
+        "layers/add42:b",
+        "layers/add41:y"
+      ],
+      [
+        "layers/add43:a",
+        "layers/blk43:y"
+      ],
+      [
+        "layers/add43:b",
+        "layers/add42:y"
+      ],
+      [
+        "layers/add44:a",
+        "layers/blk44:y"
+      ],
+      [
+        "layers/add44:b",
+        "layers/add43:y"
+      ],
+      [
+        "layers/add45:a",
+        "layers/blk45:y"
+      ],
+      [
+        "layers/add45:b",
+        "layers/add44:y"
+      ],
+      [
+        "layers/add46:a",
+        "layers/blk46:y"
+      ],
+      [
+        "layers/add46:b",
+        "layers/add45:y"
+      ],
+      [
+        "layers/add47:a",
+        "layers/blk47:y"
+      ],
+      [
+        "layers/add47:b",
+        "layers/add46:y"
+      ],
+      [
+        "layers/add48:a",
+        "layers/blk48:y"
+      ],
+      [
+        "layers/add48:b",
+        "layers/add47:y"
+      ],
+      [
+        "layers/add49:a",
+        "layers/blk49:y"
+      ],
+      [
+        "layers/add49:b",
+        "layers/add48:y"
+      ],
+      [
+        "layers/add4:a",
+        "layers/blk4:y"
+      ],
+      [
+        "layers/add4:b",
+        "layers/add3:y"
+      ],
+      [
+        "layers/add50:a",
+        "layers/blk50:y"
+      ],
+      [
+        "layers/add50:b",
+        "layers/add49:y"
+      ],
+      [
+        "layers/add51:a",
+        "layers/blk51:y"
+      ],
+      [
+        "layers/add51:b",
+        "layers/add50:y"
+      ],
+      [
+        "layers/add5:a",
+        "layers/blk5:y"
+      ],
+      [
+        "layers/add5:b",
+        "layers/add4:y"
+      ],
+      [
+        "layers/add6:a",
+        "layers/blk6:y"
+      ],
+      [
+        "layers/add6:b",
+        "layers/add5:y"
+      ],
+      [
+        "layers/add7:a",
+        "layers/blk7:y"
+      ],
+      [
+        "layers/add7:b",
+        "layers/add6:y"
+      ],
+      [
+        "layers/add8:a",
+        "layers/blk8:y"
+      ],
+      [
+        "layers/add8:b",
+        "layers/add7:y"
+      ],
+      [
+        "layers/add9:a",
+        "layers/blk9:y"
+      ],
+      [
+        "layers/add9:b",
+        "layers/add8:y"
+      ],
+      [
+        "layers/blk0/_out:y",
+        "layers/blk0/out_proj:y"
+      ],
+      [
+        "layers/blk0/conv:x",
+        "layers/blk0/split:y1"
+      ],
+      [
+        "layers/blk0/conv_act:x",
+        "layers/blk0/conv:y"
+      ],
+      [
+        "layers/blk0/gate:a",
+        "layers/blk0/norm:y"
+      ],
+      [
+        "layers/blk0/gate:b",
+        "layers/blk0/gate_act:y"
+      ],
+      [
+        "layers/blk0/gate_act:x",
+        "layers/blk0/split:y0"
+      ],
+      [
+        "layers/blk0/in_proj:x",
+        "layers/blk0/_in:x"
+      ],
+      [
+        "layers/blk0/norm:x",
+        "layers/blk0/scan:y"
+      ],
+      [
+        "layers/blk0/out_proj:x",
+        "layers/blk0/gate:y"
+      ],
+      [
+        "layers/blk0/scan:dt",
+        "layers/blk0/split:y2"
+      ],
+      [
+        "layers/blk0/scan:xbc",
+        "layers/blk0/conv_act:y"
+      ],
+      [
+        "layers/blk0/split:x",
+        "layers/blk0/in_proj:y"
+      ],
+      [
+        "layers/blk0:x",
+        "layers/norm0:y"
+      ],
+      [
+        "layers/blk1/_out:y",
+        "layers/blk1/down:y"
+      ],
+      [
+        "layers/blk1/act:x",
+        "layers/blk1/up:y"
+      ],
+      [
+        "layers/blk1/down:x",
+        "layers/blk1/act:y"
+      ],
+      [
+        "layers/blk1/up:x",
+        "layers/blk1/_in:x"
+      ],
+      [
+        "layers/blk10/_out:y",
+        "layers/blk10/down:y"
+      ],
+      [
+        "layers/blk10/act:x",
+        "layers/blk10/up:y"
+      ],
+      [
+        "layers/blk10/down:x",
+        "layers/blk10/act:y"
+      ],
+      [
+        "layers/blk10/up:x",
+        "layers/blk10/_in:x"
+      ],
+      [
+        "layers/blk10:x",
+        "layers/norm10:y"
+      ],
+      [
+        "layers/blk11/_out:y",
+        "layers/blk11/out_proj:y"
+      ],
+      [
+        "layers/blk11/conv:x",
+        "layers/blk11/split:y1"
+      ],
+      [
+        "layers/blk11/conv_act:x",
+        "layers/blk11/conv:y"
+      ],
+      [
+        "layers/blk11/gate:a",
+        "layers/blk11/norm:y"
+      ],
+      [
+        "layers/blk11/gate:b",
+        "layers/blk11/gate_act:y"
+      ],
+      [
+        "layers/blk11/gate_act:x",
+        "layers/blk11/split:y0"
+      ],
+      [
+        "layers/blk11/in_proj:x",
+        "layers/blk11/_in:x"
+      ],
+      [
+        "layers/blk11/norm:x",
+        "layers/blk11/scan:y"
+      ],
+      [
+        "layers/blk11/out_proj:x",
+        "layers/blk11/gate:y"
+      ],
+      [
+        "layers/blk11/scan:dt",
+        "layers/blk11/split:y2"
+      ],
+      [
+        "layers/blk11/scan:xbc",
+        "layers/blk11/conv_act:y"
+      ],
+      [
+        "layers/blk11/split:x",
+        "layers/blk11/in_proj:y"
+      ],
+      [
+        "layers/blk11:x",
+        "layers/norm11:y"
+      ],
+      [
+        "layers/blk12/_out:y",
+        "layers/blk12/down:y"
+      ],
+      [
+        "layers/blk12/act:x",
+        "layers/blk12/up:y"
+      ],
+      [
+        "layers/blk12/down:x",
+        "layers/blk12/act:y"
+      ],
+      [
+        "layers/blk12/up:x",
+        "layers/blk12/_in:x"
+      ],
+      [
+        "layers/blk12:x",
+        "layers/norm12:y"
+      ],
+      [
+        "layers/blk13/_out:y",
+        "layers/blk13/out_proj:y"
+      ],
+      [
+        "layers/blk13/conv:x",
+        "layers/blk13/split:y1"
+      ],
+      [
+        "layers/blk13/conv_act:x",
+        "layers/blk13/conv:y"
+      ],
+      [
+        "layers/blk13/gate:a",
+        "layers/blk13/norm:y"
+      ],
+      [
+        "layers/blk13/gate:b",
+        "layers/blk13/gate_act:y"
+      ],
+      [
+        "layers/blk13/gate_act:x",
+        "layers/blk13/split:y0"
+      ],
+      [
+        "layers/blk13/in_proj:x",
+        "layers/blk13/_in:x"
+      ],
+      [
+        "layers/blk13/norm:x",
+        "layers/blk13/scan:y"
+      ],
+      [
+        "layers/blk13/out_proj:x",
+        "layers/blk13/gate:y"
+      ],
+      [
+        "layers/blk13/scan:dt",
+        "layers/blk13/split:y2"
+      ],
+      [
+        "layers/blk13/scan:xbc",
+        "layers/blk13/conv_act:y"
+      ],
+      [
+        "layers/blk13/split:x",
+        "layers/blk13/in_proj:y"
+      ],
+      [
+        "layers/blk13:x",
+        "layers/norm13:y"
+      ],
+      [
+        "layers/blk14/_out:y",
+        "layers/blk14/down:y"
+      ],
+      [
+        "layers/blk14/act:x",
+        "layers/blk14/up:y"
+      ],
+      [
+        "layers/blk14/down:x",
+        "layers/blk14/act:y"
+      ],
+      [
+        "layers/blk14/up:x",
+        "layers/blk14/_in:x"
+      ],
+      [
+        "layers/blk14:x",
+        "layers/norm14:y"
+      ],
+      [
+        "layers/blk15/_out:y",
+        "layers/blk15/out_proj:y"
+      ],
+      [
+        "layers/blk15/conv:x",
+        "layers/blk15/split:y1"
+      ],
+      [
+        "layers/blk15/conv_act:x",
+        "layers/blk15/conv:y"
+      ],
+      [
+        "layers/blk15/gate:a",
+        "layers/blk15/norm:y"
+      ],
+      [
+        "layers/blk15/gate:b",
+        "layers/blk15/gate_act:y"
+      ],
+      [
+        "layers/blk15/gate_act:x",
+        "layers/blk15/split:y0"
+      ],
+      [
+        "layers/blk15/in_proj:x",
+        "layers/blk15/_in:x"
+      ],
+      [
+        "layers/blk15/norm:x",
+        "layers/blk15/scan:y"
+      ],
+      [
+        "layers/blk15/out_proj:x",
+        "layers/blk15/gate:y"
+      ],
+      [
+        "layers/blk15/scan:dt",
+        "layers/blk15/split:y2"
+      ],
+      [
+        "layers/blk15/scan:xbc",
+        "layers/blk15/conv_act:y"
+      ],
+      [
+        "layers/blk15/split:x",
+        "layers/blk15/in_proj:y"
+      ],
+      [
+        "layers/blk15:x",
+        "layers/norm15:y"
+      ],
+      [
+        "layers/blk16/_out:y",
+        "layers/blk16/down:y"
+      ],
+      [
+        "layers/blk16/act:x",
+        "layers/blk16/up:y"
+      ],
+      [
+        "layers/blk16/down:x",
+        "layers/blk16/act:y"
+      ],
+      [
+        "layers/blk16/up:x",
+        "layers/blk16/_in:x"
+      ],
+      [
+        "layers/blk16:x",
+        "layers/norm16:y"
+      ],
+      [
+        "layers/blk17/_out:y",
+        "layers/blk17/out_proj:y"
+      ],
+      [
+        "layers/blk17/conv:x",
+        "layers/blk17/split:y1"
+      ],
+      [
+        "layers/blk17/conv_act:x",
+        "layers/blk17/conv:y"
+      ],
+      [
+        "layers/blk17/gate:a",
+        "layers/blk17/norm:y"
+      ],
+      [
+        "layers/blk17/gate:b",
+        "layers/blk17/gate_act:y"
+      ],
+      [
+        "layers/blk17/gate_act:x",
+        "layers/blk17/split:y0"
+      ],
+      [
+        "layers/blk17/in_proj:x",
+        "layers/blk17/_in:x"
+      ],
+      [
+        "layers/blk17/norm:x",
+        "layers/blk17/scan:y"
+      ],
+      [
+        "layers/blk17/out_proj:x",
+        "layers/blk17/gate:y"
+      ],
+      [
+        "layers/blk17/scan:dt",
+        "layers/blk17/split:y2"
+      ],
+      [
+        "layers/blk17/scan:xbc",
+        "layers/blk17/conv_act:y"
+      ],
+      [
+        "layers/blk17/split:x",
+        "layers/blk17/in_proj:y"
+      ],
+      [
+        "layers/blk17:x",
+        "layers/norm17:y"
+      ],
+      [
+        "layers/blk18/_out:y",
+        "layers/blk18/o_proj:y"
+      ],
+      [
+        "layers/blk18/attn:k",
+        "layers/blk18/rope_k:y"
+      ],
+      [
+        "layers/blk18/attn:q",
+        "layers/blk18/rope_q:y"
+      ],
+      [
+        "layers/blk18/attn:v",
+        "layers/blk18/v_heads:y"
+      ],
+      [
+        "layers/blk18/k_heads:x",
+        "layers/blk18/k_proj:y"
+      ],
+      [
+        "layers/blk18/k_proj:x",
+        "layers/blk18/_in:x"
+      ],
+      [
+        "layers/blk18/o_merge:x",
+        "layers/blk18/attn:y"
+      ],
+      [
+        "layers/blk18/o_proj:x",
+        "layers/blk18/o_merge:y"
+      ],
+      [
+        "layers/blk18/q_heads:x",
+        "layers/blk18/q_proj:y"
+      ],
+      [
+        "layers/blk18/q_proj:x",
+        "layers/blk18/_in:x"
+      ],
+      [
+        "layers/blk18/rope_k:x",
+        "layers/blk18/k_heads:y"
+      ],
+      [
+        "layers/blk18/rope_q:x",
+        "layers/blk18/q_heads:y"
+      ],
+      [
+        "layers/blk18/v_heads:x",
+        "layers/blk18/v_proj:y"
+      ],
+      [
+        "layers/blk18/v_proj:x",
+        "layers/blk18/_in:x"
+      ],
+      [
+        "layers/blk18:x",
+        "layers/norm18:y"
+      ],
+      [
+        "layers/blk19/_out:y",
+        "layers/blk19/down:y"
+      ],
+      [
+        "layers/blk19/act:x",
+        "layers/blk19/up:y"
+      ],
+      [
+        "layers/blk19/down:x",
+        "layers/blk19/act:y"
+      ],
+      [
+        "layers/blk19/up:x",
+        "layers/blk19/_in:x"
+      ],
+      [
+        "layers/blk19:x",
+        "layers/norm19:y"
+      ],
+      [
+        "layers/blk1:x",
+        "layers/norm1:y"
+      ],
+      [
+        "layers/blk2/_out:y",
+        "layers/blk2/out_proj:y"
+      ],
+      [
+        "layers/blk2/conv:x",
+        "layers/blk2/split:y1"
+      ],
+      [
+        "layers/blk2/conv_act:x",
+        "layers/blk2/conv:y"
+      ],
+      [
+        "layers/blk2/gate:a",
+        "layers/blk2/norm:y"
+      ],
+      [
+        "layers/blk2/gate:b",
+        "layers/blk2/gate_act:y"
+      ],
+      [
+        "layers/blk2/gate_act:x",
+        "layers/blk2/split:y0"
+      ],
+      [
+        "layers/blk2/in_proj:x",
+        "layers/blk2/_in:x"
+      ],
+      [
+        "layers/blk2/norm:x",
+        "layers/blk2/scan:y"
+      ],
+      [
+        "layers/blk2/out_proj:x",
+        "layers/blk2/gate:y"
+      ],
+      [
+        "layers/blk2/scan:dt",
+        "layers/blk2/split:y2"
+      ],
+      [
+        "layers/blk2/scan:xbc",
+        "layers/blk2/conv_act:y"
+      ],
+      [
+        "layers/blk2/split:x",
+        "layers/blk2/in_proj:y"
+      ],
+      [
+        "layers/blk20/_out:y",
+        "layers/blk20/out_proj:y"
+      ],
+      [
+        "layers/blk20/conv:x",
+        "layers/blk20/split:y1"
+      ],
+      [
+        "layers/blk20/conv_act:x",
+        "layers/blk20/conv:y"
+      ],
+      [
+        "layers/blk20/gate:a",
+        "layers/blk20/norm:y"
+      ],
+      [
+        "layers/blk20/gate:b",
+        "layers/blk20/gate_act:y"
+      ],
+      [
+        "layers/blk20/gate_act:x",
+        "layers/blk20/split:y0"
+      ],
+      [
+        "layers/blk20/in_proj:x",
+        "layers/blk20/_in:x"
+      ],
+      [
+        "layers/blk20/norm:x",
+        "layers/blk20/scan:y"
+      ],
+      [
+        "layers/blk20/out_proj:x",
+        "layers/blk20/gate:y"
+      ],
+      [
+        "layers/blk20/scan:dt",
+        "layers/blk20/split:y2"
+      ],
+      [
+        "layers/blk20/scan:xbc",
+        "layers/blk20/conv_act:y"
+      ],
+      [
+        "layers/blk20/split:x",
+        "layers/blk20/in_proj:y"
+      ],
+      [
+        "layers/blk20:x",
+        "layers/norm20:y"
+      ],
+      [
+        "layers/blk21/_out:y",
+        "layers/blk21/down:y"
+      ],
+      [
+        "layers/blk21/act:x",
+        "layers/blk21/up:y"
+      ],
+      [
+        "layers/blk21/down:x",
+        "layers/blk21/act:y"
+      ],
+      [
+        "layers/blk21/up:x",
+        "layers/blk21/_in:x"
+      ],
+      [
+        "layers/blk21:x",
+        "layers/norm21:y"
+      ],
+      [
+        "layers/blk22/_out:y",
+        "layers/blk22/out_proj:y"
+      ],
+      [
+        "layers/blk22/conv:x",
+        "layers/blk22/split:y1"
+      ],
+      [
+        "layers/blk22/conv_act:x",
+        "layers/blk22/conv:y"
+      ],
+      [
+        "layers/blk22/gate:a",
+        "layers/blk22/norm:y"
+      ],
+      [
+        "layers/blk22/gate:b",
+        "layers/blk22/gate_act:y"
+      ],
+      [
+        "layers/blk22/gate_act:x",
+        "layers/blk22/split:y0"
+      ],
+      [
+        "layers/blk22/in_proj:x",
+        "layers/blk22/_in:x"
+      ],
+      [
+        "layers/blk22/norm:x",
+        "layers/blk22/scan:y"
+      ],
+      [
+        "layers/blk22/out_proj:x",
+        "layers/blk22/gate:y"
+      ],
+      [
+        "layers/blk22/scan:dt",
+        "layers/blk22/split:y2"
+      ],
+      [
+        "layers/blk22/scan:xbc",
+        "layers/blk22/conv_act:y"
+      ],
+      [
+        "layers/blk22/split:x",
+        "layers/blk22/in_proj:y"
+      ],
+      [
+        "layers/blk22:x",
+        "layers/norm22:y"
+      ],
+      [
+        "layers/blk23/_out:y",
+        "layers/blk23/down:y"
+      ],
+      [
+        "layers/blk23/act:x",
+        "layers/blk23/up:y"
+      ],
+      [
+        "layers/blk23/down:x",
+        "layers/blk23/act:y"
+      ],
+      [
+        "layers/blk23/up:x",
+        "layers/blk23/_in:x"
+      ],
+      [
+        "layers/blk23:x",
+        "layers/norm23:y"
+      ],
+      [
+        "layers/blk24/_out:y",
+        "layers/blk24/out_proj:y"
+      ],
+      [
+        "layers/blk24/conv:x",
+        "layers/blk24/split:y1"
+      ],
+      [
+        "layers/blk24/conv_act:x",
+        "layers/blk24/conv:y"
+      ],
+      [
+        "layers/blk24/gate:a",
+        "layers/blk24/norm:y"
+      ],
+      [
+        "layers/blk24/gate:b",
+        "layers/blk24/gate_act:y"
+      ],
+      [
+        "layers/blk24/gate_act:x",
+        "layers/blk24/split:y0"
+      ],
+      [
+        "layers/blk24/in_proj:x",
+        "layers/blk24/_in:x"
+      ],
+      [
+        "layers/blk24/norm:x",
+        "layers/blk24/scan:y"
+      ],
+      [
+        "layers/blk24/out_proj:x",
+        "layers/blk24/gate:y"
+      ],
+      [
+        "layers/blk24/scan:dt",
+        "layers/blk24/split:y2"
+      ],
+      [
+        "layers/blk24/scan:xbc",
+        "layers/blk24/conv_act:y"
+      ],
+      [
+        "layers/blk24/split:x",
+        "layers/blk24/in_proj:y"
+      ],
+      [
+        "layers/blk24:x",
+        "layers/norm24:y"
+      ],
+      [
+        "layers/blk25/_out:y",
+        "layers/blk25/down:y"
+      ],
+      [
+        "layers/blk25/act:x",
+        "layers/blk25/up:y"
+      ],
+      [
+        "layers/blk25/down:x",
+        "layers/blk25/act:y"
+      ],
+      [
+        "layers/blk25/up:x",
+        "layers/blk25/_in:x"
+      ],
+      [
+        "layers/blk25:x",
+        "layers/norm25:y"
+      ],
+      [
+        "layers/blk26/_out:y",
+        "layers/blk26/out_proj:y"
+      ],
+      [
+        "layers/blk26/conv:x",
+        "layers/blk26/split:y1"
+      ],
+      [
+        "layers/blk26/conv_act:x",
+        "layers/blk26/conv:y"
+      ],
+      [
+        "layers/blk26/gate:a",
+        "layers/blk26/norm:y"
+      ],
+      [
+        "layers/blk26/gate:b",
+        "layers/blk26/gate_act:y"
+      ],
+      [
+        "layers/blk26/gate_act:x",
+        "layers/blk26/split:y0"
+      ],
+      [
+        "layers/blk26/in_proj:x",
+        "layers/blk26/_in:x"
+      ],
+      [
+        "layers/blk26/norm:x",
+        "layers/blk26/scan:y"
+      ],
+      [
+        "layers/blk26/out_proj:x",
+        "layers/blk26/gate:y"
+      ],
+      [
+        "layers/blk26/scan:dt",
+        "layers/blk26/split:y2"
+      ],
+      [
+        "layers/blk26/scan:xbc",
+        "layers/blk26/conv_act:y"
+      ],
+      [
+        "layers/blk26/split:x",
+        "layers/blk26/in_proj:y"
+      ],
+      [
+        "layers/blk26:x",
+        "layers/norm26:y"
+      ],
+      [
+        "layers/blk27/_out:y",
+        "layers/blk27/down:y"
+      ],
+      [
+        "layers/blk27/act:x",
+        "layers/blk27/up:y"
+      ],
+      [
+        "layers/blk27/down:x",
+        "layers/blk27/act:y"
+      ],
+      [
+        "layers/blk27/up:x",
+        "layers/blk27/_in:x"
+      ],
+      [
+        "layers/blk27:x",
+        "layers/norm27:y"
+      ],
+      [
+        "layers/blk28/_out:y",
+        "layers/blk28/out_proj:y"
+      ],
+      [
+        "layers/blk28/conv:x",
+        "layers/blk28/split:y1"
+      ],
+      [
+        "layers/blk28/conv_act:x",
+        "layers/blk28/conv:y"
+      ],
+      [
+        "layers/blk28/gate:a",
+        "layers/blk28/norm:y"
+      ],
+      [
+        "layers/blk28/gate:b",
+        "layers/blk28/gate_act:y"
+      ],
+      [
+        "layers/blk28/gate_act:x",
+        "layers/blk28/split:y0"
+      ],
+      [
+        "layers/blk28/in_proj:x",
+        "layers/blk28/_in:x"
+      ],
+      [
+        "layers/blk28/norm:x",
+        "layers/blk28/scan:y"
+      ],
+      [
+        "layers/blk28/out_proj:x",
+        "layers/blk28/gate:y"
+      ],
+      [
+        "layers/blk28/scan:dt",
+        "layers/blk28/split:y2"
+      ],
+      [
+        "layers/blk28/scan:xbc",
+        "layers/blk28/conv_act:y"
+      ],
+      [
+        "layers/blk28/split:x",
+        "layers/blk28/in_proj:y"
+      ],
+      [
+        "layers/blk28:x",
+        "layers/norm28:y"
+      ],
+      [
+        "layers/blk29/_out:y",
+        "layers/blk29/o_proj:y"
+      ],
+      [
+        "layers/blk29/attn:k",
+        "layers/blk29/rope_k:y"
+      ],
+      [
+        "layers/blk29/attn:q",
+        "layers/blk29/rope_q:y"
+      ],
+      [
+        "layers/blk29/attn:v",
+        "layers/blk29/v_heads:y"
+      ],
+      [
+        "layers/blk29/k_heads:x",
+        "layers/blk29/k_proj:y"
+      ],
+      [
+        "layers/blk29/k_proj:x",
+        "layers/blk29/_in:x"
+      ],
+      [
+        "layers/blk29/o_merge:x",
+        "layers/blk29/attn:y"
+      ],
+      [
+        "layers/blk29/o_proj:x",
+        "layers/blk29/o_merge:y"
+      ],
+      [
+        "layers/blk29/q_heads:x",
+        "layers/blk29/q_proj:y"
+      ],
+      [
+        "layers/blk29/q_proj:x",
+        "layers/blk29/_in:x"
+      ],
+      [
+        "layers/blk29/rope_k:x",
+        "layers/blk29/k_heads:y"
+      ],
+      [
+        "layers/blk29/rope_q:x",
+        "layers/blk29/q_heads:y"
+      ],
+      [
+        "layers/blk29/v_heads:x",
+        "layers/blk29/v_proj:y"
+      ],
+      [
+        "layers/blk29/v_proj:x",
+        "layers/blk29/_in:x"
+      ],
+      [
+        "layers/blk29:x",
+        "layers/norm29:y"
+      ],
+      [
+        "layers/blk2:x",
+        "layers/norm2:y"
+      ],
+      [
+        "layers/blk3/_out:y",
+        "layers/blk3/down:y"
+      ],
+      [
+        "layers/blk3/act:x",
+        "layers/blk3/up:y"
+      ],
+      [
+        "layers/blk3/down:x",
+        "layers/blk3/act:y"
+      ],
+      [
+        "layers/blk3/up:x",
+        "layers/blk3/_in:x"
+      ],
+      [
+        "layers/blk30/_out:y",
+        "layers/blk30/down:y"
+      ],
+      [
+        "layers/blk30/act:x",
+        "layers/blk30/up:y"
+      ],
+      [
+        "layers/blk30/down:x",
+        "layers/blk30/act:y"
+      ],
+      [
+        "layers/blk30/up:x",
+        "layers/blk30/_in:x"
+      ],
+      [
+        "layers/blk30:x",
+        "layers/norm30:y"
+      ],
+      [
+        "layers/blk31/_out:y",
+        "layers/blk31/out_proj:y"
+      ],
+      [
+        "layers/blk31/conv:x",
+        "layers/blk31/split:y1"
+      ],
+      [
+        "layers/blk31/conv_act:x",
+        "layers/blk31/conv:y"
+      ],
+      [
+        "layers/blk31/gate:a",
+        "layers/blk31/norm:y"
+      ],
+      [
+        "layers/blk31/gate:b",
+        "layers/blk31/gate_act:y"
+      ],
+      [
+        "layers/blk31/gate_act:x",
+        "layers/blk31/split:y0"
+      ],
+      [
+        "layers/blk31/in_proj:x",
+        "layers/blk31/_in:x"
+      ],
+      [
+        "layers/blk31/norm:x",
+        "layers/blk31/scan:y"
+      ],
+      [
+        "layers/blk31/out_proj:x",
+        "layers/blk31/gate:y"
+      ],
+      [
+        "layers/blk31/scan:dt",
+        "layers/blk31/split:y2"
+      ],
+      [
+        "layers/blk31/scan:xbc",
+        "layers/blk31/conv_act:y"
+      ],
+      [
+        "layers/blk31/split:x",
+        "layers/blk31/in_proj:y"
+      ],
+      [
+        "layers/blk31:x",
+        "layers/norm31:y"
+      ],
+      [
+        "layers/blk32/_out:y",
+        "layers/blk32/down:y"
+      ],
+      [
+        "layers/blk32/act:x",
+        "layers/blk32/up:y"
+      ],
+      [
+        "layers/blk32/down:x",
+        "layers/blk32/act:y"
+      ],
+      [
+        "layers/blk32/up:x",
+        "layers/blk32/_in:x"
+      ],
+      [
+        "layers/blk32:x",
+        "layers/norm32:y"
+      ],
+      [
+        "layers/blk33/_out:y",
+        "layers/blk33/out_proj:y"
+      ],
+      [
+        "layers/blk33/conv:x",
+        "layers/blk33/split:y1"
+      ],
+      [
+        "layers/blk33/conv_act:x",
+        "layers/blk33/conv:y"
+      ],
+      [
+        "layers/blk33/gate:a",
+        "layers/blk33/norm:y"
+      ],
+      [
+        "layers/blk33/gate:b",
+        "layers/blk33/gate_act:y"
+      ],
+      [
+        "layers/blk33/gate_act:x",
+        "layers/blk33/split:y0"
+      ],
+      [
+        "layers/blk33/in_proj:x",
+        "layers/blk33/_in:x"
+      ],
+      [
+        "layers/blk33/norm:x",
+        "layers/blk33/scan:y"
+      ],
+      [
+        "layers/blk33/out_proj:x",
+        "layers/blk33/gate:y"
+      ],
+      [
+        "layers/blk33/scan:dt",
+        "layers/blk33/split:y2"
+      ],
+      [
+        "layers/blk33/scan:xbc",
+        "layers/blk33/conv_act:y"
+      ],
+      [
+        "layers/blk33/split:x",
+        "layers/blk33/in_proj:y"
+      ],
+      [
+        "layers/blk33:x",
+        "layers/norm33:y"
+      ],
+      [
+        "layers/blk34/_out:y",
+        "layers/blk34/down:y"
+      ],
+      [
+        "layers/blk34/act:x",
+        "layers/blk34/up:y"
+      ],
+      [
+        "layers/blk34/down:x",
+        "layers/blk34/act:y"
+      ],
+      [
+        "layers/blk34/up:x",
+        "layers/blk34/_in:x"
+      ],
+      [
+        "layers/blk34:x",
+        "layers/norm34:y"
+      ],
+      [
+        "layers/blk35/_out:y",
+        "layers/blk35/out_proj:y"
+      ],
+      [
+        "layers/blk35/conv:x",
+        "layers/blk35/split:y1"
+      ],
+      [
+        "layers/blk35/conv_act:x",
+        "layers/blk35/conv:y"
+      ],
+      [
+        "layers/blk35/gate:a",
+        "layers/blk35/norm:y"
+      ],
+      [
+        "layers/blk35/gate:b",
+        "layers/blk35/gate_act:y"
+      ],
+      [
+        "layers/blk35/gate_act:x",
+        "layers/blk35/split:y0"
+      ],
+      [
+        "layers/blk35/in_proj:x",
+        "layers/blk35/_in:x"
+      ],
+      [
+        "layers/blk35/norm:x",
+        "layers/blk35/scan:y"
+      ],
+      [
+        "layers/blk35/out_proj:x",
+        "layers/blk35/gate:y"
+      ],
+      [
+        "layers/blk35/scan:dt",
+        "layers/blk35/split:y2"
+      ],
+      [
+        "layers/blk35/scan:xbc",
+        "layers/blk35/conv_act:y"
+      ],
+      [
+        "layers/blk35/split:x",
+        "layers/blk35/in_proj:y"
+      ],
+      [
+        "layers/blk35:x",
+        "layers/norm35:y"
+      ],
+      [
+        "layers/blk36/_out:y",
+        "layers/blk36/down:y"
+      ],
+      [
+        "layers/blk36/act:x",
+        "layers/blk36/up:y"
+      ],
+      [
+        "layers/blk36/down:x",
+        "layers/blk36/act:y"
+      ],
+      [
+        "layers/blk36/up:x",
+        "layers/blk36/_in:x"
+      ],
+      [
+        "layers/blk36:x",
+        "layers/norm36:y"
+      ],
+      [
+        "layers/blk37/_out:y",
+        "layers/blk37/out_proj:y"
+      ],
+      [
+        "layers/blk37/conv:x",
+        "layers/blk37/split:y1"
+      ],
+      [
+        "layers/blk37/conv_act:x",
+        "layers/blk37/conv:y"
+      ],
+      [
+        "layers/blk37/gate:a",
+        "layers/blk37/norm:y"
+      ],
+      [
+        "layers/blk37/gate:b",
+        "layers/blk37/gate_act:y"
+      ],
+      [
+        "layers/blk37/gate_act:x",
+        "layers/blk37/split:y0"
+      ],
+      [
+        "layers/blk37/in_proj:x",
+        "layers/blk37/_in:x"
+      ],
+      [
+        "layers/blk37/norm:x",
+        "layers/blk37/scan:y"
+      ],
+      [
+        "layers/blk37/out_proj:x",
+        "layers/blk37/gate:y"
+      ],
+      [
+        "layers/blk37/scan:dt",
+        "layers/blk37/split:y2"
+      ],
+      [
+        "layers/blk37/scan:xbc",
+        "layers/blk37/conv_act:y"
+      ],
+      [
+        "layers/blk37/split:x",
+        "layers/blk37/in_proj:y"
+      ],
+      [
+        "layers/blk37:x",
+        "layers/norm37:y"
+      ],
+      [
+        "layers/blk38/_out:y",
+        "layers/blk38/down:y"
+      ],
+      [
+        "layers/blk38/act:x",
+        "layers/blk38/up:y"
+      ],
+      [
+        "layers/blk38/down:x",
+        "layers/blk38/act:y"
+      ],
+      [
+        "layers/blk38/up:x",
+        "layers/blk38/_in:x"
+      ],
+      [
+        "layers/blk38:x",
+        "layers/norm38:y"
+      ],
+      [
+        "layers/blk39/_out:y",
+        "layers/blk39/out_proj:y"
+      ],
+      [
+        "layers/blk39/conv:x",
+        "layers/blk39/split:y1"
+      ],
+      [
+        "layers/blk39/conv_act:x",
+        "layers/blk39/conv:y"
+      ],
+      [
+        "layers/blk39/gate:a",
+        "layers/blk39/norm:y"
+      ],
+      [
+        "layers/blk39/gate:b",
+        "layers/blk39/gate_act:y"
+      ],
+      [
+        "layers/blk39/gate_act:x",
+        "layers/blk39/split:y0"
+      ],
+      [
+        "layers/blk39/in_proj:x",
+        "layers/blk39/_in:x"
+      ],
+      [
+        "layers/blk39/norm:x",
+        "layers/blk39/scan:y"
+      ],
+      [
+        "layers/blk39/out_proj:x",
+        "layers/blk39/gate:y"
+      ],
+      [
+        "layers/blk39/scan:dt",
+        "layers/blk39/split:y2"
+      ],
+      [
+        "layers/blk39/scan:xbc",
+        "layers/blk39/conv_act:y"
+      ],
+      [
+        "layers/blk39/split:x",
+        "layers/blk39/in_proj:y"
+      ],
+      [
+        "layers/blk39:x",
+        "layers/norm39:y"
+      ],
+      [
+        "layers/blk3:x",
+        "layers/norm3:y"
+      ],
+      [
+        "layers/blk4/_out:y",
+        "layers/blk4/out_proj:y"
+      ],
+      [
+        "layers/blk4/conv:x",
+        "layers/blk4/split:y1"
+      ],
+      [
+        "layers/blk4/conv_act:x",
+        "layers/blk4/conv:y"
+      ],
+      [
+        "layers/blk4/gate:a",
+        "layers/blk4/norm:y"
+      ],
+      [
+        "layers/blk4/gate:b",
+        "layers/blk4/gate_act:y"
+      ],
+      [
+        "layers/blk4/gate_act:x",
+        "layers/blk4/split:y0"
+      ],
+      [
+        "layers/blk4/in_proj:x",
+        "layers/blk4/_in:x"
+      ],
+      [
+        "layers/blk4/norm:x",
+        "layers/blk4/scan:y"
+      ],
+      [
+        "layers/blk4/out_proj:x",
+        "layers/blk4/gate:y"
+      ],
+      [
+        "layers/blk4/scan:dt",
+        "layers/blk4/split:y2"
+      ],
+      [
+        "layers/blk4/scan:xbc",
+        "layers/blk4/conv_act:y"
+      ],
+      [
+        "layers/blk4/split:x",
+        "layers/blk4/in_proj:y"
+      ],
+      [
+        "layers/blk40/_out:y",
+        "layers/blk40/o_proj:y"
+      ],
+      [
+        "layers/blk40/attn:k",
+        "layers/blk40/rope_k:y"
+      ],
+      [
+        "layers/blk40/attn:q",
+        "layers/blk40/rope_q:y"
+      ],
+      [
+        "layers/blk40/attn:v",
+        "layers/blk40/v_heads:y"
+      ],
+      [
+        "layers/blk40/k_heads:x",
+        "layers/blk40/k_proj:y"
+      ],
+      [
+        "layers/blk40/k_proj:x",
+        "layers/blk40/_in:x"
+      ],
+      [
+        "layers/blk40/o_merge:x",
+        "layers/blk40/attn:y"
+      ],
+      [
+        "layers/blk40/o_proj:x",
+        "layers/blk40/o_merge:y"
+      ],
+      [
+        "layers/blk40/q_heads:x",
+        "layers/blk40/q_proj:y"
+      ],
+      [
+        "layers/blk40/q_proj:x",
+        "layers/blk40/_in:x"
+      ],
+      [
+        "layers/blk40/rope_k:x",
+        "layers/blk40/k_heads:y"
+      ],
+      [
+        "layers/blk40/rope_q:x",
+        "layers/blk40/q_heads:y"
+      ],
+      [
+        "layers/blk40/v_heads:x",
+        "layers/blk40/v_proj:y"
+      ],
+      [
+        "layers/blk40/v_proj:x",
+        "layers/blk40/_in:x"
+      ],
+      [
+        "layers/blk40:x",
+        "layers/norm40:y"
+      ],
+      [
+        "layers/blk41/_out:y",
+        "layers/blk41/down:y"
+      ],
+      [
+        "layers/blk41/act:x",
+        "layers/blk41/up:y"
+      ],
+      [
+        "layers/blk41/down:x",
+        "layers/blk41/act:y"
+      ],
+      [
+        "layers/blk41/up:x",
+        "layers/blk41/_in:x"
+      ],
+      [
+        "layers/blk41:x",
+        "layers/norm41:y"
+      ],
+      [
+        "layers/blk42/_out:y",
+        "layers/blk42/out_proj:y"
+      ],
+      [
+        "layers/blk42/conv:x",
+        "layers/blk42/split:y1"
+      ],
+      [
+        "layers/blk42/conv_act:x",
+        "layers/blk42/conv:y"
+      ],
+      [
+        "layers/blk42/gate:a",
+        "layers/blk42/norm:y"
+      ],
+      [
+        "layers/blk42/gate:b",
+        "layers/blk42/gate_act:y"
+      ],
+      [
+        "layers/blk42/gate_act:x",
+        "layers/blk42/split:y0"
+      ],
+      [
+        "layers/blk42/in_proj:x",
+        "layers/blk42/_in:x"
+      ],
+      [
+        "layers/blk42/norm:x",
+        "layers/blk42/scan:y"
+      ],
+      [
+        "layers/blk42/out_proj:x",
+        "layers/blk42/gate:y"
+      ],
+      [
+        "layers/blk42/scan:dt",
+        "layers/blk42/split:y2"
+      ],
+      [
+        "layers/blk42/scan:xbc",
+        "layers/blk42/conv_act:y"
+      ],
+      [
+        "layers/blk42/split:x",
+        "layers/blk42/in_proj:y"
+      ],
+      [
+        "layers/blk42:x",
+        "layers/norm42:y"
+      ],
+      [
+        "layers/blk43/_out:y",
+        "layers/blk43/down:y"
+      ],
+      [
+        "layers/blk43/act:x",
+        "layers/blk43/up:y"
+      ],
+      [
+        "layers/blk43/down:x",
+        "layers/blk43/act:y"
+      ],
+      [
+        "layers/blk43/up:x",
+        "layers/blk43/_in:x"
+      ],
+      [
+        "layers/blk43:x",
+        "layers/norm43:y"
+      ],
+      [
+        "layers/blk44/_out:y",
+        "layers/blk44/out_proj:y"
+      ],
+      [
+        "layers/blk44/conv:x",
+        "layers/blk44/split:y1"
+      ],
+      [
+        "layers/blk44/conv_act:x",
+        "layers/blk44/conv:y"
+      ],
+      [
+        "layers/blk44/gate:a",
+        "layers/blk44/norm:y"
+      ],
+      [
+        "layers/blk44/gate:b",
+        "layers/blk44/gate_act:y"
+      ],
+      [
+        "layers/blk44/gate_act:x",
+        "layers/blk44/split:y0"
+      ],
+      [
+        "layers/blk44/in_proj:x",
+        "layers/blk44/_in:x"
+      ],
+      [
+        "layers/blk44/norm:x",
+        "layers/blk44/scan:y"
+      ],
+      [
+        "layers/blk44/out_proj:x",
+        "layers/blk44/gate:y"
+      ],
+      [
+        "layers/blk44/scan:dt",
+        "layers/blk44/split:y2"
+      ],
+      [
+        "layers/blk44/scan:xbc",
+        "layers/blk44/conv_act:y"
+      ],
+      [
+        "layers/blk44/split:x",
+        "layers/blk44/in_proj:y"
+      ],
+      [
+        "layers/blk44:x",
+        "layers/norm44:y"
+      ],
+      [
+        "layers/blk45/_out:y",
+        "layers/blk45/down:y"
+      ],
+      [
+        "layers/blk45/act:x",
+        "layers/blk45/up:y"
+      ],
+      [
+        "layers/blk45/down:x",
+        "layers/blk45/act:y"
+      ],
+      [
+        "layers/blk45/up:x",
+        "layers/blk45/_in:x"
+      ],
+      [
+        "layers/blk45:x",
+        "layers/norm45:y"
+      ],
+      [
+        "layers/blk46/_out:y",
+        "layers/blk46/out_proj:y"
+      ],
+      [
+        "layers/blk46/conv:x",
+        "layers/blk46/split:y1"
+      ],
+      [
+        "layers/blk46/conv_act:x",
+        "layers/blk46/conv:y"
+      ],
+      [
+        "layers/blk46/gate:a",
+        "layers/blk46/norm:y"
+      ],
+      [
+        "layers/blk46/gate:b",
+        "layers/blk46/gate_act:y"
+      ],
+      [
+        "layers/blk46/gate_act:x",
+        "layers/blk46/split:y0"
+      ],
+      [
+        "layers/blk46/in_proj:x",
+        "layers/blk46/_in:x"
+      ],
+      [
+        "layers/blk46/norm:x",
+        "layers/blk46/scan:y"
+      ],
+      [
+        "layers/blk46/out_proj:x",
+        "layers/blk46/gate:y"
+      ],
+      [
+        "layers/blk46/scan:dt",
+        "layers/blk46/split:y2"
+      ],
+      [
+        "layers/blk46/scan:xbc",
+        "layers/blk46/conv_act:y"
+      ],
+      [
+        "layers/blk46/split:x",
+        "layers/blk46/in_proj:y"
+      ],
+      [
+        "layers/blk46:x",
+        "layers/norm46:y"
+      ],
+      [
+        "layers/blk47/_out:y",
+        "layers/blk47/down:y"
+      ],
+      [
+        "layers/blk47/act:x",
+        "layers/blk47/up:y"
+      ],
+      [
+        "layers/blk47/down:x",
+        "layers/blk47/act:y"
+      ],
+      [
+        "layers/blk47/up:x",
+        "layers/blk47/_in:x"
+      ],
+      [
+        "layers/blk47:x",
+        "layers/norm47:y"
+      ],
+      [
+        "layers/blk48/_out:y",
+        "layers/blk48/out_proj:y"
+      ],
+      [
+        "layers/blk48/conv:x",
+        "layers/blk48/split:y1"
+      ],
+      [
+        "layers/blk48/conv_act:x",
+        "layers/blk48/conv:y"
+      ],
+      [
+        "layers/blk48/gate:a",
+        "layers/blk48/norm:y"
+      ],
+      [
+        "layers/blk48/gate:b",
+        "layers/blk48/gate_act:y"
+      ],
+      [
+        "layers/blk48/gate_act:x",
+        "layers/blk48/split:y0"
+      ],
+      [
+        "layers/blk48/in_proj:x",
+        "layers/blk48/_in:x"
+      ],
+      [
+        "layers/blk48/norm:x",
+        "layers/blk48/scan:y"
+      ],
+      [
+        "layers/blk48/out_proj:x",
+        "layers/blk48/gate:y"
+      ],
+      [
+        "layers/blk48/scan:dt",
+        "layers/blk48/split:y2"
+      ],
+      [
+        "layers/blk48/scan:xbc",
+        "layers/blk48/conv_act:y"
+      ],
+      [
+        "layers/blk48/split:x",
+        "layers/blk48/in_proj:y"
+      ],
+      [
+        "layers/blk48:x",
+        "layers/norm48:y"
+      ],
+      [
+        "layers/blk49/_out:y",
+        "layers/blk49/down:y"
+      ],
+      [
+        "layers/blk49/act:x",
+        "layers/blk49/up:y"
+      ],
+      [
+        "layers/blk49/down:x",
+        "layers/blk49/act:y"
+      ],
+      [
+        "layers/blk49/up:x",
+        "layers/blk49/_in:x"
+      ],
+      [
+        "layers/blk49:x",
+        "layers/norm49:y"
+      ],
+      [
+        "layers/blk4:x",
+        "layers/norm4:y"
+      ],
+      [
+        "layers/blk5/_out:y",
+        "layers/blk5/down:y"
+      ],
+      [
+        "layers/blk5/act:x",
+        "layers/blk5/up:y"
+      ],
+      [
+        "layers/blk5/down:x",
+        "layers/blk5/act:y"
+      ],
+      [
+        "layers/blk5/up:x",
+        "layers/blk5/_in:x"
+      ],
+      [
+        "layers/blk50/_out:y",
+        "layers/blk50/out_proj:y"
+      ],
+      [
+        "layers/blk50/conv:x",
+        "layers/blk50/split:y1"
+      ],
+      [
+        "layers/blk50/conv_act:x",
+        "layers/blk50/conv:y"
+      ],
+      [
+        "layers/blk50/gate:a",
+        "layers/blk50/norm:y"
+      ],
+      [
+        "layers/blk50/gate:b",
+        "layers/blk50/gate_act:y"
+      ],
+      [
+        "layers/blk50/gate_act:x",
+        "layers/blk50/split:y0"
+      ],
+      [
+        "layers/blk50/in_proj:x",
+        "layers/blk50/_in:x"
+      ],
+      [
+        "layers/blk50/norm:x",
+        "layers/blk50/scan:y"
+      ],
+      [
+        "layers/blk50/out_proj:x",
+        "layers/blk50/gate:y"
+      ],
+      [
+        "layers/blk50/scan:dt",
+        "layers/blk50/split:y2"
+      ],
+      [
+        "layers/blk50/scan:xbc",
+        "layers/blk50/conv_act:y"
+      ],
+      [
+        "layers/blk50/split:x",
+        "layers/blk50/in_proj:y"
+      ],
+      [
+        "layers/blk50:x",
+        "layers/norm50:y"
+      ],
+      [
+        "layers/blk51/_out:y",
+        "layers/blk51/down:y"
+      ],
+      [
+        "layers/blk51/act:x",
+        "layers/blk51/up:y"
+      ],
+      [
+        "layers/blk51/down:x",
+        "layers/blk51/act:y"
+      ],
+      [
+        "layers/blk51/up:x",
+        "layers/blk51/_in:x"
+      ],
+      [
+        "layers/blk51:x",
+        "layers/norm51:y"
+      ],
+      [
+        "layers/blk5:x",
+        "layers/norm5:y"
+      ],
+      [
+        "layers/blk6/_out:y",
+        "layers/blk6/out_proj:y"
+      ],
+      [
+        "layers/blk6/conv:x",
+        "layers/blk6/split:y1"
+      ],
+      [
+        "layers/blk6/conv_act:x",
+        "layers/blk6/conv:y"
+      ],
+      [
+        "layers/blk6/gate:a",
+        "layers/blk6/norm:y"
+      ],
+      [
+        "layers/blk6/gate:b",
+        "layers/blk6/gate_act:y"
+      ],
+      [
+        "layers/blk6/gate_act:x",
+        "layers/blk6/split:y0"
+      ],
+      [
+        "layers/blk6/in_proj:x",
+        "layers/blk6/_in:x"
+      ],
+      [
+        "layers/blk6/norm:x",
+        "layers/blk6/scan:y"
+      ],
+      [
+        "layers/blk6/out_proj:x",
+        "layers/blk6/gate:y"
+      ],
+      [
+        "layers/blk6/scan:dt",
+        "layers/blk6/split:y2"
+      ],
+      [
+        "layers/blk6/scan:xbc",
+        "layers/blk6/conv_act:y"
+      ],
+      [
+        "layers/blk6/split:x",
+        "layers/blk6/in_proj:y"
+      ],
+      [
+        "layers/blk6:x",
+        "layers/norm6:y"
+      ],
+      [
+        "layers/blk7/_out:y",
+        "layers/blk7/o_proj:y"
+      ],
+      [
+        "layers/blk7/attn:k",
+        "layers/blk7/rope_k:y"
+      ],
+      [
+        "layers/blk7/attn:q",
+        "layers/blk7/rope_q:y"
+      ],
+      [
+        "layers/blk7/attn:v",
+        "layers/blk7/v_heads:y"
+      ],
+      [
+        "layers/blk7/k_heads:x",
+        "layers/blk7/k_proj:y"
+      ],
+      [
+        "layers/blk7/k_proj:x",
+        "layers/blk7/_in:x"
+      ],
+      [
+        "layers/blk7/o_merge:x",
+        "layers/blk7/attn:y"
+      ],
+      [
+        "layers/blk7/o_proj:x",
+        "layers/blk7/o_merge:y"
+      ],
+      [
+        "layers/blk7/q_heads:x",
+        "layers/blk7/q_proj:y"
+      ],
+      [
+        "layers/blk7/q_proj:x",
+        "layers/blk7/_in:x"
+      ],
+      [
+        "layers/blk7/rope_k:x",
+        "layers/blk7/k_heads:y"
+      ],
+      [
+        "layers/blk7/rope_q:x",
+        "layers/blk7/q_heads:y"
+      ],
+      [
+        "layers/blk7/v_heads:x",
+        "layers/blk7/v_proj:y"
+      ],
+      [
+        "layers/blk7/v_proj:x",
+        "layers/blk7/_in:x"
+      ],
+      [
+        "layers/blk7:x",
+        "layers/norm7:y"
+      ],
+      [
+        "layers/blk8/_out:y",
+        "layers/blk8/down:y"
+      ],
+      [
+        "layers/blk8/act:x",
+        "layers/blk8/up:y"
+      ],
+      [
+        "layers/blk8/down:x",
+        "layers/blk8/act:y"
+      ],
+      [
+        "layers/blk8/up:x",
+        "layers/blk8/_in:x"
+      ],
+      [
+        "layers/blk8:x",
+        "layers/norm8:y"
+      ],
+      [
+        "layers/blk9/_out:y",
+        "layers/blk9/out_proj:y"
+      ],
+      [
+        "layers/blk9/conv:x",
+        "layers/blk9/split:y1"
+      ],
+      [
+        "layers/blk9/conv_act:x",
+        "layers/blk9/conv:y"
+      ],
+      [
+        "layers/blk9/gate:a",
+        "layers/blk9/norm:y"
+      ],
+      [
+        "layers/blk9/gate:b",
+        "layers/blk9/gate_act:y"
+      ],
+      [
+        "layers/blk9/gate_act:x",
+        "layers/blk9/split:y0"
+      ],
+      [
+        "layers/blk9/in_proj:x",
+        "layers/blk9/_in:x"
+      ],
+      [
+        "layers/blk9/norm:x",
+        "layers/blk9/scan:y"
+      ],
+      [
+        "layers/blk9/out_proj:x",
+        "layers/blk9/gate:y"
+      ],
+      [
+        "layers/blk9/scan:dt",
+        "layers/blk9/split:y2"
+      ],
+      [
+        "layers/blk9/scan:xbc",
+        "layers/blk9/conv_act:y"
+      ],
+      [
+        "layers/blk9/split:x",
+        "layers/blk9/in_proj:y"
+      ],
+      [
+        "layers/blk9:x",
+        "layers/norm9:y"
+      ],
+      [
+        "layers/norm0:x",
+        "layers/_in:x"
+      ],
+      [
+        "layers/norm10:x",
+        "layers/add9:y"
+      ],
+      [
+        "layers/norm11:x",
+        "layers/add10:y"
+      ],
+      [
+        "layers/norm12:x",
+        "layers/add11:y"
+      ],
+      [
+        "layers/norm13:x",
+        "layers/add12:y"
+      ],
+      [
+        "layers/norm14:x",
+        "layers/add13:y"
+      ],
+      [
+        "layers/norm15:x",
+        "layers/add14:y"
+      ],
+      [
+        "layers/norm16:x",
+        "layers/add15:y"
+      ],
+      [
+        "layers/norm17:x",
+        "layers/add16:y"
+      ],
+      [
+        "layers/norm18:x",
+        "layers/add17:y"
+      ],
+      [
+        "layers/norm19:x",
+        "layers/add18:y"
+      ],
+      [
+        "layers/norm1:x",
+        "layers/add0:y"
+      ],
+      [
+        "layers/norm20:x",
+        "layers/add19:y"
+      ],
+      [
+        "layers/norm21:x",
+        "layers/add20:y"
+      ],
+      [
+        "layers/norm22:x",
+        "layers/add21:y"
+      ],
+      [
+        "layers/norm23:x",
+        "layers/add22:y"
+      ],
+      [
+        "layers/norm24:x",
+        "layers/add23:y"
+      ],
+      [
+        "layers/norm25:x",
+        "layers/add24:y"
+      ],
+      [
+        "layers/norm26:x",
+        "layers/add25:y"
+      ],
+      [
+        "layers/norm27:x",
+        "layers/add26:y"
+      ],
+      [
+        "layers/norm28:x",
+        "layers/add27:y"
+      ],
+      [
+        "layers/norm29:x",
+        "layers/add28:y"
+      ],
+      [
+        "layers/norm2:x",
+        "layers/add1:y"
+      ],
+      [
+        "layers/norm30:x",
+        "layers/add29:y"
+      ],
+      [
+        "layers/norm31:x",
+        "layers/add30:y"
+      ],
+      [
+        "layers/norm32:x",
+        "layers/add31:y"
+      ],
+      [
+        "layers/norm33:x",
+        "layers/add32:y"
+      ],
+      [
+        "layers/norm34:x",
+        "layers/add33:y"
+      ],
+      [
+        "layers/norm35:x",
+        "layers/add34:y"
+      ],
+      [
+        "layers/norm36:x",
+        "layers/add35:y"
+      ],
+      [
+        "layers/norm37:x",
+        "layers/add36:y"
+      ],
+      [
+        "layers/norm38:x",
+        "layers/add37:y"
+      ],
+      [
+        "layers/norm39:x",
+        "layers/add38:y"
+      ],
+      [
+        "layers/norm3:x",
+        "layers/add2:y"
+      ],
+      [
+        "layers/norm40:x",
+        "layers/add39:y"
+      ],
+      [
+        "layers/norm41:x",
+        "layers/add40:y"
+      ],
+      [
+        "layers/norm42:x",
+        "layers/add41:y"
+      ],
+      [
+        "layers/norm43:x",
+        "layers/add42:y"
+      ],
+      [
+        "layers/norm44:x",
+        "layers/add43:y"
+      ],
+      [
+        "layers/norm45:x",
+        "layers/add44:y"
+      ],
+      [
+        "layers/norm46:x",
+        "layers/add45:y"
+      ],
+      [
+        "layers/norm47:x",
+        "layers/add46:y"
+      ],
+      [
+        "layers/norm48:x",
+        "layers/add47:y"
+      ],
+      [
+        "layers/norm49:x",
+        "layers/add48:y"
+      ],
+      [
+        "layers/norm4:x",
+        "layers/add3:y"
+      ],
+      [
+        "layers/norm50:x",
+        "layers/add49:y"
+      ],
+      [
+        "layers/norm51:x",
+        "layers/add50:y"
+      ],
+      [
+        "layers/norm5:x",
+        "layers/add4:y"
+      ],
+      [
+        "layers/norm6:x",
+        "layers/add5:y"
+      ],
+      [
+        "layers/norm7:x",
+        "layers/add6:y"
+      ],
+      [
+        "layers/norm8:x",
+        "layers/add7:y"
+      ],
+      [
+        "layers/norm9:x",
+        "layers/add8:y"
+      ],
+      [
+        "layers:x",
+        "embed:y"
+      ],
+      [
+        "logits:x",
+        "head:y"
+      ]
+    ],
+    "issues": []
   }
 }

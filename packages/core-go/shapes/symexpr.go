@@ -137,6 +137,21 @@ func monoDegree(m Mono) int {
 	return d
 }
 
+// compareNames orders two monomials for display: by their letters, with case
+// only breaking a tie, so "drope + Kl" rather than "Kl + drope".
+//
+// The rule is written out in both engines rather than taken from either
+// language's collation, because the printed form of a shape is what the editor
+// draws on a wire and the two engines have to agree on it character for
+// character.
+func compareNames(a, b string) int {
+	la, lb := strings.ToLower(a), strings.ToLower(b)
+	if la != lb {
+		return strings.Compare(la, lb)
+	}
+	return strings.Compare(a, b)
+}
+
 type term struct {
 	c *big.Rat
 	m Mono
@@ -430,7 +445,7 @@ func (s Sym) String() string {
 		if di != dj {
 			return di > dj
 		}
-		return monoKey(list[i].m) < monoKey(list[j].m)
+		return compareNames(monoKey(list[i].m), monoKey(list[j].m)) < 0
 	})
 	var b strings.Builder
 	for i, t := range list {

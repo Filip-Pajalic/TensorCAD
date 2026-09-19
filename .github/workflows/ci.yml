@@ -26,9 +26,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: |
-            packages/core-go/go.sum
-            desktop/go.sum
+          cache-dependency-path: packages/core-go/go.sum
       - name: Format
         run: |
           unformatted=$(gofmt -l packages/core-go desktop)
@@ -40,12 +38,11 @@ jobs:
       - name: Vet
         run: go vet ./...
         working-directory: packages/core-go
+      # The engine only. The desktop module links a webview and needs the
+      # system libraries for it, so it is tested in the job that has them.
       - name: Test the engine
         run: go test ./...
         working-directory: packages/core-go
-      - name: Test the desktop services
-        run: go test ./...
-        working-directory: desktop
 
   typescript:
     name: TypeScript
@@ -98,7 +95,7 @@ jobs:
           fi
 
   desktop:
-    name: Desktop builds
+    name: Desktop
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -109,13 +106,29 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: desktop/go.sum
+      # Wails v3 links GTK 4 and WebKitGTK 6; without the headers the module
+      # will not even compile, let alone run.
+      - name: System libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-4-dev libwebkitgtk-6.0-dev
       - run: bun install --frozen-lockfile
       - name: Build the engine
         run: bun run build:wasm
+      # The window imports typed bindings for every Go service, and they are
+      # generated rather than committed. Run through `go run` so the tool's
+      # version comes from go.mod and cannot drift from the runtime the
+      # frontend imports.
+      - name: Generate the service bindings
+        run: go run github.com/wailsapp/wails/v3/cmd/wails3 generate bindings -clean=true -ts -i
+        working-directory: desktop
       # The window's assets are embedded into the Go binary with `go:embed`, so
       # the frontend has to build before the shell will compile at all.
       - name: Build the window
         run: bun run --cwd desktop/frontend build
+      - name: Test the services
+        run: go test ./...
+        working-directory: desktop
       - name: Compile the shell
         run: go build ./...
         working-directory: desktop

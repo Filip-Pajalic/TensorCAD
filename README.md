@@ -8,9 +8,9 @@
 <p align="center">
   <a href="https://github.com/Filip-Pajalic/TensorCAD/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Filip-Pajalic/TensorCAD/ci.yml?branch=main&style=flat-square&label=CI" alt="CI status" /></a>
   <img src="https://img.shields.io/badge/license-MIT-111111?style=flat-square" alt="MIT licensed" />
-  <img src="https://img.shields.io/badge/core-zero%20runtime%20deps-2f6fb0?style=flat-square" alt="Zero runtime dependencies" />
+  <img src="https://img.shields.io/badge/engine-Go%20%E2%86%92%20WebAssembly-2f6fb0?style=flat-square" alt="Go engine compiled to WebAssembly" />
   <img src="https://img.shields.io/badge/presets-20%20verified-1b6834?style=flat-square" alt="20 verified presets" />
-  <img src="https://img.shields.io/badge/tests-273%20passing-1b6834?style=flat-square" alt="273 tests passing" />
+  <img src="https://img.shields.io/badge/tests-287%20passing-1b6834?style=flat-square" alt="287 tests passing" />
   <img src="https://img.shields.io/badge/MCP-server%20included-8a5b9c?style=flat-square" alt="MCP server included" />
 </p>
 
@@ -151,8 +151,9 @@ post-norm, tied embeddings, hybrid stacks.
 ## Repository shape
 
 ```
-packages/core/      the engine — pure TypeScript, zero runtime dependencies
-packages/core-go/   the Go port, proven against core's golden files
+packages/core-go/   the engine — Go, no dependencies outside the standard library
+packages/engine/    the engine compiled to WebAssembly, and its TypeScript client
+packages/core/      the TypeScript the engine replaced; the parity oracle
 packages/ui/        React + React Flow editor, 2D sheet and 3D volume view
 packages/cli/       command line: validate, analyze, show, diff, codegen
 packages/mcp/       MCP server
@@ -160,6 +161,14 @@ desktop/            Wails v3 + Go desktop application
 python/             the only Python: verifies generated models against PyTorch
 docs/               tutorials, how-to guides, reference and explanation
 ```
+
+One engine, everywhere. The editor, the command line, the MCP server and the
+desktop shell all load the same WebAssembly module and ask it the same
+questions, so an answer cannot depend on where it was asked. `packages/core` is
+the TypeScript the engine was ported from: it no longer ships, and what keeps
+it around is that the Go is checked against it — every preset's symbol table,
+inferred shapes, full analysis, design-rule findings and generated PyTorch,
+byte for byte, both from the source and from the compiled module.
 
 ## For agents
 

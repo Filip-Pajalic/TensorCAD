@@ -389,6 +389,15 @@ function buildView(opts: BuildOptions): { nodes: CanvasNode[]; edges: FlowEdge[]
       inPorts,
       outPorts,
       severity: derived.severityByPath.get(path) ?? null,
+      // Attributed to this block exactly, not rolled up from its interior: a
+      // marker that fired because of something three levels down would be
+      // pointing at the wrong part.
+      findings: (derived.findingsByPath.get(path) ?? []).map((f) => ({
+        severity: f.severity,
+        message: f.message,
+        rule: f.rule,
+        port: f.port,
+      })),
       drillable: editable && ops.isDrillable(node),
       readOnly: !editable,
       locked: lockedPaths.has(path),

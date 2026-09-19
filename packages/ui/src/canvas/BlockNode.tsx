@@ -40,6 +40,14 @@ export interface BlockNodeData extends Record<string, unknown> {
   inPorts: PortView[];
   outPorts: PortView[];
   severity: Severity | null;
+  /**
+   * What is actually wrong with this block, in its own words.
+   *
+   * `severity` rolls up everything beneath a container, which is right for the
+   * model tree and wrong for a marker: a marker that fired because of something
+   * three levels down would be pointing at the wrong part.
+   */
+  findings: { severity: Severity; message: string; rule: string; port?: string }[];
   drillable: boolean;
   readOnly: boolean;
   locked: boolean;
@@ -79,10 +87,13 @@ function Pins({
   ports,
   dir,
   live,
+  flagged,
 }: {
   ports: PortView[];
   dir: "i" | "o";
   live: ReadonlyMap<string, number>;
+  /** Ports a finding named, so the pin can carry the mark. */
+  flagged: ReadonlySet<string>;
 }): React.ReactElement | null {
   if (ports.length === 0) return null;
   const named = ports.length > 1;
@@ -108,7 +119,8 @@ function Pins({
                   `pin pin--${side}` +
                   (wires > 0 ? " pin--live" : " pin--idle") +
                   (dangling ? " pin--dangling" : "") +
-                  (wires > 1 ? " pin--junction" : "")
+                  (wires > 1 ? " pin--junction" : "") +
+                  (flagged.has(port.name) ? " pin--flagged" : "")
                 }
                 key={id}
                 style={{ ["--dtype" as string]: dtypeColor(port.dtype) }}
@@ -138,6 +150,8 @@ function Pins({
 function BlockNodeView({ data, selected }: NodeProps<BlockFlowNode>): React.ReactElement {
   const part = partColor(data.category);
   const live = data.livePins;
+  const findings = data.findings ?? [];
+  const flaggedPorts = new Set(findings.map((f) => f.port).filter((p): p is string => !!p));
 
   if (data.glyph) {
     return (
@@ -146,7 +160,7 @@ function BlockNodeView({ data, selected }: NodeProps<BlockFlowNode>): React.Reac
         style={{ ["--edge" as string]: part.edge }}
         title={`${data.label} — ${data.summary || data.type}`}
       >
-        <Pins ports={data.inPorts} dir="i" live={live} />
+        <Pins ports={data.inPorts} dir="i" live={live} flagged={flaggedPorts} />
         <span className="glyph__mark" aria-hidden>
           {data.glyph}
         </span>
@@ -155,7 +169,7 @@ function BlockNodeView({ data, selected }: NodeProps<BlockFlowNode>): React.Reac
             {data.severity === "error" ? "●" : "▲"}
           </span>
         )}
-        <Pins ports={data.outPorts} dir="o" live={live} />
+        <Pins ports={data.outPorts} dir="o" live={live} flagged={flaggedPorts} />
       </div>
     );
   }
@@ -175,7 +189,7 @@ function BlockNodeView({ data, selected }: NodeProps<BlockFlowNode>): React.Reac
         ["--part-ink" as string]: part.text,
       }}
     >
-      <Pins ports={data.inPorts} dir="i" live={live} />
+      <Pins ports={data.inPorts} dir="i" live={live} flagged={flaggedPorts} />
 
       <div
         className="part__body"
@@ -216,13 +230,30 @@ function BlockNodeView({ data, selected }: NodeProps<BlockFlowNode>): React.Reac
       </div>
 
       {/* A repeated stack is marked beside the part, as a figure writes "48x". */}
+      {/*
+        A design-rule marker, as eeschema draws one: a mark placed on the thing
+        that is wrong, not a note somewhere else. Seventeen rules run on every
+        edit and until now none of them was visible where the work happens.
+        The title carries every finding, so hovering answers "what is wrong
+        with this" without a trip to the panel.
+      */}
+      {findings.length > 0 && (
+        <div
+          className={`drc drc--${findings.some((f) => f.severity === "error") ? "error" : findings.some((f) => f.severity === "warning") ? "warning" : "info"}`}
+          title={findings.map((f) => `${f.rule}: ${f.message}`).join("\n")}
+          aria-label={`${findings.length} finding${findings.length === 1 ? "" : "s"}`}
+        >
+          {findings.length > 1 ? findings.length : ""}
+        </div>
+      )}
+
       {data.repeat && data.repeat > 1 && (
         <div className="part__repeat" title={`this block is stacked ${data.repeat} times`}>
           {data.repeat}&times;
         </div>
       )}
 
-      <Pins ports={data.outPorts} dir="o" live={live} />
+      <Pins ports={data.outPorts} dir="o" live={live} flagged={flaggedPorts} />
     </div>
   );
 }

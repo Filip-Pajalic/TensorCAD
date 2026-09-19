@@ -4,19 +4,19 @@ Goal: a node-based CAD tool for designing neural network architectures at the pr
 
 Effort estimates assume one developer working with an AI coding assistant, part-time. They are ranges, not commitments.
 
-## Status as of 2026-09-18
+## Status as of 2026-09-19
 
 | Milestone | State |
 |---|---|
-| M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 15 presets, exact parameter match on 13 of them. |
-| M1 Check (design rules, full analysis) | **Done.** 17 rules; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
+| M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 20 presets, exact parameter match on 17 of them. |
+| M1 Check (design rules, full analysis) | **Done.** 18 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
 | M2 Manufacture (PyTorch codegen, verification) | **Done.** Every generated model's parameter count matches PyTorch exactly, and the FLOPs estimate matches a profiler once the causal mask is accounted for. |
 | M3 Agent (MCP server, CLI) | **Done**, minus the live-UI bridge. 13 MCP tools over stdio, 6 CLI commands, 67 tests. |
 | M4 Test bench | **Partly done.** `tensorcad-runtime smoke-train` trains a scaled design on the local GPU and logs a loss curve; `scaleDesign` shrinks a design to a budget. No run registry or comparison view in the editor yet. |
 | M5 Advanced parts | **Mixture of experts, latent attention and state-space blocks all done.** DeepSeek-V3 and Nemotron-H-8B reproduce exactly. |
 | Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, and named refusals. Remaining items in `docs/explanation/interaction-design.md`. |
 
-`bun test packages` runs everything: 256 tests. 17 presets, 14 matching their published parameter count exactly, and every one of them confirmed against PyTorch 2.11 on the local GPU.
+`bun test packages` runs everything: 273 tests. 20 presets, 17 matching their published parameter count exactly, and every one of them confirmed against PyTorch 2.11 on the local GPU. Not all are language models: `ijepa-vit-h14` is a vision transformer and `alexnet` a convolutional classifier, on the same machinery.
 
 ## Principles
 

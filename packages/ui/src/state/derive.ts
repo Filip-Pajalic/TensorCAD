@@ -32,6 +32,8 @@ export interface UiIssue {
   severity: Severity;
   /** The rule that raised it, e.g. `"flash-head-dim"`. */
   rule: string;
+  /** The parameter that caused it, so the inspector can highlight the field. */
+  param?: string;
 }
 
 export interface Derived {
@@ -50,6 +52,15 @@ export interface Derived {
   ok: boolean;
   /** Worst severity at a path or anywhere beneath it. */
   severityByPath: Map<string, Severity>;
+  /**
+   * Findings attributed to exactly this path, not rolled up.
+   *
+   * `severityByPath` answers "is anything wrong in here", which is what a tree
+   * needs. This answers "what is wrong with *this*", which is what a marker on
+   * the drawing needs — a marker that fired because of something three levels
+   * down would be pointing at the wrong thing.
+   */
+  findingsByPath: Map<string, UiIssue[]>;
   /** Milliseconds the whole analysis took, shown in the status bar. */
   elapsedMs: number;
 }
@@ -108,6 +119,7 @@ export function derive(doc: Doc, operating: OperatingPoint): Derived {
     key: `${f.rule}:${i}`,
     path: f.path ?? null,
     port: f.port,
+    param: f.param,
     message: tidy(f),
     hint: f.hint,
     severity: f.severity,
@@ -115,7 +127,14 @@ export function derive(doc: Doc, operating: OperatingPoint): Derived {
   }));
 
   const severityByPath = new Map<string, Severity>();
-  for (const i of issues) if (i.path) bumpSeverity(severityByPath, i.path, i.severity);
+  const findingsByPath = new Map<string, UiIssue[]>();
+  for (const i of issues) {
+    if (!i.path) continue;
+    bumpSeverity(severityByPath, i.path, i.severity);
+    const held = findingsByPath.get(i.path);
+    if (held) held.push(i);
+    else findingsByPath.set(i.path, [i]);
+  }
 
   const value: Derived = {
     analysis,
@@ -130,6 +149,7 @@ export function derive(doc: Doc, operating: OperatingPoint): Derived {
     counts: report.counts,
     ok: report.ok,
     severityByPath,
+    findingsByPath,
     elapsedMs: performance.now() - started,
   };
   cache.set(doc, { key, value });

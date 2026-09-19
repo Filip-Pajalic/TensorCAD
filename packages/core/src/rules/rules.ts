@@ -48,8 +48,18 @@ const blockConstraints: Rule = {
       const check = isPrimitive(def) || isComposite(def) ? def.constraints : undefined;
       if (!check) continue;
       try {
-        for (const message of check(b.resolved)) {
-          out.push({ rule: "block-constraints", severity: "error", path: b.path, message });
+        for (const f of check(b.resolved)) {
+          // The block's own id is kept as the rule, so a finding can be
+          // excluded or documented individually rather than as a class.
+          out.push({
+            rule: f.id,
+            severity: f.severity,
+            path: b.path,
+            param: f.param,
+            port: f.port,
+            message: f.message,
+            hint: f.hint,
+          });
         }
       } catch {
         // A block whose parameters failed to resolve is already reported.

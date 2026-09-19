@@ -9,7 +9,7 @@
  */
 
 import type { Graph, NodeDef, ParamValue } from "../ir/types.js";
-import type { CompositeDef, ContainerDef } from "./types.js";
+import type { CompositeDef, ContainerDef, BlockFinding } from "./types.js";
 import { ex } from "./types.js";
 
 const ROPE_SPEC = { type: "obj", default: null, doc: "RoPE settings, or null for no rotary embedding" } as const;
@@ -146,9 +146,15 @@ const gqaAttention: CompositeDef = {
     return { nodes, edges };
   },
   constraints: (r) => {
-    const out: string[] = [];
+    const out: BlockFinding[] = [];
     if (r.p.heads % r.p.kv_heads !== 0) {
-      out.push(`heads (${r.p.heads}) must be divisible by kv_heads (${r.p.kv_heads})`);
+      out.push({
+        id: "ATTN-01",
+        severity: "error",
+        param: "kv_heads",
+        message: `heads (${r.p.heads}) must be divisible by kv_heads (${r.p.kv_heads})`,
+        hint: "Grouped-query attention shares one key/value head across a whole group of query heads, so the groups have to come out even.",
+      });
     }
     return out;
   },
@@ -473,9 +479,14 @@ const moeLayer: CompositeDef = {
     return { nodes, edges };
   },
   constraints: (r) => {
-    const out: string[] = [];
+    const out: BlockFinding[] = [];
     if (r.p.top_k > r.p.experts) {
-      out.push(`top_k (${r.p.top_k}) cannot exceed the number of experts (${r.p.experts})`);
+      out.push({
+        id: "MOE-01",
+        severity: "error",
+        param: "top_k",
+        message: `top_k (${r.p.top_k}) cannot exceed the number of experts (${r.p.experts})`,
+      });
     }
     return out;
   },

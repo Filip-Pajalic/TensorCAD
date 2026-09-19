@@ -22,6 +22,10 @@ export interface InferIssue {
   port?: string;
   message: string;
   severity: "error" | "warning";
+  /** Stable id when the issue came from a block's own constraints. */
+  rule?: string;
+  /** The parameter that caused it, so the inspector can point at the field. */
+  param?: string;
 }
 
 export interface InferResult {
@@ -160,11 +164,22 @@ function inferGraph(w: Walker, graph: Graph, prefix: string, seeds: Map<string, 
     }
     portsMap.set(path, nodePorts);
 
-    if (isPrimitive(def) && def.constraints) {
-      for (const c of def.constraints(resolved)) issues.push({ path, message: c, severity: "error" });
-    }
-    if (isComposite(def) && def.constraints) {
-      for (const c of def.constraints(resolved)) issues.push({ path, message: c, severity: "error" });
+    // A block's own constraints, surfaced here too so the canvas has them
+    // before the rule engine has run. They keep their id and severity.
+    const constraints = isPrimitive(def) || isComposite(def) ? def.constraints : undefined;
+    if (constraints) {
+      for (const c of constraints(resolved)) {
+        // Shape inference reports errors and warnings; an informational
+        // constraint is still worth seeing, so it arrives as a warning here and
+        // keeps its own severity in the rule engine.
+        issues.push({
+          path,
+          message: c.message,
+          severity: c.severity === "error" ? "error" : "warning",
+          rule: c.id,
+          param: c.param,
+        });
+      }
     }
 
     const ctx = evalCtxFor(resolved, w.symbols);

@@ -14,7 +14,7 @@
  * Sources for each formula are in docs/research/02-analysis-math.md.
  */
 
-import type { PrimitiveDef } from "./types.js";
+import type { PrimitiveDef, BlockFinding } from "./types.js";
 import { atomToString, parsePattern } from "../shapes/pattern.js";
 
 const ELEMENTWISE_COST: Record<string, number> = {
@@ -446,7 +446,17 @@ export const PRIMITIVES: PrimitiveDef[] = [
     // The rotation is reconstructed from the position, so nothing is saved.
     retains: () => [],
     constraints: (r) =>
-      r.p.head_dim % 2 !== 0 ? [`RoPE needs an even head_dim, got ${r.p.head_dim}`] : [],
+      r.p.head_dim % 2 !== 0
+        ? [
+            {
+              id: "ROPE-01",
+              severity: "error" as const,
+              param: "head_dim",
+              message: `RoPE needs an even head_dim, got ${r.p.head_dim}`,
+              hint: "Rotary embedding rotates pairs of channels, so an odd width leaves one unpaired.",
+            },
+          ]
+        : [],
     docs: {
       summary: "Rotary position embedding applied to queries or keys.",
       refs: ["https://arxiv.org/abs/2104.09864"],
@@ -514,11 +524,18 @@ export const PRIMITIVES: PrimitiveDef[] = [
       return { perToken: perTokenFull, perSeq: 0 };
     },
     constraints: (r) => {
-      const out: string[] = [];
+      const out: BlockFinding[] = [];
       if (r.p.heads % r.p.kv_heads !== 0) {
-        out.push(`heads (${r.p.heads}) must be divisible by kv_heads (${r.p.kv_heads})`);
+        out.push({
+          id: "SDPA-01",
+          severity: "error",
+          param: "kv_heads",
+          message: `heads (${r.p.heads}) must be divisible by kv_heads (${r.p.kv_heads})`,
+        });
       }
-      if (r.p.window < 0) out.push("window must be non-negative");
+      if (r.p.window < 0) {
+        out.push({ id: "SDPA-02", severity: "error", param: "window", message: "window must be non-negative" });
+      }
       return out;
     },
     docs: {
@@ -552,7 +569,14 @@ export const PRIMITIVES: PrimitiveDef[] = [
     retains: () => ["x"],
     constraints: (r) =>
       r.p.top_k > r.p.experts
-        ? [`top_k (${r.p.top_k}) cannot exceed the number of experts (${r.p.experts})`]
+        ? [
+            {
+              id: "ROUTER-01",
+              severity: "error" as const,
+              param: "top_k",
+              message: `top_k (${r.p.top_k}) cannot exceed the number of experts (${r.p.experts})`,
+            },
+          ]
         : [],
     docs: {
       summary: "Chooses which experts each token is sent to.",
@@ -730,14 +754,22 @@ export const PRIMITIVES: PrimitiveDef[] = [
       perSeq: r.p.heads * r.p.head_dim * r.p.state * c.bytes,
     }),
     constraints: (r) => {
-      const out: string[] = [];
+      const out: BlockFinding[] = [];
       if (r.p.heads * r.p.head_dim !== r.p.d_inner) {
-        out.push(
-          `heads (${r.p.heads}) times head_dim (${r.p.head_dim}) must equal d_inner (${r.p.d_inner})`,
-        );
+        out.push({
+          id: "SSD-01",
+          severity: "error",
+          param: "head_dim",
+          message: `heads (${r.p.heads}) times head_dim (${r.p.head_dim}) must equal d_inner (${r.p.d_inner})`,
+        });
       }
       if (r.p.heads % r.p.groups !== 0) {
-        out.push(`heads (${r.p.heads}) must be divisible by groups (${r.p.groups})`);
+        out.push({
+          id: "SSD-02",
+          severity: "error",
+          param: "groups",
+          message: `heads (${r.p.heads}) must be divisible by groups (${r.p.groups})`,
+        });
       }
       return out;
     },

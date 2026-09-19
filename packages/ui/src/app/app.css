@@ -769,6 +769,54 @@ select.field {
   font-size: 9px;
 }
 
+/*
+ * A design-rule marker.
+ *
+ * eeschema places its DRC markers on the offending item, and that is the whole
+ * value: seventeen rules run on every edit and the drawing is where the work
+ * happens. A count appears when a block has more than one.
+ *
+ * It sits proud of the top-left corner rather than inside the body, so it never
+ * competes with the part's own text and reads the same whatever the part says.
+ */
+.drc {
+  position: absolute;
+  top: -7px;
+  left: -7px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--sheet);
+  pointer-events: auto;
+  cursor: help;
+  z-index: 3;
+}
+
+.drc--error {
+  background: var(--error);
+}
+.drc--warning {
+  background: var(--warn);
+}
+.drc--info {
+  background: var(--accent);
+}
+
+/* A pin a finding named. The mark goes on the pin, because "this port" is more
+   specific than "this block" and the drawing can say so. */
+.pin--flagged .pin__handle.react-flow__handle {
+  opacity: 1;
+  background: var(--error);
+  box-shadow: 0 0 0 2px var(--error-glow);
+}
+
 /* ----------------------------------------------------------------- pins --- */
 /*
  * A pin on every side of every port.

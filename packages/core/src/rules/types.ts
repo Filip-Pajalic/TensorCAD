@@ -12,6 +12,8 @@ export interface Finding {
   /** Node path the finding is about, when it is about one node. */
   path?: string;
   port?: string;
+  /** The parameter that caused it, so the inspector can highlight the field. */
+  param?: string;
   message: string;
   /** What to do about it. */
   hint?: string;

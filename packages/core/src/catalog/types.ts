@@ -36,6 +36,26 @@ export type ParamSpec =
  * A bare string is still a legal port and means `{ shape }`, so a block that
  * has nothing more to say does not have to say it.
  */
+/**
+ * Something a block says about itself.
+ *
+ * This used to be a bare string, which meant a finding could not be filtered by
+ * severity, could not be excluded, and could not say which field caused it. All
+ * three of those are things a design-rule system has to do, so a constraint now
+ * returns the same shape as every other finding in the system.
+ */
+export interface BlockFinding {
+  /** Stable id, e.g. `"ATTN-01"`. Stable so it can be excluded and documented. */
+  id: string;
+  severity: "error" | "warning" | "info";
+  message: string;
+  /** The parameter that caused it, so the inspector can highlight the field. */
+  param?: string;
+  /** The port that caused it, so the canvas can point at the pin. */
+  port?: string;
+  hint?: string;
+}
+
 export interface PortSpec {
   /** Shape pattern, as before: `"... d_model"`. */
   shape: string;
@@ -182,7 +202,7 @@ export interface PrimitiveDef {
   /** Inference cache footprint. */
   stateBytes?: (r: Resolved, ctx: AnalysisCtx) => StateBytes;
   /** Extra checks beyond shape inference. Returns human-readable problems. */
-  constraints?: (r: Resolved) => string[];
+  constraints?: (r: Resolved) => BlockFinding[];
   docs: BlockDocs;
 }
 
@@ -198,7 +218,7 @@ export interface CompositeDef {
    * which keeps symbol names visible on inner shapes.
    */
   expand: (raw: Record<string, ParamValue>, r: Resolved) => Graph;
-  constraints?: (r: Resolved) => string[];
+  constraints?: (r: Resolved) => BlockFinding[];
   docs: BlockDocs;
 }
 

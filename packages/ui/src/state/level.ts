@@ -7,9 +7,9 @@
  * level is produced by the catalog's own expansion and is read-only.
  */
 
-import type { Doc, Graph, NodeDef } from "@tensorcad/core";
-import { catalogOf, isComposite, isContainer } from "@tensorcad/core";
 import type { Derived } from "./derive.js";
+import type { Doc, Graph, NodeDef } from "@tensorcad/engine";
+import { catalogOf, isComposite, isContainer } from "../engine.js";
 
 export type LevelKind = "root" | "container" | "composite";
 
@@ -94,9 +94,10 @@ export function resolveLevel(doc: Doc, path: string[], derived: Derived): Level 
           error: `"${seg}" has not been analysed, so its interior cannot be shown`,
         };
       }
-      try {
-        graph = def.expand(resolved.rawFull, resolved);
-      } catch (e) {
+      // The analysis already expanded this one; drawing it means reading what
+      // it saw, not unfolding the composite a second time here.
+      const expansion = derived.infer.expansions.get(walked.join("/"));
+      if (!expansion) {
         return {
           segments: walked.slice(0, -1),
           prefix: walked.slice(0, -1).join("/"),
@@ -105,9 +106,10 @@ export function resolveLevel(doc: Doc, path: string[], derived: Derived): Level 
           kind,
           owner,
           crumbs,
-          error: `Expanding "${seg}" failed: ${(e as Error).message}`,
+          error: `"${seg}" did not expand, so its interior cannot be shown`,
         };
       }
+      graph = expansion;
       editable = false;
       kind = "composite";
       owner = node;

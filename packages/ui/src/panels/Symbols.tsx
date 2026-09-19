@@ -6,10 +6,10 @@
  */
 
 import { useState } from "react";
-import type { SymbolDef } from "@tensorcad/core";
 import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
 import { TextField } from "./Field.js";
+import type { SymbolDef } from "@tensorcad/engine";
 
 type Kind = "design" | "runtime";
 

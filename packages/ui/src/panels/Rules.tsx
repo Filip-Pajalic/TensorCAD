@@ -9,11 +9,11 @@
  */
 
 import { useMemo, useState } from "react";
-import { RULES } from "@tensorcad/core";
 import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
 import type { Severity, UiIssue } from "../state/derive.js";
 import Section from "./Section.js";
+import { RULES } from "../engine.js";
 
 const SEVERITIES: Severity[] = ["error", "warning", "info"];
 

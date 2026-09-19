@@ -8,13 +8,14 @@
  */
 
 import { useState } from "react";
-import type { BlockDef, NodeDef, ParamSpec, ParamValue, Resolved } from "@tensorcad/core";
-import { CATALOG, formatCount } from "@tensorcad/core";
 import { useEditor } from "../state/store.js";
 import { useLevel } from "../state/hooks.js";
 import { TextArea, TextField } from "./Field.js";
 import { categoryColor } from "../canvas/blocks.js";
 import { formatShape } from "../canvas/shapes.js";
+import type { NodeDef, ParamSpec, ParamValue, Resolved } from "@tensorcad/engine";
+import { formatCount } from "@tensorcad/engine";
+import { CATALOG, type BlockDef } from "../engine.js";
 
 function isPlainNumber(text: string): boolean {
   return /^-?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(text.trim());
@@ -156,7 +157,11 @@ function ParamRow({
       break;
     }
     case "enum": {
-      const effective = raw === undefined ? (spec.default ?? "") : String(raw ?? "");
+      // An enum's value is a string; a default that is not one belongs to a
+      // parameter that was declared wrong, and showing "unset" is the honest
+      // reading of it.
+      const fallback = typeof spec.default === "string" ? spec.default : "";
+      const effective = raw === undefined ? fallback : String(raw ?? "");
       control = (
         <select
           className="field mono"
@@ -165,7 +170,7 @@ function ParamRow({
           onChange={(e) => set(e.target.value === "" ? undefined : e.target.value)}
         >
           {effective === "" && <option value="">(unset)</option>}
-          {spec.values.map((v) => (
+          {(spec.values ?? []).map((v) => (
             <option key={v} value={v}>
               {v}
             </option>
@@ -325,7 +330,7 @@ export default function Inspector(): React.ReactElement {
                   <tr key={`in-${p}`}>
                     <td className="dim">in</td>
                     <td className="mono">{p}</td>
-                    <td className="mono num">{formatShape(shape, derived.symbols, shapeMode) ?? "—"}</td>
+                    <td className="mono num">{formatShape(shape, shapeMode) ?? "—"}</td>
                   </tr>
                 );
               })}
@@ -335,7 +340,7 @@ export default function Inspector(): React.ReactElement {
                   <tr key={`out-${p}`}>
                     <td className="dim">out</td>
                     <td className="mono">{p}</td>
-                    <td className="mono num">{formatShape(shape, derived.symbols, shapeMode) ?? "—"}</td>
+                    <td className="mono num">{formatShape(shape, shapeMode) ?? "—"}</td>
                   </tr>
                 );
               })}

@@ -1,23 +1,59 @@
 /**
  * Derived analysis.
  *
- * One call to `validate` produces every number the editor shows and every
- * design-rule finding, and the core is fast enough to redo it on each edit:
- * the heaviest preset takes ten milliseconds, the rest take one. A cache keyed
- * on the document object and the operating point means the components that ask
- * for it repeatedly during a render pass share a single computation.
+ * One call into the engine produces every number the editor shows, every
+ * design-rule finding and every shape, and it is fast enough to redo on each
+ * edit: the heaviest preset takes a few milliseconds and the rest take one. A
+ * cache keyed on the document object and the operating point means the
+ * components that ask for it repeatedly during a render pass share a single
+ * computation.
  */
 
+import { toAnalysisOptions, type OperatingPoint } from "./operating.js";
 import type {
   AnalysisResult,
   Doc,
   Finding,
-  InferResult,
+  Graph,
+  Inference,
   ParamsResult,
+  Resolved,
+  ResolvedPorts,
+  Shape,
   SymbolTable,
-} from "@tensorcad/core";
-import { validate } from "@tensorcad/core";
-import { toAnalysisOptions, type OperatingPoint } from "./operating.js";
+} from "@tensorcad/engine";
+import { engine } from "../engine.js";
+
+/**
+ * Shape inference as the editor reads it.
+ *
+ * The engine answers in plain objects, because that is what JSON is. The panels
+ * ask by key many times per repaint, so the keyed parts become Maps once here
+ * rather than being indexed as objects everywhere.
+ */
+export interface InferResult {
+  /** `"path:port"` to the shape an output port produces. */
+  outputs: Map<string, Shape>;
+  /** `"path:port"` to the shape an input port actually received. */
+  inputs: Map<string, Shape>;
+  /** Consumer `"path:port"` to producer `"path:port"`. */
+  producerOf: Map<string, string>;
+  ports: Map<string, ResolvedPorts>;
+  resolved: Map<string, Resolved>;
+  /** The subgraph each composite stood for, so interiors can be drawn. */
+  expansions: Map<string, Graph>;
+}
+
+function asMaps(infer: Inference): InferResult {
+  return {
+    outputs: new Map(Object.entries(infer.outputs)),
+    inputs: new Map(Object.entries(infer.inputs)),
+    producerOf: new Map(Object.entries(infer.producerOf)),
+    ports: new Map(Object.entries(infer.ports)),
+    resolved: new Map(Object.entries(infer.resolved)),
+    expansions: new Map(Object.entries(infer.expansions)),
+  };
+}
 
 export type Severity = "error" | "warning" | "info";
 
@@ -112,10 +148,11 @@ export function derive(doc: Doc, operating: OperatingPoint): Derived {
   if (hit && hit.key === key) return hit.value;
 
   const started = performance.now();
-  const report = validate(doc, toAnalysisOptions(operating));
+  const derived = engine().derive(doc, toAnalysisOptions(operating));
+  const report = derived.report;
   const analysis = report.analysis;
 
-  const issues: UiIssue[] = report.findings.map((f, i) => ({
+  const issues: UiIssue[] = report.findings.map((f: Finding, i: number) => ({
     key: `${f.rule}:${i}`,
     path: f.path ?? null,
     port: f.port,
@@ -139,9 +176,8 @@ export function derive(doc: Doc, operating: OperatingPoint): Derived {
   const value: Derived = {
     analysis,
     symbols: analysis.symbols,
-    // `validate` infers shapes with composites collapsed; the editor needs the
-    // expanded pass so a composite's interior can be opened and inspected.
-    infer: analysis.expanded,
+    // Composites expanded, so a block's interior can be opened and inspected.
+    infer: asMaps(derived.infer),
     params: analysis.params,
     paramsByPath: rollUp(analysis.params.byPath),
     flopsByPath: rollUp(analysis.flops.byPath),

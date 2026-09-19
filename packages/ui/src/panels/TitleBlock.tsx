@@ -7,9 +7,9 @@
  * parameter count, the layer stack and whether the design passes its checks.
  */
 
-import { formatCount } from "@tensorcad/core";
 import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
+import { formatCount } from "@tensorcad/engine";
 
 function Field({
   label,

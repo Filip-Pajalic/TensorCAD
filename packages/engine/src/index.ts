@@ -25,11 +25,13 @@ import type {
   ScaleOptions,
   ScaleResult,
   TorchOptions,
+  UserBlockDef,
   ValidationReport,
 } from "./types.js";
 
 export * from "./types.js";
 export * from "./format.js";
+export * from "./ir.js";
 
 /** What the engine says about itself. */
 export interface EngineVersion {
@@ -73,6 +75,13 @@ export interface Engine {
   importHuggingFace(configText: string, name?: string): ImportResult;
   /** Every block the engine knows, for the palette. */
   catalog(): CatalogEntry[];
+  /** The design rules, for the panel that lists what is being checked. */
+  rules(): RuleInfo[];
+  /**
+   * What is wrong with a block a design defines for itself, so the block editor
+   * can say so while it is being written rather than after it is saved.
+   */
+  checkUserBlock(def: UserBlockDef, name: string): string[];
   hardware(): HardwareProfile[];
 }
 
@@ -91,7 +100,17 @@ interface Exports {
   preset(name: string): string;
   importHf(configText: string, name: string): string;
   catalog(): string;
+  rules(): string;
+  checkUserBlock(def: string, name: string): string;
   hardware(): string;
+}
+
+/** One design rule, as the rules panel lists it. */
+export interface RuleInfo {
+  id: string;
+  title: string;
+  /** One line on what the rule protects against. */
+  description: string;
 }
 
 /**
@@ -209,6 +228,8 @@ function wrap(api: Exports): Engine {
     importHuggingFace: (configText, name) =>
       unwrap(api.importHf(configText, name ?? "")) as ImportResult,
     catalog: () => unwrap(api.catalog()) as CatalogEntry[],
+    rules: () => unwrap(api.rules()) as RuleInfo[],
+    checkUserBlock: (def, name) => unwrap(api.checkUserBlock(JSON.stringify(def), name)) as string[],
     hardware: () => unwrap(api.hardware()) as HardwareProfile[],
   };
 }

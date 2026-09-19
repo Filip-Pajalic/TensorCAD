@@ -109,10 +109,15 @@ func normalize(name string, def SymbolDef) (normalized, error) {
 // are evaluated in dependency order, with cycles reported rather than hung on.
 func ResolveSymbols(doc *Doc) *SymbolTable {
 	table := &SymbolTable{
+		// Empty rather than nil throughout: this crosses to the editor as JSON,
+		// where a nil slice is null and a panel asking for its length finds
+		// nothing to ask.
+		Order:        []string{},
 		Values:       map[string]float64{},
 		DesignValues: map[string]float64{},
 		Runtime:      map[string]bool{},
 		Docs:         map[string]string{},
+		Errors:       []string{},
 	}
 
 	defs := map[string]normalized{}

@@ -305,19 +305,22 @@ func (s *EngineService) ImportHuggingFace(text string, name string) (string, err
 }
 
 // CatalogEntry is one block as the palette and the inspector need it.
+//
+// Parameters by name with the order beside them, rather than a list of named
+// parameters: a panel looks one up far more often than it walks them all, and
+// the order is what the inspector lays its fields out in.
 type CatalogEntry struct {
-	Type     string         `json:"type"`
-	Kind     string         `json:"kind"`
-	Category string         `json:"category"`
-	Summary  string         `json:"summary"`
-	Formula  string         `json:"formula,omitempty"`
-	Refs     []string       `json:"refs,omitempty"`
-	Params   []CatalogParam `json:"params"`
+	Type     string                  `json:"type"`
+	Kind     string                  `json:"kind"`
+	Category string                  `json:"category"`
+	Docs     catalog.BlockDocs       `json:"docs"`
+	Params   map[string]CatalogParam `json:"params"`
+	// ParamOrder is the order the block declares them in.
+	ParamOrder []string     `json:"paramOrder"`
+	Ports      CatalogPorts `json:"ports"`
 }
 
-// CatalogParam is one declared parameter, in the order the block declares it.
 type CatalogParam struct {
-	Name    string   `json:"name"`
 	Type    string   `json:"type"`
 	Doc     string   `json:"doc,omitempty"`
 	Default any      `json:"default,omitempty"`
@@ -326,39 +329,48 @@ type CatalogParam struct {
 	Values  []string `json:"values,omitempty"`
 }
 
+// CatalogPorts are the pins a block declares before any parameter is known, so
+// a block whose pins depend on its parameters reports none here.
+type CatalogPorts struct {
+	In  map[string]string `json:"in"`
+	Out map[string]string `json:"out"`
+}
+
 // Catalog lists every block the engine knows, for the palette.
 func (s *EngineService) Catalog() (string, error) {
-	out := make([]CatalogEntry, 0, len(catalog.Builtin))
-	for _, def := range allBlocks() {
+	defs := make([]*catalog.BlockDef, 0, len(catalog.Builtin))
+	defs = append(defs, catalog.Primitives...)
+	defs = append(defs, catalog.Composites...)
+	defs = append(defs, catalog.Containers...)
+
+	out := make([]CatalogEntry, 0, len(defs))
+	for _, def := range defs {
 		entry := CatalogEntry{
-			Type: def.Type, Kind: def.Kind, Category: def.Category,
-			Summary: def.Docs.Summary, Formula: def.Docs.Formula, Refs: def.Docs.Refs,
-			Params: make([]CatalogParam, 0, len(def.Params)),
+			Type: def.Type, Kind: def.Kind, Category: def.Category, Docs: def.Docs,
+			Params:     make(map[string]CatalogParam, len(def.Params)),
+			ParamOrder: make([]string, 0, len(def.Params)),
+			Ports:      CatalogPorts{In: map[string]string{}, Out: map[string]string{}},
 		}
 		for _, p := range def.Params {
 			cp := CatalogParam{
-				Name: p.Name, Type: string(p.Spec.Type), Doc: p.Spec.Doc,
+				Type: string(p.Spec.Type), Doc: p.Spec.Doc,
 				Min: p.Spec.Min, Max: p.Spec.Max, Values: p.Spec.Values,
 			}
 			if p.Spec.HasDefault {
 				cp.Default = p.Spec.Default
 			}
-			entry.Params = append(entry.Params, cp)
+			entry.Params[p.Name] = cp
+			entry.ParamOrder = append(entry.ParamOrder, p.Name)
+		}
+		for name, port := range def.Ports.In {
+			entry.Ports.In[name] = port.Shape
+		}
+		for name, port := range def.Ports.Out {
+			entry.Ports.Out[name] = port.Shape
 		}
 		out = append(out, entry)
 	}
 	return encode(out)
-}
-
-// allBlocks lists the catalog in a fixed order: primitives, then composites,
-// then containers, each as the engine declares them. A palette that reshuffled
-// between launches would be unusable.
-func allBlocks() []*catalog.BlockDef {
-	out := make([]*catalog.BlockDef, 0, len(catalog.Builtin))
-	out = append(out, catalog.Primitives...)
-	out = append(out, catalog.Composites...)
-	out = append(out, catalog.Containers...)
-	return out
 }
 
 // Hardware lists the accelerator profiles the analysis can be measured against.

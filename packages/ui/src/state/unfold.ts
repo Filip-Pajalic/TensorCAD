@@ -17,10 +17,11 @@
  * is arranged by the layout engine and its blocks are inspected, not dragged.
  */
 
-import type { BlockDef, Doc, Graph, NodeDef } from "@tensorcad/core";
-import { catalogOf, isComposite, isContainer, joinPath, splitEndpoint } from "@tensorcad/core";
 import type { Derived } from "./derive.js";
 import type { Level } from "./level.js";
+import type { Doc, Graph, NodeDef } from "@tensorcad/engine";
+import { joinPath, splitEndpoint } from "@tensorcad/engine";
+import { catalogOf, isComposite, isContainer, type BlockDef } from "../engine.js";
 
 export interface UnfoldedNode {
   /** Full path from the document root. */
@@ -92,15 +93,10 @@ function interiorOf(
   if (!def) return null;
   if (isContainer(def)) return node.graph && node.graph.nodes.length > 0 ? node.graph : null;
   if (!isComposite(def)) return null;
-  const resolved = derived.infer.resolved.get(path);
-  if (!resolved) return null;
-  try {
-    return def.expand(resolved.rawFull, resolved);
-  } catch {
-    // A block whose parameters did not resolve is already reported as an issue.
-    // Here it simply stays closed.
-    return null;
-  }
+  // What the analysis expanded it into. A block whose parameters did not
+  // resolve has no expansion and simply stays closed; the issue is reported
+  // elsewhere.
+  return derived.infer.expansions.get(path) ?? null;
 }
 
 const isBoundaryIn = (def: BlockDef | undefined): boolean => def?.type === "boundary_in";

@@ -6,9 +6,9 @@
  * shows them as missing and the analysis reports them.
  */
 
-import type { BlockDef, NodeDef, ParamSpec, ParamValue } from "@tensorcad/core";
-import { CATALOG } from "@tensorcad/core";
 import { repeatSkeleton } from "./ops.js";
+import type { NodeDef, ParamSpec, ParamValue } from "@tensorcad/engine";
+import { CATALOG, type BlockDef } from "../engine.js";
 
 /** Short, readable node ids instead of repeating the full type name. */
 const BASE_ID: Record<string, string> = {

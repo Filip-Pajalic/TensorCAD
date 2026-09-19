@@ -19,12 +19,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { formatCount } from "@tensorcad/core";
 import { setViewportApi } from "../state/commands.js";
 import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
 import { onThemeChange, resolvedTheme, themeValue } from "../state/theme.js";
 import { buildModel3D, describeBlk, type Arrow, type Blk, type Model3D } from "./model3d.js";
+import { formatCount } from "@tensorcad/engine";
 
 /**
  * A cell grid on every face.

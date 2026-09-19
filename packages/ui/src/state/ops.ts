@@ -1,3 +1,6 @@
+import type { Doc, Edge, Graph, NodeDef, ParamValue, SymbolDef } from "@tensorcad/engine";
+import { splitEndpoint } from "@tensorcad/engine";
+import { CATALOG } from "../engine.js";
 /**
  * Document operations.
  *
@@ -6,8 +9,6 @@
  * is uniform and nothing can edit the document behind the store's back.
  */
 
-import type { Doc, Edge, Graph, NodeDef, ParamValue, SymbolDef } from "@tensorcad/core";
-import { CATALOG, splitEndpoint } from "@tensorcad/core";
 
 export type Segments = string[];
 

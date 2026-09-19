@@ -16,10 +16,10 @@
 
 import { memo } from "react";
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
-import { formatCount } from "@tensorcad/core";
 import { dtypeColor, partColor, type BlockKind } from "./blocks.js";
 import { SIDES, handleId, type Side } from "./wiring.js";
 import type { Severity } from "../state/derive.js";
+import { formatCount } from "@tensorcad/engine";
 
 export interface PortView {
   name: string;

@@ -6,12 +6,12 @@
  */
 
 import { useMemo, useState } from "react";
-import { catalogByCategory, isUserBlock, type BlockDef } from "@tensorcad/core";
 import { useEditor } from "../state/store.js";
 import { useLevel } from "../state/hooks.js";
 import { newNodeFor } from "../state/addBlock.js";
 import { categoryColor } from "../canvas/blocks.js";
 import { DRAG_MIME } from "../canvas/Canvas.js";
+import { catalogByCategory, isUserBlock, type BlockDef } from "../engine.js";
 
 const KIND_MARK: Record<string, string> = {
   primitive: "P",

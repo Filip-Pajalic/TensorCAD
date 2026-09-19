@@ -8,13 +8,13 @@
  * tour of the source.
  */
 
-import { generateTorch, resolveSymbols } from "@tensorcad/core";
 import { blockFromGraph, defsOf, freeTypeName, mergeLibrary, toLibrary, withBlock } from "./blocks.js";
 import { resolveLevel } from "./level.js";
 import { derive } from "./derive.js";
 import { useEditor } from "./store.js";
 import { downloadDoc, downloadText } from "./serialize.js";
 import { resolvedTheme, setThemePreference } from "./theme.js";
+import { generateTorch, resolveSymbols } from "../engine.js";
 
 export type CommandGroup = "file" | "edit" | "view" | "panel" | "blocks" | "help";
 

@@ -49,14 +49,16 @@ func main() {
 		"infer":   wrap(2, inferShapes),
 		"explain": wrap(3, explainOne),
 		// The whole model at once, for the panel that lists every block.
-		"explainAll":    wrap(2, explainAll),
-		"generateTorch": wrap(2, generateTorch),
-		"scale":         wrap(2, scaleDesign),
-		"presets":       wrap(0, presetNames),
-		"preset":        wrap(1, preset),
-		"importHf":      wrap(2, importHf),
-		"catalog":       wrap(0, blockCatalog),
-		"hardware":      wrap(0, hardware),
+		"explainAll":     wrap(2, explainAll),
+		"generateTorch":  wrap(2, generateTorch),
+		"scale":          wrap(2, scaleDesign),
+		"presets":        wrap(0, presetNames),
+		"preset":         wrap(1, preset),
+		"importHf":       wrap(2, importHf),
+		"catalog":        wrap(0, blockCatalog),
+		"rules":          wrap(0, designRules),
+		"checkUserBlock": wrap(2, checkUserBlock),
+		"hardware":       wrap(0, hardware),
 	}
 	js.Global().Set("__tensorcad", js.ValueOf(api))
 
@@ -219,6 +221,40 @@ func inferShapes(args []string) (string, error) {
 	return encode(out)
 }
 
+// ruleList is a design rule as the rules panel lists it.
+type ruleList struct {
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
+func designRules([]string) (string, error) {
+	out := make([]ruleList, 0, len(rules.Rules))
+	for _, r := range rules.Rules {
+		out = append(out, ruleList{ID: r.ID, Title: r.Title, Description: r.Description})
+	}
+	return encode(out)
+}
+
+// checkUserBlock reports what is wrong with a block a design defines for
+// itself, so the block editor can say so while it is being written rather than
+// after it is saved.
+func checkUserBlock(args []string) (string, error) {
+	var def any
+	if err := json.Unmarshal([]byte(args[0]), &def); err != nil {
+		return "", fmt.Errorf("could not read the block definition: %w", err)
+	}
+	builtIn := map[string]bool{}
+	for name := range catalog.Builtin {
+		builtIn[name] = true
+	}
+	problems := catalog.ValidateUserBlock(def, args[1], builtIn)
+	if problems == nil {
+		problems = []string{}
+	}
+	return encode(problems)
+}
+
 func version([]string) (string, error) {
 	return encode(map[string]string{"engine": "go", "target": "wasm"})
 }
@@ -371,19 +407,22 @@ func importHf(args []string) (string, error) {
 }
 
 // catalogEntry is one block as the palette and the inspector need it.
+//
+// Parameters by name with the order beside them, rather than a list of named
+// parameters: a panel looks one up far more often than it walks them all, and
+// the order is what the inspector lays its fields out in.
 type catalogEntry struct {
-	Type     string         `json:"type"`
-	Kind     string         `json:"kind"`
-	Category string         `json:"category"`
-	Summary  string         `json:"summary"`
-	Formula  string         `json:"formula,omitempty"`
-	Refs     []string       `json:"refs,omitempty"`
-	Params   []catalogParam `json:"params"`
-	Ports    catalogPorts   `json:"ports"`
+	Type     string                  `json:"type"`
+	Kind     string                  `json:"kind"`
+	Category string                  `json:"category"`
+	Docs     catalog.BlockDocs       `json:"docs"`
+	Params   map[string]catalogParam `json:"params"`
+	// ParamOrder is the order the block declares them in.
+	ParamOrder []string     `json:"paramOrder"`
+	Ports      catalogPorts `json:"ports"`
 }
 
 type catalogParam struct {
-	Name    string   `json:"name"`
 	Type    string   `json:"type"`
 	Doc     string   `json:"doc,omitempty"`
 	Default any      `json:"default,omitempty"`
@@ -408,20 +447,21 @@ func blockCatalog([]string) (string, error) {
 	out := make([]catalogEntry, 0, len(defs))
 	for _, def := range defs {
 		entry := catalogEntry{
-			Type: def.Type, Kind: def.Kind, Category: def.Category,
-			Summary: def.Docs.Summary, Formula: def.Docs.Formula, Refs: def.Docs.Refs,
-			Params: make([]catalogParam, 0, len(def.Params)),
-			Ports:  catalogPorts{In: map[string]string{}, Out: map[string]string{}},
+			Type: def.Type, Kind: def.Kind, Category: def.Category, Docs: def.Docs,
+			Params:     make(map[string]catalogParam, len(def.Params)),
+			ParamOrder: make([]string, 0, len(def.Params)),
+			Ports:      catalogPorts{In: map[string]string{}, Out: map[string]string{}},
 		}
 		for _, p := range def.Params {
 			cp := catalogParam{
-				Name: p.Name, Type: string(p.Spec.Type), Doc: p.Spec.Doc,
+				Type: string(p.Spec.Type), Doc: p.Spec.Doc,
 				Min: p.Spec.Min, Max: p.Spec.Max, Values: p.Spec.Values,
 			}
 			if p.Spec.HasDefault {
 				cp.Default = p.Spec.Default
 			}
-			entry.Params = append(entry.Params, cp)
+			entry.Params[p.Name] = cp
+			entry.ParamOrder = append(entry.ParamOrder, p.Name)
 		}
 		for name, port := range def.Ports.In {
 			entry.Ports.In[name] = port.Shape

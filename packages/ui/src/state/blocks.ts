@@ -1,3 +1,6 @@
+import type { Doc, Graph, ParamSpec, UserBlockDef } from "@tensorcad/engine";
+import { BOUNDARY_IN, BOUNDARY_OUT } from "@tensorcad/engine";
+import { CATALOG, validateUserBlock } from "../engine.js";
 /**
  * The design's own block library.
  *
@@ -7,16 +10,6 @@
  * symbol libraries — a project has its own, and they travel as a file.
  */
 
-import {
-  CATALOG,
-  BOUNDARY_IN,
-  BOUNDARY_OUT,
-  validateUserBlock,
-  type Doc,
-  type Graph,
-  type ParamSpec,
-  type UserBlockDef,
-} from "@tensorcad/core";
 
 /** A block library on disk: just the definitions, with a version to check. */
 export interface BlockLibrary {
@@ -129,11 +122,11 @@ export function blockFromGraph(
     docs: { summary: summary || `Defined in this design from ${graph.nodes.length} blocks.` },
   };
 
-  return { def, errors: validateUserBlock(def, BUILT_IN) };
+  return { def, errors: validateUserBlock(def, def.type ?? "") };
 }
 
 export function withBlock(doc: Doc, def: UserBlockDef): Doc {
-  return { ...doc, defs: { ...defsOf(doc), [def.type]: def } };
+  return { ...doc, defs: { ...defsOf(doc), [def.type ?? ""]: def } };
 }
 
 export function withoutBlock(doc: Doc, type: string): Doc {
@@ -164,7 +157,7 @@ export function mergeLibrary(doc: Doc, text: string): { doc: Doc; added: string[
   const errors: string[] = [];
   for (const [type, raw] of Object.entries(lib.blocks)) {
     const def = { ...(raw as UserBlockDef), type };
-    const problems = validateUserBlock(def, BUILT_IN);
+    const problems = validateUserBlock(def, type);
     if (problems.length > 0) {
       errors.push(`${type}: ${problems[0]}`);
       continue;

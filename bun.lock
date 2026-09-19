@@ -64,7 +64,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@base-ui-components/react": "^1.0.0-rc.0",
-        "@tensorcad/core": "workspace:*",
+        "@tensorcad/engine": "workspace:*",
         "@xyflow/react": "^12.4.4",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",

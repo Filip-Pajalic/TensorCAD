@@ -2,9 +2,9 @@
  * Which graph level is on screen, and how to get back out of it.
  */
 
-import { formatCount } from "@tensorcad/core";
 import { useEditor } from "../state/store.js";
 import { useLevel } from "../state/hooks.js";
+import { formatCount } from "@tensorcad/engine";
 
 export default function Breadcrumb(): React.ReactElement {
   const { level, derived } = useLevel();

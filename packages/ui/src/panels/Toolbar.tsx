@@ -15,7 +15,6 @@
  */
 
 import { useRef, useState } from "react";
-import { PRESET_NAMES, formatCount, formatFlops } from "@tensorcad/core";
 import { Box, Minus, Plus, Redo2, Squircle, Undo2 } from "lucide-react";
 import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
@@ -30,6 +29,8 @@ import { Tooltip, Kbd } from "../ui/tooltip.js";
 import { Menu } from "@base-ui-components/react/menu";
 import { Menubar } from "@base-ui-components/react/menubar";
 import { MENUBAR, POPUP, renderMenu } from "./menu-tree.js";
+import { formatCount, formatFlops } from "@tensorcad/engine";
+import { PRESET_NAMES } from "../engine.js";
 
 /** The key a command is bound to, ready to drop into a tooltip. */
 function key(id: string): React.ReactNode {
@@ -186,7 +187,7 @@ export default function Toolbar(): React.ReactElement {
           that the menu bar starts at the left edge, which is where a menu bar
           starts anyway. */}
       <div className="hidden shrink-0 select-none items-baseline gap-1 font-sans text-[13px] font-semibold tracking-tight xl:flex">
-        <span className="text-primary">LLM</span>
+        <span className="text-primary">Tensor</span>
         <span className="text-foreground">CAD</span>
       </div>
 

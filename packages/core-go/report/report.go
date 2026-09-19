@@ -63,7 +63,10 @@ type Inference struct {
 	ProducerOf map[string]string   `json:"producerOf"`
 	Ports      map[string]Ports    `json:"ports"`
 	Resolved   map[string]Resolved `json:"resolved"`
-	Issues     []infer.Issue       `json:"issues"`
+	// Expansions is the subgraph each composite stood for, by path, so an
+	// editor can draw the inside of a block without expanding it itself.
+	Expansions map[string]*ir.Graph `json:"expansions"`
+	Issues     []infer.Issue        `json:"issues"`
 }
 
 // Derived is everything the editor needs for one document at one operating
@@ -134,10 +137,14 @@ func InferenceOf(res *infer.Result, symbols *ir.SymbolTable) Inference {
 		ProducerOf: make(map[string]string, len(res.ProducerOf)),
 		Ports:      make(map[string]Ports, len(res.Ports)),
 		Resolved:   make(map[string]Resolved, len(res.Resolved)),
+		Expansions: res.Expansions,
 		Issues:     res.Issues,
 	}
 	if out.Issues == nil {
 		out.Issues = []infer.Issue{}
+	}
+	if out.Expansions == nil {
+		out.Expansions = map[string]*ir.Graph{}
 	}
 	for key, shape := range res.Outputs {
 		out.Outputs[key] = shapeOf(shape, symbols.DesignValues)

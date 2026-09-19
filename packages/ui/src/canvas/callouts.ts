@@ -1,3 +1,4 @@
+import type { NodeDef, Resolved, SymbolTable } from "@tensorcad/engine";
 /**
  * Callouts: the annotations a published architecture figure puts around the
  * drawing, each on a leader line pointing at the part it describes.
@@ -10,7 +11,6 @@
  * They are derived from the design, so they are never stale.
  */
 
-import type { NodeDef, Resolved, SymbolTable } from "@tensorcad/core";
 
 export interface Callout {
   /** Path of the part this annotates. */

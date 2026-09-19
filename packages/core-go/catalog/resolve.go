@@ -139,7 +139,15 @@ func resolveNumeric(out *Resolved, key string, spec ParamSpec, value any, ctx sh
 			out.Errors = append(out.Errors, fmt.Sprintf("Parameter %q: %s", key, err))
 			return
 		}
-		n, ok := sym.ToNumber(ctx.Values)
+		// Evaluate rather than ToNumber: a symbol that failed carries NaN, and a
+		// block written over it has to report that rather than fault. The
+		// editor is where this lands, and a faulted engine cannot be restarted
+		// without reloading the window.
+		n, ok, err := sym.Evaluate(ctx.Values)
+		if err != nil {
+			out.Errors = append(out.Errors, fmt.Sprintf("Parameter %q: %s", key, err))
+			return
+		}
 		if !ok {
 			out.Errors = append(out.Errors, fmt.Sprintf(
 				"Parameter %q does not evaluate to a number: %s", key, sym))

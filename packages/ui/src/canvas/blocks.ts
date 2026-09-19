@@ -1,10 +1,10 @@
+import type { NodeDef, ParamSpec, Resolved } from "@tensorcad/engine";
+import { CATALOG, type BlockDef } from "../engine.js";
 /**
  * Presentation helpers for catalog blocks: colours, one-line summaries and the
  * handle-id convention the canvas uses.
  */
 
-import type { BlockDef, NodeDef, ParamSpec, Resolved } from "@tensorcad/core";
-import { CATALOG } from "@tensorcad/core";
 
 /**
  * Part colours.

@@ -7,12 +7,12 @@
  */
 
 import { create } from "zustand";
-import type { Doc, NodeDef, ParamValue, SymbolDef } from "@tensorcad/core";
-import { getPreset } from "@tensorcad/core";
 import type { ShapeMode } from "../canvas/shapes.js";
 import * as ops from "./ops.js";
 import type { Segments } from "./ops.js";
 import { DEFAULT_OPERATING, loadOperating, saveOperating, type OperatingPoint } from "./operating.js";
+import type { Doc, NodeDef, ParamValue, SymbolDef } from "@tensorcad/engine";
+import { getPreset } from "../engine.js";
 
 const UNDO_LIMIT = 100;
 

@@ -139,16 +139,20 @@ export interface BlockDocs {
   refs?: string[];
 }
 
-/** One block, as the palette and the inspector need it. */
+/**
+ * One block, as the palette and the inspector need it.
+ *
+ * Parameters by name with the order beside them: a panel looks one up far more
+ * often than it walks them all, and a Go map has no order to inherit.
+ */
 export interface CatalogEntry {
   type: string;
   kind: "primitive" | "composite" | "container";
   category: string;
-  summary: string;
-  formula?: string;
-  refs?: string[];
-  /** In the order the block declares them, which is how they are laid out. */
-  params: (ParamSpec & { name: string })[];
+  docs: BlockDocs;
+  params: Record<string, ParamSpec>;
+  /** The order the block declares them in, which is how they are laid out. */
+  paramOrder: string[];
   /**
    * The pins declared before any parameter is known. A block whose pins depend
    * on its parameters reports none here; ask the analysis for those.
@@ -550,6 +554,14 @@ export interface Inference {
   producerOf: Record<string, string>;
   ports: Record<string, ResolvedPorts>;
   resolved: Record<string, Resolved>;
+  /**
+   * The subgraph each composite stood for, by path.
+   *
+   * The walk builds these anyway, so the editor draws the inside of a block
+   * from what the analysis already saw rather than expanding it a second time
+   * with its own copy of the rules.
+   */
+  expansions: Record<string, Graph>;
   issues: InferIssue[];
 }
 

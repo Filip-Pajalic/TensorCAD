@@ -24,9 +24,10 @@
  * a 32-layer, 32-head design is a thousand head groups.
  */
 
-import type { Doc, NodeDef } from "@tensorcad/core";
-import { CATALOG, formatCount, joinPath } from "@tensorcad/core";
 import type { Derived } from "../state/derive.js";
+import type { Doc, NodeDef } from "@tensorcad/engine";
+import { formatCount, joinPath } from "@tensorcad/engine";
+import { CATALOG } from "../engine.js";
 
 /** Weights, intermediate values, or an aggregate (layer norm and softmax). */
 export type BlkKind = "w" | "i" | "a";

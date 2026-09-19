@@ -287,9 +287,11 @@ func TestExplainAndCatalogAndPresets(t *testing.T) {
 	var blocks []struct {
 		Type   string `json:"type"`
 		Kind   string `json:"kind"`
-		Params []struct {
-			Name string `json:"name"`
+		Params map[string]struct {
+			Type string `json:"type"`
+			Doc  string `json:"doc"`
 		} `json:"params"`
+		ParamOrder []string `json:"paramOrder"`
 	}
 	if err := json.Unmarshal([]byte(catalogText), &blocks); err != nil {
 		t.Fatal(err)
@@ -297,13 +299,20 @@ func TestExplainAndCatalogAndPresets(t *testing.T) {
 	if len(blocks) < 30 {
 		t.Errorf("the catalog has %d blocks", len(blocks))
 	}
-	// The palette needs parameters in declaration order, not a Go map's order.
+	// The palette needs the declaration order, which a Go map does not keep, so
+	// it travels beside the parameters rather than as their arrangement.
 	for _, b := range blocks {
 		if b.Type != "gqa_attention" {
 			continue
 		}
-		if len(b.Params) == 0 || b.Params[0].Name != "d_model" {
-			t.Errorf("gqa_attention's parameters start with %+v", b.Params)
+		if len(b.ParamOrder) == 0 || b.ParamOrder[0] != "d_model" {
+			t.Errorf("gqa_attention's parameters start with %v", b.ParamOrder)
+		}
+		if len(b.Params) != len(b.ParamOrder) {
+			t.Errorf("%d parameters but %d in the order", len(b.Params), len(b.ParamOrder))
+		}
+		if b.Params["d_model"].Doc == "" {
+			t.Error("d_model has no documentation")
 		}
 	}
 }

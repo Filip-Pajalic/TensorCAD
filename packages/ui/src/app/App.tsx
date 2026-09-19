@@ -30,10 +30,10 @@ import CanvasMenu from "../panels/CanvasMenu.js";
 import DockRail from "../panels/DockRail.js";
 import { useEditor, type RightTab } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
-import { formatCount } from "@tensorcad/core";
 import { handleKey } from "../state/commands.js";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs.js";
 import { TooltipProvider } from "../ui/tooltip.js";
+import { formatCount } from "@tensorcad/engine";
 
 const TABS: { id: RightTab; label: string }[] = [
   { id: "inspector", label: "Inspector" },

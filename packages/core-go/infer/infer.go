@@ -48,8 +48,14 @@ type Result struct {
 	// than resolved a second time.
 	Resolved map[string]*catalog.Resolved
 	// Ports holds each node's pins, for the editor.
-	Ports  map[string]catalog.Ports
-	Issues []Issue
+	Ports map[string]catalog.Ports
+	// Expansions is the subgraph each composite stood for, by path.
+	//
+	// The walk builds these anyway. Handing them back is what lets an editor
+	// draw the inside of a block without expanding it a second time, with its
+	// own copy of the rules for how a composite unfolds.
+	Expansions map[string]*ir.Graph
+	Issues     []Issue
 }
 
 // Options steer the walk.
@@ -288,6 +294,7 @@ func Shapes(doc *ir.Doc, symbols *ir.SymbolTable, opts Options) *Result {
 		ProducerOf: map[string]string{},
 		Resolved:   map[string]*catalog.Resolved{},
 		Ports:      map[string]catalog.Ports{},
+		Expansions: map[string]*ir.Graph{},
 	}
 	w := &walker{doc: doc, cat: catalog.Of(doc), symbols: symbols, opts: opts, result: result}
 	w.graph(&doc.Graph, "", map[string]shapes.Shape{})
@@ -360,7 +367,9 @@ func (w *walker) graph(graph *ir.Graph, prefix string, seeds map[string]shapes.S
 				})
 				continue
 			}
-			w.recurseComposite(&ir.Graph{Nodes: exp.Nodes, Edges: exp.Edges}, path, nodePorts)
+			inner := &ir.Graph{Nodes: exp.Nodes, Edges: exp.Edges}
+			w.result.Expansions[path] = inner
+			w.recurseComposite(inner, path, nodePorts)
 			continue
 		}
 

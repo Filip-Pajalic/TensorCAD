@@ -7,9 +7,9 @@
  * place you can look to answer "what am I working on and is it valid".
  */
 
-import { formatCount } from "@tensorcad/core";
 import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
+import { formatCount } from "@tensorcad/engine";
 
 function Cell({
   label,

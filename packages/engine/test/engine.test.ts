@@ -204,8 +204,12 @@ describe("the compiled engine", () => {
     expect(blocks.length).toBeGreaterThanOrEqual(30);
     const attention = blocks.find((b) => b.type === "gqa_attention");
     expect(attention?.kind).toBe("composite");
-    expect(attention?.params[0]?.name).toBe("d_model");
-    expect(attention?.summary).toBeTruthy();
+    expect(attention?.docs.summary).toBeTruthy();
+    // The order travels beside the parameters, because a Go map has none and
+    // the inspector lays its fields out in the order the block declares them.
+    expect(attention?.paramOrder[0]).toBe("d_model");
+    expect(Object.keys(attention?.params ?? {}).length).toBe(attention?.paramOrder.length ?? 0);
+    expect(attention?.params.d_model.doc).toBeTruthy();
     const linear = blocks.find((b) => b.type === "linear");
     expect(linear?.ports.in.x).toBe("... in_features");
   });

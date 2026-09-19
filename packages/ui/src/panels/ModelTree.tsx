@@ -12,11 +12,13 @@
 
 import { useMemo, useState } from "react";
 import { ChevronsLeft } from "lucide-react";
-import { formatCount, getBlock, type NodeDef } from "@tensorcad/core";
 import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
 import { categoryColor } from "../canvas/blocks.js";
 import * as ops from "../state/ops.js";
+import type { NodeDef } from "@tensorcad/engine";
+import { formatCount } from "@tensorcad/engine";
+import { getBlock } from "../engine.js";
 
 /**
  * A stable empty array. A zustand selector must return the same reference when

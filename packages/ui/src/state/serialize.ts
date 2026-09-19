@@ -1,11 +1,11 @@
+import type { Doc, Graph, NodeDef } from "@tensorcad/engine";
+import { DOC_VERSION } from "@tensorcad/engine";
 /**
  * `.tensorcad.json` read and write.
  *
  * Keys come out in a fixed order so a saved design diffs cleanly in git.
  */
 
-import type { Doc, Graph, NodeDef } from "@tensorcad/core";
-import { DOC_VERSION } from "@tensorcad/core";
 
 const DOC_KEYS = ["version", "meta", "symbols", "graph", "ui"] as const;
 const META_KEYS = ["name", "family", "notes", "published"] as const;

@@ -2,12 +2,12 @@
 /**
  * Typecheck this package.
  *
- * `tsc` pulls @llmcad/core in as source (the workspace package points `types`
- * at `src/index.ts`), so diagnostics from the core package land in this run
- * too. Core is owned by another package and must not be edited from here, so
- * its diagnostics are reported as warnings and only diagnostics in this
- * package's own files fail the build. When core typechecks cleanly this script
- * is a plain `tsc --noEmit`.
+ * `tsc` pulls @tensorcad/engine in as source (the workspace package points
+ * `types` at `src/index.ts`), so diagnostics from it land in this run too. It
+ * is owned by another package and must not be edited from here, so its
+ * diagnostics are reported as warnings and only diagnostics in this package's
+ * own files fail the build. When it typechecks cleanly this script is a plain
+ * `tsc --noEmit`.
  */
 
 import { spawnSync } from "node:child_process";
@@ -27,7 +27,7 @@ const lines = `${run.stdout ?? ""}${run.stderr ?? ""}`.split(/\r?\n/).filter((l)
 
 const isDiagnosticStart = (line) => /^\S.*\(\d+,\d+\): (error|warning) TS\d+:/.test(line);
 const fileOf = (line) => line.slice(0, line.indexOf("("));
-const isForeign = (file) => file.replace(/\\/g, "/").includes("../core/");
+const isForeign = (file) => file.replace(/\\/g, "/").includes("../engine/");
 
 const ours = [];
 const foreign = [];
@@ -39,7 +39,7 @@ for (const line of lines) {
 }
 
 if (foreign.length > 0) {
-  console.warn("warning: @llmcad/core has type errors; they are reported here but not owned by @llmcad/ui:");
+  console.warn("warning: @tensorcad/engine has type errors; they are reported here but not owned by @tensorcad/ui:");
   for (const line of foreign) console.warn(`  ${line}`);
 }
 
@@ -48,4 +48,4 @@ if (ours.length > 0) {
   process.exit(1);
 }
 
-console.log("typecheck: @llmcad/ui is clean");
+console.log("typecheck: @tensorcad/ui is clean");

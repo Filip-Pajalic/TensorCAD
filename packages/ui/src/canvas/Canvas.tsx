@@ -24,8 +24,6 @@ import {
   type EdgeTypes,
   type NodeTypes,
 } from "@xyflow/react";
-import { splitEndpoint, joinPath, CATALOG } from "@tensorcad/core";
-import type { BlockDef, NodeDef } from "@tensorcad/core";
 import BlockNodeView, { type BlockFlowNode, type BlockNodeData, type PortView } from "./BlockNode.js";
 import FrameNodeView, { type FrameFlowNode, type FrameNodeData } from "./FrameNode.js";
 import { categoryColor, glyphFor, kindOf, labelOf, paramSummary } from "./blocks.js";
@@ -46,6 +44,9 @@ import { resolveLevel, type Level } from "../state/level.js";
 import { unfold, type Unfolded } from "../state/unfold.js";
 import { newNodeFor } from "../state/addBlock.js";
 import * as ops from "../state/ops.js";
+import type { NodeDef } from "@tensorcad/engine";
+import { joinPath, splitEndpoint } from "@tensorcad/engine";
+import { CATALOG, type BlockDef } from "../engine.js";
 
 const nodeTypes: NodeTypes = {
   block: BlockNodeView as unknown as NodeTypes[string],
@@ -254,7 +255,7 @@ function wireUp(
       type: "wire",
       // A bypass carries the same tensor as the line it rejoins; labelling both
       // just doubles the ink.
-      label: kind === "bypass" ? undefined : (formatShape(shape, derived.symbols, shapeMode) ?? undefined),
+      label: kind === "bypass" ? undefined : (formatShape(shape, shapeMode) ?? undefined),
       labelShowBg: true,
       className: `flow-edge flow-edge--${kind}`,
       deletable,
@@ -286,7 +287,7 @@ function portViews(
     const set = side === "in" ? connectedIn : connectedOut;
     return {
       name,
-      shape: formatShape(shape, derived.symbols, shapeMode),
+      shape: formatShape(shape, shapeMode),
       connected: set.has(`${path}:${name}`),
       dtype: dtypeOf(node, resolved, name, side),
     };

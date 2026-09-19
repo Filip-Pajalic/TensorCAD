@@ -1,3 +1,5 @@
+import type { AnalysisOptions, Dtype, OptimizerKind } from "@tensorcad/engine";
+import { DEFAULT_HARDWARE, DEFAULT_PARALLEL } from "@tensorcad/engine";
 /**
  * The operating point.
  *
@@ -12,13 +14,6 @@
  * different machines is one design, not two.
  */
 
-import {
-  DEFAULT_HARDWARE,
-  DEFAULT_PARALLEL,
-  type AnalysisOptions,
-  type Dtype,
-  type OptimizerKind,
-} from "@tensorcad/core";
 
 export type Recompute = "none" | "selective" | "full";
 

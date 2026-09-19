@@ -1,0 +1,191 @@
+# Cut a release.
+#
+# Triggered by a tag like `v0.1.0`, or by hand from the Actions tab. Three
+# desktop builds and the engine itself, attached to a GitHub release.
+#
+# The engine is published alongside the applications on purpose: it is one
+# WebAssembly file with a JSON interface, and somebody who wants the analysis
+# without the editor should be able to take it.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "An existing tag to release, e.g. v0.1.0. Create it first."
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  GO_VERSION: "1.25"
+
+jobs:
+  # The gate. A release that does not pass its own tests is not a release, and
+  # the tag is already public by the time anyone notices.
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: packages/core-go/go.sum
+      - run: bun install --frozen-lockfile
+      - run: bun run build:wasm
+      - run: go test ./...
+        working-directory: packages/core-go
+      - run: bun test packages
+
+  engine:
+    name: Engine
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: packages/core-go/go.sum
+      - run: bun install --frozen-lockfile
+      - run: bun run build:wasm
+      # The loader comes from the same Go release that built the module, so the
+      # two travel together or neither works.
+      - name: Package
+        run: |
+          mkdir -p dist/tensorcad-engine
+          cp packages/engine/wasm/tensorcad.wasm dist/tensorcad-engine/
+          cp packages/engine/vendor/wasm_exec.js dist/tensorcad-engine/
+          cp LICENSE.md dist/tensorcad-engine/
+          cd dist && tar -czf tensorcad-engine-wasm.tar.gz tensorcad-engine
+      - uses: actions/upload-artifact@v4
+        with:
+          name: engine
+          path: dist/tensorcad-engine-wasm.tar.gz
+
+  desktop:
+    name: Desktop (${{ matrix.label }})
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: windows-amd64
+            binary: tensorcad.exe
+          - os: macos-latest
+            label: macos-arm64
+            binary: tensorcad
+          - os: ubuntu-latest
+            label: linux-amd64
+            binary: tensorcad
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: desktop/go.sum
+
+      # Linux needs the webview and its build headers; the other two ship one.
+      - name: System libraries
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
+
+      - run: bun install --frozen-lockfile
+      - name: Build the engine
+        run: bun run build:wasm
+      # The window's assets are embedded into the binary with `go:embed`, so
+      # the frontend builds first or the shell does not compile.
+      - name: Build the window
+        run: bun run --cwd desktop/frontend build
+      - name: Compile the shell
+        run: go build -ldflags "-s -w" -o "../dist/${{ matrix.binary }}" .
+        working-directory: desktop
+
+      - name: Package
+        shell: bash
+        run: |
+          cd dist
+          tar -czf "tensorcad-${{ matrix.label }}.tar.gz" "${{ matrix.binary }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.label }}
+          path: dist/tensorcad-${{ matrix.label }}.tar.gz
+
+  publish:
+    name: Publish
+    needs: [engine, desktop]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Checksums
+        run: |
+          cd artifacts
+          sha256sum *.tar.gz > checksums.txt
+          cat checksums.txt
+
+      # What changed, from the commits themselves. A release whose notes say
+      # "various fixes" is a release nobody can decide whether to take.
+      - name: Notes
+        id: notes
+        run: |
+          tag="${{ inputs.tag || github.ref_name }}"
+          if ! git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+            echo "No tag ${tag}. Create and push it first: git tag ${tag} && git push origin ${tag}"
+            exit 1
+          fi
+          previous=$(git describe --tags --abbrev=0 "${tag}^" 2>/dev/null || echo "")
+          {
+            echo "notes<<TENSORCAD_NOTES"
+            if [ -n "$previous" ]; then
+              echo "## Changes since ${previous}"
+              echo
+              git log --no-merges --pretty='- %s' "${previous}..${tag}"
+            else
+              echo "## First release"
+              echo
+              git log --no-merges --pretty='- %s' -20 "${tag}"
+            fi
+            echo
+            echo "## Downloads"
+            echo
+            echo "- \`tensorcad-<platform>.tar.gz\` — the desktop editor."
+            echo "- \`tensorcad-engine-wasm.tar.gz\` — the analysis engine as one"
+            echo "  WebAssembly module with its loader, for embedding anywhere else."
+            echo
+            echo "Checksums are in \`checksums.txt\`."
+            echo "TENSORCAD_NOTES"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          name: TensorCAD ${{ inputs.tag || github.ref_name }}
+          body: ${{ steps.notes.outputs.notes }}
+          files: artifacts/*
+          fail_on_unmatched_files: true
+          generate_release_notes: false

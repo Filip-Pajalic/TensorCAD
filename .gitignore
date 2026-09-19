@@ -25,7 +25,12 @@ venv/
 *.egg-info/
 
 # data & runs
-data/
+#
+# Anchored. An unanchored `data/` matches a directory of that name anywhere,
+# and the preset library lives in one: twenty designs vanished from the
+# repository without a word until a clean checkout could not build.
+/data/
+/python/data/
 runs/
 *.bin
 *.safetensors

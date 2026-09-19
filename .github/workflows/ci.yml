@@ -14,30 +14,10 @@ on:
 permissions:
   contents: read
 
-jobs:
-  typescript:
-    name: TypeScript
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      # The engine is Go compiled to WebAssembly, and the suite runs the
-      # compiled module against the TypeScript it replaces, so the toolchain is
-      # needed here too.
-      - uses: actions/setup-go@v5
-        with:
-          go-version: '1.25'
-          cache-dependency-path: packages/core-go/go.sum
-      - run: bun install --frozen-lockfile
-      - name: Build the engine
-        run: bun run build:wasm
-      - name: Type-check
-        run: bun run typecheck
-      - name: Test
-        run: bun test packages
+env:
+  GO_VERSION: "1.25"
 
+jobs:
   go:
     name: Go
     runs-on: ubuntu-latest
@@ -45,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: |
             packages/core-go/go.sum
             desktop/go.sum
@@ -67,6 +47,33 @@ jobs:
         run: go test ./...
         working-directory: desktop
 
+  typescript:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      # The engine is Go compiled to WebAssembly, and the suite runs the
+      # compiled module against the TypeScript it replaces, so the toolchain is
+      # needed here too.
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: packages/core-go/go.sum
+      - run: bun install --frozen-lockfile
+      - name: Build the engine
+        run: bun run build:wasm
+      - name: Type-check
+        run: |
+          bun run typecheck
+          bun x tsc -p packages/cli/tsconfig.json --noEmit
+          bun x tsc -p packages/mcp/tsconfig.json --noEmit
+          cd packages/ui && node scripts/typecheck.mjs
+      - name: Test
+        run: bun test packages
+
   goldens:
     name: Goldens are current
     runs-on: ubuntu-latest
@@ -80,10 +87,35 @@ jobs:
       # parity test comparing the Go engine against a stale answer.
       - name: Regenerate
         run: bun run scripts/golden.ts
+      # Scoped to what the generator writes. `bun install` marks the packages'
+      # bin entries executable, and a mode change elsewhere is not drift.
       - name: Check for drift
         run: |
-          if ! git diff --quiet; then
+          if ! git diff --quiet -- packages/core-go/testdata packages/core-go/presets/data; then
             echo "The golden files are out of date. Run: bun run scripts/golden.ts"
-            git diff --stat
+            git diff --stat -- packages/core-go/testdata packages/core-go/presets/data
             exit 1
           fi
+
+  desktop:
+    name: Desktop builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: desktop/go.sum
+      - run: bun install --frozen-lockfile
+      - name: Build the engine
+        run: bun run build:wasm
+      # The window's assets are embedded into the Go binary with `go:embed`, so
+      # the frontend has to build before the shell will compile at all.
+      - name: Build the window
+        run: bun run --cwd desktop/frontend build
+      - name: Compile the shell
+        run: go build ./...
+        working-directory: desktop

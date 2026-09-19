@@ -36,6 +36,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
+    "./engine": "./src/engine.ts",
     "./style.css": "./src/app/app.css"
   }
 }

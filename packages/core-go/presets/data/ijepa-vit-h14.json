@@ -1,0 +1,426 @@
+{
+  "version": 1,
+  "meta": {
+    "name": "ijepa-vit-h14",
+    "family": "jepa",
+    "notes": "I-JEPA at the ImageNet-1k 300-epoch config: a ViT-H/14 context encoder at 224px, a 384-wide 12-layer predictor, and the exponential-moving-average target encoder drawn as its own tower. Attention is bidirectional and positions are fixed 2-D sincos with requires_grad=False, so — unlike the ViT-H usually quoted at 632M — neither the position table nor a class token costs a parameter. The encoder alone is 630,434,560; encoder and predictor together, which is what actually trains, are 652,713,984; the figure pinned here includes the frozen target copy as well, because it is resident the whole time you train and this drawing shows it.",
+    "published": {
+      "params": 1283148544,
+      "source": "https://github.com/facebookresearch/ijepa/blob/main/configs/in1k_vith14_ep300.yaml"
+    }
+  },
+  "symbols": {
+    "B": {
+      "kind": "runtime",
+      "default": 1,
+      "doc": "Batch size"
+    },
+    "T": {
+      "kind": "runtime",
+      "default": 256,
+      "doc": "Patches in the whole grid (16x16)"
+    },
+    "L": {
+      "kind": "design",
+      "value": 32,
+      "doc": "Encoder layers"
+    },
+    "D": {
+      "kind": "design",
+      "value": 1280,
+      "doc": "Encoder width"
+    },
+    "H": {
+      "kind": "design",
+      "value": 16,
+      "doc": "Encoder heads"
+    },
+    "dh": {
+      "kind": "design",
+      "value": 80,
+      "doc": "Encoder head dimension"
+    },
+    "F": {
+      "kind": "design",
+      "value": 5120,
+      "doc": "Encoder feed-forward width"
+    },
+    "Lp": {
+      "kind": "design",
+      "value": 12,
+      "doc": "Predictor layers"
+    },
+    "Dp": {
+      "kind": "design",
+      "value": 384,
+      "doc": "Predictor width"
+    },
+    "Hp": {
+      "kind": "design",
+      "value": 16,
+      "doc": "Predictor heads"
+    },
+    "dhp": {
+      "kind": "design",
+      "value": 24,
+      "doc": "Predictor head dimension"
+    },
+    "Fp": {
+      "kind": "design",
+      "value": 1536,
+      "doc": "Predictor feed-forward width"
+    },
+    "P": {
+      "kind": "design",
+      "value": 588,
+      "doc": "Values in one patch (3 x 14 x 14)"
+    }
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "image",
+        "type": "input",
+        "label": "Image patches",
+        "params": {
+          "shape": "B T P",
+          "dtype": "fp32"
+        }
+      },
+      {
+        "id": "patchify",
+        "type": "linear",
+        "label": "Patch embed",
+        "params": {
+          "in_features": "P",
+          "out_features": "D",
+          "bias": true
+        }
+      },
+      {
+        "id": "context",
+        "type": "repeat",
+        "label": "Context encoder x32",
+        "params": {
+          "count": "L"
+        },
+        "graph": {
+          "nodes": [
+            {
+              "id": "_in",
+              "type": "boundary_in",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            },
+            {
+              "id": "block",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "H",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "layernorm",
+                "norm_bias": true,
+                "mlp": "dense",
+                "act": "gelu",
+                "attn_bias": true,
+                "mlp_bias": true,
+                "causal": false,
+                "rope": null
+              }
+            },
+            {
+              "id": "_out",
+              "type": "boundary_out",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            }
+          ],
+          "edges": [
+            [
+              "_in:x",
+              "block:x"
+            ],
+            [
+              "block:y",
+              "_out:x"
+            ]
+          ]
+        }
+      },
+      {
+        "id": "context_norm",
+        "type": "layernorm",
+        "label": "Encoder norm",
+        "params": {
+          "dim": "D",
+          "bias": true,
+          "eps": 0.000001
+        }
+      },
+      {
+        "id": "to_pred",
+        "type": "linear",
+        "label": "Into predictor",
+        "params": {
+          "in_features": "D",
+          "out_features": "Dp",
+          "bias": true
+        }
+      },
+      {
+        "id": "mask_token",
+        "type": "learned_tokens",
+        "label": "Mask token",
+        "params": {
+          "count": 1,
+          "dim": "Dp",
+          "tokens": "T"
+        }
+      },
+      {
+        "id": "with_masks",
+        "type": "add",
+        "label": "Context + masks",
+        "params": {
+          "dim": "Dp"
+        }
+      },
+      {
+        "id": "predictor",
+        "type": "repeat",
+        "label": "Predictor x12",
+        "params": {
+          "count": "Lp"
+        },
+        "graph": {
+          "nodes": [
+            {
+              "id": "_in",
+              "type": "boundary_in",
+              "params": {
+                "ports": {
+                  "x": "B T Dp"
+                }
+              }
+            },
+            {
+              "id": "block",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "Dp",
+                "heads": "Hp",
+                "kv_heads": "Hp",
+                "head_dim": "dhp",
+                "ffn_hidden": "Fp",
+                "norm": "layernorm",
+                "norm_bias": true,
+                "mlp": "dense",
+                "act": "gelu",
+                "attn_bias": true,
+                "mlp_bias": true,
+                "causal": false,
+                "rope": null
+              }
+            },
+            {
+              "id": "_out",
+              "type": "boundary_out",
+              "params": {
+                "ports": {
+                  "x": "B T Dp"
+                }
+              }
+            }
+          ],
+          "edges": [
+            [
+              "_in:x",
+              "block:x"
+            ],
+            [
+              "block:y",
+              "_out:x"
+            ]
+          ]
+        }
+      },
+      {
+        "id": "pred_norm",
+        "type": "layernorm",
+        "label": "Predictor norm",
+        "params": {
+          "dim": "Dp",
+          "bias": true,
+          "eps": 0.000001
+        }
+      },
+      {
+        "id": "to_embed",
+        "type": "linear",
+        "label": "Back to encoder width",
+        "params": {
+          "in_features": "Dp",
+          "out_features": "D",
+          "bias": true
+        }
+      },
+      {
+        "id": "prediction",
+        "type": "output",
+        "label": "Predicted embeddings"
+      },
+      {
+        "id": "target_patchify",
+        "type": "linear",
+        "label": "Target patch embed",
+        "params": {
+          "in_features": "P",
+          "out_features": "D",
+          "bias": true
+        }
+      },
+      {
+        "id": "target",
+        "type": "repeat",
+        "label": "Target encoder x32 (EMA)",
+        "params": {
+          "count": "L"
+        },
+        "graph": {
+          "nodes": [
+            {
+              "id": "_in",
+              "type": "boundary_in",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            },
+            {
+              "id": "block",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "H",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "layernorm",
+                "norm_bias": true,
+                "mlp": "dense",
+                "act": "gelu",
+                "attn_bias": true,
+                "mlp_bias": true,
+                "causal": false,
+                "rope": null
+              }
+            },
+            {
+              "id": "_out",
+              "type": "boundary_out",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            }
+          ],
+          "edges": [
+            [
+              "_in:x",
+              "block:x"
+            ],
+            [
+              "block:y",
+              "_out:x"
+            ]
+          ]
+        }
+      },
+      {
+        "id": "target_norm",
+        "type": "layernorm",
+        "label": "Target norm",
+        "params": {
+          "dim": "D",
+          "bias": true,
+          "eps": 0.000001
+        }
+      },
+      {
+        "id": "targets",
+        "type": "output",
+        "label": "Target embeddings"
+      }
+    ],
+    "edges": [
+      [
+        "image:x",
+        "patchify:x"
+      ],
+      [
+        "patchify:y",
+        "context:x"
+      ],
+      [
+        "context:x",
+        "context_norm:x"
+      ],
+      [
+        "context_norm:y",
+        "to_pred:x"
+      ],
+      [
+        "to_pred:y",
+        "with_masks:a"
+      ],
+      [
+        "mask_token:y",
+        "with_masks:b"
+      ],
+      [
+        "with_masks:y",
+        "predictor:x"
+      ],
+      [
+        "predictor:x",
+        "pred_norm:x"
+      ],
+      [
+        "pred_norm:y",
+        "to_embed:x"
+      ],
+      [
+        "to_embed:y",
+        "prediction:x"
+      ],
+      [
+        "image:x",
+        "target_patchify:x"
+      ],
+      [
+        "target_patchify:y",
+        "target:x"
+      ],
+      [
+        "target:x",
+        "target_norm:x"
+      ],
+      [
+        "target_norm:y",
+        "targets:x"
+      ]
+    ]
+  },
+  "ui": {}
+}

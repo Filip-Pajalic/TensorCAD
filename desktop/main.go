@@ -1,11 +1,15 @@
 // TensorCAD desktop.
 //
 // A Wails application: Go owns the parts that need the operating system, and
-// the drawing surface stays in the frontend where it has to be. The analysis
-// engine is TypeScript and runs in the window, because it recomputes on every
-// keystroke and a process boundary in that loop would only make it slower.
-// Go owns files, native dialogs and menus, the theme, and the Python jobs that
-// verify and train a design.
+// the drawing surface stays in the frontend where it has to be. Go owns files,
+// native dialogs and menus, the theme, the Python jobs that verify and train a
+// design, and — as the port lands — the analysis engine itself.
+//
+// The engine is registered as a service here but the window still computes its
+// own numbers, because the analysis reruns on every keystroke and a process
+// boundary in that loop has to be shown not to cost anything before it is put
+// there. Until then the Engine service is what the CLI, the MCP server and any
+// out-of-window caller use.
 package main
 
 import (
@@ -136,7 +140,7 @@ func buildMenu(app *application.App) {
 
 	help := menu.AddSubmenu("Help")
 	help.Add("Documentation").OnClick(func(*application.Context) {
-		app.Browser.OpenURL("https://github.com/tensorcad/tensorcad")
+		app.Browser.OpenURL("https://github.com/Filip-Pajalic/TensorCAD")
 	})
 
 	app.Menu.Set(menu)

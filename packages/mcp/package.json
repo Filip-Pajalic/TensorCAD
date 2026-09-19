@@ -2,7 +2,7 @@
   "name": "@tensorcad/mcp",
   "version": "0.0.1",
   "description": "Model Context Protocol server for TensorCAD: design, validate, analyze and generate LLM architectures from an agent",
-  "mcpName": "io.github.tensorcad/tensorcad",
+  "mcpName": "io.github.filip-pajalic/tensorcad",
   "type": "module",
   "bin": {
     "tensorcad-mcp": "./src/index.ts"

@@ -519,6 +519,16 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 				outName("y"), inputVar(node.ID, "x"), pyNum(by)))
 			set("y", outName("y"))
 
+		case "mix":
+			// Two scalars in one parameter, so a checkpoint carries them as one
+			// tensor and the count is unambiguous.
+			out.init = append(out.init, fmt.Sprintf(
+				"self.%s = nn.Parameter(torch.tensor([1.0, 0.0]))", attr))
+			out.forward = append(out.forward, fmt.Sprintf(
+				"%s = self.%s[0] * %s + self.%s[1] * %s",
+				outName("y"), attr, inputVar(node.ID, "a"), attr, inputVar(node.ID, "b")))
+			set("y", outName("y"))
+
 		case "flatten2d":
 			out.forward = append(out.forward, fmt.Sprintf("%s = torch.flatten(%s, 1)",
 				outName("y"), inputVar(node.ID, "x")))

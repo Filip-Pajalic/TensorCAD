@@ -1464,6 +1464,43 @@
       "constraints": []
     },
     {
+      "type": "mix",
+      "params": {
+        "dim": 4096
+      },
+      "resolved": {
+        "dim": 4096
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "a": "... dim",
+          "b": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {
+          "b": "side/inherit"
+        }
+      },
+      "portError": "",
+      "paramCount": 2,
+      "flops": {
+        "elementwise": 12288,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
+      },
+      "retains": [
+        "a",
+        "b"
+      ],
+      "extraActivationBytes": null,
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
       "type": "shift",
       "params": {
         "dim": 4096

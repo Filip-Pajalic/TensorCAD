@@ -269,6 +269,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -540,6 +546,12 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
             ]
           ],
           "shapes": {
@@ -1028,6 +1040,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -1247,6 +1265,12 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
             ]
           ],
           "shapes": {
@@ -1787,6 +1811,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -2006,6 +2036,12 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
             ]
           ],
           "shapes": {
@@ -2546,6 +2582,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -2765,6 +2807,12 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
             ]
           ],
           "shapes": {
@@ -3311,6 +3359,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -3582,6 +3636,12 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
             ]
           ],
           "shapes": {
@@ -4077,6 +4137,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -4311,6 +4377,12 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
             ]
           ],
           "shapes": {
@@ -4864,6 +4936,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -5272,6 +5350,12 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
             ]
           ],
           "shapes": {
@@ -5651,6 +5735,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -6059,6 +6149,12 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
             ]
           ],
           "shapes": {
@@ -6438,6 +6534,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -6846,6 +6948,12 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
             ]
           ],
           "shapes": {
@@ -7225,6 +7333,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -7633,6 +7747,12 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
             ]
           ],
           "shapes": {
@@ -8012,6 +8132,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -8420,6 +8546,12 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
             ]
           ],
           "shapes": {
@@ -8803,6 +8935,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -9221,6 +9359,12 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
             ]
           ],
           "shapes": {
@@ -9619,6 +9763,12 @@
               null,
               50,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -9885,6 +10035,12 @@
               null,
               50,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -10574,6 +10730,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -11366,6 +11528,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -12168,6 +12336,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -12970,6 +13144,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -14340,6 +14520,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -14669,6 +14855,12 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
             ]
           ],
           "shapes": {
@@ -14957,6 +15149,12 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
             ]
           ],
           "shapes": {

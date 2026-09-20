@@ -168,10 +168,19 @@ var gqaAttention = &BlockDef{
 		{"flash", pBool(true, "")},
 		{"logit_softcap", ParamSpec{Type: ParamNum, Default: 0.0, HasDefault: true,
 			Doc: "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"}},
+		{"value_embeddings", pBool(false,
+			"Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)")},
 	},
-	Ports: Ports{
-		In:  map[string]PortSpec{"x": Port("... d_model")},
-		Out: map[string]PortSpec{"y": Port("... d_model")},
+	PortsFn: func(r *Resolved) Ports {
+		in := map[string]PortSpec{"x": Port("... d_model")}
+		if r.Bool("value_embeddings") {
+			// As wide as the values, not as wide as the stream: it is mixed
+			// into `v` after the projection, so a design whose d_model differs
+			// from kv_heads * head_dim gets told by the shape checker.
+			in["ve"] = PortSpec{Shape: "... (kv_heads head_dim)", Anchor: "side",
+				Doc: "A second embedding of the same tokens, mixed into the values"}
+		}
+		return Ports{In: in, Out: map[string]PortSpec{"y": Port("... d_model")}}
 	},
 	Constraints: func(r *Resolved) []BlockFinding {
 		if int(r.Num("heads"))%int(r.Num("kv_heads")) == 0 {
@@ -205,7 +214,14 @@ func expandGQA(raw map[string]any, r *Resolved) Expansion {
 	qkNorm := r.Bool("qk_norm")
 	rope, hasRope := ropeOf(r)
 
+	ve := r.Bool("value_embeddings")
 	inNode, outNode := streamBoundary(D)
+	if ve {
+		inNode, outNode = boundary(
+			map[string]any{"x": "... " + D, "ve": fmt.Sprintf("B T (%s %s)", KV, dh)},
+			map[string]any{"y": "... " + D},
+		)
+	}
 	nodes := []ir.NodeDef{
 		inNode,
 		node("q_proj", "linear", map[string]any{"in_features": D, "out_features": H + "*" + dh, "bias": bias}),
@@ -224,6 +240,20 @@ func expandGQA(raw map[string]any, r *Resolved) Expansion {
 	}
 
 	qTail, kTail := "q_heads:y", "k_heads:y"
+	vTail := "v_heads:y"
+
+	if ve {
+		// A second look at the tokens, mixed into the values by two learned
+		// scalars rather than added: the mixture is what is learned.
+		nodes = append(nodes,
+			node("ve_heads", "rearrange", map[string]any{
+				"from": fmt.Sprintf("B T (%s %s)", KV, dh), "to": fmt.Sprintf("B %s T %s", KV, dh)}),
+			node("v_mix", "mix", map[string]any{"dim": dh}))
+		edges = append(edges,
+			edge("_in:ve", "ve_heads:x"),
+			edge(vTail, "v_mix:a"), edge("ve_heads:y", "v_mix:b"))
+		vTail = "v_mix:y"
+	}
 
 	if qkNorm {
 		nodes = append(nodes,
@@ -258,7 +288,7 @@ func expandGQA(raw map[string]any, r *Resolved) Expansion {
 		outNode)
 
 	edges = append(edges,
-		edge(qTail, "attn:q"), edge(kTail, "attn:k"), edge("v_heads:y", "attn:v"),
+		edge(qTail, "attn:q"), edge(kTail, "attn:k"), edge(vTail, "attn:v"),
 		edge("attn:y", "o_merge:x"), edge("o_merge:y", "o_proj:x"), edge("o_proj:y", "_out:y"))
 
 	return Expansion{Nodes: nodes, Edges: edges}
@@ -706,10 +736,19 @@ var transformerBlock = &BlockDef{
 		{"rope", grouped(ropeSpec(), "Attention")},
 		{"logit_softcap", grouped(ParamSpec{Type: ParamNum, Default: 0.0, HasDefault: true,
 			Doc: "Bound the attention scores to this magnitude with tanh (Gemma 2)"}, "Attention")},
+		{"value_embeddings", when(grouped(pBool(false,
+			"Take a second embedding of the same tokens on `ve` and mix it into the values"), "Attention"),
+			"attention", "gqa")},
 	},
-	Ports: Ports{
-		In:  map[string]PortSpec{"x": Port("... d_model")},
-		Out: map[string]PortSpec{"y": Port("... d_model")},
+	// The value-embedding port only exists when the block asks for it, which is
+	// why these are computed rather than declared.
+	PortsFn: func(r *Resolved) Ports {
+		in := map[string]PortSpec{"x": Port("... d_model")}
+		if r.Bool("value_embeddings") && r.Str("attention") != "mla" {
+			in["ve"] = PortSpec{Shape: "... (kv_heads head_dim)", Anchor: "side",
+				Doc: "A second embedding of the same tokens, mixed into the values"}
+		}
+		return Ports{In: in, Out: map[string]PortSpec{"y": Port("... d_model")}}
 	},
 	Docs: BlockDocs{
 		Summary: "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
@@ -727,7 +766,20 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 		return map[string]any{"dim": D}
 	}
 
+	// The value-embedding stream passes straight through to the attention,
+	// which is the only thing in here that reads the tokens twice.
+	ve := r.Bool("value_embeddings") && r.Str("attention") != "mla"
 	inNode, outNode := streamBoundary(D)
+	if ve {
+		inNode, outNode = boundary(
+			map[string]any{
+				"x": "... " + D,
+				"ve": fmt.Sprintf("B T (%s %s)",
+					Ex(raw["kv_heads"], "0"), Ex(raw["head_dim"], "0")),
+			},
+			map[string]any{"y": "... " + D},
+		)
+	}
 
 	var mlpNode ir.NodeDef
 	if r.Str("mlp") == "moe" {
@@ -767,17 +819,18 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 		})
 	} else {
 		attnNode = node("attn", "gqa_attention", map[string]any{
-			"d_model":       D,
-			"heads":         Ex(raw["heads"], "0"),
-			"kv_heads":      Ex(raw["kv_heads"], "0"),
-			"head_dim":      Ex(raw["head_dim"], "0"),
-			"bias":          r.Bool("attn_bias"),
-			"o_bias":        r.P["attn_o_bias"],
-			"causal":        r.Bool("causal"),
-			"window":        Ex(raw["window"], "0"),
-			"qk_norm":       r.Bool("qk_norm"),
-			"rope":          r.P["rope"],
-			"logit_softcap": Ex(raw["logit_softcap"], "0"),
+			"d_model":          D,
+			"heads":            Ex(raw["heads"], "0"),
+			"kv_heads":         Ex(raw["kv_heads"], "0"),
+			"head_dim":         Ex(raw["head_dim"], "0"),
+			"bias":             r.Bool("attn_bias"),
+			"o_bias":           r.P["attn_o_bias"],
+			"causal":           r.Bool("causal"),
+			"window":           Ex(raw["window"], "0"),
+			"qk_norm":          r.Bool("qk_norm"),
+			"rope":             r.P["rope"],
+			"logit_softcap":    Ex(raw["logit_softcap"], "0"),
+			"value_embeddings": ve,
 		})
 	}
 
@@ -795,6 +848,9 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 		edge("_in:x", "norm1:x"), edge("norm1:y", "attn:x"), edge("_in:x", "resid1:b"),
 		edge("resid1:y", "norm2:x"), edge("norm2:y", "mlp:x"),
 		edge("resid1:y", "resid2:b"), edge("resid2:y", "_out:y"),
+	}
+	if ve {
+		edges = append(edges, edge("_in:ve", "attn:ve"))
 	}
 
 	if r.Bool("post_norm") {

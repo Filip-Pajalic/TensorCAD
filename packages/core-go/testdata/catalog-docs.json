@@ -535,6 +535,12 @@
           "num",
           "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone",
           null
+        ],
+        [
+          "value_embeddings",
+          "bool",
+          "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)",
+          null
         ]
       ]
     },
@@ -813,6 +819,24 @@
           "in_w",
           "int",
           "",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "mix",
+      "kind": "primitive",
+      "category": "elementwise",
+      "summary": "Weighted sum of two streams, with both weights learned. What mixes a value embedding into the values, and what mixes a U-net skip back into a later layer.",
+      "formula": "y = w0 * a + w1 * b, w0 and w1 scalars",
+      "refs": [
+        "https://github.com/KellerJordan/modded-nanogpt"
+      ],
+      "params": [
+        [
+          "dim",
+          "int",
+          "Width of both streams",
           null
         ]
       ]
@@ -1588,6 +1612,12 @@
           "logit_softcap",
           "num",
           "Bound the attention scores to this magnitude with tanh (Gemma 2)",
+          null
+        ],
+        [
+          "value_embeddings",
+          "bool",
+          "Take a second embedding of the same tokens on `ve` and mix it into the values",
           null
         ]
       ]

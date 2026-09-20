@@ -478,6 +478,35 @@ var Primitives = []*BlockDef{
 		Docs:    BlockDocs{Summary: "Elementwise sum, the residual connection."},
 	},
 	{
+		Kind: "primitive", Type: "mix", Category: "elementwise",
+		Params: ParamList{
+			{"dim", pInt(1, "Width of both streams")},
+		},
+		Ports: Ports{
+			In: map[string]PortSpec{
+				"a": Port("... dim"),
+				// The one being mixed in, which a figure draws arriving from
+				// the side the way it draws a residual.
+				"b": {Shape: "... dim", Anchor: "side"},
+			},
+			Out: map[string]PortSpec{"y": Port("... dim")},
+		},
+		// Two scalars, whatever the width: the mixture is learned, not the map.
+		ParamCount: func(*Resolved) float64 { return 2 },
+		Flops: func(r *Resolved, _ AnalysisCtx) FlopsPerToken {
+			// Two multiplies and an add, per element.
+			return FlopsPerToken{Elementwise: 3 * r.Num("dim")}
+		},
+		// Each operand is needed to differentiate the other's weight.
+		Retains: func(*Resolved) []string { return []string{"a", "b"} },
+		Docs: BlockDocs{
+			Summary: "Weighted sum of two streams, with both weights learned. What mixes a value " +
+				"embedding into the values, and what mixes a U-net skip back into a later layer.",
+			Formula: "y = w0 * a + w1 * b, w0 and w1 scalars",
+			Refs:    []string{"https://github.com/KellerJordan/modded-nanogpt"},
+		},
+	},
+	{
 		Kind: "primitive", Type: "mul", Category: "elementwise",
 		Params: ParamList{
 			{"dim", pInt(1, "")},

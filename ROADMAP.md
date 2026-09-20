@@ -122,6 +122,7 @@ Done:
 - Hugging Face `config.json` import for nine families, asserted against the hand-written presets on both the parameter count and the cache.
 - Parallelism planner, in the editor as well: a `Cluster` tab beside Inspector, Symbols and Rules lists the plans that fit with a bar for how much of the device each fills, and pressing one applies it to the operating point so the whole readout follows. `plan(doc, options, {gpus})` and `tensorcad plan --gpus n` price every split the cluster admits — DP, TP, PP, EP, the four ZeRO stages, sequence parallelism and the three recompute settings — and return the ones that fit, least demanding first. Llama-3-70B on 64 H100s is a thousand-plan search that takes 20ms.
 - Expert parallelism, which the options carried and nothing read: a sparse model's experts are a separate pool that shards by EP where everything else shards by TP and PP. Mixtral is 45.10B expert weights of 46.70B, so the distinction is most of the model.
+- Value embeddings and U-net skips, which turned out to be one primitive. `mix` is `w0*a + w1*b` with both weights learned — not `add`, which has no weights, and not `mul`, which has no parameters. Value embeddings arrive on a port because the table is shared by every layer that reads it; a U-net skip is written out, because layer i feeding layer L-1-i is not a repeating unit.
 - Design diff, in the editor as `View > Compare` and on the command line: `diff(a, b)` and `tensorcad diff <a> <b>` report what moved structurally and what it cost, measuring both sides at one operating point so the attention terms are comparable. It was 202 lines in the command line where the editor could not reach it.
 - `gated_deltanet_block` and a `gated_delta_scan` primitive: linear attention with DeltaNet's write rule and Mamba-2's decay gate, so a layer of it caches nothing that grows with context — a matrix per head, fixed for the sequence, plus what the depthwise convolution remembers. The generated file carries a readable sequential reference that runs unmodified; swap it for `fla`'s chunked kernel to train.
 - `mtp_head` and a `shift` primitive: multi-token prediction as DeepSeek-V3 describes it — normalize the hidden state, normalize the embedding of the token ahead, join, project 2D down to D — then a transformer block and the model's own output head, which is shared and so costs a second pass over the vocabulary and no weights. Depth is stacking rather than a parameter.
@@ -130,7 +131,6 @@ Done:
 
 Remaining:
 - Presets for the linear-attention hybrids, once their configs settle.
-- Value embeddings and U-net skips.
 - Presets: Gemma-3, Jamba, and 2026 models as their configs stabilize.
 - Analysis extensions: MoE active vs resident, MLA absorbed vs decompressed KV.
 - μP scale ladder: tune on tiny track, transfer widths.

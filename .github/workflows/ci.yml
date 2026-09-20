@@ -72,7 +72,12 @@ jobs:
           bun x tsc -p packages/mcp/tsconfig.json --noEmit
           cd packages/ui && node scripts/typecheck.mjs
       - name: Test
-        run: bun test packages
+        # Thirty seconds rather than bun's five: every test in `packages/cli`
+        # spawns the command line, and each of those loads a 7.6 MB
+        # WebAssembly module before it can answer. On a busy runner that has
+        # been measured past five, and a test that fails for having been slow
+        # teaches people to re-run CI instead of reading it.
+        run: bun test --timeout 30000 packages
 
   goldens:
     name: Goldens are current

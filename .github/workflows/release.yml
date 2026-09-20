@@ -63,7 +63,9 @@ jobs:
           bun x tsc -p packages/cli/tsconfig.json --noEmit
           bun x tsc -p packages/mcp/tsconfig.json --noEmit
           cd packages/ui && node scripts/typecheck.mjs
-      - run: bun test packages
+      # Thirty seconds rather than bun's five: the command-line tests spawn a
+      # process each, and each one loads the engine before it answers.
+      - run: bun test --timeout 30000 packages
       # A release whose goldens are stale is a release whose tests were
       # comparing the engine against an answer nobody rewrote.
       - name: Goldens are current

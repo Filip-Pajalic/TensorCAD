@@ -8,7 +8,7 @@
     "desktop/frontend"
   ],
   "scripts": {
-    "test": "bun run build:wasm && bun test packages",
+    "test": "bun run build:wasm && bun test --timeout 30000 packages",
     "build:wasm": "bun run scripts/build-wasm.ts",
     "build:mcpb": "bun run scripts/build-mcpb.ts --check",
     "build:dist": "bun run scripts/build-dist.ts --check",

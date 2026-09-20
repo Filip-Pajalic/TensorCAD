@@ -333,8 +333,16 @@ func fans(node *analysis.FlatNode) (in, out float64, ok bool) {
 }
 
 // defaultLadder halves the design's own width down to something still worth
-// sweeping at: four rungs, and nothing narrower than four heads.
+// sweeping at: four rungs, and nothing narrower than four heads, because a
+// two-head model is a poor proxy for a thirty-two-head one whatever else it
+// gets right.
+//
+// A design that is already near that floor has nowhere to go down, and a ladder
+// of one rung transfers nothing — it is one model with every multiplier at 1.
+// So when halving runs out it doubles instead, which is the same question asked
+// the other way round: this is what you swept at, here is what it carries to.
 func defaultLadder(full, headDim float64) []float64 {
+	const want = 3
 	floor := math.Max(4*headDim, 128)
 	out := []float64{}
 	for w := full; w >= floor && len(out) < 4; w /= 2 {
@@ -342,6 +350,9 @@ func defaultLadder(full, headDim float64) []float64 {
 	}
 	if len(out) == 0 {
 		out = []float64{full}
+	}
+	for w := full * 2; len(out) < want; w *= 2 {
+		out = append(out, w)
 	}
 	return out
 }

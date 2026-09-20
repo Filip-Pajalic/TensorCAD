@@ -9,7 +9,14 @@ import (
 	"github.com/tensorcad/core/mup"
 	"github.com/tensorcad/core/presets"
 	"github.com/tensorcad/core/rules"
+	"github.com/tensorcad/core/scale"
 )
+
+// Pointers, because an unset option and one set to zero are different things.
+// Named for what they hold rather than f and b, because f is already a finding
+// in a loop below and one letter meaning two things in one file reads badly.
+func num(v float64) *float64 { return &v }
+func flag(v bool) *bool      { return &v }
 
 var laddered = []string{"gpt2-small", "llama-3-8b", "mixtral-8x7b", "ijepa-vit-h14"}
 
@@ -213,6 +220,55 @@ func TestEveryRungIsADesignThatChecksOut(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// A ladder of one rung transfers nothing: it is one model, with every
+// multiplier at 1 and nothing to carry an answer to.
+//
+// A design already shrunk to a bench budget has nowhere below it to go — the
+// rungs stop at four heads, because a two-head model proxies badly for a
+// thirty-two-head one — so the ladder goes up instead. That is the same
+// question the other way round: this is what you swept at, here is what it
+// carries to.
+func TestALadderNeverHasOneRung(t *testing.T) {
+	bench, err := scale.Design(presets.MustGet("llama-3-8b"), scale.Options{
+		TargetParams: 30e6, TargetBasis: "non-embedding", Vocab: num(50304), TieHead: flag(true),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ladder, err := mup.Build(bench.Doc, mup.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(ladder.Rungs) < 3 {
+		t.Fatalf("a %v-wide design gets %d rung(s); a ladder of one carries nothing",
+			ladder.BaseWidth, len(ladder.Rungs))
+	}
+	// It is the design's own width that is swept at, and the rest are above it.
+	if !ladder.Rungs[0].Base {
+		t.Error("the narrowest rung is not the base")
+	}
+	for i := 1; i < len(ladder.Rungs); i++ {
+		if ladder.Rungs[i].Width <= ladder.Rungs[i-1].Width {
+			t.Errorf("rung %d is %v wide, no wider than the %v before it",
+				i, ladder.Rungs[i].Width, ladder.Rungs[i-1].Width)
+		}
+	}
+	// And every preset gets a ladder worth the name.
+	names, err := presets.Names()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range names {
+		l, err := mup.Build(presets.MustGet(name), mup.Options{})
+		if err != nil {
+			continue // Not every design has a width to move; that is its own answer.
+		}
+		if len(l.Rungs) < 2 {
+			t.Errorf("%s gets %d rung(s)", name, len(l.Rungs))
+		}
 	}
 }
 

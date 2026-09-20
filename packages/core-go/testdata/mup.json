@@ -161,6 +161,83 @@
               64
             ]
           ]
+        },
+        {
+          "width": 1536,
+          "multiplier": "4",
+          "heads": 24,
+          "params": 418748928,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "embed",
+                "final_norm",
+                "layers/block/norm1",
+                "layers/block/norm2",
+                "pos"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "0.5",
+              "adamLr": "0.25",
+              "paths": [
+                "layers/block/attn/k_proj",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_proj",
+                "layers/block/attn/v_proj",
+                "layers/block/mlp/down",
+                "layers/block/mlp/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "0.25",
+              "adamLr": "0.25",
+              "paths": [
+                "head"
+              ]
+            }
+          ],
+          "notes": [],
+          "symbols": [
+            [
+              "D",
+              1536
+            ],
+            [
+              "F",
+              6144
+            ],
+            [
+              "H",
+              24
+            ],
+            [
+              "Hkv",
+              24
+            ],
+            [
+              "L",
+              12
+            ],
+            [
+              "Tmax",
+              1024
+            ],
+            [
+              "V",
+              50257
+            ],
+            [
+              "dh",
+              64
+            ]
+          ]
         }
       ],
       "notes": [

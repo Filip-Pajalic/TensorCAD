@@ -17,6 +17,9 @@ you will have built something.
 
 - [Your first design](tutorials/first-design.md) — build a small transformer
   from an empty sheet, check it, and generate the PyTorch.
+- [Tune small, run big](tutorials/tune-small-run-big.md) — shrink a published
+  architecture until it trains on one card, sweep the learning rate there, carry
+  it back up the μP ladder, and price the real run before you queue it.
 
 ## How-to guides
 

@@ -1244,7 +1244,34 @@ claiming one. A test now says no two may, with the deliberate aliases — the
 second key for Redo, Delete and Zoom In — named rather than excused. Compare
 moved to `Ctrl+Shift+C`.
 
+## Fifteenth pass: the checks come out of the tab
+
+The first complaint on the original list was that panels are tabs, so you cannot
+see the analysis and the inspector at once, and the tenth was that the issues
+list is nearly inert. The readout came out of the tabs three passes ago. The
+checks had not: eighteen rules ran on every edit and their answer lived behind a
+tab, so finding out what was wrong meant leaving the inspector, and fixing it
+meant leaving the findings.
+
+They are a dock along the bottom now, which is where a PCB tool puts its DRC and
+for the same reason — the checks are about the drawing, so they belong under it
+rather than beside it. Collapsed, the dock is still a strip carrying the counts,
+because a design that is broken should say so somewhere on screen whatever else
+is being looked at. Pressing a marker on the canvas opens it filtered to that
+block, which is the cross-probe the list was supposed to have.
+
+Under the whole body rather than inside a column: a dock that lived in one
+column would be as easy to lose as the tab it replaced.
+
+### A panel that contradicted itself
+
+Notes are muted by default, so a design whose only finding is a note showed both
+"1 info" in the badge row and "Nothing to report. Every rule is satisfied."
+below it. The empty state asked `derived.ok`, which only knows about errors,
+where the question is whether anything was found at all. It now distinguishes
+the two and says how many findings are hidden.
+
 ### Still outstanding
 
-The definition editor proper; the bottom dock; and E7, operations,
-configurations and tensors as first-class objects.
+The definition editor proper, and E7: operations, configurations and tensors as
+first-class objects.

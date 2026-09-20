@@ -21,7 +21,6 @@ import Inspector from "../panels/Inspector.js";
 import Symbols from "../panels/Symbols.js";
 import Analysis from "../panels/Analysis.js";
 import Operating from "../panels/Operating.js";
-import Rules from "../panels/Rules.js";
 import Cluster from "../panels/Cluster.js";
 import StatusBar from "../panels/StatusBar.js";
 import ModelTree from "../panels/ModelTree.js";
@@ -29,6 +28,7 @@ import ToolStrip from "../panels/ToolStrip.js";
 import Dialogs from "../panels/Dialogs.js";
 import Ladder from "../panels/Ladder.js";
 import CanvasMenu from "../panels/CanvasMenu.js";
+import FindingsDock from "../panels/FindingsDock.js";
 import DockRail from "../panels/DockRail.js";
 import { useEditor, type RightTab } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
@@ -40,7 +40,6 @@ import { formatCount } from "@tensorcad/engine";
 const TABS: { id: RightTab; label: string }[] = [
   { id: "inspector", label: "Inspector" },
   { id: "symbols", label: "Symbols" },
-  { id: "rules", label: "Rules" },
   { id: "cluster", label: "Cluster" },
   { id: "ladder", label: "Ladder" },
 ];
@@ -108,6 +107,10 @@ export default function App(): React.ReactElement {
   const [rightWidth, setRightWidth] = useState(400);
   /** Height of the readout, as a fraction of the right column. */
   const [readoutFraction, setReadoutFraction] = useState(0.66);
+  // How tall the findings dock is when it is open, as a fraction of the window.
+  const [dockFraction, setDockFraction] = useState(0.26);
+  const dockOpen = useEditor((s) => s.dockOpen);
+  const toggleFindings = useEditor((s) => s.toggleFindings);
   const rightColumn = useRef<HTMLElement | null>(null);
 
   // One listener, one command list. Tool keys are here rather than in the list
@@ -133,15 +136,11 @@ export default function App(): React.ReactElement {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const errorCount = derived.counts.error;
-  const warningCount = derived.counts.warning;
 
   const renderTab = useCallback((): React.ReactElement => {
     switch (rightTab) {
       case "symbols":
         return <Symbols />;
-      case "rules":
-        return <Rules />;
       case "cluster":
         return <Cluster />;
       case "ladder":
@@ -150,6 +149,11 @@ export default function App(): React.ReactElement {
         return <Inspector />;
     }
   }, [rightTab]);
+
+  const dragDock = useCallback((delta: number) => {
+    if (!useEditor.getState().dockOpen) return;
+    setDockFraction((f) => clamp(f - delta / window.innerHeight, 0.12, 0.7));
+  }, []);
 
   const dragReadout = useCallback((delta: number) => {
     const height = rightColumn.current?.clientHeight ?? 1;
@@ -264,16 +268,6 @@ export default function App(): React.ReactElement {
                     {TABS.map((tab) => (
                       <TabsTrigger key={tab.id} value={tab.id}>
                         {tab.label}
-                        {tab.id === "rules" && errorCount > 0 && (
-                          <span className="border border-error bg-error px-1 font-mono text-[9.5px] font-bold text-error-soft">
-                            {errorCount}
-                          </span>
-                        )}
-                        {tab.id === "rules" && errorCount === 0 && warningCount > 0 && (
-                          <span className="border border-warn bg-warn px-1 font-mono text-[9.5px] font-bold text-warn-soft">
-                            {warningCount}
-                          </span>
-                        )}
                       </TabsTrigger>
                     ))}
                   </TabsList>
@@ -282,6 +276,13 @@ export default function App(): React.ReactElement {
               </section>
             </aside>
           )}
+        </div>
+        {/* Under the whole body rather than inside a column: the checks are
+            about the drawing, and a dock that lived in one dock's column would
+            be as easy to lose as the tab it replaced. */}
+        {dockOpen && <Resizer axis="y" invert onResize={dragDock} onToggle={toggleFindings} />}
+        <div style={dockOpen ? { height: `${Math.round(dockFraction * 100)}vh`, minHeight: 0 } : undefined}>
+          <FindingsDock />
         </div>
         <StatusBar />
         <Dialogs />

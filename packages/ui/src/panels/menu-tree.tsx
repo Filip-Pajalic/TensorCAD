@@ -94,7 +94,7 @@ export const BLOCKS_MENU: MenuNode[] = [
 export const PANELS_MENU: MenuNode[] = [
   item("panel.inspector"),
   item("panel.symbols"),
-  item("panel.rules"),
+  item("panel.findings"),
   item("panel.cluster"),
   item("panel.ladder"),
   sep(),

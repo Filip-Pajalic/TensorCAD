@@ -352,9 +352,17 @@ export const COMMANDS: Command[] = [
   // --- panels -------------------------------------------------------------
   { id: "panel.inspector", label: "Inspector", group: "panel", shortcut: "1", run: () => editor().setRightTab("inspector") },
   { id: "panel.symbols", label: "Symbols", group: "panel", shortcut: "2", run: () => editor().setRightTab("symbols") },
-  { id: "panel.rules", label: "Rules", group: "panel", shortcut: "3", run: () => editor().setRightTab("rules") },
-  { id: "panel.cluster", label: "Cluster", group: "panel", shortcut: "4", run: () => editor().setRightTab("cluster") },
-  { id: "panel.ladder", label: "Ladder", group: "panel", shortcut: "5", run: () => editor().setRightTab("ladder") },
+  { id: "panel.cluster", label: "Cluster", group: "panel", shortcut: "3", run: () => editor().setRightTab("cluster") },
+  { id: "panel.ladder", label: "Ladder", group: "panel", shortcut: "4", run: () => editor().setRightTab("ladder") },
+  {
+    id: "panel.findings",
+    label: "Checks",
+    group: "panel",
+    shortcut: `${MOD}+Shift+f`,
+    hint: "The design-rule list, along the bottom",
+    run: () => editor().toggleFindings(),
+    checked: () => editor().dockOpen,
+  },
 
   // --- blocks -------------------------------------------------------------
   {

@@ -2738,6 +2738,80 @@ select.field {
   margin: 0 0 8px;
 }
 
+/* The design-rule check, along the bottom.
+   A dock rather than a tab: the checks are about the drawing, so they belong
+   under it and open while it is edited. */
+.findings {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  border-top: 1px solid var(--border);
+  background: var(--bg-panel);
+}
+
+.findings__strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.findings__strip:hover {
+  background: var(--bg-elev);
+}
+
+.findings__label {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+}
+
+.findings__ok {
+  color: var(--ok);
+}
+
+.findings__count--error {
+  color: var(--error);
+}
+
+.findings__count--warning {
+  color: var(--warn);
+}
+
+/* Which block the list is filtered to, when a marker on the drawing set it. */
+.findings__focus {
+  color: var(--accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.findings__chevron {
+  margin-left: auto;
+  display: flex;
+  color: var(--dim);
+}
+
+.findings__body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  border-top: 1px solid var(--border-soft);
+}
+
 /* The design's own block library. */
 .defs {
   display: flex;

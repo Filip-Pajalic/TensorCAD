@@ -209,9 +209,15 @@ export default function Rules(): React.ReactElement {
 
       {nothingShown && (
         <div className="empty">
-          {derived.ok
+          {/* "Nothing to report" has to mean nothing was found, not nothing is
+              being shown. Notes are muted by default, so judging this by
+              `derived.ok` — which only asks about errors — told a design with a
+              note that every rule was satisfied. */}
+          {derived.issues.length === 0
             ? "Nothing to report. Every port connects, every edge unifies, and every rule is satisfied."
-            : "Nothing at the severities you are showing."}
+            : `Nothing at the severities you are showing. ${derived.issues.length} finding${
+                derived.issues.length === 1 ? " is" : "s are"
+              } hidden.`}
         </div>
       )}
 

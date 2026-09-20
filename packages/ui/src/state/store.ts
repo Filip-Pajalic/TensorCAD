@@ -55,7 +55,7 @@ function loadDetail(): number {
   }
 }
 
-export type RightTab = "inspector" | "symbols" | "rules" | "cluster" | "ladder";
+export type RightTab = "inspector" | "symbols" | "cluster" | "ladder";
 export type DialogId = "settings" | "shortcuts" | "compare" | "palette" | "definitions" | null;
 
 /**
@@ -105,6 +105,20 @@ export interface EditorState {
   past: Doc[];
   future: Doc[];
   rightTab: RightTab;
+  /**
+   * Whether the findings dock along the bottom is open.
+   *
+   * The findings were a tab, which meant they were never on screen while you
+   * edited — you had to leave the inspector to find out what was wrong, and
+   * then leave the findings to fix it. A DRC list belongs where a PCB tool puts
+   * it: across the bottom, under the drawing it is about.
+   *
+   * Collapsed it is still a strip carrying the counts, so a design that is
+   * broken always says so somewhere on screen.
+   */
+  dockOpen: boolean;
+  toggleFindings: () => void;
+  setDockOpen: (open: boolean) => void;
   /** Whether shape labels show symbol names or substituted design values. */
   shapeMode: ShapeMode;
   /** Bumped whenever something wants the canvas to re-run auto-layout. */
@@ -270,6 +284,7 @@ export const useEditor = create<EditorState>((set, get) => {
     past: [],
     future: [],
     rightTab: "inspector",
+    dockOpen: false,
     shapeMode: "symbolic",
     layoutNonce: 0,
     focusNonce: 0,
@@ -413,12 +428,17 @@ export const useEditor = create<EditorState>((set, get) => {
     showFindingsFor: (target) =>
       set((s) => ({
         selection: target,
-        rightTab: "rules",
+        also: [],
+        // Pressing a marker on the drawing asks what is wrong with this block,
+        // so the dock opens whether or not it was.
+        dockOpen: true,
         findingFocus: target,
         findingNonce: s.findingNonce + 1,
       })),
     clearFindingFocus: () => set({ findingFocus: null }),
     setRightTab: (rightTab) => set({ rightTab }),
+    toggleFindings: () => set((s) => ({ dockOpen: !s.dockOpen })),
+    setDockOpen: (dockOpen) => set({ dockOpen }),
     setShapeMode: (shapeMode) => set({ shapeMode }),
     setStatus: (status) => set({ status }),
     requestLayout: () => set((s) => ({ layoutNonce: s.layoutNonce + 1 })),

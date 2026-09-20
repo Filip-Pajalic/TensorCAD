@@ -207,6 +207,34 @@ async function build(pkg: Pkg): Promise<void> {
   };
   await writeFile(join(dist, "package.json"), JSON.stringify(published, null, 2) + "\n");
 
+  // The engine finds its own module beside itself here, not a directory up.
+  //
+  // In this repository the entry is `src/index.ts` and the module is built to
+  // `wasm/tensorcad.wasm` next to `src`, so the source says
+  // `../wasm/tensorcad.wasm`. Published, the entry is at the package root and
+  // the module is flattened beside it, so that path points *outside* the
+  // package — which is what 0.1.0 shipped, and why it installed and then could
+  // not start in a browser.
+  //
+  // Edited here rather than made dynamic in the source, because a bundler can
+  // only rewrite `new URL("…", import.meta.url)` to the asset it emitted while
+  // the path is a literal it can read. Building it from a variable fixes the
+  // published package by breaking every bundled one.
+  //
+  // Asserted, because a silent no-op here is the same bug again.
+  if (pkg.dir.endsWith("engine")) {
+    const entry = join(dist, "index.js");
+    const before = await Bun.file(entry).text();
+    const after = before.replaceAll("../wasm/tensorcad.wasm", "./tensorcad.wasm");
+    if (after === before) {
+      throw new Error(
+        `${pkg.dir}: expected to find "../wasm/tensorcad.wasm" in index.js and did not. ` +
+          `If the source stopped spelling it that way, this rewrite has to follow it.`,
+      );
+    }
+    await writeFile(entry, after);
+  }
+
   // `node.ts` imports the Go runtime for its side effect, and a bundler drops
   // a side-effect import that exports nothing — the same tree-shake that broke
   // the desktop bundle. Concatenated rather than imported, so there is nothing

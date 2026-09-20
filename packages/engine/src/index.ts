@@ -210,17 +210,6 @@ function point(options: AnalysisOptions | undefined): string {
  */
 const WASM_MAGIC = [0x00, 0x61, 0x73, 0x6d];
 
-/**
- * Where the module sits relative to this one, in both layouts it can be in.
- *
- * In the repository this file is `src/index.ts` and the module is built to
- * `wasm/tensorcad.wasm` beside `src`. In the published package the entry is at
- * the root and the module is flattened next to it. `node.ts` has always tried
- * both; this did not, which made the published browser build fetch a path one
- * level above the package — and get the dev server's fallback HTML, with a 200.
- */
-const CANDIDATES = ["./tensorcad.wasm", "../wasm/tensorcad.wasm"];
-
 function looksLikeWasm(bytes: ArrayBuffer): boolean {
   if (bytes.byteLength < 4) return false;
   const head = new Uint8Array(bytes, 0, 4);
@@ -230,11 +219,19 @@ function looksLikeWasm(bytes: ArrayBuffer): boolean {
 async function bytesOf(wasm: LoadOptions["wasm"]): Promise<BufferSource> {
   if (wasm && typeof wasm !== "string" && !(wasm instanceof URL)) return wasm;
 
-  // An explicit one is used as given: the caller knows where they put it, and
-  // guessing on their behalf would hide their mistake rather than report it.
-  const urls = wasm
-    ? [wasm]
-    : CANDIDATES.map((path) => new URL(path, import.meta.url));
+  // **This literal must stay a literal.** A bundler rewrites
+  // `new URL("…", import.meta.url)` to the asset it emitted, and it can only
+  // do that when it can read the path without running anything. Built from a
+  // variable — an array of candidates to try in turn, say — the rewrite
+  // silently stops happening, the URL is resolved at runtime against the
+  // deployed module, and the site serves its own index.html in place of the
+  // engine. That shipped for eleven minutes.
+  //
+  // The published package keeps its module beside the entry rather than a
+  // directory up, and `scripts/build-dist.ts` edits this one path when it
+  // writes that package out — where the difference between the two layouts is
+  // already recorded, and asserted so it cannot quietly stop matching.
+  const urls = wasm ? [wasm] : [new URL("../wasm/tensorcad.wasm", import.meta.url)];
 
   const tried: string[] = [];
   for (const url of urls) {

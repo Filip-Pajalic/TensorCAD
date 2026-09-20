@@ -12,7 +12,7 @@ Built on the official TypeScript SDK v2 (`@modelcontextprotocol/server` 2.0.0), 
 
 ```bash
 # from a checkout, during development
-claude mcp add --transport stdio tensorcad -- bun packages/mcp/src/index.ts
+claude mcp add --transport stdio tensorcad -- bun packages/mcp/src/stdio.ts
 
 # published
 claude mcp add --transport stdio tensorcad -- npx -y @tensorcad/mcp
@@ -37,7 +37,18 @@ Add `--scope project` to write a committed `.mcp.json` for everyone on the repo.
 
 Cursor keeps a limited number of tools active across all servers, which is why this one ships eighteen rather than forty.
 
-### Claude Desktop
+### Claude Desktop, in one click
+
+Download `tensorcad.mcpb` from a release and open it. Claude Desktop installs it
+as an extension and asks once for a folder to keep designs in.
+
+The bundle is the server built for Node — which Claude Desktop ships and this
+repository does not use — with the WebAssembly engine beside it. `bun run
+build:mcpb` builds one and starts it under Node before it is done, because the
+two things that have broken it were both differences between Bun and Node rather
+than anything in the server.
+
+### Claude Desktop, by hand
 
 `claude_desktop_config.json` (Settings, Developer, Edit Config):
 
@@ -55,7 +66,7 @@ Cursor keeps a limited number of tools active across all servers, which is why t
 
 ### Any client
 
-[`mcp.example.json`](./mcp.example.json) is the repo-relative development form: `bun packages/mcp/src/index.ts`, run from the repository root.
+[`mcp.example.json`](./mcp.example.json) is the repo-relative development form: `bun packages/mcp/src/stdio.ts`, run from the repository root.
 
 `TENSORCAD_ROOT` sets the directory `tensorcad_list_designs` scans for `.tensorcad.json` files and that relative paths resolve against. It defaults to the process working directory.
 
@@ -166,10 +177,26 @@ None of that is here yet. The TODO is on `FileStore` in `src/store/file-store.ts
 
 Also deliberately absent: `tensorcad_render_preview` (a canvas image needs the editor) and `tensorcad_run_script` (a scripting escape hatch, which wants a sandbox and an opt-in environment variable before it is worth shipping). Both are in the research notes as future tools; leaving them out keeps the count where clients are happy.
 
+## Publishing
+
+`server.json` beside this README is the [MCP registry][registry] manifest:
+the namespace (`io.github.filip-pajalic/tensorcad`, which matches `mcpName` in
+`package.json`), the npm package it points at, and the one environment variable
+the server reads. It is checked against the registry's own schema when it is
+written and against `package.json` on every test run, because what drifts is not
+the schema but the version in two files.
+
+```bash
+mcp-publisher login github            # the namespace is verified as the GitHub user
+mcp-publisher publish --file server.json
+```
+
+[registry]: https://github.com/modelcontextprotocol/registry
+
 ## Development
 
 ```bash
-bun run packages/mcp/src/index.ts     # serve on stdio
+bun run packages/mcp/src/stdio.ts     # serve on stdio
 bun test packages/mcp/test            # contract tests: spin the server up and call every tool
 ```
 

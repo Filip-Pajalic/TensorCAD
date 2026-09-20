@@ -109,6 +109,34 @@ jobs:
           name: engine
           path: dist/tensorcad-engine-wasm.tar.gz
 
+  # The one-click install for Claude Desktop. Built here rather than by hand,
+  # and started under Node before it is attached: Claude Desktop runs it with
+  # Node, this repository runs it with Bun, and the difference has broken it
+  # twice already.
+  bundle:
+    name: Desktop bundle
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: packages/core-go/go.mod
+          cache: false
+      - run: bun install --frozen-lockfile
+      - name: Build and start it
+        run: bun run build:mcpb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mcpb
+          path: dist/tensorcad.mcpb
+
   desktop:
     name: Desktop (${{ matrix.label }})
     needs: verify
@@ -171,7 +199,7 @@ jobs:
 
   publish:
     name: Publish
-    needs: [engine, desktop]
+    needs: [engine, bundle, desktop]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -182,10 +210,12 @@ jobs:
           path: artifacts
           merge-multiple: true
 
+      # Everything that is published, not just the tarballs: the bundle is a
+      # file people download and run, which is the case checksums are for.
       - name: Checksums
         run: |
           cd artifacts
-          sha256sum *.tar.gz > checksums.txt
+          sha256sum tensorcad-*.tar.gz tensorcad.mcpb > checksums.txt
           cat checksums.txt
 
       # What changed, from the commits themselves. A release whose notes say
@@ -216,6 +246,8 @@ jobs:
             echo "- \`tensorcad-<platform>.tar.gz\` — the desktop editor."
             echo "- \`tensorcad-engine-wasm.tar.gz\` — the analysis engine as one"
             echo "  WebAssembly module with its loader, for embedding anywhere else."
+            echo "- \`tensorcad.mcpb\` — the MCP server as a one-click install for"
+            echo "  Claude Desktop."
             echo
             echo "Checksums are in \`checksums.txt\`."
             echo "TENSORCAD_NOTES"

@@ -10,6 +10,7 @@
   "scripts": {
     "test": "bun run build:wasm && bun test packages",
     "build:wasm": "bun run scripts/build-wasm.ts",
+    "build:mcpb": "bun run scripts/build-mcpb.ts --check",
     "test:go": "cd packages/core-go && go test ./... && cd ../../desktop && go test ./...",
     "test:all": "bun run typecheck && bun run test && bun run test:go",
     "golden": "cd packages/core-go && go run ./cmd/golden",

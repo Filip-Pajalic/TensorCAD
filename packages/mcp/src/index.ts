@@ -1,27 +1,17 @@
-#!/usr/bin/env bun
 /**
- * stdio entry point.
+ * The library: everything this package exposes to code that imports it.
  *
- * Nothing but newline-delimited JSON-RPC may reach stdout; anything we want to
- * say goes to stderr.
+ * Starting a server is `stdio.ts`, and the split matters. This used to be both,
+ * with an `if (import.meta.main)` at the bottom — which works under Bun and
+ * does not survive a bundler, because `import.meta.main` compiles to a
+ * CommonJS check that is not defined in an ESM output. The desktop bundle
+ * crashed before its first line ran.
  */
 
-import { serveStdio } from "@modelcontextprotocol/server/stdio";
-import { loadEngine } from "@tensorcad/engine/node";
-import { createServer } from "./server.js";
-
+export { serve } from "./serve.js";
 export { createServer, SERVER_NAME, SERVER_VERSION } from "./server.js";
 export { FileStore } from "./store/file-store.js";
 export type { DocumentStore, DesignRecord, DesignSummary } from "./store/types.js";
 export { TOOL_NAMES } from "./tools.js";
 export { PROMPT_NAMES } from "./prompts.js";
 export { applyOps, type Op } from "./ops.js";
-
-if (import.meta.main) {
-  const root = process.env.TENSORCAD_ROOT ?? process.cwd();
-  // Before the transport opens: a tool call that arrived while the engine was
-  // still loading would fail for a reason that has nothing to do with it.
-  await loadEngine();
-  serveStdio(() => createServer({ root }));
-  process.stderr.write(`tensorcad mcp server on stdio, root ${root}\n`);
-}

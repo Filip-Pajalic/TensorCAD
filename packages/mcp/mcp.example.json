@@ -3,7 +3,7 @@
     "tensorcad": {
       "type": "stdio",
       "command": "bun",
-      "args": ["packages/mcp/src/index.ts"],
+      "args": ["packages/mcp/src/stdio.ts"],
       "env": {
         "TENSORCAD_ROOT": "."
       }

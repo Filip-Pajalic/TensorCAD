@@ -139,7 +139,8 @@ Remaining:
 ### M6 — Ship
 
 - Docs site with the guided tours; explain tab content for every block.
-- Publish `@tensorcad/engine`, `@tensorcad/mcp` to npm; `mcpName` + `server.json` to the MCP registry; MCPB bundle for Claude Desktop.
+- **Done.** `server.json` for the MCP registry, checked against the registry's own schema and pinned against `package.json` by a test. An MCPB bundle for Claude Desktop, built for Node with the engine beside it and started under Node before it is attached to a release.
+- Publish `@tensorcad/engine` and `@tensorcad/mcp` to npm, and `server.json` to the registry. Both are one command and a decision about version numbers.
 - Optional: MCP Apps canvas preview for Claude Desktop/Cursor; hosted read-only viewer for sharing designs.
 
 ## Sequencing and dependencies

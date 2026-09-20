@@ -5,7 +5,7 @@
   "mcpName": "io.github.filip-pajalic/tensorcad",
   "type": "module",
   "bin": {
-    "tensorcad-mcp": "./src/index.ts"
+    "tensorcad-mcp": "./src/stdio.ts"
   },
   "main": "./src/index.ts",
   "exports": {
@@ -18,7 +18,7 @@
     "mcp.example.json"
   ],
   "scripts": {
-    "start": "bun run src/index.ts",
+    "start": "bun run src/stdio.ts",
     "test": "bun test ../../packages/mcp/test",
     "typecheck": "tsc --noEmit"
   },

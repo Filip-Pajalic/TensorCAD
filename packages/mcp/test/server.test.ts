@@ -15,7 +15,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
 import { AjvJsonSchemaValidator } from "@modelcontextprotocol/client/validators/ajv";
 import type { CallToolResult, Tool } from "@modelcontextprotocol/client";
 
-const ENTRY = resolve(import.meta.dir, "../src/index.ts");
+const ENTRY = resolve(import.meta.dir, "../src/stdio.ts");
 
 let client: Client;
 let tools: Tool[];
@@ -797,5 +797,47 @@ describe("import_hf", () => {
   test("a config it cannot read is a readable failure", async () => {
     const text = await callExpectingError("tensorcad_import_hf", { config: "{ not json" });
     expect(text.length).toBeGreaterThan(0);
+  });
+});
+
+describe("registry manifest", () => {
+  const manifest = JSON.parse(
+    readFileSync(resolve(import.meta.dir, "../server.json"), "utf8"),
+  ) as {
+    $schema: string;
+    name: string;
+    description: string;
+    version: string;
+    packages: { identifier: string; version: string; transport: { type: string } }[];
+  };
+  const pkg = JSON.parse(readFileSync(resolve(import.meta.dir, "../package.json"), "utf8")) as {
+    name: string;
+    version: string;
+    mcpName: string;
+    description: string;
+  };
+
+  // The schema is fetched and checked when the file is written; what drifts
+  // afterwards is this file against package.json, silently, until a publish
+  // is rejected or — worse — accepted under the wrong version.
+  test("agrees with package.json about what is being published", () => {
+    expect(manifest.name).toBe(pkg.mcpName);
+    expect(manifest.version).toBe(pkg.version);
+    expect(manifest.packages).toHaveLength(1);
+    expect(manifest.packages[0].identifier).toBe(pkg.name);
+    expect(manifest.packages[0].version).toBe(pkg.version);
+    expect(manifest.packages[0].transport.type).toBe("stdio");
+  });
+
+  test("says the same version the server reports over the protocol", () => {
+    expect(client.getServerVersion()?.version).toBe(manifest.version);
+  });
+
+  // The registry caps it, and the failure is a rejected publish rather than
+  // anything visible here.
+  test("the description fits what the registry allows", () => {
+    expect(manifest.description.length).toBeGreaterThan(0);
+    expect(manifest.description.length).toBeLessThanOrEqual(100);
+    expect(manifest.$schema).toStartWith("https://static.modelcontextprotocol.io/schemas/");
   });
 });

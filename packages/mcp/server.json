@@ -1,0 +1,32 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.filip-pajalic/tensorcad",
+  "description": "Design transformer LLM architectures and report their parameters, FLOPs, memory and cost",
+  "version": "0.0.1",
+  "repository": {
+    "url": "https://github.com/Filip-Pajalic/TensorCAD",
+    "source": "github",
+    "subfolder": "packages/mcp"
+  },
+  "websiteUrl": "https://github.com/Filip-Pajalic/TensorCAD",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@tensorcad/mcp",
+      "version": "0.0.1",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "TENSORCAD_ROOT",
+          "description": "Directory the server scans for .tensorcad.json files and resolves relative paths against. Defaults to the process working directory.",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}

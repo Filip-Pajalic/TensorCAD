@@ -63,22 +63,30 @@ jobs:
       - name: Check the token is a token
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
         run: |
-          # The shape of the value, which reveals nothing and has already been
-          # the answer once: a Cloudflare token is 40 characters, and whatever
-          # a paste picked up on the way is visible here and nowhere else.
-          trimmed=$(printf %s "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')
-          echo "token: ${#CLOUDFLARE_API_TOKEN} characters, ${#trimmed} with whitespace stripped (a token is 40)"
-          echo "account id: ${#CLOUDFLARE_ACCOUNT_ID} characters (an id is 32)"
-
-          reply=$(curl -sS --max-time 30 https://api.cloudflare.com/client/v4/user/tokens/verify \
-            -H "Authorization: Bearer $trimmed")
-          echo "$reply"
+          # There are two kinds of token and two endpoints to match. An
+          # account-owned token is not a user token, and asking
+          # /user/tokens/verify about one gets "Invalid API Token" — which is
+          # true of the question and says nothing about the token. That
+          # mistake cost an afternoon, so both are tried.
+          verify() {
+            curl -sS --max-time 30 "https://api.cloudflare.com/client/v4$1/tokens/verify" \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+          }
+          reply=$(verify "/accounts/$CLOUDFLARE_ACCOUNT_ID")
           case "$reply" in
-            *'"success":true'*) ;;
+            *'"success":true'*) echo "account token: valid" ;;
             *)
-              echo "::error::CLOUDFLARE_API_TOKEN is not valid. Re-set it from the GitHub web UI —" \
-                   "a terminal paste is what broke it last time."
-              exit 1
+              echo "as an account token: $reply"
+              reply=$(verify /user)
+              case "$reply" in
+                *'"success":true'*) echo "user token: valid" ;;
+                *) echo "as a user token: $reply"
+                   # A warning, not a failure. Being unable to verify a token
+                   # is not the same as the token being unusable, and wrangler
+                   # is the one whose opinion actually matters — let it try and
+                   # report what the API tells *it*.
+                   echo "::warning::Neither verify endpoint accepted the token; letting wrangler try anyway." ;;
+              esac
               ;;
           esac
 
@@ -126,22 +134,30 @@ jobs:
       - name: Check the token is a token
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
         run: |
-          # The shape of the value, which reveals nothing and has already been
-          # the answer once: a Cloudflare token is 40 characters, and whatever
-          # a paste picked up on the way is visible here and nowhere else.
-          trimmed=$(printf %s "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')
-          echo "token: ${#CLOUDFLARE_API_TOKEN} characters, ${#trimmed} with whitespace stripped (a token is 40)"
-          echo "account id: ${#CLOUDFLARE_ACCOUNT_ID} characters (an id is 32)"
-
-          reply=$(curl -sS --max-time 30 https://api.cloudflare.com/client/v4/user/tokens/verify \
-            -H "Authorization: Bearer $trimmed")
-          echo "$reply"
+          # There are two kinds of token and two endpoints to match. An
+          # account-owned token is not a user token, and asking
+          # /user/tokens/verify about one gets "Invalid API Token" — which is
+          # true of the question and says nothing about the token. That
+          # mistake cost an afternoon, so both are tried.
+          verify() {
+            curl -sS --max-time 30 "https://api.cloudflare.com/client/v4$1/tokens/verify" \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+          }
+          reply=$(verify "/accounts/$CLOUDFLARE_ACCOUNT_ID")
           case "$reply" in
-            *'"success":true'*) ;;
+            *'"success":true'*) echo "account token: valid" ;;
             *)
-              echo "::error::CLOUDFLARE_API_TOKEN is not valid. Re-set it from the GitHub web UI —" \
-                   "a terminal paste is what broke it last time."
-              exit 1
+              echo "as an account token: $reply"
+              reply=$(verify /user)
+              case "$reply" in
+                *'"success":true'*) echo "user token: valid" ;;
+                *) echo "as a user token: $reply"
+                   # A warning, not a failure. Being unable to verify a token
+                   # is not the same as the token being unusable, and wrangler
+                   # is the one whose opinion actually matters — let it try and
+                   # report what the API tells *it*.
+                   echo "::warning::Neither verify endpoint accepted the token; letting wrangler try anyway." ;;
+              esac
               ;;
           esac
 

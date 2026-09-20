@@ -39,8 +39,8 @@ import { calloutFor, type Callout } from "./callouts.js";
 import { useEditor } from "../state/store.js";
 import { setViewportApi } from "../state/commands.js";
 import { type Derived } from "../state/derive.js";
-import { useDerived } from "../state/hooks.js";
-import { resolveLevel, type Level } from "../state/level.js";
+import { useLevel } from "../state/hooks.js";
+import { type Level } from "../state/level.js";
 import { unfold, type Unfolded } from "../state/unfold.js";
 import { newNodeFor } from "../state/addBlock.js";
 import * as ops from "../state/ops.js";
@@ -500,8 +500,10 @@ export default function Canvas(): React.ReactElement {
   const showMinimap = useEditor((s) => s.showMinimap);
   const showTitleBlock = useEditor((s) => s.showTitleBlock);
 
-  const derived = useDerived();
-  const level = useMemo(() => resolveLevel(doc, path, derived), [doc, path, derived]);
+  // `useLevel`, not `useDerived`: inside a definition the numbers and shapes on
+  // screen are the template's, analysed as a design of its own. The readout
+  // goes on showing the design's, which is what it is for.
+  const { level, derived } = useLevel();
   const { screenToFlowPosition, fitView, setCenter, getZoom, zoomIn, zoomOut, zoomTo } =
     useReactFlow();
 

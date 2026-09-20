@@ -6,18 +6,22 @@
  * subgraph, which stays editable. A composite has no stored subgraph, so the
  * level is produced by the catalog's own expansion and is read-only.
  *
- * A block the *document* defines behaves as a composite here: it expands the
- * same way and is read-only for the same reason. Its template is stored, so it
- * could in principle be edited in place, but the template is parameterised and
- * what a literal dropped into it should mean is a question the editor does not
- * yet answer. `Definitions` navigates to an instance instead.
+ * A block the *document* defines is the third case, and the only editable one
+ * that is not a container: its template is stored, so a path beginning `@def`
+ * opens it directly rather than through any instance. Which instance would have
+ * been the wrong question — an edit to a definition changes all of them.
+ *
+ * What is drawn there is the preview from `definition.ts`, not the stored
+ * template: `$d_model` is not a symbol and nothing about it would resolve. What
+ * is *edited* is the template, because `graphAtPath` follows the same prefix.
  */
 
 import type { Derived } from "./derive.js";
 import type { Doc, Graph, NodeDef } from "@tensorcad/engine";
 import { catalogOf, isComposite, isContainer } from "../engine.js";
+import { DEF_PREFIX, previewDoc } from "./definition.js";
 
-export type LevelKind = "root" | "container" | "composite";
+export type LevelKind = "root" | "container" | "composite" | "definition";
 
 export interface Crumb {
   label: string;
@@ -51,7 +55,24 @@ export function resolveLevel(doc: Doc, path: string[], derived: Derived): Level 
   let owner: NodeDef | null = null;
   const walked: string[] = [];
 
-  for (const seg of path) {
+  let rest = path;
+  if (path[0] === DEF_PREFIX) {
+    const type = path[1] ?? "";
+    const preview = previewDoc(doc, type);
+    if (!preview) {
+      return {
+        segments: [], prefix: "", graph, editable, kind, owner, crumbs,
+        error: `This design defines no block called "${type}".`,
+      };
+    }
+    graph = preview.graph;
+    kind = "definition";
+    walked.push(DEF_PREFIX, type);
+    crumbs.push({ label: type, sub: "definition", segments: [DEF_PREFIX, type] });
+    rest = path.slice(2);
+  }
+
+  for (const seg of rest) {
     const node: NodeDef | undefined = graph.nodes.find((n) => n.id === seg);
     if (!node) {
       return {

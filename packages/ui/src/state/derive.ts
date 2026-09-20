@@ -109,6 +109,55 @@ export interface Derived {
   elapsedMs: number;
 }
 
+/**
+ * The same answers, keyed as though the graph sat at `prefix`.
+ *
+ * A definition's template is analysed as a design of its own — it has to be,
+ * since only then do its parameters have values — so every path it produces is
+ * relative to that design. The canvas asks by the path it drew the node at,
+ * which is under `@def/<type>`. Re-keying once here is what lets every panel go
+ * on asking the one way it always has.
+ */
+export function prefixDerived(derived: Derived, prefix: string): Derived {
+  const at = (path: string): string => `${prefix}/${path}`;
+  // A "path:port" key: only the path moves.
+  const atPort = (key: string): string => {
+    const cut = key.lastIndexOf(":");
+    return cut < 0 ? at(key) : `${at(key.slice(0, cut))}${key.slice(cut)}`;
+  };
+  const remapKeys = <V,>(m: Map<string, V>, f: (k: string) => string): Map<string, V> =>
+    new Map([...m].map(([k, v]) => [f(k), v]));
+
+  // The roll-ups lose their ancestors under a prefix, and the breadcrumb asks
+  // for exactly one of them: the level's own total.
+  const rollTo = (m: Map<string, number>): Map<string, number> => {
+    const out = remapKeys(m, at);
+    let total = 0;
+    for (const [k, v] of m) if (!k.includes("/")) total += v;
+    out.set(prefix, total);
+    return out;
+  };
+
+  return {
+    ...derived,
+    infer: {
+      outputs: remapKeys(derived.infer.outputs, atPort),
+      inputs: remapKeys(derived.infer.inputs, atPort),
+      producerOf: new Map(
+        [...derived.infer.producerOf].map(([k, v]) => [atPort(k), atPort(v)] as const),
+      ),
+      ports: remapKeys(derived.infer.ports, at),
+      resolved: remapKeys(derived.infer.resolved, at),
+      expansions: remapKeys(derived.infer.expansions, at),
+    },
+    paramsByPath: rollTo(derived.paramsByPath),
+    flopsByPath: rollTo(derived.flopsByPath),
+    issues: derived.issues.map((i) => (i.path === null ? i : { ...i, path: at(i.path) })),
+    severityByPath: remapKeys(derived.severityByPath, at),
+    findingsByPath: remapKeys(derived.findingsByPath, at),
+  };
+}
+
 interface CacheEntry {
   key: string;
   value: Derived;

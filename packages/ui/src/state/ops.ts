@@ -1,6 +1,16 @@
-import type { Doc, Edge, Graph, NodeDef, ParamValue, RuleSeverity, SymbolDef } from "@tensorcad/engine";
+import type {
+  Doc,
+  Edge,
+  Graph,
+  NodeDef,
+  ParamValue,
+  RuleSeverity,
+  SymbolDef,
+  UserBlockDef,
+} from "@tensorcad/engine";
 import { splitEndpoint } from "@tensorcad/engine";
 import { CATALOG } from "../engine.js";
+import { DEF_PREFIX, storeInDefinition } from "./definition.js";
 /**
  * Document operations.
  *
@@ -24,10 +34,27 @@ export function segmentsOf(path: string): Segments {
   return path ? path.split("/") : [];
 }
 
-/** The graph that owns the nodes at `segments`, walking container subgraphs. */
+/**
+ * The graph that owns the nodes at `segments`, walking container subgraphs.
+ *
+ * A path beginning `@def` addresses a block the document defines for itself, and
+ * hands over that definition's stored template. Every operation below reaches
+ * its graph through here, so one function is what makes a definition editable
+ * with the tools already written rather than a second set that writes to `defs`.
+ * `@` is not a legal node id, so a path can never mean this by accident.
+ */
 export function graphAtPath(doc: Doc, segments: Segments): Graph | null {
-  let graph: Graph = doc.graph;
-  for (const seg of segments) {
+  let graph: Graph;
+  let rest = segments;
+  if (segments[0] === DEF_PREFIX) {
+    const def = (doc.defs as Record<string, UserBlockDef> | undefined)?.[segments[1] ?? ""];
+    if (!def?.graph) return null;
+    graph = def.graph;
+    rest = segments.slice(2);
+  } else {
+    graph = doc.graph;
+  }
+  for (const seg of rest) {
     const node = graph.nodes.find((n) => n.id === seg);
     if (!node || !node.graph) return null;
     graph = node.graph;
@@ -108,8 +135,16 @@ export function setParam(
   const node = nodeAtPath(next, segments);
   if (!node) return doc;
   node.params ??= {};
-  if (value === undefined) delete node.params[key];
-  else node.params[key] = value;
+  if (value === undefined) {
+    delete node.params[key];
+    return next;
+  }
+  // Inside a definition the template is written in the block's own parameters,
+  // so a value naming one is stored as a reference to it rather than as the
+  // number it happens to resolve to today. That is the whole point of a
+  // definition: `D` means the width, not 4096.
+  const inDef = segments[0] === DEF_PREFIX ? (segments[1] ?? "") : null;
+  node.params[key] = inDef === null ? value : (storeInDefinition(next, inDef, value) as ParamValue);
   return next;
 }
 

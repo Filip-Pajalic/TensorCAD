@@ -1271,7 +1271,43 @@ below it. The empty state asked `derived.ok`, which only knows about errors,
 where the question is whether anything was found at all. It now distinguishes
 the two and says how many findings are hidden.
 
+## Sixteenth pass: editing the definition itself
+
+A block the document defines can now be opened and edited directly, rather than
+looked at through an instance. `graphAtPath` is the single door every operation
+goes through, so teaching it one prefix — `@def/<type>` — made every tool that
+already exists write into `defs`: add a block, wire it, move it, rename it,
+delete it, all of them, with undo working because they are the same operations.
+
+### What a literal means
+
+The question that stopped this last time: a `linear` dragged into a
+parameterised template with `in_features` of 4096 either means 4096 or means
+`$D`, and the editor cannot ask.
+
+It does not have to. The rule is that **inside a definition, a bare identifier
+naming a declared parameter is that parameter** — which is exactly how the
+built-in composites are written, where `gqa_attention`'s expansion names
+`d_model` directly. So the canvas is handed a *preview*: the template with every
+`$name` rewritten to `name`, over a symbol table made of the block's own
+parameters at their declared defaults. Shapes resolve, weights count, and the
+inspector shows `D` where the template holds `$D`. On the way back, a value
+naming a parameter is stored as a reference to it and everything else is stored
+exactly as written. 4096 means 4096 at every width; `D` means the width.
+
+What you see is what is kept, and the rewrite is total in both directions, which
+is the property that makes it safe. It is tested as a round trip rather than in
+one direction.
+
+### One seam, not a fork
+
+`useDerived` is the design's numbers and `useLevel` is the level's. They were the
+same until now. Inside a definition the template is analysed as a design of its
+own — only then do its parameters have values — and the answers are re-keyed
+under the definition's path, so the canvas and the inspector go on asking the one
+way they always have. The readout keeps showing the design, because a definition
+being edited does not change what the design weighs.
+
 ### Still outstanding
 
-The definition editor proper, and E7: operations, configurations and tensors as
-first-class objects.
+E7: operations, configurations and tensors as first-class objects.

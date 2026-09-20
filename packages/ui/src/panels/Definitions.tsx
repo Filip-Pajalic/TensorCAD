@@ -6,12 +6,9 @@
  * This is the list: what each block declares, where it is used, and the three
  * things you do to one you already have.
  *
- * "Show" goes to an instance rather than to the definition. A template is
- * written in terms of its parameters, and only an instance says what those are,
- * so an instance is the only thing there is to draw — and the composite
- * machinery already draws it. Editing the template in place is the piece that
- * is not here: it would have to answer what a literal dropped into a
- * parameterised graph means, and guessing would be worse than declining.
+ * "Edit" opens the template itself, not an instance of it, so a change reaches
+ * every instance at once — which is what a definition is for. "Show" goes to an
+ * instance instead, for when the question is what this block does *here*.
  *
  * Deleting is refused while a block is in use, because the alternative is a
  * design full of blocks the catalog has never heard of.
@@ -20,6 +17,7 @@
 import { useMemo } from "react";
 import { useEditor } from "../state/store.js";
 import { defsOf, renameBlock, usageOf, withoutBlock } from "../state/blocks.js";
+import { DEF_PREFIX } from "../state/definition.js";
 import { validateUserBlock } from "../engine.js";
 import type { Doc, Graph, UserBlockDef } from "@tensorcad/engine";
 
@@ -33,9 +31,13 @@ function One({ type, def, doc }: { type: string; def: UserBlockDef; doc: Doc }):
   const problems = validateUserBlock(def, type);
   const state = useEditor.getState();
 
-  // A definition has no interior of its own to show: its template is written in
-  // terms of its parameters, and it is only an instance that says what those
-  // are. So "show" goes to one, which the composite machinery already draws.
+  const edit = (): void => {
+    state.setPath([DEF_PREFIX, type]);
+    state.closeDialog();
+  };
+
+  // And an instance, for when the question is what this block does in one
+  // particular place rather than what it is.
   const show = (): void => {
     const first = paths[0];
     if (first === undefined) return;
@@ -69,6 +71,9 @@ function One({ type, def, doc }: { type: string; def: UserBlockDef; doc: Doc }):
           {inDefs > 0 && `, ${inDefs} inside another definition`}
         </span>
         <span className="def__actions">
+          <button className="def__btn" onClick={edit} title="Edit this block's template">
+            edit
+          </button>
           <button
             className="def__btn"
             onClick={show}

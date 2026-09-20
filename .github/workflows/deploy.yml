@@ -66,25 +66,28 @@ jobs:
       # or the account id is not the one the token is for. This says which,
       # without printing either: the id is masked, its *length* is not, and a
       # 32 that is not 32 is a paste that brought a newline with it.
-      # Ask the API directly. Wrangler prints its own sentence and throws the
-      # body away, and the body is the part that says *why* — a numbered code
-      # and the permission it wanted. None of these responses carry a secret;
-      # the id and the token are masked by the runner wherever they appear.
-      - name: Ask the API why
+      # Two seconds, before four minutes of building.
+      #
+      # A token that was pasted wrong does not say so: wrangler fails on the
+      # asset upload with "No access to the specified resource", which reads
+      # like a permissions problem and sent us round the dashboard twice
+      # granting permissions the token already had. `/user/tokens/verify`
+      # answers the actual question — is this token a token — and the response
+      # body carries no secret.
+      - name: Check the token is a token
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
         run: |
-          api() {
-            echo "--- $1 $2"
-            curl -s -X "$1" "https://api.cloudflare.com/client/v4$2" \
-              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-              -H "Content-Type: application/json" \
-              ${3:+--data "$3"} | head -c 900
-            echo
-          }
-          api GET /user/tokens/verify
-          api GET "/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts"
-          api GET "/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain"
-          api POST "/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/tensorcad-app/assets-upload-session" '{"manifest":{}}'
+          reply=$(curl -sS --max-time 30 https://api.cloudflare.com/client/v4/user/tokens/verify \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          echo "$reply"
+          case "$reply" in
+            *'"success":true'*) ;;
+            *)
+              echo "::error::CLOUDFLARE_API_TOKEN is not valid. Re-set it from the GitHub web UI —" \
+                   "a terminal paste is what broke it last time."
+              exit 1
+              ;;
+          esac
 
       - name: Deploy
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}

@@ -1639,6 +1639,7 @@
         "dim": 576
       },
       "resolved": {
+        "decompressed_dim": 0,
         "dim": 576
       },
       "errors": [],

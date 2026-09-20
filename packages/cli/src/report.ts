@@ -63,6 +63,7 @@ export function analysisJson(a: AnalysisResult): Record<string, unknown> {
       bytes_per_token: n(a.kv.bytesPerToken),
       bytes_per_sequence_fixed: n(a.kv.bytesPerSequenceFixed),
       bytes_per_sequence: n(a.kv.bytesPerToken * a.options.T + a.kv.bytesPerSequenceFixed),
+      bytes_per_token_decompressed: n(a.kv.bytesPerTokenDecompressed),
     },
     memory: {
       weights_bytes: n(a.memory.weightsBytes),
@@ -189,6 +190,17 @@ export function analysisText(a: AnalysisResult, opts: { title?: string } = {}): 
       ["per token", finite(a.kv.bytesPerToken, formatBytes), `${o.kvDtype} cache`],
       ["per sequence", finite(a.kv.bytesPerToken * T + a.kv.bytesPerSequenceFixed, formatBytes), `T=${T}`],
       ["fixed per sequence", finite(a.kv.bytesPerSequenceFixed, formatBytes)],
+      // Only latent attention has a second answer; everything else caches the
+      // same bytes however the kernel is written.
+      ...(a.kv.bytesPerTokenDecompressed > a.kv.bytesPerToken
+        ? ([
+            [
+              "if decompressed",
+              finite(a.kv.bytesPerTokenDecompressed, formatBytes),
+              `${(a.kv.bytesPerTokenDecompressed / a.kv.bytesPerToken).toFixed(0)}x, per token`,
+            ],
+          ] as [string, string, string][])
+        : []),
     ]),
   );
 

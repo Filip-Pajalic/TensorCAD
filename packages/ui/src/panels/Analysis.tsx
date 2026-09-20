@@ -389,6 +389,14 @@ export default function Analysis(): React.ReactElement {
               value={formatBytes(a.kv.bytesPerToken)}
               aside={`${formatBytes(kvPer1k)}/1k`}
             />
+            {a.kv.bytesPerTokenDecompressed > a.kv.bytesPerToken && (
+              <Row
+                label="if decompressed"
+                value={formatBytes(a.kv.bytesPerTokenDecompressed)}
+                aside={`${(a.kv.bytesPerTokenDecompressed / a.kv.bytesPerToken).toFixed(0)}x`}
+                title="Latent attention caches a compressed vector only under a kernel that scores in the compressed space. An engine that materializes keys and values per head holds this instead."
+              />
+            )}
             {doc.meta.published?.kvBytesPerToken !== undefined && (
               <Row
                 label="published KV"

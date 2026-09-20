@@ -296,6 +296,21 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 	inferKv := KvBytesFor(opts.Kv, ctx.T, opts.Concurrency)
 	overhead := 0.2 * (inferWeights + inferKv)
 
+	// Latent attention's cache is small only under a kernel that scores in the
+	// latent space. An engine that materializes keys and values per head holds
+	// the whole multi-head cache, which for DeepSeek-V3 is 57 times as much, so
+	// which figure is being quoted is worth saying rather than assuming.
+	if opts.Kv.BytesPerTokenDecompressed > opts.Kv.BytesPerToken {
+		decompressed := (opts.Kv.BytesPerTokenDecompressed*ctx.T + opts.Kv.BytesPerSequenceFixed) *
+			opts.Concurrency
+		notes = append(notes, fmt.Sprintf(
+			"The %s of cache assumes a kernel that absorbs the up-projections and scores in the "+
+				"compressed space. An engine that materializes keys and values per head holds %s "+
+				"instead, which is %sx as much.",
+			FormatBytes(inferKv), FormatBytes(decompressed),
+			JSToFixed(opts.Kv.BytesPerTokenDecompressed/opts.Kv.BytesPerToken, 0)))
+	}
+
 	return &MemoryResult{
 		WeightsBytes: weights,
 		Train: TrainMemory{

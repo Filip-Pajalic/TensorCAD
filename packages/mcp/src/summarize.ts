@@ -512,6 +512,10 @@ export function analysisJson(a: AnalysisResult): Record<string, unknown> {
     kv: {
       bytes_per_token: n(a.kv.bytesPerToken),
       bytes_per_sequence: n(a.kv.bytesPerToken * o.T + a.kv.bytesPerSequenceFixed),
+      // Latent attention alone has two answers: the compressed vector a kernel
+      // that scores in latent space holds, and the multi-head cache one that
+      // does not holds instead.
+      bytes_per_token_decompressed: n(a.kv.bytesPerTokenDecompressed),
     },
     memory: {
       optimizer_label: a.memory.optimizerLabel,

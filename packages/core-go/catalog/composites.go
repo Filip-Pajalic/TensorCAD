@@ -431,7 +431,13 @@ func expandMLA(raw map[string]any, r *Resolved) Expansion {
 
 		// Key/value path: one compressed vector per token is all that is cached.
 		node("kv_down", "linear", map[string]any{"in_features": D, "out_features": LATENT, "bias": bias}),
-		node("latent", "kv_latent_cache", map[string]any{"dim": LATENT}),
+		// What an engine that does not absorb the up-projections holds instead:
+		// a key and a value per head, plus the rotary part, which is shared by
+		// every head and so is cached once however many there are.
+		node("latent", "kv_latent_cache", map[string]any{
+			"dim":              LATENT,
+			"decompressed_dim": fmt.Sprintf("%s*((%s)+(%s))+(%s)", H, NOPE, VD, ROPE),
+		}),
 		node("kv_split", "split", map[string]any{
 			"from": fmt.Sprintf("B T (%s)", LATENT), "sizes": []any{KL, ROPE}}),
 		node("kv_norm", "rmsnorm", map[string]any{"dim": KL}),

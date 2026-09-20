@@ -314,6 +314,12 @@ export interface FlopsResult {
 export interface KvResult {
   bytesPerToken: number;
   bytesPerSequenceFixed: number;
+  /**
+   * The same cache under an engine that does not absorb the weights latent
+   * attention compressed against. Equal to `bytesPerToken` for every design
+   * that has no latent attention in it; 57x it for DeepSeek-V3.
+   */
+  bytesPerTokenDecompressed: number;
   byPath: Record<string, number>;
   errors: string[];
 }

@@ -1049,6 +1049,7 @@
           "id": "latent",
           "type": "kv_latent_cache",
           "params": {
+            "decompressed_dim": "128*((128)+(128))+(64)",
             "dim": "512+64"
           }
         },

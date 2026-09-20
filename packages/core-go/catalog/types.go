@@ -229,6 +229,13 @@ type AnalysisCtx struct {
 type StateBytes struct {
 	PerToken    float64
 	PerSequence float64
+	// PerTokenDecompressed is what the same block costs an engine that does not
+	// absorb the weights it was compressed against. Latent attention is the one
+	// place the two differ: the cache is a compressed vector only for a kernel
+	// that scores in latent space, and an engine that materializes keys and
+	// values per head holds the full multi-head cache instead. Zero means there
+	// is no other way to hold it, which is every block but that one.
+	PerTokenDecompressed float64
 }
 
 // BlockDocs is what a block says for a reader.

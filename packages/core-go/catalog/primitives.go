@@ -861,6 +861,8 @@ var Primitives = []*BlockDef{
 		Kind: "primitive", Type: "kv_latent_cache", Category: "attention",
 		Params: ParamList{
 			{"dim", pInt(1, "Width of the cached vector per token per layer")},
+			{"decompressed_dim", pIntD(0, 0,
+				"Width an engine holds instead when it materializes keys and values per head; 0 means there is no other way to hold it")},
 		},
 		Ports: Ports{
 			In:  map[string]PortSpec{"x": Port("... dim")},
@@ -868,10 +870,15 @@ var Primitives = []*BlockDef{
 		},
 		ParamCount: noParams, Flops: noFlops, Retains: noRetains,
 		StateBytes: func(r *Resolved, c AnalysisCtx) StateBytes {
-			return StateBytes{PerToken: r.Num("dim") * c.Bytes}
+			return StateBytes{
+				PerToken:             r.Num("dim") * c.Bytes,
+				PerTokenDecompressed: r.Num("decompressed_dim") * c.Bytes,
+			}
 		},
 		Docs: BlockDocs{
-			Summary: "Marks the compressed vector that latent attention caches instead of keys and values.",
+			Summary: "Marks the compressed vector that latent attention caches instead of keys and values. " +
+				"The compression only pays off under a kernel that scores in latent space; an engine that " +
+				"decompresses holds the full multi-head cache, which the analysis reports beside it.",
 			Formula: "cache = layers * dim * bytes per token, against 2 * layers * kv_heads * head_dim * bytes for GQA",
 			Refs:    []string{"https://arxiv.org/abs/2405.04434"},
 		},

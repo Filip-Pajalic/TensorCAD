@@ -575,7 +575,7 @@
       "type": "kv_latent_cache",
       "kind": "primitive",
       "category": "attention",
-      "summary": "Marks the compressed vector that latent attention caches instead of keys and values.",
+      "summary": "Marks the compressed vector that latent attention caches instead of keys and values. The compression only pays off under a kernel that scores in latent space; an engine that decompresses holds the full multi-head cache, which the analysis reports beside it.",
       "formula": "cache = layers * dim * bytes per token, against 2 * layers * kv_heads * head_dim * bytes for GQA",
       "refs": [
         "https://arxiv.org/abs/2405.04434"
@@ -585,6 +585,12 @@
           "dim",
           "int",
           "Width of the cached vector per token per layer",
+          null
+        ],
+        [
+          "decompressed_dim",
+          "int",
+          "Width an engine holds instead when it materializes keys and values per head; 0 means there is no other way to hold it",
           null
         ]
       ]

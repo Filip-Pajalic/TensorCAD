@@ -15,9 +15,13 @@ type KvResult struct {
 	// BytesPerToken is added to the cache for each new token, across all layers.
 	BytesPerToken float64 `json:"bytesPerToken"`
 	// BytesPerSequenceFixed is held per sequence regardless of length.
-	BytesPerSequenceFixed float64            `json:"bytesPerSequenceFixed"`
-	ByPath                map[string]float64 `json:"byPath"`
-	Errors                []string           `json:"errors"`
+	BytesPerSequenceFixed float64 `json:"bytesPerSequenceFixed"`
+	// BytesPerTokenDecompressed is the same cache under an engine that does not
+	// absorb the weights latent attention compressed against. It equals
+	// BytesPerToken for every design that has no latent attention in it.
+	BytesPerTokenDecompressed float64            `json:"bytesPerTokenDecompressed"`
+	ByPath                    map[string]float64 `json:"byPath"`
+	Errors                    []string           `json:"errors"`
 }
 
 // CountKvCache adds up the inference state.
@@ -34,6 +38,14 @@ func CountKvCache(flat *FlatResult, ctx catalog.AnalysisCtx) *KvResult {
 		perSeq := s.PerSequence * node.Multiplier
 		res.BytesPerToken += perToken
 		res.BytesPerSequenceFixed += perSeq
+		// A block with no second way to hold its state contributes the same
+		// either way, which is what makes the total meaningful for a design
+		// that mixes latent attention with anything else.
+		if s.PerTokenDecompressed > 0 {
+			res.BytesPerTokenDecompressed += s.PerTokenDecompressed * node.Multiplier
+		} else {
+			res.BytesPerTokenDecompressed += perToken
+		}
 		if perToken > 0 || perSeq > 0 {
 			// Whichever of the two this block has; a block never has both.
 			if perToken != 0 {

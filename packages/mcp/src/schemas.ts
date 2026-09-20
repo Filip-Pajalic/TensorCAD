@@ -224,7 +224,13 @@ export const AnalysisOutput = z.object({
     train_per_token: num(),
     attention_share: num(),
   }),
-  kv: z.object({ bytes_per_token: num(), bytes_per_sequence: num() }),
+  kv: z.object({
+    bytes_per_token: num(),
+    bytes_per_sequence: num(),
+    bytes_per_token_decompressed: num().describe(
+      "What an engine that does not absorb latent attention's up-projections caches instead; equal to bytes_per_token otherwise.",
+    ),
+  }),
   memory: z.object({
     optimizer_label: z.string(),
     train_weights: num(),

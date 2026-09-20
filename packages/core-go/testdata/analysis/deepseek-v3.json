@@ -558,7 +558,9 @@
           "total": 1610808807014.4
         },
         "optimizerLabel": "AdamW, mixed precision (16 B/param)",
-        "notes": []
+        "notes": [
+          "The 274.50 MiB of cache assumes a kernel that absorbs the up-projections and scores in the compressed space. An engine that materializes keys and values per head holds 15.28 GiB instead, which is 57x as much."
+        ]
       },
       "throughput": {
         "ridgePoint": 295.2238805970149,
@@ -1030,7 +1032,8 @@
         "optimizerLabel": "8-bit AdamW (10 B/param)",
         "notes": [
           "Full recomputation keeps only each layer's input, at the cost of one extra forward pass (8N instead of 6N).",
-          "Pipeline parallelism divides the weights but not the activations of the first stage: under 1F1B it holds one micro-batch worth of the whole model."
+          "Pipeline parallelism divides the weights but not the activations of the first stage: under 1F1B it holds one micro-batch worth of the whole model.",
+          "The 4.29 GiB of cache assumes a kernel that absorbs the up-projections and scores in the compressed space. An engine that materializes keys and values per head holds 244.48 GiB instead, which is 57x as much."
         ]
       },
       "throughput": {
@@ -1658,7 +1661,8 @@
         },
         "optimizerLabel": "AdamW, mixed precision (16 B/param)",
         "notes": [
-          "Selective recomputation drops the attention score matrix. A memory-efficient attention kernel already does this, so the two coincide here."
+          "Selective recomputation drops the attention score matrix. A memory-efficient attention kernel already does this, so the two coincide here.",
+          "The 274.50 MiB of cache assumes a kernel that absorbs the up-projections and scores in the compressed space. An engine that materializes keys and values per head holds 15.28 GiB instead, which is 57x as much."
         ]
       },
       "throughput": {

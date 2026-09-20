@@ -869,6 +869,57 @@ var Primitives = []*BlockDef{
 		},
 	},
 	{
+		Kind: "primitive", Type: "gated_delta_scan", Category: "ssm",
+		Params: ParamList{
+			{"heads", pInt(1, "Linear-attention heads")},
+			{"head_dim", pInt(1, "Width of a query/key head")},
+			{"v_head_dim", pIntD(0, 0, "Width of a value head; 0 means the same as head_dim")},
+		},
+		PortsFn: func(r *Resolved) Ports {
+			v := "head_dim"
+			if r.Num("v_head_dim") != 0 {
+				v = "v_head_dim"
+			}
+			return Ports{
+				In: map[string]PortSpec{
+					"q": Port("B heads T head_dim"),
+					"k": Port("B heads T head_dim"),
+					"v": Port("B heads T " + v),
+					// The decay and the write strength, one scalar each per head.
+					// Written out rather than with an ellipsis, because the
+					// other three ports name their batch and a pattern that
+					// binds `...` to `B T` would disagree with a pattern that
+					// binds nothing.
+					"gates": {Shape: "B T (2*heads)", Anchor: "side"},
+				},
+				Out: map[string]PortSpec{"y": Port("B heads T " + v)},
+			}
+		},
+		// A decay bias and a log-decay scale per head, the way Mamba-2 carries
+		// its dt_bias and A_log.
+		ParamCount: func(r *Resolved) float64 { return 2 * r.Num("heads") },
+		Flops: func(r *Resolved, _ AnalysisCtx) FlopsPerToken {
+			// Per head per token: S k (2 dk dv), the outer product that removes
+			// it (dk dv), the scale and subtract (2 dk dv), the write (dk dv),
+			// and the read S q (2 dk dv). Eight, and approximate in the same way
+			// ssd_scan's constants are: the paper gives a recurrence, not a
+			// count, and a chunked implementation trades some of these for
+			// matmuls.
+			return FlopsPerToken{Fwd: 8 * r.Num("heads") * r.Num("head_dim") * vHeadDim(r)}
+		},
+		Retains: func(*Resolved) []string { return []string{"q", "k", "v", "gates"} },
+		// A matrix per head, and it does not grow: this is the whole point of
+		// linear attention, and why a hybrid stack caches so much less.
+		StateBytes: func(r *Resolved, c AnalysisCtx) StateBytes {
+			return StateBytes{PerSequence: r.Num("heads") * r.Num("head_dim") * vHeadDim(r) * c.Bytes}
+		},
+		Docs: BlockDocs{
+			Summary: "Gated DeltaNet recurrence: linear attention whose state is overwritten by a delta rule and decayed by a gate. Linear in sequence length, with a state fixed per sequence.",
+			Formula: "S_t = S_{t-1}(a_t (I - b_t k_t k_t^T)) + b_t v_t k_t^T; o_t = S_t q_t",
+			Refs:    []string{"https://arxiv.org/abs/2412.06464"},
+		},
+	},
+	{
 		Kind: "primitive", Type: "ssd_scan", Category: "ssm",
 		Params: ParamList{
 			{"d_inner", pInt(1, "Width of the state-space stream")},
@@ -922,6 +973,14 @@ var Primitives = []*BlockDef{
 			Refs:    []string{"https://arxiv.org/abs/2405.21060"},
 		},
 	},
+}
+
+// vHeadDim is the value head width, which defaults to the query/key width.
+func vHeadDim(r *Resolved) float64 {
+	if v := r.Num("v_head_dim"); v != 0 {
+		return v
+	}
+	return r.Num("head_dim")
 }
 
 // portsParam reads the `ports` object a boundary node carries.

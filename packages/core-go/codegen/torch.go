@@ -164,6 +164,49 @@ const helperShift = "def shift_sequence(x: torch.Tensor, by: int) -> torch.Tenso
 	"    pad = torch.zeros_like(x[..., :by, :])\n" +
 	"    return torch.cat([x[..., by:, :], pad], dim=-2)\n"
 
+const helperGatedDelta = "class GatedDeltaScan(nn.Module):\n" +
+	"    \"\"\"Gated DeltaNet recurrence.\n" +
+	"\n" +
+	"        S_t = S_{t-1} (a_t (I - b_t k_t k_t^T)) + b_t v_t k_t^T\n" +
+	"        o_t = S_t q_t\n" +
+	"\n" +
+	"    Mamba-2's decay gate and DeltaNet's write rule in one step. A readable\n" +
+	"    sequential reference so the generated file runs unmodified; for a real\n" +
+	"    training run, swap it for the chunked kernel in `fla`, which computes the\n" +
+	"    same thing without a Python loop over the sequence.\n" +
+	"    \"\"\"\n" +
+	"\n" +
+	"    def __init__(self, heads: int, head_dim: int, v_head_dim: int):\n" +
+	"        super().__init__()\n" +
+	"        self.heads, self.head_dim, self.v_head_dim = heads, head_dim, v_head_dim\n" +
+	"        self.A_log = nn.Parameter(torch.zeros(heads))\n" +
+	"        self.dt_bias = nn.Parameter(torch.zeros(heads))\n" +
+	"\n" +
+	"    def forward(self, q, k, v, gates):\n" +
+	"        b, h, t, _ = q.shape\n" +
+	"        beta_raw, alpha_raw = torch.split(gates, [self.heads, self.heads], dim=-1)\n" +
+	"        # The write strength is a fraction; the decay is Mamba-2's, so that a\n" +
+	"        # large timestep forgets more.\n" +
+	"        beta = torch.sigmoid(beta_raw).transpose(1, 2)\n" +
+	"        dt = F.softplus(alpha_raw + self.dt_bias).transpose(1, 2)\n" +
+	"        alpha = torch.exp(-torch.exp(self.A_log)[None, :, None] * dt)\n" +
+	"        # The delta rule needs a unit key, or the state it removes is not the\n" +
+	"        # state the key wrote.\n" +
+	"        k = F.normalize(k.float(), dim=-1)\n" +
+	"        q = q.float()\n" +
+	"        v = v.float()\n" +
+	"        state = torch.zeros(b, h, self.v_head_dim, self.head_dim, device=q.device, dtype=torch.float32)\n" +
+	"        out = []\n" +
+	"        for i in range(t):\n" +
+	"            ki = k[:, :, i]\n" +
+	"            bi = beta[:, :, i, None]\n" +
+	"            state = state * alpha[:, :, i, None, None]\n" +
+	"            # Remove what this key already held, then write the new value.\n" +
+	"            held = torch.einsum(\"bhvd,bhd->bhv\", state, ki)\n" +
+	"            state = state + torch.einsum(\"bhv,bhd->bhvd\", bi * (v[:, :, i] - held), ki)\n" +
+	"            out.append(torch.einsum(\"bhvd,bhd->bhv\", state, q[:, :, i]))\n" +
+	"        return torch.stack(out, dim=2).to(v.dtype)\n"
+
 const helperSsd = "class SSDScan(nn.Module):\n" +
 	"    \"\"\"Mamba-2 state-space scan.\n" +
 	"\n" +
@@ -252,6 +295,7 @@ type ctx struct {
 	needsShift   bool
 	needsCausal  bool
 	needsSsd     bool
+	needsGdn     bool
 	moeDispatch  string
 }
 
@@ -580,6 +624,20 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 				pyValue(p["state"]), pyValue(p["groups"])))
 			out.forward = append(out.forward, fmt.Sprintf("%s = self.%s(%s, %s)",
 				outName("y"), attr, inputVar(node.ID, "xbc"), inputVar(node.ID, "dt")))
+			set("y", outName("y"))
+
+		case "gated_delta_scan":
+			c.needsGdn = true
+			vd := r.Num("v_head_dim")
+			if vd == 0 {
+				vd = r.Num("head_dim")
+			}
+			out.init = append(out.init, fmt.Sprintf("self.%s = GatedDeltaScan(%s, %s, %s)",
+				attr, pyValue(p["heads"]), pyValue(p["head_dim"]), pyNum(vd)))
+			out.forward = append(out.forward, fmt.Sprintf("%s = self.%s(%s, %s, %s, %s)",
+				outName("y"), attr,
+				inputVar(node.ID, "q"), inputVar(node.ID, "k"),
+				inputVar(node.ID, "v"), inputVar(node.ID, "gates")))
 			set("y", outName("y"))
 
 		case "kv_latent_cache":
@@ -1066,6 +1124,9 @@ func GenerateTorch(doc *ir.Doc, options Options) *Generated {
 	}
 	if c.needsSsd {
 		helpers = append(helpers, helperSsd, "")
+	}
+	if c.needsGdn {
+		helpers = append(helpers, helperGatedDelta, "")
 	}
 
 	modelLines := []string{

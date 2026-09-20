@@ -1700,6 +1700,492 @@
       "constraints": []
     },
     {
+      "type": "gated_deltanet_block",
+      "params": {
+        "d_model": "D",
+        "head_dim": 128,
+        "heads": 16
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          }
+        },
+        {
+          "id": "in_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "D",
+            "out_features": "(2*(16)*(128)+(16)*(128))+((16)*(128))"
+          }
+        },
+        {
+          "id": "split_gate",
+          "type": "split",
+          "params": {
+            "from": "B T ((2*(16)*(128)+(16)*(128))+((16)*(128)))",
+            "sizes": [
+              "2*(16)*(128)+(16)*(128)",
+              "(16)*(128)"
+            ]
+          }
+        },
+        {
+          "id": "conv",
+          "type": "conv1d",
+          "params": {
+            "bias": false,
+            "channels": "2*(16)*(128)+(16)*(128)",
+            "kernel": "4"
+          }
+        },
+        {
+          "id": "conv_act",
+          "type": "activation",
+          "params": {
+            "dim": "2*(16)*(128)+(16)*(128)",
+            "kind": "silu"
+          }
+        },
+        {
+          "id": "split_qkv",
+          "type": "split",
+          "params": {
+            "from": "B T (2*(16)*(128)+(16)*(128))",
+            "sizes": [
+              "(16)*(128)",
+              "(16)*(128)",
+              "(16)*(128)"
+            ]
+          }
+        },
+        {
+          "id": "q_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (16 128)",
+            "to": "B 16 T 128"
+          }
+        },
+        {
+          "id": "k_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (16 128)",
+            "to": "B 16 T 128"
+          }
+        },
+        {
+          "id": "v_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (16 128)",
+            "to": "B 16 T 128"
+          }
+        },
+        {
+          "id": "ba_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "D",
+            "out_features": "2*(16)"
+          }
+        },
+        {
+          "id": "scan",
+          "type": "gated_delta_scan",
+          "params": {
+            "head_dim": "128",
+            "heads": "16",
+            "v_head_dim": "128"
+          }
+        },
+        {
+          "id": "merge",
+          "type": "rearrange",
+          "params": {
+            "from": "B 16 T 128",
+            "to": "B T (16 128)"
+          }
+        },
+        {
+          "id": "norm",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "(16)*(128)"
+          }
+        },
+        {
+          "id": "gate_act",
+          "type": "activation",
+          "params": {
+            "dim": "(16)*(128)",
+            "kind": "silu"
+          }
+        },
+        {
+          "id": "gate",
+          "type": "mul",
+          "params": {
+            "dim": "(16)*(128)"
+          }
+        },
+        {
+          "id": "out_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "(16)*(128)",
+            "out_features": "D"
+          }
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          }
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "in_proj:x"
+        ],
+        [
+          "_in:x",
+          "ba_proj:x"
+        ],
+        [
+          "in_proj:y",
+          "split_gate:x"
+        ],
+        [
+          "split_gate:y0",
+          "conv:x"
+        ],
+        [
+          "conv:y",
+          "conv_act:x"
+        ],
+        [
+          "conv_act:y",
+          "split_qkv:x"
+        ],
+        [
+          "split_qkv:y0",
+          "q_heads:x"
+        ],
+        [
+          "split_qkv:y1",
+          "k_heads:x"
+        ],
+        [
+          "split_qkv:y2",
+          "v_heads:x"
+        ],
+        [
+          "q_heads:y",
+          "scan:q"
+        ],
+        [
+          "k_heads:y",
+          "scan:k"
+        ],
+        [
+          "v_heads:y",
+          "scan:v"
+        ],
+        [
+          "ba_proj:y",
+          "scan:gates"
+        ],
+        [
+          "scan:y",
+          "merge:x"
+        ],
+        [
+          "merge:y",
+          "norm:x"
+        ],
+        [
+          "split_gate:y1",
+          "gate_act:x"
+        ],
+        [
+          "norm:y",
+          "gate:a"
+        ],
+        [
+          "gate_act:y",
+          "gate:b"
+        ],
+        [
+          "gate:y",
+          "out_proj:x"
+        ],
+        [
+          "out_proj:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "gated_deltanet_block",
+      "params": {
+        "bias": true,
+        "conv_bias": true,
+        "conv_kernel": 3,
+        "d_model": "D",
+        "head_dim": 128,
+        "heads": 32,
+        "v_head_dim": 64
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          }
+        },
+        {
+          "id": "in_proj",
+          "type": "linear",
+          "params": {
+            "bias": true,
+            "in_features": "D",
+            "out_features": "(2*(32)*(128)+(32)*(64))+((32)*(64))"
+          }
+        },
+        {
+          "id": "split_gate",
+          "type": "split",
+          "params": {
+            "from": "B T ((2*(32)*(128)+(32)*(64))+((32)*(64)))",
+            "sizes": [
+              "2*(32)*(128)+(32)*(64)",
+              "(32)*(64)"
+            ]
+          }
+        },
+        {
+          "id": "conv",
+          "type": "conv1d",
+          "params": {
+            "bias": true,
+            "channels": "2*(32)*(128)+(32)*(64)",
+            "kernel": "3"
+          }
+        },
+        {
+          "id": "conv_act",
+          "type": "activation",
+          "params": {
+            "dim": "2*(32)*(128)+(32)*(64)",
+            "kind": "silu"
+          }
+        },
+        {
+          "id": "split_qkv",
+          "type": "split",
+          "params": {
+            "from": "B T (2*(32)*(128)+(32)*(64))",
+            "sizes": [
+              "(32)*(128)",
+              "(32)*(128)",
+              "(32)*(64)"
+            ]
+          }
+        },
+        {
+          "id": "q_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (32 128)",
+            "to": "B 32 T 128"
+          }
+        },
+        {
+          "id": "k_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (32 128)",
+            "to": "B 32 T 128"
+          }
+        },
+        {
+          "id": "v_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (32 64)",
+            "to": "B 32 T 64"
+          }
+        },
+        {
+          "id": "ba_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "D",
+            "out_features": "2*(32)"
+          }
+        },
+        {
+          "id": "scan",
+          "type": "gated_delta_scan",
+          "params": {
+            "head_dim": "128",
+            "heads": "32",
+            "v_head_dim": "64"
+          }
+        },
+        {
+          "id": "merge",
+          "type": "rearrange",
+          "params": {
+            "from": "B 32 T 64",
+            "to": "B T (32 64)"
+          }
+        },
+        {
+          "id": "norm",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "(32)*(64)"
+          }
+        },
+        {
+          "id": "gate_act",
+          "type": "activation",
+          "params": {
+            "dim": "(32)*(64)",
+            "kind": "silu"
+          }
+        },
+        {
+          "id": "gate",
+          "type": "mul",
+          "params": {
+            "dim": "(32)*(64)"
+          }
+        },
+        {
+          "id": "out_proj",
+          "type": "linear",
+          "params": {
+            "bias": true,
+            "in_features": "(32)*(64)",
+            "out_features": "D"
+          }
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          }
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "in_proj:x"
+        ],
+        [
+          "_in:x",
+          "ba_proj:x"
+        ],
+        [
+          "in_proj:y",
+          "split_gate:x"
+        ],
+        [
+          "split_gate:y0",
+          "conv:x"
+        ],
+        [
+          "conv:y",
+          "conv_act:x"
+        ],
+        [
+          "conv_act:y",
+          "split_qkv:x"
+        ],
+        [
+          "split_qkv:y0",
+          "q_heads:x"
+        ],
+        [
+          "split_qkv:y1",
+          "k_heads:x"
+        ],
+        [
+          "split_qkv:y2",
+          "v_heads:x"
+        ],
+        [
+          "q_heads:y",
+          "scan:q"
+        ],
+        [
+          "k_heads:y",
+          "scan:k"
+        ],
+        [
+          "v_heads:y",
+          "scan:v"
+        ],
+        [
+          "ba_proj:y",
+          "scan:gates"
+        ],
+        [
+          "scan:y",
+          "merge:x"
+        ],
+        [
+          "merge:y",
+          "norm:x"
+        ],
+        [
+          "split_gate:y1",
+          "gate_act:x"
+        ],
+        [
+          "norm:y",
+          "gate:a"
+        ],
+        [
+          "gate_act:y",
+          "gate:b"
+        ],
+        [
+          "gate:y",
+          "out_proj:x"
+        ],
+        [
+          "out_proj:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
       "type": "mtp_head",
       "params": {
         "d_model": "D"

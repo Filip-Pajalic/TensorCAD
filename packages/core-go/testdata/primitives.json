@@ -1671,6 +1671,101 @@
       "constraints": []
     },
     {
+      "type": "gated_delta_scan",
+      "params": {
+        "head_dim": 128,
+        "heads": 16
+      },
+      "resolved": {
+        "head_dim": 128,
+        "heads": 16,
+        "v_head_dim": 0
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "gates": "B T (2*heads)",
+          "k": "B heads T head_dim",
+          "q": "B heads T head_dim",
+          "v": "B heads T head_dim"
+        },
+        "out": {
+          "y": "B heads T head_dim"
+        },
+        "anchors": {
+          "gates": "side/inherit"
+        }
+      },
+      "portError": "",
+      "paramCount": 32,
+      "flops": {
+        "elementwise": 0,
+        "fwd": 2097152,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
+      },
+      "retains": [
+        "q",
+        "k",
+        "v",
+        "gates"
+      ],
+      "extraActivationBytes": null,
+      "stateBytes": {
+        "perSeq": 524288,
+        "perToken": 0
+      },
+      "constraints": []
+    },
+    {
+      "type": "gated_delta_scan",
+      "params": {
+        "head_dim": 128,
+        "heads": 32,
+        "v_head_dim": 64
+      },
+      "resolved": {
+        "head_dim": 128,
+        "heads": 32,
+        "v_head_dim": 64
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "gates": "B T (2*heads)",
+          "k": "B heads T head_dim",
+          "q": "B heads T head_dim",
+          "v": "B heads T v_head_dim"
+        },
+        "out": {
+          "y": "B heads T v_head_dim"
+        },
+        "anchors": {
+          "gates": "side/inherit"
+        }
+      },
+      "portError": "",
+      "paramCount": 64,
+      "flops": {
+        "elementwise": 0,
+        "fwd": 2097152,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
+      },
+      "retains": [
+        "q",
+        "k",
+        "v",
+        "gates"
+      ],
+      "extraActivationBytes": null,
+      "stateBytes": {
+        "perSeq": 524288,
+        "perToken": 0
+      },
+      "constraints": []
+    },
+    {
       "type": "ssd_scan",
       "params": {
         "d_inner": 8192,

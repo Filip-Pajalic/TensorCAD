@@ -329,6 +329,90 @@
       ]
     },
     {
+      "type": "gated_delta_scan",
+      "kind": "primitive",
+      "category": "ssm",
+      "summary": "Gated DeltaNet recurrence: linear attention whose state is overwritten by a delta rule and decayed by a gate. Linear in sequence length, with a state fixed per sequence.",
+      "formula": "S_t = S_{t-1}(a_t (I - b_t k_t k_t^T)) + b_t v_t k_t^T; o_t = S_t q_t",
+      "refs": [
+        "https://arxiv.org/abs/2412.06464"
+      ],
+      "params": [
+        [
+          "heads",
+          "int",
+          "Linear-attention heads",
+          null
+        ],
+        [
+          "head_dim",
+          "int",
+          "Width of a query/key head",
+          null
+        ],
+        [
+          "v_head_dim",
+          "int",
+          "Width of a value head; 0 means the same as head_dim",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "gated_deltanet_block",
+      "kind": "composite",
+      "category": "ssm",
+      "summary": "Gated DeltaNet: linear attention in place of softmax attention, with a delta rule writing the state and a gate decaying it. Its state is a matrix per head, fixed per sequence, so a layer of these caches nothing that grows with context.",
+      "formula": "params = d_model*(2*heads*head_dim + 2*heads*v_head_dim + 2*heads) + heads*v_head_dim*d_model + conv + 2*heads + v_head_dim",
+      "refs": [
+        "https://arxiv.org/abs/2412.06464"
+      ],
+      "params": [
+        [
+          "d_model",
+          "int",
+          "Residual stream width",
+          null
+        ],
+        [
+          "heads",
+          "int",
+          "Linear-attention heads",
+          null
+        ],
+        [
+          "head_dim",
+          "int",
+          "Width of a query/key head",
+          null
+        ],
+        [
+          "v_head_dim",
+          "int",
+          "Width of a value head; 0 means the same as head_dim",
+          null
+        ],
+        [
+          "conv_kernel",
+          "int",
+          "Depthwise convolution over q, k and v, as Mamba-2 has one",
+          null
+        ],
+        [
+          "bias",
+          "bool",
+          "Bias on the input and output projections",
+          null
+        ],
+        [
+          "conv_bias",
+          "bool",
+          "Bias on the depthwise convolution",
+          null
+        ]
+      ]
+    },
+    {
       "type": "gated_mlp",
       "kind": "composite",
       "category": "mlp",

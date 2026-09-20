@@ -126,7 +126,7 @@ func scalingOf(rope map[string]any) any {
 }
 
 // Composites is every block that is an arrangement rather than a formula.
-var Composites = []*BlockDef{gqaAttention, gatedMlp, denseMlp, mlaAttention, moeLayer, mamba2Block, transformerBlock, mtpHeadComposite}
+var Composites = []*BlockDef{gqaAttention, gatedMlp, denseMlp, mlaAttention, moeLayer, mamba2Block, transformerBlock, mtpHeadComposite, gatedDeltanetBlock}
 
 // Containers carry the multipliers that make sparsity and stacking work.
 var Containers = []*BlockDef{moeExperts, repeatContainer}
@@ -623,6 +623,37 @@ func expandMamba2(raw map[string]any, r *Resolved) Expansion {
 	}
 }
 
+var gatedDeltanetBlock = &BlockDef{
+	Kind: "composite", Type: "gated_deltanet_block", Category: "ssm",
+	Params: ParamList{
+		{"d_model", pInt(1, "Residual stream width")},
+		{"heads", pInt(1, "Linear-attention heads")},
+		{"head_dim", pInt(1, "Width of a query/key head")},
+		{"v_head_dim", pIntD(0, 0, "Width of a value head; 0 means the same as head_dim")},
+		{"conv_kernel", pIntD(4, 1, "Depthwise convolution over q, k and v, as Mamba-2 has one")},
+		{"bias", pBool(false, "Bias on the input and output projections")},
+		{"conv_bias", pBool(false, "Bias on the depthwise convolution")},
+	},
+	Ports: Ports{
+		In:  map[string]PortSpec{"x": Port("... d_model")},
+		Out: map[string]PortSpec{"y": Port("... d_model")},
+	},
+	Constraints: func(r *Resolved) []BlockFinding {
+		if r.Num("v_head_dim") < 0 {
+			return []BlockFinding{{
+				ID: "GDN-01", Severity: "error", Param: "v_head_dim",
+				Message: "v_head_dim must be non-negative; 0 means the same as head_dim",
+			}}
+		}
+		return nil
+	},
+	Docs: BlockDocs{
+		Summary: "Gated DeltaNet: linear attention in place of softmax attention, with a delta rule writing the state and a gate decaying it. Its state is a matrix per head, fixed per sequence, so a layer of these caches nothing that grows with context.",
+		Formula: "params = d_model*(2*heads*head_dim + 2*heads*v_head_dim + 2*heads) + heads*v_head_dim*d_model + conv + 2*heads + v_head_dim",
+		Refs:    []string{"https://arxiv.org/abs/2412.06464"},
+	},
+}
+
 // --- transformer block ------------------------------------------------------
 
 var transformerBlock = &BlockDef{
@@ -794,6 +825,84 @@ var mtpHeadComposite = &BlockDef{
 	},
 }
 
+// expandGatedDeltanet lays out the block around the recurrence.
+//
+// One projection produces q, k, v and the output gate together, which is what
+// the reference does and what makes the parameter count a single matrix rather
+// than four. The two per-head scalars come from their own much smaller
+// projection, because they are two numbers per head against thousands for
+// everything else.
+func expandGatedDeltanet(raw map[string]any, r *Resolved) Expansion {
+	D := Ex(raw["d_model"], "0")
+	H := Ex(raw["heads"], "0")
+	dk := Ex(raw["head_dim"], "0")
+	dv := dk
+	if r.Num("v_head_dim") != 0 {
+		dv = Ex(raw["v_head_dim"], "0")
+	}
+	bias := r.Bool("bias")
+
+	qWidth := fmt.Sprintf("(%s)*(%s)", H, dk)
+	vWidth := fmt.Sprintf("(%s)*(%s)", H, dv)
+	// q, k and v go through the convolution; the gate does not.
+	convWidth := fmt.Sprintf("2*%s+%s", qWidth, vWidth)
+	inWidth := fmt.Sprintf("(%s)+(%s)", convWidth, vWidth)
+	gates := fmt.Sprintf("2*(%s)", H)
+
+	inNode, outNode := streamBoundary(D)
+	return Expansion{
+		Nodes: []ir.NodeDef{
+			inNode,
+			node("in_proj", "linear", map[string]any{
+				"in_features": D, "out_features": inWidth, "bias": bias}),
+			node("split_gate", "split", map[string]any{
+				"from": fmt.Sprintf("B T (%s)", inWidth), "sizes": []any{convWidth, vWidth}}),
+			node("conv", "conv1d", map[string]any{
+				"channels": convWidth, "kernel": Ex(raw["conv_kernel"], "4"),
+				"bias": r.Bool("conv_bias")}),
+			node("conv_act", "activation", map[string]any{"kind": "silu", "dim": convWidth}),
+			node("split_qkv", "split", map[string]any{
+				"from":  fmt.Sprintf("B T (%s)", convWidth),
+				"sizes": []any{qWidth, qWidth, vWidth}}),
+			node("q_heads", "rearrange", map[string]any{
+				"from": fmt.Sprintf("B T (%s %s)", H, dk), "to": fmt.Sprintf("B %s T %s", H, dk)}),
+			node("k_heads", "rearrange", map[string]any{
+				"from": fmt.Sprintf("B T (%s %s)", H, dk), "to": fmt.Sprintf("B %s T %s", H, dk)}),
+			node("v_heads", "rearrange", map[string]any{
+				"from": fmt.Sprintf("B T (%s %s)", H, dv), "to": fmt.Sprintf("B %s T %s", H, dv)}),
+			// Two scalars per head: how much the state decays, and how hard this
+			// token writes to it.
+			node("ba_proj", "linear", map[string]any{
+				"in_features": D, "out_features": gates, "bias": false}),
+			node("scan", "gated_delta_scan", map[string]any{
+				"heads": H, "head_dim": dk, "v_head_dim": dv}),
+			node("merge", "rearrange", map[string]any{
+				"from": fmt.Sprintf("B %s T %s", H, dv), "to": fmt.Sprintf("B T (%s %s)", H, dv)}),
+			node("norm", "rmsnorm", map[string]any{"dim": vWidth}),
+			node("gate_act", "activation", map[string]any{"kind": "silu", "dim": vWidth}),
+			node("gate", "mul", map[string]any{"dim": vWidth}),
+			node("out_proj", "linear", map[string]any{
+				"in_features": vWidth, "out_features": D, "bias": bias}),
+			outNode,
+		},
+		Edges: []ir.Edge{
+			edge("_in:x", "in_proj:x"), edge("_in:x", "ba_proj:x"),
+			edge("in_proj:y", "split_gate:x"),
+			edge("split_gate:y0", "conv:x"), edge("conv:y", "conv_act:x"),
+			edge("conv_act:y", "split_qkv:x"),
+			edge("split_qkv:y0", "q_heads:x"),
+			edge("split_qkv:y1", "k_heads:x"),
+			edge("split_qkv:y2", "v_heads:x"),
+			edge("q_heads:y", "scan:q"), edge("k_heads:y", "scan:k"),
+			edge("v_heads:y", "scan:v"), edge("ba_proj:y", "scan:gates"),
+			edge("scan:y", "merge:x"), edge("merge:y", "norm:x"),
+			edge("split_gate:y1", "gate_act:x"),
+			edge("norm:y", "gate:a"), edge("gate_act:y", "gate:b"),
+			edge("gate:y", "out_proj:x"), edge("out_proj:y", "_out:y"),
+		},
+	}
+}
+
 // --- containers -------------------------------------------------------------
 
 var repeatContainer = &BlockDef{
@@ -851,6 +960,8 @@ func Expand(def *BlockDef, raw map[string]any, r *Resolved) (Expansion, bool) {
 		return expandTransformerBlock(full, r), true
 	case "mtp_head":
 		return expandMtpHead(full, r), true
+	case "gated_deltanet_block":
+		return expandGatedDeltanet(full, r), true
 	}
 	// A block the document defined for itself expands from its template.
 	return ExpandUser(def, full)

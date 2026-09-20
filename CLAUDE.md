@@ -153,7 +153,7 @@ A catalog entry needs: parameter specs, port patterns, `docs.summary` and `docs.
 
 ## Known gaps
 
-See `ROADMAP.md` M5. The main one left is linear-attention blocks (gated DeltaNet).
+See `ROADMAP.md` M5. The architecture blocks are all there now; what is left is presets for the models that use the newest of them, whose configs are still moving, and the analysis extensions in that section.
 
 A stack whose layers are not all alike needs no new mechanism, and there is no
 `pattern` parameter to reach for — there was one, it was never implemented, and

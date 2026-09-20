@@ -1445,3 +1445,27 @@ second is dropped: two names in one place is worse than one name. And the
 margin is not the whole height — the title sits across the top and the legend
 across the bottom left, and a stage name printed over the legend is the same
 mistake. No room, no label, which orbiting a little fixes.
+
+### The two items left on the volume view's list, measured
+
+The eighth pass left three things outstanding here. Two of them are no longer
+what they were.
+
+**"Activations, not just weights"** is done and has been for a while: the
+attention score matrix is drawn at size, the legend has three entries, and
+`kind: "i"` blocks are most of what is on screen. The item outlived the work.
+
+**"Instancing — thirty-two identical layers are thirty-two times the
+geometry"** rests on a premise the cap removed. `MAX_BLOCKS_DRAWN` is 32 and
+`MAX_HEADS_DRAWN` is 6, so the model built for Llama-3-8B, DeepSeek-V3 and
+Llama-3.1-405B is the *same* 3,051 blocks and 3,904 arrows — a 100-layer design
+is not a hundred layers of geometry, it is thirty-two. Building it takes a
+millisecond.
+
+What that measurement does not cover is the draw calls: three thousand meshes
+is three thousand of them per frame, and a headless Chrome with the GPU
+disabled cannot say what that costs on a real one. So this is left as what it
+is — an optimisation whose stated reason has gone, with an unmeasured one that
+might replace it, and nobody has reported the view being slow. Instancing a
+render path that works, in a file whose conventions are a port of somebody
+else's and easy to get subtly wrong, is not a trade worth making on a guess.

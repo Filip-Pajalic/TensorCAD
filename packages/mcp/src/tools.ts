@@ -38,8 +38,20 @@ import {
 import type { DocumentStore } from "./store/types.js";
 import type { Op as OpType } from "./ops.js";
 import type { AnalysisOptions } from "@tensorcad/engine";
-import { formatCount } from "@tensorcad/engine";
-import { HARDWARE, PRESET_NAMES, analyze, generateTorch, getPreset, validate } from "@tensorcad/engine/node";
+import { formatBytes, formatCount } from "@tensorcad/engine";
+import {
+  HARDWARE,
+  PRESET_NAMES,
+  analyze,
+  diffDesigns,
+  explain,
+  generateTorch,
+  getPreset,
+  importHfConfig,
+  planCluster,
+  scaleDesign,
+  validate,
+} from "@tensorcad/engine/node";
 
 type ToolResult = {
   content: { type: "text"; text: string }[];
@@ -758,6 +770,399 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
         );
       }),
   );
+
+  // -- 14. explain ---------------------------------------------------------
+  server.registerTool(
+    "tensorcad_explain",
+    {
+      title: "Explain a block",
+      description:
+        "What one block is and what it contributes: its parameters as written and as evaluated, the shape on " +
+        "every port, its share of the model's weights and compute, and its documentation. Use it to answer " +
+        "\"why is this block this size\" without reading the whole design.",
+      inputSchema: z.object({
+        design_id: DESIGN_ID,
+        path: z.string().describe('Full path of the block, e.g. "layers/block/attn".'),
+        ...analysisOptionsShape,
+      }),
+      outputSchema: z.object({
+        design_id: z.string(),
+        revision: z.number().int(),
+        path: z.string(),
+        type: z.string(),
+        kind: z.string(),
+        summary: z.string().optional(),
+        params: z.number(),
+        share_of_params: z.number(),
+        flops_per_token: z.number(),
+        share_of_flops: z.number(),
+        copies: z.object({ total: z.number(), active: z.number() }),
+        parameters: z.array(
+          z.object({
+            name: z.string(),
+            expression: z.string().optional(),
+            value: z.number().optional(),
+            doc: z.string().optional(),
+          }),
+        ),
+        ports: z.object({
+          in: z.record(z.string(), z.string()),
+          out: z.record(z.string(), z.string()),
+        }),
+      }),
+      annotations: { ...READ, title: "Explain a block" },
+    },
+    async ({ design_id, path, ...rest }) =>
+      guard(() => {
+        const record = store.get(design_id);
+        const e = explain(record.doc, path, toAnalysisOptions(rest));
+        const lines = [
+          `${path}  ${e.type} (${e.kind})`,
+          e.docs.summary ?? "",
+          `parameters ${formatCount(e.contributes.params)}  ${(e.contributes.shareOfParams * 100).toFixed(1)}% of the model`,
+          `FLOPs/token ${formatCount(e.contributes.flopsPerToken)}  ${(e.contributes.shareOfFlops * 100).toFixed(1)}%`,
+          `copies ${e.copies.total} total, ${e.copies.active} active per token`,
+          "",
+          ...e.paramOrder.map((name) => {
+            const p = e.params[name];
+            const written = p.expression !== undefined && String(p.expression) !== String(p.value);
+            return `  ${name} = ${p.value ?? "\u2014"}${written ? `  (${p.expression})` : ""}`;
+          }),
+        ];
+        return ok(lines.filter((l) => l !== "").join("\n"), {
+          design_id: record.design_id,
+          revision: record.revision,
+          path,
+          type: e.type,
+          kind: e.kind,
+          ...(e.docs.summary ? { summary: e.docs.summary } : {}),
+          params: e.contributes.params,
+          share_of_params: e.contributes.shareOfParams,
+          flops_per_token: e.contributes.flopsPerToken,
+          share_of_flops: e.contributes.shareOfFlops,
+          copies: e.copies,
+          parameters: e.paramOrder.map((name) => ({
+            name,
+            ...(e.params[name].expression !== undefined
+              ? { expression: String(e.params[name].expression) }
+              : {}),
+            ...(typeof e.params[name].value === "number" ? { value: e.params[name].value } : {}),
+            ...(e.params[name].doc ? { doc: e.params[name].doc } : {}),
+          })),
+          ports: {
+            in: Object.fromEntries(Object.entries(e.shapes.in).map(([k, v]) => [k, String(v)])),
+            out: Object.fromEntries(Object.entries(e.shapes.out).map(([k, v]) => [k, String(v)])),
+          },
+        });
+      }),
+  );
+
+  // -- 15. scale -----------------------------------------------------------
+  server.registerTool(
+    "tensorcad_scale",
+    {
+      title: "Scale a design",
+      description:
+        "Shrink a design towards a parameter budget while keeping its proportions, and save the result as a new " +
+        "design. Use it to get a bench-sized proxy of a large architecture: the widths and depth move together, " +
+        "the head dimension stays sane, and the result is reported with how close it landed.",
+      inputSchema: z.object({
+        design_id: DESIGN_ID,
+        target_params: z.number().positive().describe("The parameter count to aim for."),
+        target_basis: z
+          .enum(["total", "non-embedding"])
+          .optional()
+          .describe('Whether target_params counts the embedding tables. At bench sizes "non-embedding" is usually meant.'),
+        vocab: z.number().int().positive().optional().describe("Replace the vocabulary, for a smaller tokenizer."),
+        tie_head: z.boolean().optional().describe("Share the output projection with the embedding."),
+        keep_depth: z.boolean().optional().describe("Hold the layer count fixed and move only the width."),
+      }),
+      outputSchema: z.object({
+        design_id: z.string().describe("The new design, saved in this session."),
+        from: z.string(),
+        name: z.string(),
+        achieved: z.number(),
+        target: z.number(),
+        changes: z.array(z.object({ symbol: z.string(), from: z.number(), to: z.number() })),
+        notes: z.array(z.string()),
+      }),
+      annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false, title: "Scale a design" },
+    },
+    async ({ design_id, target_params, target_basis, vocab, tie_head, keep_depth }) =>
+      guard(() => {
+        const record = store.get(design_id);
+        const result = scaleDesign(record.doc, {
+          targetParams: target_params,
+          ...(target_basis ? { targetBasis: target_basis } : {}),
+          ...(vocab !== undefined ? { vocab } : {}),
+          ...(tie_head !== undefined ? { tieHead: tie_head } : {}),
+          ...(keep_depth !== undefined ? { keepDepth: keep_depth } : {}),
+        });
+        const saved = store.adopt(result.doc);
+        const changes = Object.entries(result.changes).map(([symbol, c]) => ({
+          symbol,
+          from: c.from,
+          to: c.to,
+        }));
+        const text = [
+          `${result.doc.meta.name}: ${formatCount(result.achieved)} against a target of ${formatCount(result.target)}`,
+          ...changes.map((c) => `  ${c.symbol}  ${c.from} -> ${c.to}`),
+          ...result.notes.map((n) => `  note: ${n}`),
+        ].join("\n");
+        return ok(text, {
+          design_id: saved.design_id,
+          from: record.design_id,
+          name: result.doc.meta.name,
+          achieved: result.achieved,
+          target: result.target,
+          changes,
+          notes: result.notes,
+        });
+      }),
+  );
+
+  // -- 16. plan ------------------------------------------------------------
+  server.registerTool(
+    "tensorcad_plan",
+    {
+      title: "Plan a cluster",
+      description:
+        "Every way of splitting the training across a cluster that fits, least demanding first. Prices data, " +
+        "tensor, pipeline and expert parallelism, the four ZeRO stages, sequence parallelism and the three " +
+        "recompute settings. Memory is the claim and it is arithmetic; which plan is fastest is not claimed, so " +
+        "each one carries a note about what it costs to run.",
+      inputSchema: z.object({
+        design_id: DESIGN_ID,
+        ...analysisOptionsShape,
+        // After the spread, because the shared shape has an optional `gpus` and
+        // the planner needs one: this is the cluster being searched, not a
+        // condition being asserted.
+        gpus: z.number().int().positive().describe("How many devices there are."),
+        gpus_per_node: z.number().int().positive().optional().describe("Bounds the tensor-parallel degree. Default 8."),
+        headroom: z.number().positive().max(0.9).optional().describe("Fraction of device memory left free. Default 0.1."),
+        limit: z.number().int().positive().optional().describe("How many plans to return. Default 8."),
+      }),
+      outputSchema: z.object({
+        design_id: z.string(),
+        revision: z.number().int(),
+        hardware: z.string(),
+        budget_bytes: z.number(),
+        considered: z.number().int(),
+        fits: z.array(
+          z.object({
+            summary: z.string(),
+            dp: z.number(),
+            tp: z.number(),
+            pp: z.number(),
+            ep: z.number(),
+            zero: z.number().int(),
+            sequence_parallel: z.boolean(),
+            recompute: z.string(),
+            per_gpu_bytes: z.number(),
+            used: z.number(),
+            notes: z.array(z.string()),
+          }),
+        ),
+        closest: z.object({ summary: z.string(), per_gpu_bytes: z.number() }).optional(),
+        notes: z.array(z.string()),
+      }),
+      annotations: { ...READ, title: "Plan a cluster" },
+    },
+    async ({ design_id, gpus, gpus_per_node, headroom, limit, ...rest }) =>
+      guard(() => {
+        const record = store.get(design_id);
+        const result = planCluster(record.doc, toAnalysisOptions(rest), {
+          gpus,
+          ...(gpus_per_node !== undefined ? { gpusPerNode: gpus_per_node } : {}),
+          ...(headroom !== undefined ? { headroom } : {}),
+          ...(limit !== undefined ? { limit } : {}),
+        });
+        const text =
+          result.fits.length === 0
+            ? [
+                `nothing fits on ${gpus} x ${result.hardware}`,
+                ...(result.closest
+                  ? [`  closest: ${result.closest.summary} at ${formatBytes(result.closest.perGpu.total)}`]
+                  : []),
+                ...result.notes.map((n) => `  ${n}`),
+              ].join("\n")
+            : [
+                `${gpus} x ${result.hardware}, ${formatBytes(result.budget)} usable each, ${result.considered} plans priced`,
+                ...result.fits.map(
+                  (p) =>
+                    `  ${p.summary}  ${formatBytes(p.perGpu.total)}  ${Math.round(p.used * 100)}% of budget`,
+                ),
+              ].join("\n");
+        return ok(text, {
+          design_id: record.design_id,
+          revision: record.revision,
+          hardware: result.hardware,
+          budget_bytes: result.budget,
+          considered: result.considered,
+          fits: result.fits.map((p) => ({
+            summary: p.summary,
+            dp: p.parallel.dp,
+            tp: p.parallel.tp,
+            pp: p.parallel.pp,
+            ep: p.parallel.ep,
+            zero: p.parallel.zero,
+            sequence_parallel: p.parallel.sequenceParallel,
+            recompute: p.recompute,
+            per_gpu_bytes: p.perGpu.total,
+            used: p.used,
+            notes: p.notes,
+          })),
+          ...(result.closest
+            ? { closest: { summary: result.closest.summary, per_gpu_bytes: result.closest.perGpu.total } }
+            : {}),
+          notes: result.notes,
+        });
+      }),
+  );
+
+  // -- 17. diff ------------------------------------------------------------
+  server.registerTool(
+    "tensorcad_diff",
+    {
+      title: "Compare two designs",
+      description:
+        "What changed between two designs and what it cost: the symbols, blocks and wires that moved, then the " +
+        "parameters, FLOPs, cache and memory. Both sides are measured at one operating point, so the attention " +
+        "terms are comparable. Use it after an edit, or against a preset, to check the change did what was meant.",
+      inputSchema: z.object({
+        a: DESIGN_ID.describe("The design to compare from."),
+        b: DESIGN_ID.describe("The design to compare to."),
+        ...analysisOptionsShape,
+      }),
+      outputSchema: z.object({
+        a: z.string(),
+        b: z.string(),
+        identical: z.boolean().describe("True when nothing structural moved; the numbers may still differ."),
+        at: z.object({ T: z.number(), B: z.number(), hardware: z.string() }),
+        symbols: z.object({
+          added: z.array(z.string()),
+          removed: z.array(z.string()),
+          changed: z.array(z.object({ name: z.string(), from: z.string(), to: z.string() })),
+        }),
+        blocks: z.object({
+          added: z.array(z.string()),
+          removed: z.array(z.string()),
+          changed: z.array(
+            z.object({
+              path: z.string(),
+              params: z.array(z.object({ key: z.string(), from: z.string(), to: z.string() })),
+            }),
+          ),
+        }),
+        edges: z.object({ added: z.number().int(), removed: z.number().int() }),
+        metrics: z.array(
+          z.object({
+            metric: z.string(),
+            a: z.number(),
+            b: z.number(),
+            delta: z.number(),
+            ratio: z.number().nullable(),
+          }),
+        ),
+      }),
+      annotations: { ...READ, title: "Compare two designs" },
+    },
+    async ({ a, b, ...rest }) =>
+      guard(() => {
+        const left = store.get(a);
+        const right = store.get(b);
+        const d = diffDesigns(left.doc, right.doc, toAnalysisOptions(rest));
+        const brief = (v: unknown): string => {
+          if (v === undefined || v === null) return "\u2014";
+          if (typeof v === "object") {
+            const o = v as Record<string, unknown>;
+            const n = o.value ?? o.expr ?? o.default;
+            if (n !== undefined) return String(n);
+          }
+          return String(v);
+        };
+        const text = [
+          `${d.a} -> ${d.b} at T=${d.at.T}, B=${d.at.B}`,
+          ...(d.identical ? ["structurally identical"] : []),
+          ...d.symbols.changed.map((s) => `  ~ ${s.name}  ${brief(s.from)} -> ${brief(s.to)}`),
+          ...d.symbols.added.map((s) => `  + ${s.name} = ${brief(s.to)}`),
+          ...d.symbols.removed.map((s) => `  - ${s.name}`),
+          ...d.blocks.added.map((x) => `  + ${x.path}  ${x.type}`),
+          ...d.blocks.removed.map((x) => `  - ${x.path}  ${x.type}`),
+          ...d.blocks.changed.map((c) => `  ~ ${c.path}  ${c.params.map((p) => p.key).join(", ")}`),
+          "",
+          ...d.metrics
+            .filter((m) => m.delta !== 0)
+            .map((m) => `  ${m.metric}  ${formatCount(m.a)} -> ${formatCount(m.b)}`),
+        ]
+          .filter((l) => l !== "")
+          .join("\n");
+        return ok(text, {
+          a: d.a,
+          b: d.b,
+          identical: d.identical,
+          at: d.at,
+          symbols: {
+            added: d.symbols.added.map((x) => x.name),
+            removed: d.symbols.removed.map((x) => x.name),
+            changed: d.symbols.changed.map((x) => ({
+              name: x.name,
+              from: brief(x.from),
+              to: brief(x.to),
+            })),
+          },
+          blocks: {
+            added: d.blocks.added.map((x) => x.path),
+            removed: d.blocks.removed.map((x) => x.path),
+            changed: d.blocks.changed.map((c) => ({
+              path: c.path,
+              params: c.params.map((p) => ({ key: p.key, from: brief(p.from), to: brief(p.to) })),
+            })),
+          },
+          edges: { added: d.edges.added.length, removed: d.edges.removed.length },
+          metrics: d.metrics,
+        });
+      }),
+  );
+
+  // -- 18. import_hf -------------------------------------------------------
+  server.registerTool(
+    "tensorcad_import_hf",
+    {
+      title: "Import a Hugging Face config",
+      description:
+        "Read a Hugging Face `config.json` into a design and save it in this session. Covers the Llama, Mistral, " +
+        "Qwen, Gemma, Mixtral, DeepSeek and GPT-2 families. Anything the importer cannot model faithfully comes " +
+        "back as a warning rather than being approximated silently.",
+      inputSchema: z.object({
+        config: z.string().describe("The contents of config.json."),
+        name: z.string().optional().describe("A name for the design; the config's own is used otherwise."),
+      }),
+      outputSchema: z.object({
+        design_id: z.string(),
+        name: z.string(),
+        params_total: z.number(),
+        warnings: z.array(z.string()),
+      }),
+      annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false, title: "Import a config" },
+    },
+    async ({ config, name }) =>
+      guard(() => {
+        const result = importHfConfig(config, name);
+        const record = store.adopt(result.doc);
+        const total = analyze(result.doc).params.total;
+        const text = [
+          `${result.doc.meta.name}: ${formatCount(total)} parameters`,
+          ...result.warnings.map((w) => `  warning: ${w}`),
+        ].join("\n");
+        return ok(text, {
+          design_id: record.design_id,
+          name: result.doc.meta.name,
+          params_total: total,
+          warnings: result.warnings,
+        });
+      }),
+  );
 }
 
 /** The tools this server registers, in the order it registers them. */
@@ -775,4 +1180,9 @@ export const TOOL_NAMES = [
   "tensorcad_generate_code",
   "tensorcad_checkpoint",
   "tensorcad_restore",
+  "tensorcad_explain",
+  "tensorcad_scale",
+  "tensorcad_plan",
+  "tensorcad_diff",
+  "tensorcad_import_hf",
 ] as const;

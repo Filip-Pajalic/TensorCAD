@@ -13,7 +13,12 @@
 import type { Op } from "../ops.js";
 import type { Doc } from "@tensorcad/engine";
 
-export type DesignSource = "preset" | "file" | "empty";
+/**
+ * Where a design in this session came from. `derived` is one the engine
+ * produced from another — scaled, or read out of a Hugging Face config — which
+ * has no file behind it and is not a preset.
+ */
+export type DesignSource = "preset" | "file" | "empty" | "derived";
 
 export interface DesignSummary {
   design_id: string;
@@ -57,6 +62,14 @@ export interface DocumentStore {
   listFiles(): Promise<string[]>;
 
   create(options: NewDesignOptions): DesignRecord;
+  /**
+   * Take a document the engine produced — scaled, imported, derived — as a new
+   * design in this session.
+   *
+   * Separate from `create`, which builds one from a preset or from nothing:
+   * these arrive whole and there is nothing to build.
+   */
+  adopt(doc: Doc): DesignRecord;
   open(path: string): Promise<DesignRecord>;
   get(id: string): DesignRecord;
 

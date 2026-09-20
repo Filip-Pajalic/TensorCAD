@@ -31,6 +31,12 @@ const INSTRUCTIONS = [
   "Most designs are parameterised by symbols (L layers, D width, H heads, Hkv key/value heads, dh head dim,",
   "F feed-forward width, V vocabulary), so a set_symbol operation is usually the right edit rather than",
   "touching individual blocks.",
+  "",
+  "After an edit, tensorcad_diff against the design you started from says what moved and what it cost;",
+  "tensorcad_explain answers why one block is the size it is without reading the whole document.",
+  "tensorcad_plan answers whether the thing would train on a given number of GPUs and how it would have to",
+  "be split. tensorcad_scale shrinks a design to a bench budget, and tensorcad_import_hf reads a Hugging Face",
+  "config.json into one. Both save their result as a new design, analysable and diffable like any other.",
 ].join("\n");
 
 export interface ServerOptions extends FileStoreOptions {

@@ -35,7 +35,7 @@ Add `--scope project` to write a committed `.mcp.json` for everyone on the repo.
 }
 ```
 
-Cursor keeps a limited number of tools active across all servers, which is why this one ships thirteen rather than forty.
+Cursor keeps a limited number of tools active across all servers, which is why this one ships eighteen rather than forty.
 
 ### Claude Desktop
 
@@ -61,7 +61,7 @@ Cursor keeps a limited number of tools active across all servers, which is why t
 
 ## Tools
 
-Thirteen, all namespaced `tensorcad_`. Every one declares an `inputSchema` and an `outputSchema` and returns `structuredContent` alongside a readable text mirror; reads are annotated `readOnlyHint` and `idempotentHint`, and the two that overwrite something are annotated `destructiveHint`.
+Eighteen, all namespaced `tensorcad_`. Every one declares an `inputSchema` and an `outputSchema` and returns `structuredContent` alongside a readable text mirror; reads are annotated `readOnlyHint` and `idempotentHint`, and the two that overwrite something are annotated `destructiveHint`.
 
 | Tool | What it does |
 |---|---|
@@ -78,6 +78,29 @@ Thirteen, all namespaced `tensorcad_`. Every one declares an `inputSchema` and a
 | `tensorcad_generate_code` | PyTorch module and config, inline or written to a directory |
 | `tensorcad_checkpoint` | Named snapshot |
 | `tensorcad_restore` | Back to a checkpoint, or undo the last batch |
+| `tensorcad_explain` | One block: what it contributes, and why it is the size it is |
+| `tensorcad_scale` | Shrink a design to a parameter budget, keeping its proportions |
+| `tensorcad_plan` | Every way to split the training across a cluster, and which of them fit |
+| `tensorcad_diff` | What changed between two designs, structurally and numerically |
+| `tensorcad_import_hf` | Read a Hugging Face `config.json` into a design |
+
+### Five that answer questions the others cannot
+
+`analyze` says what a design costs; it does not say *why*. `explain` takes one
+path and answers that — the parameters as written and as evaluated, the shape on
+every port, the share of the model's weights and compute — without the agent
+reading the whole document to work it out.
+
+`diff` is the other half of editing. An agent that has just applied four
+operations can ask what they moved, structurally and numerically, against the
+design it started from. `plan` answers the question that decides whether any of
+it matters: would this train on the machines available, and how would it have to
+be split.
+
+`scale` and `import_hf` both produce a design rather than a report, and both save
+it in the session, so the result can be analysed, diffed and generated from like
+any other. That is why the store gained `adopt`: `create` builds a design from a
+preset or from nothing, and these arrive whole.
 
 ### Handles, not sessions
 

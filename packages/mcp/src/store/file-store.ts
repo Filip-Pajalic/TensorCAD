@@ -128,6 +128,10 @@ export class FileStore implements DocumentStore {
     return this.register(doc, source, undefined, true);
   }
 
+  adopt(doc: Doc): DesignRecord {
+    return this.register(doc, "derived", undefined, true);
+  }
+
   async open(path: string): Promise<DesignRecord> {
     const full = this.resolvePath(path);
 

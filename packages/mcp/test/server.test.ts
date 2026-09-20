@@ -99,9 +99,14 @@ describe("handshake", () => {
     expect(client.getInstructions()).toContain("design_id");
   });
 
-  test("advertises at most fifteen tools, every one namespaced and schema'd", () => {
+  // The cap is against sprawl, not a budget to spend: every tool costs an agent
+  // context on every turn whether or not it is used, so one that overlaps
+  // another should be merged rather than added. Twenty is the room for the
+  // engine's distinct capabilities and no more; if it is ever reached, the
+  // question to ask is which two of them are the same tool.
+  test("advertises at most twenty tools, every one namespaced and schema'd", () => {
     expect(tools.length).toBeGreaterThan(0);
-    expect(tools.length).toBeLessThanOrEqual(15);
+    expect(tools.length).toBeLessThanOrEqual(20);
     for (const tool of tools) {
       expect(tool.name).toStartWith("tensorcad_");
       expect(tool.description).toBeTruthy();
@@ -657,5 +662,140 @@ describe("prompts", () => {
       const r = await client.getPrompt({ name, arguments: { design_id: "dsn_1" } });
       expect((r.messages[0].content as any).text).toContain("dsn_1");
     }
+  });
+});
+
+describe("explain", () => {
+  test("says what one block contributes and what its parameters resolved to", async () => {
+    const llama = await newLlama();
+    const { data, text } = await callFull("tensorcad_explain", {
+      design_id: llama.id,
+      path: "layers/block/attn",
+    });
+    expect(data.type).toBe("gqa_attention");
+    expect(data.kind).toBe("composite");
+    expect(data.params).toBeGreaterThan(0);
+    expect(data.share_of_params).toBeGreaterThan(0);
+    expect(data.share_of_params).toBeLessThan(1);
+    // The parameters come back in the order the block declares them, as
+    // written and as evaluated.
+    expect(data.parameters[0].name).toBe("d_model");
+    expect(data.parameters[0].expression).toBe("D");
+    expect(data.parameters[0].value).toBe(4096);
+    expect(text).toContain("gqa_attention");
+    expect(text).toContain("% of the model");
+  });
+
+  test("a path that names nothing is a readable failure", async () => {
+    const llama = await newLlama();
+    const text = await callExpectingError("tensorcad_explain", {
+      design_id: llama.id,
+      path: "no/such/block",
+    });
+    expect(text.length).toBeGreaterThan(0);
+  });
+});
+
+describe("scale", () => {
+  test("shrinks a design to a budget and saves the result", async () => {
+    const llama = await newLlama();
+    const data = await call("tensorcad_scale", {
+      design_id: llama.id,
+      target_params: 30e6,
+      target_basis: "non-embedding",
+      vocab: 8192,
+      tie_head: true,
+    });
+    expect(data.design_id).not.toBe(llama.id);
+    expect(data.from).toBe(llama.id);
+    expect(data.achieved).toBeGreaterThan(0);
+    expect(data.achieved).toBeLessThan(llama.params);
+    expect(data.changes.length).toBeGreaterThan(0);
+    // And the result is a design in this session, analysable like any other.
+    const check = await call("tensorcad_analyze", { design_id: data.design_id });
+    expect(check.params.total).toBeGreaterThan(0);
+    expect(check.params.total).toBeLessThan(llama.params);
+  });
+});
+
+describe("plan", () => {
+  test("returns splits that fit, each using the whole cluster", async () => {
+    const llama = await newLlama();
+    const { data, text } = await callFull("tensorcad_plan", {
+      design_id: llama.id,
+      gpus: 8,
+      T: 8192,
+      hardware: "h100-sxm",
+    });
+    expect(data.fits.length).toBeGreaterThan(0);
+    expect(data.considered).toBeGreaterThan(data.fits.length);
+    for (const p of data.fits) {
+      expect(p.dp * p.tp * p.pp * p.ep, p.summary).toBe(8);
+      expect(p.used, p.summary).toBeLessThanOrEqual(1);
+      expect(p.per_gpu_bytes).toBeLessThanOrEqual(data.budget_bytes);
+    }
+    expect(text).toContain("of budget");
+  });
+
+  test("says plainly when nothing fits, and what came closest", async () => {
+    const big = await call("tensorcad_new_design", { preset: "llama-3.1-405b" });
+    const { data, text } = await callFull("tensorcad_plan", {
+      design_id: big.design_id,
+      gpus: 8,
+      T: 8192,
+      hardware: "h100-sxm",
+    });
+    expect(data.fits.length).toBe(0);
+    expect(data.closest).toBeDefined();
+    expect(data.closest.per_gpu_bytes).toBeGreaterThan(data.budget_bytes);
+    expect(text).toContain("nothing fits");
+  });
+});
+
+describe("diff", () => {
+  test("a design against itself is identical", async () => {
+    const llama = await newLlama();
+    const data = await call("tensorcad_diff", { a: llama.id, b: llama.id });
+    expect(data.identical).toBe(true);
+    for (const m of data.metrics) expect(`${m.metric} ${m.delta}`).toBe(`${m.metric} 0`);
+  });
+
+  test("reports what an edit moved, structurally and numerically", async () => {
+    const before = await newLlama();
+    const after = await newLlama();
+    await call("tensorcad_apply_ops", {
+      design_id: after.id,
+      ops: [{ op: "set_symbol", name: "L", value: 16 }],
+    });
+    const { data, text } = await callFull("tensorcad_diff", { a: before.id, b: after.id });
+    expect(data.identical).toBe(false);
+    expect(data.symbols.changed.map((s: any) => s.name)).toContain("L");
+    const params = data.metrics.find((m: any) => m.metric === "parameters");
+    expect(params.delta).toBeLessThan(0);
+    expect(text).toContain("L");
+  });
+});
+
+describe("import_hf", () => {
+  test("reads a config into a design that lands on the preset's count", async () => {
+    const configs = JSON.parse(
+      readFileSync(resolve(import.meta.dir, "../../core-go/testdata/hf-configs.json"), "utf8"),
+    ) as Record<string, unknown>;
+    const data = await call("tensorcad_import_hf", {
+      config: JSON.stringify(configs["llama-3-8b"]),
+      name: "llama-3-8b",
+    });
+    expect(data.warnings).toEqual([]);
+    const preset = await newLlama();
+    expect(data.params_total).toBe(preset.params);
+    // It is a design in this session, so it can be diffed against the preset.
+    const d = await call("tensorcad_diff", { a: preset.id, b: data.design_id });
+    const params = d.metrics.find((m: any) => m.metric === "parameters");
+    expect(params.delta).toBe(0);
+  });
+
+  test("a config it cannot read is a readable failure", async () => {
+    const text = await callExpectingError("tensorcad_import_hf", { config: "{ not json" });
+    expect(text.length).toBeGreaterThan(0);
   });
 });

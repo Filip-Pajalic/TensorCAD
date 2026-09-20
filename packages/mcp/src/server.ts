@@ -10,10 +10,12 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import manifest from "../package.json" with { type: "json" };
 import { FileStore, type FileStoreOptions } from "./store/file-store.js";
+import { DiskSink } from "./store/disk-artifacts.js";
 import { registerPrompts } from "./prompts.js";
 import { registerResources } from "./resources.js";
 import { registerTools } from "./tools.js";
 import type { DocumentStore } from "./store/types.js";
+import type { ArtifactSink } from "./artifacts.js";
 import type { BridgeServer } from "./bridge/server.js";
 
 export const SERVER_NAME = "tensorcad";
@@ -51,6 +53,14 @@ export interface ServerOptions extends FileStoreOptions {
   /** Defaults to a `FileStore` rooted at the working directory. */
   store?: DocumentStore;
   /**
+   * Where `tensorcad_generate_code` puts what it emits.
+   *
+   * Defaults to writing into a directory. A hosted server has no filesystem
+   * and supplies object storage instead, which is the difference between an
+   * agent being handed a model it can run and one it can only read.
+   */
+  artifacts?: ArtifactSink;
+  /**
    * The live editor bridge, when one is running. Given one, the server tells
    * its client that a design's resources changed whenever the *human* changed
    * them — which is the half of the bridge an agent can act on.
@@ -59,8 +69,9 @@ export interface ServerOptions extends FileStoreOptions {
 }
 
 export function createServer(options: ServerOptions = {}): McpServer {
-  const { store: given, bridge, ...storeOptions } = options;
+  const { store: given, bridge, artifacts: givenArtifacts, ...storeOptions } = options;
   const store = given ?? new FileStore(storeOptions);
+  const artifacts = givenArtifacts ?? new DiskSink(storeOptions.root ?? process.cwd());
 
   const server = new McpServer(
     { name: SERVER_NAME, version: SERVER_VERSION },
@@ -70,7 +81,7 @@ export function createServer(options: ServerOptions = {}): McpServer {
     },
   );
 
-  registerTools(server, store);
+  registerTools(server, store, artifacts);
   registerResources(server, store);
   registerPrompts(server);
   if (bridge) followEditor(server, bridge);

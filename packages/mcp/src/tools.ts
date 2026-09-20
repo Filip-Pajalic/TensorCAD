@@ -6,8 +6,6 @@
  * setter per property, and reads default to the compact outline.
  */
 
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname, isAbsolute, join, resolve } from "node:path";
 import * as z from "zod";
 import type { McpServer } from "@modelcontextprotocol/server";
 import {
@@ -36,6 +34,7 @@ import {
   validationSummary,
 } from "./summarize.js";
 import type { DocumentStore } from "./store/types.js";
+import type { ArtifactSink } from "./artifacts.js";
 import type { Op as OpType } from "./ops.js";
 import type { AnalysisOptions } from "@tensor-cad/engine";
 import { formatBytes, formatCount } from "@tensor-cad/engine";
@@ -137,7 +136,11 @@ const DESTRUCTIVE = { readOnlyHint: false, idempotentHint: false, destructiveHin
 
 // ---------------------------------------------------------------------------
 
-export function registerTools(server: McpServer, store: DocumentStore): void {
+export function registerTools(
+  server: McpServer,
+  store: DocumentStore,
+  artifacts: ArtifactSink,
+): void {
   // -- 1. list_designs -----------------------------------------------------
   server.registerTool(
     "tensorcad_list_designs",
@@ -658,32 +661,52 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
           includeSmokeTest: include_smoke_test ?? false,
         });
 
-        const root = out_dir ? (isAbsolute(out_dir) ? out_dir : resolve(process.cwd(), out_dir)) : undefined;
-        const files = [];
+        // Declared rather than inferred, because the two branches below push
+        // different shapes and the union of them has neither field.
+        const files: {
+          path: string;
+          bytes: number;
+          lines: number;
+          contents?: string;
+          written_to?: string;
+          url?: string;
+        }[] = [];
         for (const file of generated.files) {
-          const bytes = Buffer.byteLength(file.contents, "utf8");
+          // `TextEncoder` rather than `Buffer`, which is Node's and does not
+          // exist in a Worker. The number is the same; the portability is not.
+          const bytes = new TextEncoder().encode(file.contents).length;
           const lines = file.contents.split("\n").length;
-          if (root) {
-            const target = join(root, file.path);
-            await mkdir(dirname(target), { recursive: true });
-            await writeFile(target, file.contents, "utf8");
-            files.push({ path: file.path, bytes, lines, written_to: target });
-          } else {
+          if (out_dir === undefined) {
             files.push({ path: file.path, bytes, lines, contents: file.contents });
+            continue;
           }
+          // Where it goes is the sink's business — a directory on disk, a key
+          // in a bucket. This knows only that it came back with somewhere.
+          const written = await artifacts.write(out_dir, file.path, file.contents);
+          files.push({
+            path: file.path,
+            bytes,
+            lines,
+            written_to: written.location,
+            ...(written.url ? { url: written.url } : {}),
+          });
         }
 
-        const text = root
-          ? [`wrote ${files.length} file(s) to ${root}`, ...files.map((f) => `  ${f.path}  ${f.bytes} bytes`)].join("\n")
-          : generated.files.map((f) => `# ${f.path}\n${f.contents}`).join("\n\n");
+        const text =
+          out_dir === undefined
+            ? generated.files.map((f) => `# ${f.path}\n${f.contents}`).join("\n\n")
+            : [
+                `wrote ${files.length} file(s) to ${artifacts.label}`,
+                ...files.map((f) => `  ${f.path}  ${f.bytes} bytes  ${f.url ?? f.written_to}`),
+              ].join("\n");
 
         return ok(
           generated.warnings.length > 0 ? `${text}\n\nwarnings:\n${generated.warnings.map((w) => `  ${w}`).join("\n")}` : text,
           {
             design_id: record.design_id,
             revision: record.revision,
-            wrote: Boolean(root),
-            ...(root ? { out_dir: root } : {}),
+            wrote: out_dir !== undefined,
+            ...(out_dir !== undefined ? { out_dir } : {}),
             files,
             warnings: generated.warnings,
           },

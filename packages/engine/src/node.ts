@@ -11,7 +11,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { createEngine, EngineError, type Engine } from "./index.js";
+import { createEngine, EngineError, type Engine, type LoadOptions } from "./index.js";
 import "../vendor/wasm_exec.js";
 
 let loaded: Engine | null = null;
@@ -37,9 +37,29 @@ function modulePaths(): string[] {
  *
  * A missing module is the one failure worth naming precisely: it means the
  * repository was cloned but not built, and the fix is one command.
+ *
+ * ## Being handed the module instead of finding it
+ *
+ * `options.wasm` skips the search. That is not a convenience — it is the only
+ * way this entry point works in a Worker, where there is no filesystem to read
+ * and the module arrives already compiled from the bundler.
+ *
+ * It matters because of what else lives here: the free functions below share
+ * *this* singleton, and the MCP tools are written against them. A host that
+ * loaded its own engine through `createEngine` would have two, and the tools
+ * would find the one nobody filled — "the engine is not loaded yet", moments
+ * after loading it. So a host with its own module gives it to this loader
+ * rather than keeping it.
  */
-export async function loadEngine(): Promise<Engine> {
+export async function loadEngine(options?: LoadOptions): Promise<Engine> {
   if (loaded) return loaded;
+
+  if (options?.wasm !== undefined) {
+    loaded = await createEngine(options);
+    publish(loaded);
+    return loaded;
+  }
+
   const paths = modulePaths();
   let bytes: ArrayBuffer | null = null;
   for (const path of paths) {
@@ -60,10 +80,22 @@ export async function loadEngine(): Promise<Engine> {
     );
   }
   loaded = await createEngine({ wasm: bytes });
-  PRESET_NAMES.push(...loaded.presets());
-  HARDWARE.push(...loaded.hardware());
-  for (const entry of loaded.blocks.builtInEntries) CATALOG[entry.type] = entry;
+  publish(loaded);
   return loaded;
+}
+
+/**
+ * Fill the tables the free functions read.
+ *
+ * Separate from the load because there are two ways in now — a module found on
+ * disk and one handed over — and the tables have to be filled either way. They
+ * are populated in place rather than reassigned so that a module holding a
+ * reference from import time still sees them.
+ */
+function publish(engine: Engine): void {
+  PRESET_NAMES.push(...engine.presets());
+  HARDWARE.push(...engine.hardware());
+  for (const entry of engine.blocks.builtInEntries) CATALOG[entry.type] = entry;
 }
 
 /** The engine. Throws if something asked before the load finished. */

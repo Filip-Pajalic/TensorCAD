@@ -11,7 +11,33 @@
 export { serve } from "./serve.js";
 export { createServer, SERVER_NAME, SERVER_VERSION } from "./server.js";
 export { FileStore } from "./store/file-store.js";
-export type { DocumentStore, DesignRecord, DesignSummary } from "./store/types.js";
+export { DiskSink } from "./store/disk-artifacts.js";
+export type { ArtifactSink, WrittenArtifact } from "./artifacts.js";
+/**
+ * Everything it takes to *be* a store, not just to hold one.
+ *
+ * `DocumentStore` alone is not implementable from outside this package: the
+ * two errors are part of its contract — a caller distinguishes a revision
+ * conflict from an unknown id by catching them — and the option and outcome
+ * shapes appear in its signatures. Exporting the interface without them is
+ * exporting a shape nobody else can satisfy, which is what the hosted server
+ * found on its first attempt.
+ */
+export {
+  RevisionConflictError,
+  UnknownDesignError,
+} from "./store/types.js";
+export type {
+  DocumentStore,
+  DesignRecord,
+  DesignSummary,
+  DesignSource,
+  ApplyOutcome,
+  CheckpointInfo,
+  NewDesignOptions,
+  StoreChange,
+  StoreListener,
+} from "./store/types.js";
 export { TOOL_NAMES } from "./tools.js";
 export { PROMPT_NAMES } from "./prompts.js";
 export { applyOps, type Op } from "./ops.js";

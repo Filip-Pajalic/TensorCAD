@@ -328,22 +328,13 @@ func generateTorch(args []string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	var o struct {
-		ClassName        string   `json:"className"`
-		IncludeSmokeTest *bool    `json:"includeSmokeTest"`
-		MoeDispatch      string   `json:"moeDispatch"`
-		InitStd          *float64 `json:"initStd"`
-	}
+	var o codegen.WireOptions
 	if args[1] != "" {
 		if err := json.Unmarshal([]byte(args[1]), &o); err != nil {
 			return "", fmt.Errorf("could not read the generation settings: %w", err)
 		}
 	}
-	opts := codegen.Options{ClassName: o.ClassName, MoeDispatch: o.MoeDispatch, InitStd: o.InitStd}
-	if o.IncludeSmokeTest != nil && !*o.IncludeSmokeTest {
-		opts.NoSmokeTest = true
-	}
-	return encode(codegen.GenerateTorch(doc, opts))
+	return encode(codegen.GenerateTorch(doc, o.Options()))
 }
 
 func scaleDesign(args []string) (string, error) {
@@ -354,28 +345,13 @@ func scaleDesign(args []string) (string, error) {
 	if args[1] == "" {
 		return "", fmt.Errorf("scaling needs a target parameter count")
 	}
-	var o struct {
-		TargetParams  float64  `json:"targetParams"`
-		WidthSymbols  []string `json:"widthSymbols"`
-		DepthSymbols  []string `json:"depthSymbols"`
-		WidthMultiple *float64 `json:"widthMultiple"`
-		Vocab         *float64 `json:"vocab"`
-		TargetBasis   string   `json:"targetBasis"`
-		TieHead       *bool    `json:"tieHead"`
-		MinHeads      *float64 `json:"minHeads"`
-		KeepDepth     bool     `json:"keepDepth"`
-		MaxIterations *int     `json:"maxIterations"`
-	}
+	// Straight into scale.Options: its json tags are the wire contract, so a
+	// copy here would only be a second place for a field to go missing.
+	var o scale.Options
 	if err := json.Unmarshal([]byte(args[1]), &o); err != nil {
 		return "", fmt.Errorf("could not read the scaling settings: %w", err)
 	}
-	result, err := scale.Design(doc, scale.Options{
-		TargetParams: o.TargetParams,
-		WidthSymbols: o.WidthSymbols, DepthSymbols: o.DepthSymbols,
-		WidthMultiple: o.WidthMultiple, Vocab: o.Vocab,
-		TargetBasis: o.TargetBasis, TieHead: o.TieHead, MinHeads: o.MinHeads,
-		KeepDepth: o.KeepDepth, MaxIterations: o.MaxIterations,
-	})
+	result, err := scale.Design(doc, o)
 	if err != nil {
 		return "", err
 	}

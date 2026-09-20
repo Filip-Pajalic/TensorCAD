@@ -20,32 +20,32 @@ import (
 // Options steer the scaling.
 type Options struct {
 	// TargetParams is the parameter count to aim for.
-	TargetParams float64
+	TargetParams float64 `json:"targetParams"`
 	// WidthSymbols scale with the width. An expression over D follows on its
 	// own. Empty takes the default set.
-	WidthSymbols []string
+	WidthSymbols []string `json:"widthSymbols,omitempty"`
 	// DepthSymbols scale with the depth. Empty takes the default set.
-	DepthSymbols []string
+	DepthSymbols []string `json:"depthSymbols,omitempty"`
 	// WidthMultiple keeps the residual width a multiple of this. Nil defaults
 	// to the head dimension.
-	WidthMultiple *float64
+	WidthMultiple *float64 `json:"widthMultiple,omitempty"`
 	// Vocab replaces the vocabulary, for a bench with a smaller tokenizer.
-	Vocab *float64
+	Vocab *float64 `json:"vocab,omitempty"`
 	// TargetBasis is whether TargetParams counts the embedding tables. At bench
 	// sizes the vocabulary dominates, so "non-embedding" is usually what you
 	// mean when you say "a 30M model". Empty means "total".
-	TargetBasis string
+	TargetBasis string `json:"targetBasis,omitempty"`
 	// TieHead shares the output projection with the embedding, halving the
 	// vocabulary's cost.
-	TieHead *bool
+	TieHead *bool `json:"tieHead,omitempty"`
 	// MinHeads narrows the head dimension when the scaled model would otherwise
 	// have very few heads. A two-head model is not a useful bench proxy for a
 	// 32-head one. Nil defaults to four.
-	MinHeads *float64
+	MinHeads *float64 `json:"minHeads,omitempty"`
 	// KeepDepth holds the depth fixed and moves only the width.
-	KeepDepth bool
+	KeepDepth bool `json:"keepDepth,omitempty"`
 	// MaxIterations bounds the search. Nil defaults to 48.
-	MaxIterations *int
+	MaxIterations *int `json:"maxIterations,omitempty"`
 }
 
 // Change is one symbol's before and after.

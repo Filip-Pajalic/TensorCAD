@@ -850,10 +850,15 @@ func (w *writer) rules(name string) {
 // The strongest file in the set: a model.py is the engine's output as one
 // artifact, and a file that differs by one character was generated differently.
 func (w *writer) codegen(name string) {
+	// The options travel with the answer. A label alone would leave every
+	// reader of the file — the Go test, the test that runs the compiled
+	// module — restating what "dense" meant, which is a second place to get
+	// it wrong.
 	type oneCase struct {
-		Label    string   `json:"label"`
-		Warnings []string `json:"warnings"`
-		Model    string   `json:"model"`
+		Label    string              `json:"label"`
+		Options  codegen.WireOptions `json:"options"`
+		Warnings []string            `json:"warnings"`
+		Model    string              `json:"model"`
 	}
 	doc := presets.MustGet(name)
 	cases := make([]oneCase, 0, len(CodegenVariants))
@@ -865,7 +870,10 @@ func (w *writer) codegen(name string) {
 				model = file.Contents
 			}
 		}
-		cases = append(cases, oneCase{Label: variant.Label, Warnings: g.Warnings, Model: model})
+		cases = append(cases, oneCase{
+			Label: variant.Label, Options: codegen.Wire(variant.Options),
+			Warnings: g.Warnings, Model: model,
+		})
 	}
 	w.write("codegen/"+name+".json", struct {
 		Preset string    `json:"preset"`
@@ -950,6 +958,7 @@ func (w *writer) scale() int {
 	type oneCase struct {
 		Label      string        `json:"label"`
 		Preset     string        `json:"preset"`
+		Options    scale.Options `json:"options"`
 		Achieved   float64       `json:"achieved"`
 		Target     float64       `json:"target"`
 		Changes    []change      `json:"changes"`
@@ -967,7 +976,8 @@ func (w *writer) scale() int {
 			return 0
 		}
 		entry := oneCase{
-			Label: c.Label, Preset: c.Preset, Achieved: r.Achieved, Target: r.Target,
+			Label: c.Label, Preset: c.Preset, Options: c.Options,
+			Achieved: r.Achieved, Target: r.Target,
 			Notes: r.Notes, Name: r.Doc.Meta.Name, NotesOnDoc: r.Doc.Meta.Notes,
 			Published: r.Doc.Meta.Published, Changes: []change{},
 			Symbols: sortedNumbers(ir.ResolveSymbols(r.Doc).DesignValues),

@@ -3,6 +3,9 @@
     {
       "label": "30m",
       "preset": "gpt2-small",
+      "options": {
+        "targetParams": 30000000
+      },
       "achieved": 30339456,
       "target": 30000000,
       "changes": [
@@ -71,6 +74,12 @@
     {
       "label": "30m-nonembed",
       "preset": "llama-3-8b",
+      "options": {
+        "targetParams": 30000000,
+        "vocab": 8192,
+        "targetBasis": "non-embedding",
+        "tieHead": true
+      },
       "achieved": 34413440,
       "target": 30000000,
       "changes": [
@@ -140,6 +149,10 @@
     {
       "label": "100m-keepdepth",
       "preset": "llama-3-8b",
+      "options": {
+        "targetParams": 100000000,
+        "keepDepth": true
+      },
       "achieved": 96092416,
       "target": 100000000,
       "changes": [
@@ -204,6 +217,10 @@
     {
       "label": "50m-moe",
       "preset": "mixtral-8x7b",
+      "options": {
+        "targetParams": 50000000,
+        "vocab": 4096
+      },
       "achieved": 56669760,
       "target": 50000000,
       "changes": [
@@ -301,6 +318,10 @@
     {
       "label": "20m-mla",
       "preset": "deepseek-v3",
+      "options": {
+        "targetParams": 20000000,
+        "vocab": 4096
+      },
       "achieved": 20043264,
       "target": 20000000,
       "changes": [
@@ -435,6 +456,10 @@
     {
       "label": "10m-mamba",
       "preset": "nemotron-h-8b",
+      "options": {
+        "targetParams": 10000000,
+        "vocab": 4096
+      },
       "achieved": 5579216,
       "target": 10000000,
       "changes": [

@@ -50,6 +50,40 @@ type Options struct {
 	InitStd *float64
 }
 
+// WireOptions is Options as a client sends it, and the only spelling of these
+// settings that a client should know.
+//
+// It differs from Options in one way, deliberately: the smoke test is named for
+// what a caller decides ("include it") rather than for what the emitter then
+// skips. Everything is optional, so an absent field and a zero one have to be
+// distinguishable, which is what the pointers are for.
+type WireOptions struct {
+	ClassName        string   `json:"className,omitempty"`
+	IncludeSmokeTest *bool    `json:"includeSmokeTest,omitempty"`
+	MoeDispatch      string   `json:"moeDispatch,omitempty"`
+	InitStd          *float64 `json:"initStd,omitempty"`
+}
+
+// Options is what the emitter reads.
+func (w WireOptions) Options() Options {
+	o := Options{ClassName: w.ClassName, MoeDispatch: w.MoeDispatch, InitStd: w.InitStd}
+	if w.IncludeSmokeTest != nil && !*w.IncludeSmokeTest {
+		o.NoSmokeTest = true
+	}
+	return o
+}
+
+// Wire is the inverse, for writing down the settings an answer was produced
+// under in the words a client would have used.
+func Wire(o Options) WireOptions {
+	w := WireOptions{ClassName: o.ClassName, MoeDispatch: o.MoeDispatch, InitStd: o.InitStd}
+	if o.NoSmokeTest {
+		no := false
+		w.IncludeSmokeTest = &no
+	}
+	return w
+}
+
 // File is one emitted file.
 type File struct {
 	Path     string `json:"path"`

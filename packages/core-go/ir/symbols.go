@@ -28,6 +28,115 @@ func (d *Doc) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// MarshalJSON writes the symbols back in the order they were written in.
+//
+// The other half of UnmarshalJSON, and the half whose absence is invisible
+// until a document makes a round trip: the engine hands a design to a client,
+// the client hands it back, and a symbol list a person wrote as D, H, dh comes
+// back alphabetized, because Go sorts a map's keys on the way out. Everything
+// downstream that reads the order — the generated file's header, the order
+// findings about symbols come out in, the panel the user reads — quietly moves.
+//
+// Only the symbols object is rewritten; every other field keeps the encoding
+// and the position the struct gives it.
+func (d Doc) MarshalJSON() ([]byte, error) {
+	type plain Doc
+	b, err := marshalNoEscape(plain(d))
+	if err != nil {
+		return nil, err
+	}
+	if len(d.Symbols) < 2 || len(d.SymbolOrder) != len(d.Symbols) {
+		return b, nil
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(b, &fields); err != nil {
+		return b, nil
+	}
+	if _, ok := fields["symbols"]; !ok {
+		return b, nil
+	}
+	var ordered bytes.Buffer
+	ordered.WriteByte('{')
+	for i, name := range d.SymbolOrder {
+		sym, ok := d.Symbols[name]
+		if !ok {
+			// The order disagrees with the map, so it is not an order for this
+			// document. Leave what the encoder produced.
+			return b, nil
+		}
+		if i > 0 {
+			ordered.WriteByte(',')
+		}
+		key, err := marshalNoEscape(name)
+		if err != nil {
+			return b, nil
+		}
+		value, err := marshalNoEscape(sym)
+		if err != nil {
+			return b, nil
+		}
+		ordered.Write(key)
+		ordered.WriteByte(':')
+		ordered.Write(value)
+	}
+	ordered.WriteByte('}')
+	fields["symbols"] = ordered.Bytes()
+
+	var out bytes.Buffer
+	out.WriteByte('{')
+	for i, key := range objectKeys(b) {
+		if i > 0 {
+			out.WriteByte(',')
+		}
+		k, err := marshalNoEscape(key)
+		if err != nil {
+			return b, nil
+		}
+		out.Write(k)
+		out.WriteByte(':')
+		out.Write(fields[key])
+	}
+	out.WriteByte('}')
+	return out.Bytes(), nil
+}
+
+// marshalNoEscape encodes without turning `<`, `>` and `&` into escapes.
+//
+// A MarshalJSON result is compacted by whichever encoder asked for it, and that
+// is where escaping is decided; anything escaped here would be escaped whatever
+// the caller wanted.
+func marshalNoEscape(v any) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(v); err != nil {
+		return nil, err
+	}
+	return bytes.TrimRight(buf.Bytes(), "\n"), nil
+}
+
+// objectKeys is the top-level keys of a JSON object, in order.
+func objectKeys(b []byte) []string {
+	dec := json.NewDecoder(bytes.NewReader(b))
+	if t, err := dec.Token(); err != nil || t != json.Delim('{') {
+		return nil
+	}
+	var keys []string
+	for dec.More() {
+		kt, err := dec.Token()
+		if err != nil {
+			return nil
+		}
+		key, _ := kt.(string)
+		var skip json.RawMessage
+		if err := dec.Decode(&skip); err != nil {
+			return nil
+		}
+		keys = append(keys, key)
+	}
+	return keys
+}
+
 func objectKeyOrder(b []byte, field string) []string {
 	dec := json.NewDecoder(bytes.NewReader(b))
 	t, err := dec.Token()

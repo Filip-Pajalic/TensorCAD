@@ -1,4 +1,7 @@
-import { getPreset, validate, formatCount, formatBytes } from "../packages/core/src/index.js";
+import { formatBytes, formatCount, getPreset, loadEngine, validate } from "@tensorcad/engine/node";
+
+await loadEngine();
+
 const r = validate(getPreset("deepseek-v3"), { T: 4096 });
 const a = r.analysis;
 console.log("total       ", a.params.total.toLocaleString("en-US"), "=", formatCount(a.params.total));

@@ -75,5 +75,5 @@ bun run scripts/report.ts             # the parameter regression table
 bun run scripts/analyze-demo.ts       # full analysis for one preset
 bun run scripts/codegen-demo.ts <p>   # writes out/<preset>/model.py
 bun run scripts/scale-demo.ts         # shrink a design to a budget
-bun run scripts/golden.ts             # regenerate the Go port's golden files
+bun run golden                        # regenerate the engine's golden files
 ```

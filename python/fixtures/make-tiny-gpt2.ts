@@ -5,34 +5,20 @@
  *   bun run python/fixtures/make-tiny-gpt2.ts
  *
  * Same emitter as the real presets, just a tiny configuration (~30M params) so
- * it trains in a couple of minutes on a single consumer GPU.
+ * it trains in a couple of minutes on a single consumer GPU. The design sits
+ * beside this file as a document, the way a preset does.
  */
-import { decoderOnly, generateTorch, type DecoderSpec } from "../../packages/core/src/index.js";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { generateTorch, loadEngine } from "@tensorcad/engine/node";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
-const spec: DecoderSpec = {
-  name: "tiny-gpt2",
-  family: "gpt2",
-  notes: "Scaled-down GPT-2 for smoke training. Not a published model.",
-  layers: 6,
-  dModel: 384,
-  heads: 6,
-  ffnHidden: "4*D",
-  vocab: 50257,
-  maxSeq: 512,
-  norm: "layernorm",
-  mlp: "dense",
-  act: "gelu",
-  rope: null,
-  tied: true,
-  attnBias: true,
-  mlpBias: true,
-  defaultSeq: 512,
-};
+await loadEngine();
 
-const out = generateTorch(decoderOnly(spec));
-const dir = "python/fixtures/tiny-gpt2";
+const here = new URL(".", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
+const doc = JSON.parse(readFileSync(join(here, "tiny-gpt2.json"), "utf8"));
+const out = generateTorch(doc);
+const dir = join(here, "tiny-gpt2");
 mkdirSync(dir, { recursive: true });
-for (const file of out.files) writeFileSync(`${dir}/${file.path}`, file.contents);
+for (const file of out.files) writeFileSync(join(dir, file.path), file.contents);
 for (const warning of out.warnings) console.error("warning: " + warning);
 console.log(`wrote ${dir}/model.py`);

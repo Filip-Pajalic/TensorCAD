@@ -36,16 +36,9 @@
         "@tensorcad/engine": "workspace:*",
       },
     },
-    "packages/core": {
-      "name": "@tensorcad/core",
-      "version": "0.0.1",
-    },
     "packages/engine": {
       "name": "@tensorcad/engine",
       "version": "0.0.1",
-      "devDependencies": {
-        "@tensorcad/core": "workspace:*",
-      },
     },
     "packages/mcp": {
       "name": "@tensorcad/mcp",
@@ -299,8 +292,6 @@
     "@tailwindcss/vite": ["@tailwindcss/vite@4.3.3", "", { "dependencies": { "@tailwindcss/node": "4.3.3", "@tailwindcss/oxide": "4.3.3", "tailwindcss": "4.3.3" }, "peerDependencies": { "vite": "^5.2.0 || ^6 || ^7 || ^8" } }, "sha512-yYU8cogLeSh/ms2jh8Fj7jaba/EWa7Ja6GoUqYZaraEuCI5YS6ms6ObZgjjedm+jm6XZjdNRWBpPP6Z86oOxcw=="],
 
     "@tensorcad/cli": ["@tensorcad/cli@workspace:packages/cli"],
-
-    "@tensorcad/core": ["@tensorcad/core@workspace:packages/core"],
 
     "@tensorcad/desktop-frontend": ["@tensorcad/desktop-frontend@workspace:desktop/frontend"],
 

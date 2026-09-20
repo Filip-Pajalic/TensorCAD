@@ -20,6 +20,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+
+# Projections that write back into the residual stream. Their initial scale
+# is divided by sqrt(2 * layers) so depth does not inflate the stream.
+RESIDUAL_PROJECTIONS = ("o_proj.weight", "down.weight", "out_proj.weight")
+
 class GqaAttention(nn.Module):
     """gqa_attention: d_model=384, heads=6, kv_heads=6, head_dim=64, bias=true, causal=true, window=0, qk_norm=false, flash=true"""
 
@@ -99,6 +104,25 @@ class TinyGpt2(nn.Module):
         self.final_norm = nn.LayerNorm(384, eps=0.00001, bias=True)
         self.head = nn.Linear(384, 50257, bias=False)
         self.head.weight = self.embed.weight
+
+    @torch.no_grad()
+    def init_weights(self):
+        """Normal(0, 0.02), with residual projections scaled by depth.
+
+        PyTorch's defaults leave nn.Embedding at a unit normal, which starts
+        a language model near a cross-entropy of a few hundred rather than
+        ln(vocab). Call this after moving the model to its device.
+        """
+        for module in self.modules():
+            if isinstance(module, (nn.Linear, nn.Embedding)):
+                nn.init.normal_(module.weight, mean=0.0, std=0.02)
+                bias = getattr(module, "bias", None)
+                if bias is not None:
+                    nn.init.zeros_(bias)
+        for name, param in self.named_parameters():
+            if name.endswith(RESIDUAL_PROJECTIONS):
+                nn.init.normal_(param, mean=0.0, std=0.0057735027)
+        return self
 
     def forward(self, ids):
         embed_y = self.embed(ids)

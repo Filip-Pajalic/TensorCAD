@@ -1,5 +1,5 @@
 /**
- * Cross-check the TypeScript parameter analysis against PyTorch itself.
+ * Cross-check the analysis against PyTorch itself.
  *
  * These tests shell out to `tensorcad-runtime verify`, which imports the generated
  * module, instantiates it on the meta device and counts parameters. That closes
@@ -15,8 +15,9 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { generateTorch } from "../src/codegen/torch.js";
-import { getPreset } from "../src/presets/index.js";
+import { generateTorch, getPreset, loadEngine } from "../src/node.js";
+
+await loadEngine();
 
 const PRESET = "gpt2-small";
 const TIMEOUT_MS = 180_000;

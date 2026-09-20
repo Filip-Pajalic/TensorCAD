@@ -14,18 +14,22 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M3 Agent (MCP server, CLI) | **Done**, minus the live-UI bridge. 13 MCP tools over stdio, 6 CLI commands, 67 tests. |
 | M4 Test bench | **Partly done.** `tensorcad-runtime smoke-train` trains a scaled design on the local GPU and logs a loss curve; `scaleDesign` shrinks a design to a budget. No run registry or comparison view in the editor yet. |
 | M5 Advanced parts | **Mixture of experts, latent attention and state-space blocks all done.** DeepSeek-V3 and Nemotron-H-8B reproduce exactly. |
-| Go engine | **Done.** The whole analysis is Go, compiled to WebAssembly, and the editor, the command line, the MCP server and the desktop shell all load the same module. `packages/core` no longer ships; it is the oracle the golden files are written by. |
+| Go engine | **Done.** The whole analysis is Go, compiled to WebAssembly, and the editor, the command line, the MCP server and the desktop shell all load the same module. The TypeScript it was ported from has been deleted; the golden files it wrote are the specification the engine is held to. |
 | Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, and named refusals. Remaining items in `docs/explanation/interaction-design.md`. |
 
-`bun test` runs everything: 287 tests, including the compiled engine answering
-the same questions as the TypeScript it replaced. `go test ./...` in
-`packages/core-go` checks the Go source against the same golden files: every
-preset's symbol table, inferred shapes at two expansion settings, the full
-analysis and the design-rule check at three operating points, and the generated
-PyTorch byte for byte. `bun run scripts/golden.ts` writes down what the
-TypeScript says; it is the specification until it is gone.
+Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
+the Go source; `bun test packages` checks the compiled module through the
+JavaScript boundary, along with the command line, the MCP server and the editor.
+Between them: every preset's symbol table, inferred shapes at two expansion
+settings, the full analysis and the design-rule check at three operating points,
+and the generated PyTorch byte for byte. `go run ./cmd/golden` rewrites those
+files, deliberately and never as part of a test.
 
-`bun test packages` runs everything: 273 tests. 20 presets, 17 matching their published parameter count exactly, and every one of them confirmed against PyTorch 2.11 on the local GPU. Not all are language models: `ijepa-vit-h14` is a vision transformer and `alexnet` a convolutional classifier, on the same machinery.
+20 presets, 17 matching their published parameter count exactly and 3 within a
+stated tolerance, and every one of them confirmed against PyTorch 2.11 by
+instantiating the generated model. Not all are language models:
+`ijepa-vit-h14` is a vision transformer and `alexnet` a convolutional
+classifier, on the same machinery.
 
 ## Principles
 
@@ -130,7 +134,7 @@ Remaining:
 ### M6 — Ship
 
 - Docs site with the guided tours; explain tab content for every block.
-- Publish `@tensorcad/core`, `@tensorcad/mcp` to npm; `mcpName` + `server.json` to the MCP registry; MCPB bundle for Claude Desktop.
+- Publish `@tensorcad/engine`, `@tensorcad/mcp` to npm; `mcpName` + `server.json` to the MCP registry; MCPB bundle for Claude Desktop.
 - Optional: MCP Apps canvas preview for Claude Desktop/Cursor; hosted read-only viewer for sharing designs.
 
 ## Sequencing and dependencies

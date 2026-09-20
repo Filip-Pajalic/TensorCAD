@@ -7,9 +7,9 @@ Node-based CAD for designing LLM architectures at the pretraining level: blocks,
 ```bash
 bun run build:wasm                   # the engine; nothing else runs without it
 bun run test:all                     # types, both suites, the Go engine
-bun test packages                    # the TypeScript suite, including the compiled engine
+bun test packages                    # the TypeScript suite: the compiled engine and its clients
 go test ./...                        # from packages/core-go: the engine against the goldens
-bun run scripts/golden.ts            # regenerate those golden files (deliberately)
+go run ./cmd/golden                  # from packages/core-go: rewrite them (deliberately)
 bun run scripts/report.ts            # parameter regression table vs published counts
 bun run scripts/analyze-demo.ts      # full analysis + design rules for one preset
 bun run scripts/codegen-demo.ts <preset>   # writes out/<preset>/model.py
@@ -56,14 +56,17 @@ Two cross-checks worth knowing:
   analysis; `packages/engine` is that module plus the TypeScript client that loads it. The
   editor, the command line, the MCP server and the desktop shell are all clients of the same
   module, so an answer cannot depend on where it was asked.
-- **`packages/core` no longer ships. It is the oracle.** It is the TypeScript the engine was
-  ported from, and `bun run scripts/golden.ts` is it writing down what it says for all twenty
-  presets: symbol tables, inferred shapes at two expansion settings, the full analysis and the
-  design-rule check at three operating points, and every byte of a generated `model.py`. The
-  Go tests reproduce those exactly, and `packages/engine/test` runs the *compiled* module
-  against the same answers. **So a block added to one engine and not the other fails a test
-  that names it.** Add it to both. Do not "improve" the Go while you are in there: it is
-  bug-compatible on purpose, and every deliberate divergence is documented where it is made.
+- **`packages/core-go/testdata` is the specification.** Eighty-nine files saying what the
+  engine answers for all twenty presets: symbol tables, inferred shapes at two expansion
+  settings, the full analysis and the design-rule check at three operating points, every byte
+  of a generated `model.py`, the prose of every block. `go run ./cmd/golden` rewrites them and
+  nothing else does — never a test, which would pass whatever the engine did. They began as
+  what the TypeScript said, and every one of them was compared against it, parsed rather than
+  as bytes, on the commit that retired it.
+- **Two suites read those files, and they are not the same test.** `go test ./...` checks the
+  source. `packages/engine/test` checks the *compiled* module through the JavaScript boundary,
+  which is the only place a nil slice, a NaN or a printed double can go wrong. A change that
+  passes the first and fails the second is a boundary bug, not an arithmetic one.
 - **The boundary is where answers get quietly lost.** A nil Go slice is `null`, not an empty
   list; `encoding/json` refuses a NaN, which a design with a failed symbol produces; Go
   rounds a half to even where JavaScript rounds it away from zero. `packages/core-go/jsonx`
@@ -71,9 +74,13 @@ Two cross-checks worth knowing:
   report objecting to every `null` it was not told to expect. Add to that list rather than
   papering over it in a client.
 - **A preset is a document, not a builder.** `packages/core-go/presets/data` holds the
-  library as JSON, embedded into the binary. `packages/core/src/presets` still builds those
-  documents and is what `scripts/golden.ts` runs; when the TypeScript goes, the JSON stays and
-  nothing has to be ported.
+  library as twenty JSON files, embedded into the binary. There is no builder any more and
+  nothing generates them: a new preset is a file, and `meta.published` is what the tests hold
+  it to.
+- `packages/engine` — the compiled module and the TypeScript that loads it.
+  `src/types.ts` is the wire contract: every option a client can send and every field it
+  gets back, in the names the boundary reads. `wasm/` is build output and is not committed,
+  so a fresh clone runs `bun run build:wasm` before anything works.
 - `packages/ui` — React + React Flow editor. `state/unfold.ts` turns one flat level into the
   nested drawing the published figures use: containers become frames around their contents and
   container boundaries are short-circuited out of the wiring. Merging frames must happen after

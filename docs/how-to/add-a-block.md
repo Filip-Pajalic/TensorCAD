@@ -90,7 +90,7 @@ Either a preset that uses it with a published figure, or a test pinning the
 arithmetic. Preferably both.
 
 ```bash
-bun run scripts/golden.ts     # write down what the TypeScript says
+cd packages/core-go && go run ./cmd/golden && cd ../..   # write down what it says
 bun run build:wasm            # the engine the editor will load
 bun run scripts/report.ts     # before and after; the table must not move
 bun run test:all

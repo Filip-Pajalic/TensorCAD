@@ -7,54 +7,54 @@
   },
   "symbols": {
     "B": {
+      "kind": "runtime",
       "default": 1,
-      "doc": "Batch size",
-      "kind": "runtime"
+      "doc": "Batch size"
     },
     "T": {
+      "kind": "runtime",
       "default": 512,
-      "doc": "Sequence length in tokens",
-      "kind": "runtime"
+      "doc": "Sequence length in tokens"
     },
     "L": {
-      "doc": "Number of transformer layers",
       "kind": "design",
-      "value": 6
+      "value": 6,
+      "doc": "Number of transformer layers"
     },
     "D": {
-      "doc": "Residual stream width (d_model)",
       "kind": "design",
-      "value": 384
+      "value": 384,
+      "doc": "Residual stream width (d_model)"
     },
     "H": {
-      "doc": "Query heads",
       "kind": "design",
-      "value": 6
+      "value": 6,
+      "doc": "Query heads"
     },
     "Hkv": {
-      "doc": "Key/value heads",
       "kind": "design",
-      "value": 6
+      "value": 6,
+      "doc": "Key/value heads"
     },
     "dh": {
-      "doc": "Head dimension",
       "kind": "design",
-      "value": 64
+      "value": 64,
+      "doc": "Head dimension"
     },
     "F": {
-      "doc": "Feed-forward hidden width",
       "kind": "design",
-      "value": "4*D"
+      "value": "4*D",
+      "doc": "Feed-forward hidden width"
     },
     "V": {
-      "doc": "Vocabulary size",
       "kind": "design",
-      "value": 50257
+      "value": 50257,
+      "doc": "Vocabulary size"
     },
     "Tmax": {
-      "doc": "Maximum position index",
       "kind": "design",
-      "value": 512
+      "value": 512,
+      "doc": "Maximum position index"
     }
   },
   "graph": {
@@ -63,29 +63,30 @@
         "id": "tokens",
         "type": "input",
         "params": {
-          "dtype": "int64",
-          "shape": "B T"
+          "shape": "B T",
+          "dtype": "int64"
         }
       },
       {
         "id": "embed",
         "type": "embedding",
         "params": {
-          "dim": "D",
-          "vocab": "V"
+          "vocab": "V",
+          "dim": "D"
         }
       },
       {
         "id": "pos",
         "type": "pos_embedding",
         "params": {
-          "dim": "D",
-          "max_seq": "Tmax"
+          "max_seq": "Tmax",
+          "dim": "D"
         }
       },
       {
         "id": "layers",
         "type": "repeat",
+        "label": "Transformer block x6",
         "params": {
           "count": "L"
         },
@@ -104,23 +105,23 @@
               "id": "block",
               "type": "transformer_block",
               "params": {
-                "act": "gelu",
-                "attn_bias": true,
-                "attn_o_bias": null,
-                "causal": true,
                 "d_model": "D",
-                "ffn_hidden": "F",
-                "head_dim": "dh",
                 "heads": "H",
                 "kv_heads": "Hkv",
-                "mlp": "dense",
-                "mlp_bias": true,
+                "head_dim": "dh",
+                "ffn_hidden": "F",
                 "norm": "layernorm",
                 "norm_bias": true,
                 "post_norm": false,
+                "mlp": "dense",
+                "act": "gelu",
+                "attn_bias": true,
+                "attn_o_bias": null,
+                "mlp_bias": true,
                 "qk_norm": false,
-                "rope": null,
-                "window": 0
+                "causal": true,
+                "window": 0,
+                "rope": null
               }
             },
             {
@@ -143,24 +144,23 @@
               "_out:x"
             ]
           ]
-        },
-        "label": "Transformer block x6"
+        }
       },
       {
         "id": "final_norm",
         "type": "layernorm",
         "params": {
-          "bias": true,
-          "dim": "D"
+          "dim": "D",
+          "bias": true
         }
       },
       {
         "id": "head",
         "type": "lm_head",
         "params": {
+          "vocab": "V",
           "dim": "D",
-          "tied": true,
-          "vocab": "V"
+          "tied": true
         }
       },
       {

@@ -8,7 +8,7 @@
  * rule is looking for, whether or not it fired.
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
 import type { Severity, UiIssue } from "../state/derive.js";
@@ -22,9 +22,12 @@ const TITLE_BY_RULE: Record<string, string> = Object.fromEntries(RULES.map((r) =
 function Group({
   severity,
   issues,
+  focus,
 }: {
   severity: Severity;
   issues: UiIssue[];
+  /** The block whose marker was pressed on the drawing, if any. */
+  focus: string | null;
 }): React.ReactElement | null {
   if (issues.length === 0) return null;
   return (
@@ -32,7 +35,11 @@ function Group({
       {issues.map((i) => (
         <div
           key={i.key}
-          className={`issue issue--${severity}${i.path ? " clickable" : ""}`}
+          data-focus={focus !== null && i.path === focus ? "1" : undefined}
+          className={
+            `issue issue--${severity}${i.path ? " clickable" : ""}` +
+            (focus !== null && i.path === focus ? " issue--focus" : "")
+          }
           onClick={() => i.path && useEditor.getState().focusOn(i.path)}
           title={i.path ? `Open ${i.path}` : undefined}
         >
@@ -56,7 +63,19 @@ function Group({
 
 export default function Rules(): React.ReactElement {
   const derived = useDerived();
+  const focus = useEditor((s) => s.findingFocus);
+  const focusNonce = useEditor((s) => s.findingNonce);
+  const body = useRef<HTMLDivElement>(null);
   const [muted, setMuted] = useState<Set<Severity>>(() => new Set<Severity>(["info"]));
+
+  // Pressing a marker on the drawing opens this list on that block. Scroll to
+  // it, because the list is long and landing on the right tab with the finding
+  // off screen is the same as not arriving.
+  useEffect(() => {
+    if (!focus) return;
+    const row = body.current?.querySelector('[data-focus="1"]');
+    row?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [focus, focusNonce, derived]);
 
   const toggle = (s: Severity): void =>
     setMuted((was) => {
@@ -79,8 +98,25 @@ export default function Rules(): React.ReactElement {
   const shown = SEVERITIES.filter((s) => !muted.has(s));
   const nothingShown = shown.every((s) => grouped[s].length === 0);
 
+  const focused = focus ? derived.issues.filter((i) => i.path === focus) : [];
+
   return (
-    <div className="panel__body">
+    <div className="panel__body" ref={body}>
+      {focus && (
+        <div className="issues__focus">
+          <span className="mono">{focus}</span>
+          <span className="dim">
+            {focused.length} finding{focused.length === 1 ? "" : "s"}
+          </span>
+          <button
+            className="badge badge--quiet"
+            onClick={() => useEditor.getState().clearFindingFocus()}
+            title="Stop highlighting this block"
+          >
+            clear
+          </button>
+        </div>
+      )}
       <div className="issues__summary">
         {SEVERITIES.map((s) => {
           const n = grouped[s].length;
@@ -108,7 +144,7 @@ export default function Rules(): React.ReactElement {
       )}
 
       {shown.map((s) => (
-        <Group key={s} severity={s} issues={grouped[s]} />
+        <Group key={s} severity={s} issues={grouped[s]} focus={focus} />
       ))}
 
       <Section id="rulebook" title="Rule book" defaultOpen={false} note={`${RULES.length} rules`}>

@@ -88,6 +88,14 @@ export interface EditorState {
   layoutNonce: number;
   /** Bumped whenever something wants the canvas to centre on the selection. */
   focusNonce: number;
+  /**
+   * The block whose findings the rules list is showing, set by pressing a
+   * marker on the drawing. Null means the list is showing everything, which is
+   * what it does the rest of the time.
+   */
+  findingFocus: string | null;
+  /** Bumped alongside it, so pressing the same marker twice scrolls again. */
+  findingNonce: number;
   /** Transient message for the status bar. */
   status: string | null;
   /** The conditions every number past the parameter count is measured under. */
@@ -143,6 +151,9 @@ export interface EditorState {
   isLocked: (path: string) => boolean;
   /** Open the level that owns `path`, select it and centre the viewport. */
   focusOn: (path: string) => void;
+  /** Open the rules list on one block's findings. */
+  showFindingsFor: (path: string) => void;
+  clearFindingFocus: () => void;
   setRightTab: (tab: RightTab) => void;
   setShapeMode: (mode: ShapeMode) => void;
   /** Whether the drawing is annotated with callouts. */
@@ -228,6 +239,8 @@ export const useEditor = create<EditorState>((set, get) => {
     shapeMode: "symbolic",
     layoutNonce: 0,
     focusNonce: 0,
+    findingFocus: null,
+    findingNonce: 0,
     status: null,
 
     operating: loadOperating(),
@@ -292,9 +305,12 @@ export const useEditor = create<EditorState>((set, get) => {
         selection: null,
         status: status ?? null,
       })),
-    setPath: (path) => set({ path, selection: null }),
-    enter: (path) => set({ path: ops.segmentsOf(path), selection: null }),
-    select: (selection) => set({ selection }),
+    setPath: (path) => set({ path, selection: null, findingFocus: null }),
+    enter: (path) => set({ path: ops.segmentsOf(path), selection: null, findingFocus: null }),
+    // Selecting something else puts the rules list back to showing
+    // everything: a highlight that outlives what it pointed at is worse
+    // than no highlight.
+    select: (selection) => set({ selection, findingFocus: null }),
 
     showCallouts: true,
     toggleCallouts: () => set((state) => ({ showCallouts: !state.showCallouts })),
@@ -338,9 +354,18 @@ export const useEditor = create<EditorState>((set, get) => {
         path: segs.slice(0, -1),
         selection: target,
         focusNonce: s.focusNonce + 1,
+        findingFocus: null,
         rightTab: "inspector",
       }));
     },
+    showFindingsFor: (target) =>
+      set((s) => ({
+        selection: target,
+        rightTab: "rules",
+        findingFocus: target,
+        findingNonce: s.findingNonce + 1,
+      })),
+    clearFindingFocus: () => set({ findingFocus: null }),
     setRightTab: (rightTab) => set({ rightTab }),
     setShapeMode: (shapeMode) => set({ shapeMode }),
     setStatus: (status) => set({ status }),

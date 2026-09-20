@@ -1023,3 +1023,61 @@ and none of them is visible where the work happens), the command surface and
 palette, the inspector, the definition editor and library, multi-selection and
 the bottom dock, and then operations, configurations and tensors as first-class
 objects.
+
+## Twelfth pass: the probe goes both ways, and the cluster gets a panel
+
+### A marker you could see and not follow
+
+Findings had reached the drawing: a part with something wrong carries a coloured
+disc at its corner, and a port a finding names carries a mark on the pin. What
+the disc could not do was anything. Hovering gave a tooltip, which is the whole
+finding crammed into a `title` attribute, and reading it properly still meant
+crossing to the panel, finding the row, and matching the path by eye.
+
+The list had gone the other way since it was built — click a finding and the
+editor opens the level that owns the block, selects it and centres the viewport.
+Pressing the marker now does the reverse: it opens the rules list, scrolls to
+that block's findings and outlines them, with a bar at the top naming the block
+and a way to clear it. The two directions together are what a DRC list is for.
+A highlight that outlives what it pointed at would be worse than none, so
+selecting anything else clears it.
+
+The marker had to become a `button` to be pressable, which is also what makes it
+reachable by keyboard and announceable — it was a `div` with a tooltip. It
+carries `nodrag` so pressing it does not drag the part, and stops the click so it
+does not also land on the canvas as a selection: it is a control on the part
+rather than part of it.
+
+### The cluster
+
+The readout answers what a design costs under the operating point you set. The
+question that comes first — what the operating point should *be* — had no
+answer anywhere in the editor, and the analysis had everything needed to give
+one. `Cluster` is a fourth tab: every way of splitting the training that the
+cluster admits, priced, with the ones that fit listed least demanding first and
+a bar for how much of the device each fills. Pressing one applies it.
+
+That last part is why it belongs in the editor rather than only in the command
+line. The parallelism is editor state, so a plan is something a panel can hand
+to the operating point and watch every other panel follow.
+
+It is also the one panel that does not read `derive()`. That runs on every
+keystroke; this is a few hundred analyses, and the answer only moves when the
+cluster or the design does — so it keys on the operating point *minus* the
+parallelism and the recompute setting. Applying a plan must not send the panel
+looking for another one.
+
+Making it applyable found two things the operating point could not say. Sequence
+parallelism the analysis had modelled all along and the editor had no way to ask
+for, so every plan offered with it would have applied as something else and
+contradicted its own number; it is a checkbox now, disabled when there is no
+tensor-parallel group to shard across. Expert parallelism had just become real
+in the engine and had no control at all.
+
+### Still outstanding
+
+E3 through E7: the command surface and palette, the inspector, the definition
+editor and library, multi-selection and the bottom dock, and then operations,
+configurations and tensors as first-class objects. E2's remaining piece is
+per-rule severity carried in the document, so a design can record that a rule it
+has considered and accepted should not keep firing.

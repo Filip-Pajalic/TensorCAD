@@ -2727,3 +2727,27 @@ select.field {
   border-left: 2px solid var(--border);
   padding-left: 6px;
 }
+
+/* The block whose marker was pressed on the drawing. */
+.issues__focus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  margin-bottom: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  font-size: 11px;
+}
+
+.issues__focus .mono {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.issue--focus {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}

@@ -20,6 +20,7 @@ import { dtypeColor, partColor, type BlockKind } from "./blocks.js";
 import { SIDES, handleId, type Side } from "./wiring.js";
 import type { Severity } from "../state/derive.js";
 import { formatCount } from "@tensorcad/engine";
+import { useEditor } from "../state/store.js";
 
 export interface PortView {
   name: string;
@@ -238,13 +239,22 @@ function BlockNodeView({ data, selected }: NodeProps<BlockFlowNode>): React.Reac
         with this" without a trip to the panel.
       */}
       {findings.length > 0 && (
-        <div
-          className={`drc drc--${findings.some((f) => f.severity === "error") ? "error" : findings.some((f) => f.severity === "warning") ? "warning" : "info"}`}
-          title={findings.map((f) => `${f.rule}: ${f.message}`).join("\n")}
-          aria-label={`${findings.length} finding${findings.length === 1 ? "" : "s"}`}
+        <button
+          type="button"
+          // `nodrag` so pressing the marker does not drag the part, and the
+          // click is stopped so it does not also land on the canvas as a
+          // selection: the marker is a control on the part, not part of it.
+          className={`drc nodrag drc--${findings.some((f) => f.severity === "error") ? "error" : findings.some((f) => f.severity === "warning") ? "warning" : "info"}`}
+          title={`${findings.map((f) => `${f.rule}: ${f.message}`).join("\n")}\n\nPress to open these in the rules list.`}
+          aria-label={`${findings.length} finding${findings.length === 1 ? "" : "s"}; open the rules list`}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            useEditor.getState().showFindingsFor(data.path);
+          }}
         >
           {findings.length > 1 ? findings.length : ""}
-        </div>
+        </button>
       )}
 
       {data.repeat && data.repeat > 1 && (

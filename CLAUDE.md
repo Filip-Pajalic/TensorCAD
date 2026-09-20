@@ -35,7 +35,11 @@ every handle the pointer passes over. `generateTorch(doc)` emits PyTorch.
 `explain(doc, path)` describes one block: its parameters as written and as
 evaluated, its shapes, its share of the model, and its documentation.
 `scale(doc, {targetParams})` shrinks a design while keeping its proportions.
-`importHuggingFace(text)` reads a `config.json`.
+`plan(doc, options, {gpus})` prices every way of splitting the training across a
+cluster and returns the ones that fit, least demanding first — memory is the
+claim, which is arithmetic; which is *fastest* is not claimed, because that turns
+on the interconnect and the kernels, so each plan carries a note about what it
+costs to run instead. `importHuggingFace(text)` reads a `config.json`.
 
 Everything crosses as JSON text. A design *is* JSON and so is every report, so
 serialising costs a copy and buys a boundary with nothing clever in it.

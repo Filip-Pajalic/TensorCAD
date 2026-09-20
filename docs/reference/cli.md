@@ -66,6 +66,46 @@ bun packages/cli/src/index.ts diff <a> <b>
 Structural and numeric difference between two designs: symbols, blocks, and what
 moved in the analysis.
 
+## `plan`
+
+```bash
+bun packages/cli/src/index.ts plan <file|preset> --gpus n
+```
+
+Every way of splitting the training across a cluster, and which of them fit.
+Prices DP, TP, PP and EP, the four ZeRO stages, sequence parallelism and the
+three recompute settings, then prints the plans that fit in the order of how
+little they ask of you. Exits 1 when nothing fits, which makes it a check to run
+before a job is queued.
+
+```
+llama-3-70b on 64 x H100 SXM (80 GB)
+  72.00 GiB per device after headroom, of 80.00 GiB. 381 plans priced.
+
+  DP 64, ZeRO-3, full recompute              32.55 GiB   45% of budget
+  DP 8 x TP 8, ZeRO-2, sequence parallel     58.15 GiB   81% of budget
+  DP 8 x TP 8, ZeRO-3, sequence parallel     43.77 GiB   61% of budget
+```
+
+| flag | meaning |
+| --- | --- |
+| `--gpus n` | how many devices there are. Required. |
+| `--gpus-per-node n` | bounds the tensor-parallel degree, since splitting a matrix across a slower link than NVLink rarely pays. Default 8. |
+| `--headroom f` | the fraction of device memory left for fragmentation, the allocator and the communication buffers. Default 0.1. |
+| `--micro-batch 1,2,4` | micro-batch sizes to try. Default: whatever `--B` gives. |
+| `--recompute k` | try only this setting rather than all three. |
+| `--limit n` | how many plans to print. Default 8. |
+
+What it claims is memory, which is arithmetic. What it does not claim is which
+plan is fastest: that turns on interconnect topology, kernel implementations and
+the shape of the communication schedule, none of which a parameter count knows.
+Each plan carries a note about what it costs to run — the all-reduces tensor
+parallelism needs, the bubble a pipeline has to fill, the all-to-all around a
+sparse layer — so the choice among the plans that fit stays with you.
+
+Expert parallelism is offered only to designs that have experts, and the result
+says so when it is absent.
+
 ## Scripts
 
 Convenience wrappers around the same engine:

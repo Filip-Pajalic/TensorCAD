@@ -13,6 +13,7 @@ import { cmdValidate } from "./commands/validate.js";
 import { cmdAnalyze } from "./commands/analyze.js";
 import { cmdCodegen } from "./commands/codegen.js";
 import { cmdDiff } from "./commands/diff.js";
+import { cmdPlan } from "./commands/plan.js";
 import { cmdShow } from "./commands/show.js";
 import { PRESET_NAMES, loadEngine } from "@tensorcad/engine/node";
 
@@ -35,6 +36,14 @@ const COMMANDS: Record<string, { run: (args: Args) => number; usage: string; blu
     run: cmdCodegen,
     usage: "codegen <file|preset> [--out dir] [--class-name Name] [--smoke-test] [--json]",
     blurb: "write the PyTorch module and config",
+  },
+  plan: {
+    run: cmdPlan,
+    usage:
+      "plan <file|preset> --gpus n [--gpus-per-node n] [--headroom f] [--T n]\n" +
+      "                    [--micro-batch 1,2,4] [--recompute none|selective|full]\n" +
+      "                    [--hardware id] [--limit n] [--json]",
+    blurb: "ways to split training across a cluster; exits 1 if none fit",
   },
   diff: { run: cmdDiff, usage: "diff <a> <b> [--json]", blurb: "structural and numeric difference" },
   show: { run: cmdShow, usage: "show <file|preset> [--json]", blurb: "block tree with inferred shapes" },

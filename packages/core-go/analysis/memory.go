@@ -241,9 +241,28 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 	shardModel := math.Max(1, par.TP) * math.Max(1, par.PP)
 	dp := math.Max(1, par.DP)
 
-	wGpu := weights / shardModel
-	gGpu := grads / shardModel
-	oGpu := optimizer / shardModel
+	// Two pools, because they shard by different degrees. The experts go to
+	// whole devices; everything else is split across the tensor-parallel group.
+	// A design with no experts has an empty second pool and the arithmetic is
+	// what it always was.
+	ep := math.Max(1, par.EP)
+	expert := math.Min(opts.Params.Expert, total)
+	dense := total - expert
+	perGpuParams := dense/shardModel + expert/(shardModel*ep)
+	if ep > 1 && expert == 0 {
+		notes = append(notes,
+			"Expert parallelism has nothing to divide: this design has no experts.")
+	}
+	if ep > 1 && expert > 0 {
+		notes = append(notes, fmt.Sprintf(
+			"Expert parallelism holds %s of expert weights per device instead of %s, and puts an all-to-all around every sparse layer.",
+			FormatBytes(expert*bytesPer.Weights/(shardModel*ep)),
+			FormatBytes(expert*bytesPer.Weights/shardModel)))
+	}
+
+	wGpu := perGpuParams * bytesPer.Weights
+	gGpu := perGpuParams * bytesPer.Grads
+	oGpu := perGpuParams * bytesPer.Optimizer
 	if par.Zero >= 1 {
 		oGpu /= dp
 	}

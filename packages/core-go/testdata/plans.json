@@ -1,0 +1,753 @@
+{
+  "cases": [
+    {
+      "label": "8b-on-8",
+      "preset": "llama-3-8b",
+      "seq": 8192,
+      "cluster": {
+        "gpus": 8,
+        "limit": 6
+      },
+      "budget": 77309411328,
+      "considered": 129,
+      "fits": [
+        {
+          "parallel": {
+            "dp": 4,
+            "tp": 2,
+            "pp": 1,
+            "ep": 1,
+            "zero": 1,
+            "sequenceParallel": true
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 8030261248,
+            "grads": 8030261248,
+            "optimizer": 12045391872,
+            "activations": 26321354752,
+            "total": 54427269120
+          },
+          "used": 0.7040186723073324,
+          "summary": "DP 4 x TP 2, ZeRO-1, sequence parallel",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 2 ranks inside one node."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 8,
+            "tp": 1,
+            "pp": 1,
+            "ep": 1,
+            "zero": 3,
+            "sequenceParallel": false
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 2007565312,
+            "grads": 2007565312,
+            "optimizer": 12045391872,
+            "activations": 52642709504,
+            "total": 68703232000
+          },
+          "used": 0.8886787626478407,
+          "summary": "DP 8, ZeRO-3",
+          "notes": [
+            "ZeRO-3 gathers each layer's weights as it is reached, which is an all-gather per layer in both directions.",
+            "This fills 89% of the budget, which is little room for a longer sequence or a larger micro-batch."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 2,
+            "tp": 4,
+            "pp": 1,
+            "ep": 1,
+            "zero": 0,
+            "sequenceParallel": true
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 4015130624,
+            "grads": 4015130624,
+            "optimizer": 24090783744,
+            "activations": 13160677376,
+            "total": 45281722368
+          },
+          "used": 0.5857206980387369,
+          "summary": "DP 2 x TP 4, sequence parallel",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 4 ranks inside one node."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 4,
+            "tp": 2,
+            "pp": 1,
+            "ep": 1,
+            "zero": 2,
+            "sequenceParallel": true
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 8030261248,
+            "grads": 2007565312,
+            "optimizer": 12045391872,
+            "activations": 26321354752,
+            "total": 48404573184
+          },
+          "used": 0.6261148850123087,
+          "summary": "DP 4 x TP 2, ZeRO-2, sequence parallel",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 2 ranks inside one node."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 2,
+            "tp": 4,
+            "pp": 1,
+            "ep": 1,
+            "zero": 1,
+            "sequenceParallel": true
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 4015130624,
+            "grads": 4015130624,
+            "optimizer": 12045391872,
+            "activations": 13160677376,
+            "total": 33236330496
+          },
+          "used": 0.42991312344868976,
+          "summary": "DP 2 x TP 4, ZeRO-1, sequence parallel",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 4 ranks inside one node."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 4,
+            "tp": 2,
+            "pp": 1,
+            "ep": 1,
+            "zero": 3,
+            "sequenceParallel": true
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 2007565312,
+            "grads": 2007565312,
+            "optimizer": 12045391872,
+            "activations": 26321354752,
+            "total": 42381877248
+          },
+          "used": 0.5482110977172852,
+          "summary": "DP 4 x TP 2, ZeRO-3, sequence parallel",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 2 ranks inside one node.",
+            "ZeRO-3 gathers each layer's weights as it is reached, which is an all-gather per layer in both directions."
+          ]
+        }
+      ],
+      "closest": {
+        "parallel": {
+          "dp": 4,
+          "tp": 1,
+          "pp": 2,
+          "ep": 1,
+          "zero": 1,
+          "sequenceParallel": false
+        },
+        "recompute": "none",
+        "microBatch": 1,
+        "perGpu": {
+          "weights": 8030261248,
+          "grads": 8030261248,
+          "optimizer": 12045391872,
+          "activations": 52642709504,
+          "total": 80748623872
+        },
+        "used": 1.0444863372378879,
+        "summary": "DP 4 x PP 2, ZeRO-1",
+        "notes": [
+          "A 2-stage pipeline needs enough micro-batches to fill it; the bubble is (stages-1)/micro-batches of the step.",
+          "This fills 104% of the budget, which is little room for a longer sequence or a larger micro-batch."
+        ]
+      },
+      "notes": [
+        "This design has no experts, so expert parallelism is not among the plans."
+      ]
+    },
+    {
+      "label": "70b-on-64",
+      "preset": "llama-3-70b",
+      "seq": 8192,
+      "cluster": {
+        "gpus": 64,
+        "limit": 6
+      },
+      "budget": 77309411328,
+      "considered": 381,
+      "fits": [
+        {
+          "parallel": {
+            "dp": 64,
+            "tp": 1,
+            "pp": 1,
+            "ep": 1,
+            "zero": 3,
+            "sequenceParallel": false
+          },
+          "recompute": "full",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 2204803328,
+            "grads": 2204803328,
+            "optimizer": 13228819968,
+            "activations": 17309892608,
+            "total": 34948319232
+          },
+          "used": 0.4520577589670817,
+          "summary": "DP 64, ZeRO-3, full recompute",
+          "notes": [
+            "ZeRO-3 gathers each layer's weights as it is reached, which is an all-gather per layer in both directions.",
+            "Full recomputation costs about a third more compute for every activation it drops."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 8,
+            "tp": 8,
+            "pp": 1,
+            "ep": 1,
+            "zero": 2,
+            "sequenceParallel": true
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 17638426624,
+            "grads": 2204803328,
+            "optimizer": 13228819968,
+            "activations": 29363798016,
+            "total": 62435847936
+          },
+          "used": 0.8076099256674448,
+          "summary": "DP 8 x TP 8, ZeRO-2, sequence parallel",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 8 ranks inside one node."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 8,
+            "tp": 8,
+            "pp": 1,
+            "ep": 1,
+            "zero": 3,
+            "sequenceParallel": true
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 2204803328,
+            "grads": 2204803328,
+            "optimizer": 13228819968,
+            "activations": 29363798016,
+            "total": 47002224640
+          },
+          "used": 0.6079754564497206,
+          "summary": "DP 8 x TP 8, ZeRO-3, sequence parallel",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 8 ranks inside one node.",
+            "ZeRO-3 gathers each layer's weights as it is reached, which is an all-gather per layer in both directions."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 32,
+            "tp": 2,
+            "pp": 1,
+            "ep": 1,
+            "zero": 3,
+            "sequenceParallel": false
+          },
+          "recompute": "full",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 2204803328,
+            "grads": 2204803328,
+            "optimizer": 13228819968,
+            "activations": 17309892608,
+            "total": 34948319232
+          },
+          "used": 0.4520577589670817,
+          "summary": "DP 32 x TP 2, ZeRO-3, full recompute",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 2 ranks inside one node.",
+            "ZeRO-3 gathers each layer's weights as it is reached, which is an all-gather per layer in both directions.",
+            "Full recomputation costs about a third more compute for every activation it drops."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 16,
+            "tp": 4,
+            "pp": 1,
+            "ep": 1,
+            "zero": 3,
+            "sequenceParallel": true
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 2204803328,
+            "grads": 2204803328,
+            "optimizer": 13228819968,
+            "activations": 58727596032,
+            "total": 76366022656
+          },
+          "used": 0.9877972337934706,
+          "summary": "DP 16 x TP 4, ZeRO-3, sequence parallel",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 4 ranks inside one node.",
+            "ZeRO-3 gathers each layer's weights as it is reached, which is an all-gather per layer in both directions.",
+            "This fills 99% of the budget, which is little room for a longer sequence or a larger micro-batch."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 32,
+            "tp": 2,
+            "pp": 1,
+            "ep": 1,
+            "zero": 3,
+            "sequenceParallel": true
+          },
+          "recompute": "full",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 2204803328,
+            "grads": 2204803328,
+            "optimizer": 13228819968,
+            "activations": 8654946304,
+            "total": 26293372928
+          },
+          "used": 0.34010571903652614,
+          "summary": "DP 32 x TP 2, ZeRO-3, sequence parallel, full recompute",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 2 ranks inside one node.",
+            "ZeRO-3 gathers each layer's weights as it is reached, which is an all-gather per layer in both directions.",
+            "Full recomputation costs about a third more compute for every activation it drops."
+          ]
+        }
+      ],
+      "closest": {
+        "parallel": {
+          "dp": 8,
+          "tp": 8,
+          "pp": 1,
+          "ep": 1,
+          "zero": 1,
+          "sequenceParallel": true
+        },
+        "recompute": "none",
+        "microBatch": 1,
+        "perGpu": {
+          "weights": 17638426624,
+          "grads": 17638426624,
+          "optimizer": 13228819968,
+          "activations": 29363798016,
+          "total": 77869471232
+        },
+        "used": 1.007244394885169,
+        "summary": "DP 8 x TP 8, ZeRO-1, sequence parallel",
+        "notes": [
+          "Tensor parallelism all-reduces twice per layer, so keep the 8 ranks inside one node.",
+          "This fills 101% of the budget, which is little room for a longer sequence or a larger micro-batch."
+        ]
+      },
+      "notes": [
+        "This design has no experts, so expert parallelism is not among the plans."
+      ]
+    },
+    {
+      "label": "moe-on-64",
+      "preset": "mixtral-8x7b",
+      "seq": 4096,
+      "cluster": {
+        "gpus": 64,
+        "limit": 6
+      },
+      "budget": 77309411328,
+      "considered": 1104,
+      "fits": [
+        {
+          "parallel": {
+            "dp": 64,
+            "tp": 1,
+            "pp": 1,
+            "ep": 1,
+            "zero": 3,
+            "sequenceParallel": false
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 1459462272,
+            "grads": 1459462272,
+            "optimizer": 8756773632,
+            "activations": 41135636480,
+            "total": 52811334656
+          },
+          "used": 0.6831165022320218,
+          "summary": "DP 64, ZeRO-3",
+          "notes": [
+            "ZeRO-3 gathers each layer's weights as it is reached, which is an all-gather per layer in both directions."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 32,
+            "tp": 1,
+            "pp": 1,
+            "ep": 2,
+            "zero": 3,
+            "sequenceParallel": false
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 1509638400,
+            "grads": 1509638400,
+            "optimizer": 9057830400,
+            "activations": 41135636480,
+            "total": 53212743680
+          },
+          "used": 0.6883087423112657,
+          "summary": "DP 32 x EP 2, ZeRO-3",
+          "notes": [
+            "Expert parallelism puts an all-to-all before and after every sparse layer.",
+            "ZeRO-3 gathers each layer's weights as it is reached, which is an all-gather per layer in both directions."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 32,
+            "tp": 2,
+            "pp": 1,
+            "ep": 1,
+            "zero": 3,
+            "sequenceParallel": false
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 1459462272,
+            "grads": 1459462272,
+            "optimizer": 8756773632,
+            "activations": 41135636480,
+            "total": 52811334656
+          },
+          "used": 0.6831165022320218,
+          "summary": "DP 32 x TP 2, ZeRO-3",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 2 ranks inside one node.",
+            "ZeRO-3 gathers each layer's weights as it is reached, which is an all-gather per layer in both directions."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 32,
+            "tp": 2,
+            "pp": 1,
+            "ep": 1,
+            "zero": 3,
+            "sequenceParallel": true
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 1459462272,
+            "grads": 1459462272,
+            "optimizer": 8756773632,
+            "activations": 20567818240,
+            "total": 32243516416
+          },
+          "used": 0.41707103782229954,
+          "summary": "DP 32 x TP 2, ZeRO-3, sequence parallel",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 2 ranks inside one node.",
+            "ZeRO-3 gathers each layer's weights as it is reached, which is an all-gather per layer in both directions."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 16,
+            "tp": 4,
+            "pp": 1,
+            "ep": 1,
+            "zero": 1,
+            "sequenceParallel": true
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 23351396352,
+            "grads": 23351396352,
+            "optimizer": 8756773632,
+            "activations": 10283909120,
+            "total": 65743475456
+          },
+          "used": 0.8503942059146034,
+          "summary": "DP 16 x TP 4, ZeRO-1, sequence parallel",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 4 ranks inside one node.",
+            "This fills 85% of the budget, which is little room for a longer sequence or a larger micro-batch."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 16,
+            "tp": 1,
+            "pp": 1,
+            "ep": 4,
+            "zero": 3,
+            "sequenceParallel": false
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 1609990656,
+            "grads": 1609990656,
+            "optimizer": 9659943936,
+            "activations": 41135636480,
+            "total": 54015561728
+          },
+          "used": 0.6986932224697537,
+          "summary": "DP 16 x EP 4, ZeRO-3",
+          "notes": [
+            "Expert parallelism puts an all-to-all before and after every sparse layer.",
+            "ZeRO-3 gathers each layer's weights as it is reached, which is an all-gather per layer in both directions."
+          ]
+        }
+      ],
+      "closest": {
+        "parallel": {
+          "dp": 32,
+          "tp": 2,
+          "pp": 1,
+          "ep": 1,
+          "zero": 2,
+          "sequenceParallel": true
+        },
+        "recompute": "none",
+        "microBatch": 1,
+        "perGpu": {
+          "weights": 46702792704,
+          "grads": 1459462272,
+          "optimizer": 8756773632,
+          "activations": 20567818240,
+          "total": 77486846848
+        },
+        "used": 1.0022951347960367,
+        "summary": "DP 32 x TP 2, ZeRO-2, sequence parallel",
+        "notes": [
+          "Tensor parallelism all-reduces twice per layer, so keep the 2 ranks inside one node.",
+          "This fills 100% of the budget, which is little room for a longer sequence or a larger micro-batch."
+        ]
+      },
+      "notes": []
+    },
+    {
+      "label": "405b-on-8",
+      "preset": "llama-3.1-405b",
+      "seq": 8192,
+      "cluster": {
+        "gpus": 8,
+        "limit": 6
+      },
+      "budget": 77309411328,
+      "considered": 129,
+      "fits": [],
+      "closest": {
+        "parallel": {
+          "dp": 1,
+          "tp": 8,
+          "pp": 1,
+          "ep": 1,
+          "zero": 0,
+          "sequenceParallel": true
+        },
+        "recompute": "full",
+        "microBatch": 1,
+        "perGpu": {
+          "weights": 101463347200,
+          "grads": 101463347200,
+          "optimizer": 608780083200,
+          "activations": 5082972160,
+          "total": 816789749760
+        },
+        "used": 10.565204620361328,
+        "summary": "TP 8, sequence parallel, full recompute",
+        "notes": [
+          "Tensor parallelism all-reduces twice per layer, so keep the 8 ranks inside one node.",
+          "Full recomputation costs about a third more compute for every activation it drops.",
+          "This fills 1057% of the budget, which is little room for a longer sequence or a larger micro-batch."
+        ]
+      },
+      "notes": [
+        "This design has no experts, so expert parallelism is not among the plans.",
+        "Nothing fits. The nearest plan needs 760.69 GiB per device against a budget of 72.00 GiB; a bigger device, more of them, or a smaller design is the way out."
+      ]
+    },
+    {
+      "label": "8b-on-16-tight",
+      "preset": "llama-3-8b",
+      "seq": 8192,
+      "cluster": {
+        "gpus": 16,
+        "headroom": 0.25,
+        "limit": 4
+      },
+      "budget": 64424509440,
+      "considered": 213,
+      "fits": [
+        {
+          "parallel": {
+            "dp": 8,
+            "tp": 2,
+            "pp": 1,
+            "ep": 1,
+            "zero": 1,
+            "sequenceParallel": true
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 8030261248,
+            "grads": 8030261248,
+            "optimizer": 6022695936,
+            "activations": 26321354752,
+            "total": 48404573184
+          },
+          "used": 0.7513378620147705,
+          "summary": "DP 8 x TP 2, ZeRO-1, sequence parallel",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 2 ranks inside one node."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 8,
+            "tp": 2,
+            "pp": 1,
+            "ep": 1,
+            "zero": 2,
+            "sequenceParallel": true
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 8030261248,
+            "grads": 1003782656,
+            "optimizer": 6022695936,
+            "activations": 26321354752,
+            "total": 41378094592
+          },
+          "used": 0.6422725598017375,
+          "summary": "DP 8 x TP 2, ZeRO-2, sequence parallel",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 2 ranks inside one node."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 4,
+            "tp": 4,
+            "pp": 1,
+            "ep": 1,
+            "zero": 0,
+            "sequenceParallel": true
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 4015130624,
+            "grads": 4015130624,
+            "optimizer": 24090783744,
+            "activations": 13160677376,
+            "total": 45281722368
+          },
+          "used": 0.7028648376464843,
+          "summary": "DP 4 x TP 4, sequence parallel",
+          "notes": [
+            "Tensor parallelism all-reduces twice per layer, so keep the 4 ranks inside one node."
+          ]
+        },
+        {
+          "parallel": {
+            "dp": 16,
+            "tp": 1,
+            "pp": 1,
+            "ep": 1,
+            "zero": 3,
+            "sequenceParallel": false
+          },
+          "recompute": "none",
+          "microBatch": 1,
+          "perGpu": {
+            "weights": 1003782656,
+            "grads": 1003782656,
+            "optimizer": 6022695936,
+            "activations": 52642709504,
+            "total": 60672970752
+          },
+          "used": 0.9417684555053711,
+          "summary": "DP 16, ZeRO-3",
+          "notes": [
+            "ZeRO-3 gathers each layer's weights as it is reached, which is an all-gather per layer in both directions.",
+            "This fills 94% of the budget, which is little room for a longer sequence or a larger micro-batch."
+          ]
+        }
+      ],
+      "closest": {
+        "parallel": {
+          "dp": 4,
+          "tp": 1,
+          "pp": 4,
+          "ep": 1,
+          "zero": 1,
+          "sequenceParallel": false
+        },
+        "recompute": "none",
+        "microBatch": 1,
+        "perGpu": {
+          "weights": 4015130624,
+          "grads": 4015130624,
+          "optimizer": 6022695936,
+          "activations": 52642709504,
+          "total": 66695666688
+        },
+        "used": 1.0352530002593994,
+        "summary": "DP 4 x PP 4, ZeRO-1",
+        "notes": [
+          "A 4-stage pipeline needs enough micro-batches to fill it; the bubble is (stages-1)/micro-batches of the step.",
+          "This fills 104% of the budget, which is little room for a longer sequence or a larger micro-batch."
+        ]
+      },
+      "notes": [
+        "This design has no experts, so expert parallelism is not among the plans."
+      ]
+    }
+  ]
+}

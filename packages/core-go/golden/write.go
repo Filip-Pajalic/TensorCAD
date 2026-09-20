@@ -16,6 +16,7 @@ import (
 	"github.com/tensorcad/core/infer"
 	"github.com/tensorcad/core/ir"
 	"github.com/tensorcad/core/jsonx"
+	"github.com/tensorcad/core/plan"
 	"github.com/tensorcad/core/presets"
 	"github.com/tensorcad/core/rules"
 	"github.com/tensorcad/core/scale"
@@ -51,6 +52,7 @@ func Write(dir string) (Summary, error) {
 	s.CodegenFiles = len(names) * len(CodegenVariants)
 	w.explain(names)
 	s.ScaleCases = w.scale()
+	s.Plans = w.plans()
 	s.BrokenFindings, err = w.broken()
 	if err != nil {
 		return s, err
@@ -67,6 +69,7 @@ type Summary struct {
 	OperatingPoints int
 	CodegenFiles    int
 	ScaleCases      int
+	Plans           int
 	BrokenFindings  int
 }
 
@@ -953,6 +956,45 @@ func (w *writer) explain(names []string) {
 // A search is where two implementations drift most easily: the same binary
 // search over the same rounding has to reach the same widths, not merely near
 // them. The comparison is on the symbols the scaled document ends up with.
+// plans records what the planner offers for a handful of clusters.
+//
+// The whole result, because the ranking is as much the answer as the numbers
+// are: a planner that starts recommending a pipeline where it used to recommend
+// sharding the optimizer has changed its advice, and that should be reviewed
+// rather than discovered.
+func (w *writer) plans() int {
+	type oneCase struct {
+		Label      string           `json:"label"`
+		Preset     string           `json:"preset"`
+		Seq        float64          `json:"seq"`
+		Cluster    plan.Request     `json:"cluster"`
+		Budget     float64          `json:"budget"`
+		Considered int              `json:"considered"`
+		Fits       []plan.Candidate `json:"fits"`
+		Closest    *plan.Candidate  `json:"closest"`
+		Notes      []string         `json:"notes"`
+	}
+	cases := make([]oneCase, 0, len(PlanCases))
+	for _, c := range PlanCases {
+		seq := c.Seq
+		res, err := plan.Search(presets.MustGet(c.Preset),
+			analysis.Options{T: &seq, Hardware: "h100-sxm"}, c.Cluster)
+		if err != nil {
+			w.err = fmt.Errorf("plan %s: %w", c.Label, err)
+			return 0
+		}
+		cases = append(cases, oneCase{
+			Label: c.Label, Preset: c.Preset, Seq: c.Seq, Cluster: c.Cluster,
+			Budget: res.Budget, Considered: res.Considered,
+			Fits: res.Fits, Closest: res.Closest, Notes: res.Notes,
+		})
+	}
+	w.write("plans.json", struct {
+		Cases []oneCase `json:"cases"`
+	}{cases})
+	return len(cases)
+}
+
 func (w *writer) scale() int {
 	type change [3]any
 	type oneCase struct {

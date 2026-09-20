@@ -294,13 +294,7 @@ export interface MemoryResult {
     /** The part of `activations` that is the vocabulary logits. */
     logits: number;
     total: number;
-    perGpu: {
-      weights: number;
-      grads: number;
-      optimizer: number;
-      activations: number;
-      total: number;
-    };
+    perGpu: TrainPerGpu;
     activationsByPath: Record<string, number>;
   };
   infer: { weights: number; kv: number; overhead: number; total: number };
@@ -478,6 +472,66 @@ export interface ScaleOptions {
   minHeads?: number;
   keepDepth?: boolean;
   maxIterations?: number;
+}
+
+/** The training footprint on one device. */
+export interface TrainPerGpu {
+  weights: number;
+  grads: number;
+  optimizer: number;
+  activations: number;
+  total: number;
+}
+
+/** The cluster a design is being fitted to. */
+export interface ClusterRequest {
+  /** How many devices there are. */
+  gpus: number;
+  /**
+   * Bounds the tensor-parallel degree: splitting a matrix across a slower link
+   * than NVLink is rarely worth it. Defaults to 8.
+   */
+  gpusPerNode?: number;
+  /**
+   * The fraction of device memory left free for fragmentation, the allocator
+   * and the communication buffers. Defaults to 0.1.
+   */
+  headroom?: number;
+  /** Micro-batch sizes to try. Defaults to the one the analysis options give. */
+  microBatch?: number[];
+  /** Recompute settings to try. Defaults to all three. */
+  recompute?: Recompute[];
+  /** How many plans to return. Defaults to 8. */
+  limit?: number;
+}
+
+/** One way of splitting the work, and what it costs to hold. */
+export interface ClusterPlan {
+  parallel: ParallelPlan;
+  recompute: Recompute;
+  microBatch: number;
+  perGpu: TrainPerGpu;
+  /** The fraction of the budget this plan takes; over 1 does not fit. */
+  used: number;
+  /** The plan as a person would say it: "DP 8 x TP 2, ZeRO-1". */
+  summary: string;
+  /** What this plan asks of whoever runs it. */
+  notes: string[];
+}
+
+/** Every plan that fits, least demanding first. */
+export interface ClusterResult {
+  fits: ClusterPlan[];
+  /** The nearest miss, when nothing fits. */
+  closest?: ClusterPlan;
+  /** How many combinations were priced. */
+  considered: number;
+  /** Bytes each device may use, after headroom. */
+  budget: number;
+  /** The device's own memory, before headroom. */
+  memory: number;
+  hardware: string;
+  notes: string[];
 }
 
 export interface ScaleResult {

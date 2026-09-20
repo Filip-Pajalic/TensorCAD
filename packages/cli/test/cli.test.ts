@@ -230,3 +230,49 @@ describe("codegen", () => {
     expect(Array.isArray(parsed.warnings)).toBe(true);
   });
 });
+
+describe("plan", () => {
+  test("lists ways to split the work, least demanding first", () => {
+    const r = cli("plan", "llama-3-70b", "--gpus", "64", "--T", "8192", "--hardware", "h100-sxm");
+    expect(r.code).toBe(0);
+    expect(r.stdout).toContain("llama-3-70b on 64 x H100 SXM");
+    expect(r.stdout).toContain("per device after headroom");
+    expect(r.stdout).toContain("plans priced");
+    // Every plan names its split and what it costs to hold.
+    expect(r.stdout).toMatch(/DP \d+/);
+    expect(r.stdout).toMatch(/\d+% of budget/);
+  });
+
+  test("--json carries the plans and the budget", () => {
+    const r = cli("plan", "mixtral-8x7b", "--gpus", "64", "--T", "4096", "--hardware", "h100-sxm", "--json");
+    expect(r.code).toBe(0);
+    const out = JSON.parse(r.stdout) as {
+      fits: { parallel: { dp: number; tp: number; pp: number; ep: number }; used: number; summary: string }[];
+      budget: number;
+      considered: number;
+    };
+    expect(out.fits.length).toBeGreaterThan(0);
+    expect(out.considered).toBeGreaterThan(0);
+    for (const f of out.fits) {
+      const { dp, tp, pp, ep } = f.parallel;
+      expect({ summary: f.summary, devices: dp * tp * pp * ep }).toEqual({
+        summary: f.summary,
+        devices: 64,
+      });
+      expect(f.used).toBeLessThanOrEqual(1);
+    }
+  });
+
+  test("exits 1 when nothing fits, and says what came closest", () => {
+    const r = cli("plan", "llama-3.1-405b", "--gpus", "8", "--T", "8192", "--hardware", "h100-sxm");
+    expect(r.code).toBe(1);
+    expect(r.stdout).toContain("Nothing fits");
+    expect(r.stdout).toContain("closest");
+  });
+
+  test("needs to be told how big the cluster is", () => {
+    const r = cli("plan", "gpt2-small");
+    expect(r.code).toBe(1);
+    expect(r.stdout).toContain("--gpus");
+  });
+});

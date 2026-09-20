@@ -5,19 +5,40 @@ Node-based CAD for designing LLM architectures at the pretraining level: blocks,
 ## Commands
 
 ```bash
-bun test packages/core/test          # core suite
-go test ./packages/core-go/...       # the Go port, against the TypeScript's golden files
+bun run build:wasm                   # the engine; nothing else runs without it
+bun run test:all                     # types, both suites, the Go engine
+bun test packages                    # the TypeScript suite, including the compiled engine
+go test ./...                        # from packages/core-go: the engine against the goldens
 bun run scripts/golden.ts            # regenerate those golden files (deliberately)
-bun x tsc -p packages/core/tsconfig.json --noEmit   # type-check
 bun run scripts/report.ts            # parameter regression table vs published counts
 bun run scripts/analyze-demo.ts      # full analysis + design rules for one preset
 bun run scripts/codegen-demo.ts <preset>   # writes out/<preset>/model.py
 bun run scripts/scale-demo.ts        # shrink a design to a bench budget
 ```
 
-## Core API
+A stale `.wasm` is the one way to see an answer the source does not give. If you
+changed a formula, rebuild it.
 
-`analyze(doc, options)` gives every number at once. `validate(doc, options)` runs the design rules and returns the analysis with them. `generateTorch(doc)` emits PyTorch. `explain(doc, path)` describes one block: its parameters as written and as evaluated, its shapes, its share of the model, and its documentation. `scaleDesign(doc, {targetParams})` shrinks a design while keeping its proportions. `importHfConfig(config)` reads a Hugging Face `config.json`.
+## The engine's API
+
+One engine, reached the same way everywhere. `createEngine()` from
+`@tensorcad/engine` loads the WebAssembly module in a browser;
+`@tensorcad/engine/node` does it from a process and exposes the same calls as
+free functions over a per-process singleton.
+
+`analyze(doc, options)` gives every number at once. `validate(doc, options)`
+runs the design rules and returns the analysis with them. `derive(doc, options)`
+is the editor's call: the findings and every shape from one walk of the graph,
+because asking separately would walk it twice per keystroke. `infer(doc, mode)`
+is the shapes alone, which is what answers "would this wire type-check" for
+every handle the pointer passes over. `generateTorch(doc)` emits PyTorch.
+`explain(doc, path)` describes one block: its parameters as written and as
+evaluated, its shapes, its share of the model, and its documentation.
+`scale(doc, {targetParams})` shrinks a design while keeping its proportions.
+`importHuggingFace(text)` reads a `config.json`.
+
+Everything crosses as JSON text. A design *is* JSON and so is every report, so
+serialising costs a copy and buys a boundary with nothing clever in it.
 
 ## Verified against PyTorch
 
@@ -31,28 +52,37 @@ Two cross-checks worth knowing:
 
 ## Layout
 
-- **The engine is moving to Go.** `packages/core-go` is replacing `packages/core`; the
-  frontend becomes a client of it over Wails bindings rather than running the analysis in the
-  window. Done so far: the IR and symbol table, the shape algebra, the block catalog, shape
-  inference, the whole analysis, the eighteen design rules and PyTorch generation. Still
-  TypeScript only: `explain`, `scaleDesign` and the Hugging Face importer.
-  `bun run scripts/golden.ts` writes down what the TypeScript says for all twenty presets
-  and the Go tests have to reproduce it exactly — including the printed form of every
-  polynomial and every byte of a generated `model.py`. Until a stage lands, `packages/core`
-  is still the engine and still the specification. Do not "improve" the port as you go: it is
+- **The engine is Go, compiled to WebAssembly.** `packages/core-go` is the whole
+  analysis; `packages/engine` is that module plus the TypeScript client that loads it. The
+  editor, the command line, the MCP server and the desktop shell are all clients of the same
+  module, so an answer cannot depend on where it was asked.
+- **`packages/core` no longer ships. It is the oracle.** It is the TypeScript the engine was
+  ported from, and `bun run scripts/golden.ts` is it writing down what it says for all twenty
+  presets: symbol tables, inferred shapes at two expansion settings, the full analysis and the
+  design-rule check at three operating points, and every byte of a generated `model.py`. The
+  Go tests reproduce those exactly, and `packages/engine/test` runs the *compiled* module
+  against the same answers. **So a block added to one engine and not the other fails a test
+  that names it.** Add it to both. Do not "improve" the Go while you are in there: it is
   bug-compatible on purpose, and every deliberate divergence is documented where it is made.
+- **The boundary is where answers get quietly lost.** A nil Go slice is `null`, not an empty
+  list; `encoding/json` refuses a NaN, which a design with a failed symbol produces; Go
+  rounds a half to even where JavaScript rounds it away from zero. `packages/core-go/jsonx`
+  and `analysis/format.go` exist for those three, and `report/wire_test.go` walks a whole
+  report objecting to every `null` it was not told to expect. Add to that list rather than
+  papering over it in a client.
 - **A preset is a document, not a builder.** `packages/core-go/presets/data` holds the
   library as JSON, embedded into the binary. `packages/core/src/presets` still builds those
   documents and is what `scripts/golden.ts` runs; when the TypeScript goes, the JSON stays and
   nothing has to be ported.
-- `packages/core` — pure TypeScript, **zero runtime dependencies**. IR, symbolic shapes, block catalog, design rules, analysis, code generation. Everything else is a client of this.
 - `packages/ui` — React + React Flow editor. `state/unfold.ts` turns one flat level into the
   nested drawing the published figures use: containers become frames around their contents and
   container boundaries are short-circuited out of the wiring. Merging frames must happen after
   edges are resolved, because the set of open frames is what the edge tracer walks through.
-  `state/derive.ts` calls `validate()` once per
+  `state/derive.ts` makes one `derive()` call per
   document and operating point and every panel reads the result; nothing in the UI computes
-  its own numbers. The right column splits: the readout (`Operating` + `Analysis`) is always
+  its own numbers. `src/engine.ts` is the editor's handle on the engine: it loads the module
+  before the first frame, which is why `main.tsx` imports the app *after* the load rather
+  than beside it — the store builds a starting design the moment its module runs. The right column splits: the readout (`Operating` + `Analysis`) is always
   on screen above the tabbed editing pane (Inspector, Symbols, Rules). Colours live only in
   `app/theme.css` as `data-theme` tokens — a literal colour in a stylesheet or a component is
   a bug, because it will not switch themes.
@@ -76,7 +106,8 @@ Two cross-checks worth knowing:
   multiple of `--wire-w` rather than a number picked by eye. Do not add a marker that is
   on almost everywhere — a diamond for "this shape mentions B or T" was exactly that, and
   it distinguished nothing because nearly every tensor in a transformer has both.
-- `packages/cli`, `packages/mcp` — thin adapters over the core.
+- `packages/cli`, `packages/mcp` — thin adapters over the engine. Both load it once at
+  startup, before the first command or the transport opens.
 - `python/tensorcad_runtime` — the only Python: instantiates generated models to verify them, and runs small training jobs.
 - `docs/` — documentation, organised by Diátaxis (tutorials, how-to, reference, explanation). `reference/analysis-math.md` is the sourced maths behind the analysis engine.
 

@@ -2,27 +2,32 @@
 #
 #   app.tensorcad.dev  — the editor, which is the Vite bundle plus the engine
 #   tensorcad.dev      — the same Worker, because the editor is the front page
-#   docs.tensorcad.dev  — the documentation MkDocs renders from `docs/`
+#   docs.tensorcad.dev — the documentation MkDocs renders from `docs/`
 #
 # Both are static-asset Workers: nothing is computed on a server, because the
 # engine is WebAssembly and runs in the browser. Deployed only from `main`, and
 # only when the secrets are set, so a fork does not fail for want of a token it
 # was never going to have.
 #
-# Needs two repository secrets. Cloudflare's own recipe for this is the
-# "Edit Cloudflare Workers" permission template, scoped to one account and to
-# the tensorcad.dev zone:
+# Needs two repository secrets.
 #
-#   https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/
+#   CLOUDFLARE_API_TOKEN   One policy, scoped to the *whole account* — not to
+#                          the zone, because uploading a Worker is an
+#                          account-level call. Four permissions:
 #
-#   CLOUDFLARE_API_TOKEN   Create Token > Custom > "Edit Cloudflare Workers".
-#                          Account resources: just this account.
-#                          Zone resources: just tensorcad.dev.
-#                          If the deploy is then refused on the *domains* rather
-#                          than the upload, add Zone > DNS: Edit — a custom
-#                          domain is Cloudflare writing a DNS record for you.
-#   CLOUDFLARE_ACCOUNT_ID  the account the zone is in, from the dashboard
-#                          sidebar or `wrangler whoami`.
+#                            Workers Editor          the script and its assets
+#                            Workers Routes Write    the three custom domains
+#                            DNS Write               which is what a custom
+#                                                    domain writes for you
+#                            Account Settings Read
+#
+#   CLOUDFLARE_ACCOUNT_ID  32 hex characters, from `wrangler whoami`.
+#
+# Set both from the GitHub web UI. A terminal paste silently mangled the token
+# once, and the symptom was four minutes of building followed by "No access to
+# the specified resource" on the asset upload — which reads like a permissions
+# problem and is not one. The first step of both jobs now asks the API whether
+# the token is a token, and says so in two seconds.
 name: Deploy
 
 on:
@@ -47,25 +52,6 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: packages/core-go/go.mod
-          cache: false
-      - run: bun install --frozen-lockfile
-      # The engine first: the bundle imports the `.wasm` by URL, and Vite will
-      # not find one that has not been built.
-      - run: bun run build:wasm
-      - run: bun run --cwd packages/ui build
-
-      # Before the upload, because "No access to the specified resource" from
-      # the API is the same message whether the token cannot reach the account
-      # or the account id is not the one the token is for. This says which,
-      # without printing either: the id is masked, its *length* is not, and a
-      # 32 that is not 32 is a paste that brought a newline with it.
       # Two seconds, before four minutes of building.
       #
       # A token that was pasted wrong does not say so: wrangler fails on the
@@ -89,6 +75,20 @@ jobs:
               ;;
           esac
 
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: packages/core-go/go.mod
+          cache: false
+      - run: bun install --frozen-lockfile
+      # The engine first: the bundle imports the `.wasm` by URL, and Vite will
+      # not find one that has not been built.
+      - run: bun run build:wasm
+      - run: bun run --cwd packages/ui build
+
       - name: Deploy
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
         run: bunx wrangler deploy
@@ -108,6 +108,29 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
+      # Two seconds, before four minutes of building.
+      #
+      # A token that was pasted wrong does not say so: wrangler fails on the
+      # asset upload with "No access to the specified resource", which reads
+      # like a permissions problem and sent us round the dashboard twice
+      # granting permissions the token already had. `/user/tokens/verify`
+      # answers the actual question — is this token a token — and the response
+      # body carries no secret.
+      - name: Check the token is a token
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        run: |
+          reply=$(curl -sS --max-time 30 https://api.cloudflare.com/client/v4/user/tokens/verify \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          echo "$reply"
+          case "$reply" in
+            *'"success":true'*) ;;
+            *)
+              echo "::error::CLOUDFLARE_API_TOKEN is not valid. Re-set it from the GitHub web UI —" \
+                   "a terminal paste is what broke it last time."
+              exit 1
+              ;;
+          esac
+
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:

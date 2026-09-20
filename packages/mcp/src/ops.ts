@@ -1,6 +1,6 @@
-import type { Doc, Graph, NodeDef, ParamValue, SymbolDef } from "@tensorcad/engine";
-import { joinPath, splitEndpoint } from "@tensorcad/engine";
-import { getBlock } from "@tensorcad/engine/node";
+import type { Doc, Graph, NodeDef, ParamValue, SymbolDef } from "@tensor-cad/engine";
+import { joinPath, splitEndpoint } from "@tensor-cad/engine";
+import { getBlock } from "@tensor-cad/engine/node";
 /**
  * The edit operations an agent can apply to a design.
  *

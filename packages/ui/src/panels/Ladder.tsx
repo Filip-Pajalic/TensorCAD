@@ -19,8 +19,8 @@
 import { useMemo } from "react";
 import { useEditor } from "../state/store.js";
 import { mupLadder } from "../engine.js";
-import { formatCount } from "@tensorcad/engine";
-import type { MupLadder, MupRung, MupScaling } from "@tensorcad/engine";
+import { formatCount } from "@tensor-cad/engine";
+import type { MupLadder, MupRung, MupScaling } from "@tensor-cad/engine";
 import Section from "./Section.js";
 
 /** A multiplier, written so that 1 reads as "unchanged" rather than as 1.000. */

@@ -13,7 +13,7 @@
  * that would have to be asked to reconcile a divergence is the expensive part.
  */
 
-import type { Doc } from "@tensorcad/engine";
+import type { Doc } from "@tensor-cad/engine";
 import type { Op } from "../ops.js";
 import type { DesignSummary } from "../store/types.js";
 

@@ -37,7 +37,7 @@
  */
 
 import * as ops from "./ops.js";
-import type { Doc, NodeDef, ParamValue, RuleSeverity, SymbolDef } from "@tensorcad/engine";
+import type { Doc, NodeDef, ParamValue, RuleSeverity, SymbolDef } from "@tensor-cad/engine";
 import type { Segments } from "./ops.js";
 
 export type Edit =

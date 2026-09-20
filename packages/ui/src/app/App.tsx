@@ -39,7 +39,7 @@ import { useDerived, useStorage } from "../state/hooks.js";
 import { handleKey } from "../state/commands.js";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs.js";
 import { TooltipProvider } from "../ui/tooltip.js";
-import { formatCount } from "@tensorcad/engine";
+import { formatCount } from "@tensor-cad/engine";
 
 const TABS: { id: RightTab; label: string }[] = [
   { id: "inspector", label: "Inspector" },

@@ -1,4 +1,4 @@
-import { formatBytes, formatCount, getPreset, loadEngine, validate } from "@tensorcad/engine/node";
+import { formatBytes, formatCount, getPreset, loadEngine, validate } from "@tensor-cad/engine/node";
 
 await loadEngine();
 

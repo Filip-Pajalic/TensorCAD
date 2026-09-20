@@ -1,5 +1,5 @@
 /** Prints the parameter regression table. Run with: bun run scripts/report.ts */
-import { countParams, formatCount, getPreset, loadEngine, PRESET_NAMES } from "@tensorcad/engine/node";
+import { countParams, formatCount, getPreset, loadEngine, PRESET_NAMES } from "@tensor-cad/engine/node";
 
 await loadEngine();
 

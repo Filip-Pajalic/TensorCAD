@@ -11,7 +11,7 @@ import { McpServer, ResourceTemplate } from "@modelcontextprotocol/server";
 import { DESIGN_JSON_SCHEMA } from "./design-schema.js";
 import { allCatalogEntries, analysisJson, catalogEntry, findingsJson, outlineOf } from "./summarize.js";
 import type { DocumentStore } from "./store/types.js";
-import { CATALOG, analyze, validate } from "@tensorcad/engine/node";
+import { CATALOG, analyze, validate } from "@tensor-cad/engine/node";
 
 const JSON_MIME = "application/json";
 

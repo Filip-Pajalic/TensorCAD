@@ -4,8 +4,8 @@
 
 import { bold, dim, heading, pad, writeOut } from "../format.js";
 import { bool, type Args } from "../args.js";
-import { formatBytes, formatCount, formatFlops } from "@tensorcad/engine";
-import { HARDWARE, PRESET_NAMES, getPreset, peakFlops } from "@tensorcad/engine/node";
+import { formatBytes, formatCount, formatFlops } from "@tensor-cad/engine";
+import { HARDWARE, PRESET_NAMES, getPreset, peakFlops } from "@tensor-cad/engine/node";
 
 export function cmdList(args: Args): number {
   if (bool(args, "json")) {

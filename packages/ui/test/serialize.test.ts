@@ -18,7 +18,7 @@ import { loadEngine } from "../src/engine.js";
 await loadEngine();
 const { getPreset } = await import("../src/engine.js");
 const { serializeDoc, parseDoc, fileNameFor } = await import("../src/state/serialize.js");
-import type { Doc } from "@tensorcad/engine";
+import type { Doc } from "@tensor-cad/engine";
 
 /** A design using every optional part of the format. */
 function furnished(): Doc {

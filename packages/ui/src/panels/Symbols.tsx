@@ -10,7 +10,7 @@ import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
 import { TextField } from "./Field.js";
 import Configurations from "./Configurations.js";
-import type { SymbolDef } from "@tensorcad/engine";
+import type { SymbolDef } from "@tensor-cad/engine";
 
 type Kind = "design" | "runtime";
 

@@ -1,7 +1,7 @@
 import {
   getPreset, loadEngine, validate,
   formatCount, formatBytes, formatFlops, formatHours, formatDollars,
-} from "@tensorcad/engine/node";
+} from "@tensor-cad/engine/node";
 
 await loadEngine();
 

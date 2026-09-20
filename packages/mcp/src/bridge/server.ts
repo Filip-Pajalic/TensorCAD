@@ -30,7 +30,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { randomBytes } from "node:crypto";
 import { WebSocketServer, type WebSocket } from "ws";
-import type { Doc } from "@tensorcad/engine";
+import type { Doc } from "@tensor-cad/engine";
 import { Op as OpSchema } from "../schemas.js";
 import type { Op } from "../ops.js";
 import type { DesignRecord, DocumentStore, StoreChange } from "../store/types.js";

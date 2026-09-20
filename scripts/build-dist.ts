@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Build the publishable form of `@tensorcad/engine` and `@tensorcad/mcp`.
+ * Build the publishable form of `@tensor-cad/engine` and `@tensor-cad/mcp`.
  *
  * Inside this repository both packages are consumed as TypeScript, because Bun
  * runs it. Neither would work for anybody else: `main` points at a `.ts` file
@@ -203,7 +203,7 @@ if (!check) process.exit(0);
 
 // Packed and installed, not imported in place.
 //
-// In this repository `@tensorcad/engine` resolves through the workspace to the
+// In this repository `@tensor-cad/engine` resolves through the workspace to the
 // TypeScript source, so importing the built server here would test the source
 // rather than what was built. `npm pack` produces the exact tarball a publish
 // would upload, and installing it into an empty directory is the only way to
@@ -235,8 +235,8 @@ console.log("\nimporting under node:");
 await writeFile(
   join(tmp, "check.mjs"),
   [
-    `import { loadEngine, analyze, getPreset, mupLadder } from "@tensorcad/engine/node";`,
-    `import * as mcp from "@tensorcad/mcp";`,
+    `import { loadEngine, analyze, getPreset, mupLadder } from "@tensor-cad/engine/node";`,
+    `import * as mcp from "@tensor-cad/mcp";`,
     ``,
     `await loadEngine();`,
     `const a = analyze(getPreset("gpt2-small"));`,

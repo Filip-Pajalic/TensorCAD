@@ -5,8 +5,8 @@
  */
 
 import { num, str, UsageError, type Args } from "./args.js";
-import type { AnalysisOptions } from "@tensorcad/engine";
-import { HARDWARE } from "@tensorcad/engine/node";
+import type { AnalysisOptions } from "@tensor-cad/engine";
+import { HARDWARE } from "@tensor-cad/engine/node";
 
 const DTYPES = ["fp32", "bf16", "fp16", "fp8"] as const;
 const OPTIMIZERS = ["adamw", "adamw8bit", "muon", "sgd_momentum", "sgd", "bf16_adam"] as const;

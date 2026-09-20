@@ -5,9 +5,9 @@
 import { bool, type Args } from "../args.js";
 import { loadDesign } from "../load.js";
 import { bold, cyan, dim, magenta, pad, writeOut, yellow } from "../format.js";
-import type { Doc, Graph, NodeDef } from "@tensorcad/engine";
-import { formatCount, joinPath, splitEndpoint } from "@tensorcad/engine";
-import { countParams, getBlock, inferShapes, resolveSymbols } from "@tensorcad/engine/node";
+import type { Doc, Graph, NodeDef } from "@tensor-cad/engine";
+import { formatCount, joinPath, splitEndpoint } from "@tensor-cad/engine";
+import { countParams, getBlock, inferShapes, resolveSymbols } from "@tensor-cad/engine/node";
 
 interface TreeNode {
   path: string;

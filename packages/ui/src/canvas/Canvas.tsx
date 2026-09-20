@@ -44,8 +44,8 @@ import { type Level } from "../state/level.js";
 import { unfold, type Unfolded } from "../state/unfold.js";
 import { newNodeFor } from "../state/addBlock.js";
 import * as ops from "../state/ops.js";
-import type { NodeDef } from "@tensorcad/engine";
-import { joinPath, splitEndpoint } from "@tensorcad/engine";
+import type { NodeDef } from "@tensor-cad/engine";
+import { joinPath, splitEndpoint } from "@tensor-cad/engine";
 import { CATALOG, type BlockDef } from "../engine.js";
 
 const nodeTypes: NodeTypes = {

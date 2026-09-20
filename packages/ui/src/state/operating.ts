@@ -1,5 +1,5 @@
-import type { AnalysisOptions, Dtype, OptimizerKind } from "@tensorcad/engine";
-import { DEFAULT_HARDWARE, DEFAULT_PARALLEL } from "@tensorcad/engine";
+import type { AnalysisOptions, Dtype, OptimizerKind } from "@tensor-cad/engine";
+import { DEFAULT_HARDWARE, DEFAULT_PARALLEL } from "@tensor-cad/engine";
 /**
  * The operating point.
  *

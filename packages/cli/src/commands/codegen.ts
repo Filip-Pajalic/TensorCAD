@@ -7,7 +7,7 @@ import { dirname, join, resolve } from "node:path";
 import { bool, str, type Args } from "../args.js";
 import { loadDesign } from "../load.js";
 import { bold, dim, green, writeOut, yellow } from "../format.js";
-import { generateTorch } from "@tensorcad/engine/node";
+import { generateTorch } from "@tensor-cad/engine/node";
 
 export function cmdCodegen(args: Args): number {
   const { doc } = loadDesign(args._[0]);

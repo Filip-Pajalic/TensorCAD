@@ -23,8 +23,8 @@ changed a formula, rebuild it.
 ## The engine's API
 
 One engine, reached the same way everywhere. `createEngine()` from
-`@tensorcad/engine` loads the WebAssembly module in a browser;
-`@tensorcad/engine/node` does it from a process and exposes the same calls as
+`@tensor-cad/engine` loads the WebAssembly module in a browser;
+`@tensor-cad/engine/node` does it from a process and exposes the same calls as
 free functions over a per-process singleton.
 
 `analyze(doc, options)` gives every number at once. `validate(doc, options)`

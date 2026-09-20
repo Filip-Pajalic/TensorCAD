@@ -1,4 +1,4 @@
-import { analyze, getPreset, loadEngine, formatBytes, formatCount } from "@tensorcad/engine/node";
+import { analyze, getPreset, loadEngine, formatBytes, formatCount } from "@tensor-cad/engine/node";
 await loadEngine();
 const doc = getPreset("mixtral-8x7b");
 const base = { T: 4096, hardware: "h100-sxm", gpus: 8 } as const;

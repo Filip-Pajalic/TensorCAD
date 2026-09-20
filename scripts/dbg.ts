@@ -1,4 +1,4 @@
-import { getPreset, inferShapes, loadEngine, PRESET_NAMES } from "@tensorcad/engine/node";
+import { getPreset, inferShapes, loadEngine, PRESET_NAMES } from "@tensor-cad/engine/node";
 
 await loadEngine();
 

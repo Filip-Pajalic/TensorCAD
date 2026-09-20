@@ -22,7 +22,7 @@ import type {
   RuleOverride,
   Shape,
   SymbolTable,
-} from "@tensorcad/engine";
+} from "@tensor-cad/engine";
 import { engine } from "../engine.js";
 
 /**

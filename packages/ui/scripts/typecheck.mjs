@@ -2,7 +2,7 @@
 /**
  * Typecheck this package.
  *
- * `tsc` pulls @tensorcad/engine in as source (the workspace package points
+ * `tsc` pulls @tensor-cad/engine in as source (the workspace package points
  * `types` at `src/index.ts`), so diagnostics from it land in this run too. It
  * is owned by another package and must not be edited from here, so its
  * diagnostics are reported as warnings and only diagnostics in this package's
@@ -39,7 +39,7 @@ for (const line of lines) {
 }
 
 if (foreign.length > 0) {
-  console.warn("warning: @tensorcad/engine has type errors; they are reported here but not owned by @tensorcad/ui:");
+  console.warn("warning: @tensor-cad/engine has type errors; they are reported here but not owned by @tensor-cad/ui:");
   for (const line of foreign) console.warn(`  ${line}`);
 }
 
@@ -48,4 +48,4 @@ if (ours.length > 0) {
   process.exit(1);
 }
 
-console.log("typecheck: @tensorcad/ui is clean");
+console.log("typecheck: @tensor-cad/ui is clean");

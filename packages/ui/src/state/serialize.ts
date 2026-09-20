@@ -1,5 +1,5 @@
-import type { Doc, Graph, NodeDef } from "@tensorcad/engine";
-import { DOC_VERSION } from "@tensorcad/engine";
+import type { Doc, Graph, NodeDef } from "@tensor-cad/engine";
+import { DOC_VERSION } from "@tensor-cad/engine";
 /**
  * `.tensorcad.json` read and write.
  *

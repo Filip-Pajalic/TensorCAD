@@ -1,4 +1,4 @@
-import type { NodeDef, Resolved, SymbolTable } from "@tensorcad/engine";
+import type { NodeDef, Resolved, SymbolTable } from "@tensor-cad/engine";
 /**
  * Callouts: the annotations a published architecture figure puts around the
  * drawing, each on a leader line pointing at the part it describes.

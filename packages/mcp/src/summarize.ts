@@ -1,7 +1,7 @@
-import type { CatalogEntry as EngineCatalogEntry } from "@tensorcad/engine";
-import type { AnalysisResult, Doc, Graph, ParamSpec, SymbolTable, ValidationReport } from "@tensorcad/engine";
-import { formatBytes, formatCount, formatFlops, isComposite, isContainer, isPrimitive, joinPath, splitEndpoint } from "@tensorcad/engine";
-import { catalogByCategory, countParams, getBlock, inferShapes, resolveSymbols } from "@tensorcad/engine/node";
+import type { CatalogEntry as EngineCatalogEntry } from "@tensor-cad/engine";
+import type { AnalysisResult, Doc, Graph, ParamSpec, SymbolTable, ValidationReport } from "@tensor-cad/engine";
+import { formatBytes, formatCount, formatFlops, isComposite, isContainer, isPrimitive, joinPath, splitEndpoint } from "@tensor-cad/engine";
+import { catalogByCategory, countParams, getBlock, inferShapes, resolveSymbols } from "@tensor-cad/engine/node";
 /**
  * Projections of a design that are cheap for a model to read.
  *

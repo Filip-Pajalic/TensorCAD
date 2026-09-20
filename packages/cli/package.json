@@ -1,5 +1,5 @@
 {
-  "name": "@tensorcad/cli",
+  "name": "@tensor-cad/cli",
   "version": "0.0.1",
   "description": "Command line interface for TensorCAD: validate, analyze, codegen, diff and show designs",
   "type": "module",
@@ -19,7 +19,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tensorcad/engine": "workspace:*"
+    "@tensor-cad/engine": "workspace:*"
   },
   "license": "MIT"
 }

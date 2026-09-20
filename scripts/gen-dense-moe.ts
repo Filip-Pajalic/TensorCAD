@@ -1,4 +1,4 @@
-import { generateTorch, getPreset, loadEngine } from "@tensorcad/engine/node";
+import { generateTorch, getPreset, loadEngine } from "@tensor-cad/engine/node";
 import { mkdirSync, writeFileSync } from "node:fs";
 
 await loadEngine();

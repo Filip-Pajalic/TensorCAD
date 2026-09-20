@@ -14,7 +14,7 @@ import { connect } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import WebSocket from "ws";
-import { getPreset, loadEngine } from "@tensorcad/engine/node";
+import { getPreset, loadEngine } from "@tensor-cad/engine/node";
 import { BridgeServer } from "../src/bridge/server.js";
 import type { ServerMessage } from "../src/bridge/protocol.js";
 import { BRIDGE_PROTOCOL } from "../src/bridge/protocol.js";

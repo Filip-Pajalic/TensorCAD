@@ -20,7 +20,7 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import { incomparable, parseRun, useRuns, type RunRecord } from "../state/runs.js";
-import { formatCount } from "@tensorcad/engine";
+import { formatCount } from "@tensor-cad/engine";
 import Section from "./Section.js";
 
 const SERIES = 6;

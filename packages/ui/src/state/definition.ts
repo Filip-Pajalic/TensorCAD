@@ -28,8 +28,8 @@ import type {
   ParamValue,
   SymbolDef,
   UserBlockDef,
-} from "@tensorcad/engine";
-import { BOUNDARY_IN, BOUNDARY_OUT } from "@tensorcad/engine";
+} from "@tensor-cad/engine";
+import { BOUNDARY_IN, BOUNDARY_OUT } from "@tensor-cad/engine";
 import { defsOf } from "./blocks.js";
 
 /** The first segment of a path into a definition rather than into the design. */

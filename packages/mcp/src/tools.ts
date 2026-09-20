@@ -37,8 +37,8 @@ import {
 } from "./summarize.js";
 import type { DocumentStore } from "./store/types.js";
 import type { Op as OpType } from "./ops.js";
-import type { AnalysisOptions } from "@tensorcad/engine";
-import { formatBytes, formatCount } from "@tensorcad/engine";
+import type { AnalysisOptions } from "@tensor-cad/engine";
+import { formatBytes, formatCount } from "@tensor-cad/engine";
 import {
   HARDWARE,
   PRESET_NAMES,
@@ -52,7 +52,7 @@ import {
   planCluster,
   scaleDesign,
   validate,
-} from "@tensorcad/engine/node";
+} from "@tensor-cad/engine/node";
 
 type ToolResult = {
   content: { type: "text"; text: string }[];

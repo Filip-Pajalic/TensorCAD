@@ -12,7 +12,7 @@ import { loadEngine } from "../src/engine.js";
 
 await loadEngine();
 const ops = await import("../src/state/ops.js");
-import type { Doc, SymbolDef } from "@tensorcad/engine";
+import type { Doc, SymbolDef } from "@tensor-cad/engine";
 
 const { getPreset, engine } = await import("../src/engine.js");
 

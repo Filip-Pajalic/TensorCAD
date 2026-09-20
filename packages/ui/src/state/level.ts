@@ -17,7 +17,7 @@
  */
 
 import type { Derived } from "./derive.js";
-import type { Doc, Graph, NodeDef } from "@tensorcad/engine";
+import type { Doc, Graph, NodeDef } from "@tensor-cad/engine";
 import { catalogOf, isComposite, isContainer } from "../engine.js";
 import { DEF_PREFIX, previewDoc } from "./definition.js";
 

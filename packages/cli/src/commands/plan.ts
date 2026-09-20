@@ -11,9 +11,9 @@ import { bool, num, str, type Args } from "../args.js";
 import { loadDesign } from "../load.js";
 import { analysisOptions } from "../options.js";
 import { bold, dim, heading, pad, padStart, red, writeOut, yellow } from "../format.js";
-import type { ClusterPlan, ClusterRequest, Recompute } from "@tensorcad/engine";
-import { formatBytes } from "@tensorcad/engine";
-import { planCluster } from "@tensorcad/engine/node";
+import type { ClusterPlan, ClusterRequest, Recompute } from "@tensor-cad/engine";
+import { formatBytes } from "@tensor-cad/engine";
+import { planCluster } from "@tensor-cad/engine/node";
 
 /** A comma-separated list of numbers, for `--micro-batch 1,2,4`. */
 function numbers(args: Args, name: string): number[] | undefined {

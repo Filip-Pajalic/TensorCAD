@@ -12,8 +12,8 @@ import { useState } from "react";
 import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
 import type { Recompute } from "../state/operating.js";
-import type { Dtype, OptimizerKind } from "@tensorcad/engine";
-import { formatCount } from "@tensorcad/engine";
+import type { Dtype, OptimizerKind } from "@tensor-cad/engine";
+import { formatCount } from "@tensor-cad/engine";
 import { HARDWARE, HARDWARE_BY_ID } from "../engine.js";
 
 const DTYPES: Dtype[] = ["fp32", "bf16", "fp16", "fp8"];

@@ -7,8 +7,8 @@
  */
 
 import { bold, dim, finite, heading, percent, rows } from "./format.js";
-import type { AnalysisResult } from "@tensorcad/engine";
-import { formatBytes, formatCount, formatDollars, formatFlops, formatHours } from "@tensorcad/engine";
+import type { AnalysisResult } from "@tensor-cad/engine";
+import { formatBytes, formatCount, formatDollars, formatFlops, formatHours } from "@tensor-cad/engine";
 
 // ---------------------------------------------------------------------------
 // JSON

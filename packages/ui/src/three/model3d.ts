@@ -25,8 +25,8 @@
  */
 
 import type { Derived } from "../state/derive.js";
-import type { Doc, NodeDef } from "@tensorcad/engine";
-import { formatCount, joinPath } from "@tensorcad/engine";
+import type { Doc, NodeDef } from "@tensor-cad/engine";
+import { formatCount, joinPath } from "@tensor-cad/engine";
 import { CATALOG } from "../engine.js";
 
 /** Weights, intermediate values, or an aggregate (layer norm and softmax). */

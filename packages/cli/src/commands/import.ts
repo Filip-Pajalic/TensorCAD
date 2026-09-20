@@ -12,8 +12,8 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { bool, str, UsageError, type Args } from "../args.js";
 import { bold, dim, green, writeOut, yellow } from "../format.js";
-import { formatCount } from "@tensorcad/engine";
-import { countParams, importHfConfig } from "@tensorcad/engine/node";
+import { formatCount } from "@tensor-cad/engine";
+import { countParams, importHfConfig } from "@tensor-cad/engine/node";
 
 export function cmdImport(args: Args): number {
   const ref = args._[0];

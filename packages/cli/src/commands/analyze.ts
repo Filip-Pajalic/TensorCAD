@@ -7,7 +7,7 @@ import { loadDesign } from "../load.js";
 import { analysisOptions, impliedGpus } from "../options.js";
 import { analysisJson, analysisText } from "../report.js";
 import { writeOut } from "../format.js";
-import { analyze } from "@tensorcad/engine/node";
+import { analyze } from "@tensor-cad/engine/node";
 
 export function cmdAnalyze(args: Args): number {
   const { doc, source, ref } = loadDesign(args._[0]);

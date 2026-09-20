@@ -8,9 +8,9 @@ import { bool, type Args } from "../args.js";
 import { loadDesign } from "../load.js";
 import { analysisOptions, impliedGpus } from "../options.js";
 import { bold, dim, green, heading, red, writeOut, yellow, blue } from "../format.js";
-import type { Finding, Severity } from "@tensorcad/engine";
-import { formatCount } from "@tensorcad/engine";
-import { validate } from "@tensorcad/engine/node";
+import type { Finding, Severity } from "@tensor-cad/engine";
+import { formatCount } from "@tensor-cad/engine";
+import { validate } from "@tensor-cad/engine/node";
 
 const ORDER: Severity[] = ["error", "warning", "info"];
 

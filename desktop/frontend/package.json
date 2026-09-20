@@ -1,5 +1,5 @@
 {
-  "name": "@tensorcad/desktop-frontend",
+  "name": "@tensor-cad/desktop-frontend",
   "private": true,
   "version": "0.0.1",
   "type": "module",
@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tensorcad/engine": "workspace:*",
-    "@tensorcad/ui": "workspace:*",
+    "@tensor-cad/engine": "workspace:*",
+    "@tensor-cad/ui": "workspace:*",
     "@wailsio/runtime": "latest",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

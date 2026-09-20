@@ -1,6 +1,6 @@
 import {
   formatBytes, formatCount, getPreset, loadEngine, resolveSymbols, scaleDesign, validate,
-} from "@tensorcad/engine/node";
+} from "@tensor-cad/engine/node";
 
 await loadEngine();
 

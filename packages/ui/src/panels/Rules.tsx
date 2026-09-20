@@ -14,7 +14,7 @@ import { useDerived } from "../state/hooks.js";
 import type { Severity, UiIssue } from "../state/derive.js";
 import Section from "./Section.js";
 import { RULES } from "../engine.js";
-import type { RuleSeverity } from "@tensorcad/engine";
+import type { RuleSeverity } from "@tensor-cad/engine";
 
 const SEVERITIES: Severity[] = ["error", "warning", "info"];
 

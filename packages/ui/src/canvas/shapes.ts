@@ -11,7 +11,7 @@
  * for itself.
  */
 
-import type { Shape } from "@tensorcad/engine";
+import type { Shape } from "@tensor-cad/engine";
 
 export type ShapeMode = "symbolic" | "numeric";
 

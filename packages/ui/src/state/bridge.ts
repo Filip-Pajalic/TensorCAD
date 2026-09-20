@@ -31,7 +31,7 @@
  */
 
 import { create } from "zustand";
-import type { Doc } from "@tensorcad/engine";
+import type { Doc } from "@tensor-cad/engine";
 import { useEditor } from "./store.js";
 
 /** The port the agent's bridge tries first, and the three it falls back through. */

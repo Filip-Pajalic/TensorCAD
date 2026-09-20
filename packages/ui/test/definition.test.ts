@@ -18,7 +18,7 @@ const { previewDoc, storeInDefinition, storeValue, DEF_PREFIX, defOfPath, isDefP
 );
 const ops = await import("../src/state/ops.js");
 
-import type { Doc, Graph, UserBlockDef } from "@tensorcad/engine";
+import type { Doc, Graph, UserBlockDef } from "@tensor-cad/engine";
 
 const def: UserBlockDef = {
   type: "half_mlp",

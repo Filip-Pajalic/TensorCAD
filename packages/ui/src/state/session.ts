@@ -17,7 +17,7 @@ import { useEditor } from "./store.js";
 import * as ops from "./ops.js";
 import { parseDoc } from "./serialize.js";
 import { storage, type ViewState } from "./storage.js";
-import type { Doc } from "@tensorcad/engine";
+import type { Doc } from "@tensor-cad/engine";
 
 /** What the editor would need to put you back. */
 export function captureView(): ViewState {

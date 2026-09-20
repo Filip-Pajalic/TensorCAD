@@ -21,8 +21,8 @@ import { useMemo } from "react";
 import { useEditor } from "../state/store.js";
 import { toAnalysisOptions } from "../state/operating.js";
 import { planCluster } from "../engine.js";
-import { formatBytes } from "@tensorcad/engine";
-import type { ClusterPlan, ClusterResult } from "@tensorcad/engine";
+import { formatBytes } from "@tensor-cad/engine";
+import type { ClusterPlan, ClusterResult } from "@tensor-cad/engine";
 import Section from "./Section.js";
 
 /** Where a fit stops being comfortable. Matches the engine's own threshold. */

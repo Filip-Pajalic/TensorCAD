@@ -1,5 +1,5 @@
-import { analyze, countParams, DOC_VERSION, inferShapes, loadEngine } from "@tensorcad/engine/node";
-import type { Doc } from "@tensorcad/engine/node";
+import { analyze, countParams, DOC_VERSION, inferShapes, loadEngine } from "@tensor-cad/engine/node";
+import type { Doc } from "@tensor-cad/engine/node";
 
 await loadEngine();
 

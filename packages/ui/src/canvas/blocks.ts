@@ -1,4 +1,4 @@
-import type { NodeDef, ParamSpec, Resolved } from "@tensorcad/engine";
+import type { NodeDef, ParamSpec, Resolved } from "@tensor-cad/engine";
 import { CATALOG, type BlockDef } from "../engine.js";
 /**
  * Presentation helpers for catalog blocks: colours, one-line summaries and the

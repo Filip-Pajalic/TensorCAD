@@ -10,7 +10,7 @@
 
 import * as z from "zod";
 import type { McpServer } from "@modelcontextprotocol/server";
-import { HARDWARE, PRESET_NAMES } from "@tensorcad/engine/node";
+import { HARDWARE, PRESET_NAMES } from "@tensor-cad/engine/node";
 
 const user = (text: string) => ({
   messages: [{ role: "user" as const, content: { type: "text" as const, text } }],

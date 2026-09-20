@@ -13,9 +13,9 @@
 import { bool, num, str, type Args } from "../args.js";
 import { loadDesign } from "../load.js";
 import { bold, dim, heading, pad, padStart, writeOut } from "../format.js";
-import type { MupOptions, MupRung } from "@tensorcad/engine";
-import { formatCount } from "@tensorcad/engine";
-import { mupLadder } from "@tensorcad/engine/node";
+import type { MupOptions, MupRung } from "@tensor-cad/engine";
+import { formatCount } from "@tensor-cad/engine";
+import { mupLadder } from "@tensor-cad/engine/node";
 
 /** A comma-separated list of widths, for `--widths 256,512,1024`. */
 function widths(args: Args): number[] | undefined {

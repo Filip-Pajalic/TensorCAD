@@ -1,5 +1,5 @@
 {
-  "name": "@tensorcad/engine",
+  "name": "@tensor-cad/engine",
   "version": "0.1.0",
   "description": "The TensorCAD analysis engine, compiled from Go to WebAssembly, with its TypeScript client",
   "type": "module",

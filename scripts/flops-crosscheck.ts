@@ -1,4 +1,4 @@
-import { analyze, formatFlops, getPreset, loadEngine } from "@tensorcad/engine/node";
+import { analyze, formatFlops, getPreset, loadEngine } from "@tensor-cad/engine/node";
 
 await loadEngine();
 

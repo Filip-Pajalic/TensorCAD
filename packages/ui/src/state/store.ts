@@ -13,7 +13,7 @@ import { applyEdit, labelAt, reasonFor, type Edit, type Failure, type Step } fro
 export type { Edit, Failure, Step } from "./edits.js";
 import type { Segments } from "./ops.js";
 import { DEFAULT_OPERATING, loadOperating, saveOperating, type OperatingPoint } from "./operating.js";
-import type { Doc, NodeDef, ParamValue, RuleSeverity, SymbolDef } from "@tensorcad/engine";
+import type { Doc, NodeDef, ParamValue, RuleSeverity, SymbolDef } from "@tensor-cad/engine";
 import { getPreset } from "../engine.js";
 
 const UNDO_LIMIT = 100;

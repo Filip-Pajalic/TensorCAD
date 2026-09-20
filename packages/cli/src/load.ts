@@ -8,8 +8,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { UsageError } from "./args.js";
-import type { Doc } from "@tensorcad/engine";
-import { PRESET_NAMES, getPreset } from "@tensorcad/engine/node";
+import type { Doc } from "@tensor-cad/engine";
+import { PRESET_NAMES, getPreset } from "@tensor-cad/engine/node";
 
 export interface LoadedDoc {
   doc: Doc;

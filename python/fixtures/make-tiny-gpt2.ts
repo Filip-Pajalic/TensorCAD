@@ -8,7 +8,7 @@
  * it trains in a couple of minutes on a single consumer GPU. The design sits
  * beside this file as a document, the way a preset does.
  */
-import { generateTorch, loadEngine } from "@tensorcad/engine/node";
+import { generateTorch, loadEngine } from "@tensor-cad/engine/node";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 

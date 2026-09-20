@@ -7,7 +7,7 @@
  */
 
 import { repeatSkeleton } from "./ops.js";
-import type { NodeDef, ParamSpec, ParamValue } from "@tensorcad/engine";
+import type { NodeDef, ParamSpec, ParamValue } from "@tensor-cad/engine";
 import { CATALOG, type BlockDef } from "../engine.js";
 
 /** Short, readable node ids instead of repeating the full type name. */

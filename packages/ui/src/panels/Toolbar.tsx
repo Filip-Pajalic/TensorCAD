@@ -29,7 +29,7 @@ import { Tooltip, Kbd } from "../ui/tooltip.js";
 import { Menu } from "@base-ui-components/react/menu";
 import { Menubar } from "@base-ui-components/react/menubar";
 import { MENUBAR, POPUP, renderMenu } from "./menu-tree.js";
-import { formatCount, formatFlops } from "@tensorcad/engine";
+import { formatCount, formatFlops } from "@tensor-cad/engine";
 import { PRESET_NAMES } from "../engine.js";
 
 /** The key a command is bound to, ready to drop into a tooltip. */

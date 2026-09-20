@@ -1,5 +1,5 @@
-import type { Doc, Graph, ParamSpec, UserBlockDef } from "@tensorcad/engine";
-import { BOUNDARY_IN, BOUNDARY_OUT } from "@tensorcad/engine";
+import type { Doc, Graph, ParamSpec, UserBlockDef } from "@tensor-cad/engine";
+import { BOUNDARY_IN, BOUNDARY_OUT } from "@tensor-cad/engine";
 import { CATALOG, validateUserBlock } from "../engine.js";
 /**
  * The design's own block library.

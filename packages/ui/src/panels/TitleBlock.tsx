@@ -9,7 +9,7 @@
 
 import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
-import { formatCount } from "@tensorcad/engine";
+import { formatCount } from "@tensor-cad/engine";
 
 function Field({
   label,

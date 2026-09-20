@@ -20,7 +20,7 @@ import {
   withBlock,
   withoutBlock,
 } from "../src/state/blocks.js";
-import type { Doc, Graph, UserBlockDef } from "@tensorcad/engine";
+import type { Doc, Graph, UserBlockDef } from "@tensor-cad/engine";
 
 beforeAll(async () => {
   // `blocks.ts` reads the catalog to know which type names are taken.

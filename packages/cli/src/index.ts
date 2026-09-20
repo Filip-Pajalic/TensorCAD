@@ -17,7 +17,7 @@ import { cmdPlan } from "./commands/plan.js";
 import { cmdMup } from "./commands/mup.js";
 import { cmdShow } from "./commands/show.js";
 import { cmdImport } from "./commands/import.js";
-import { PRESET_NAMES, loadEngine } from "@tensorcad/engine/node";
+import { PRESET_NAMES, loadEngine } from "@tensor-cad/engine/node";
 
 const COMMANDS: Record<string, { run: (args: Args) => number; usage: string; blurb: string }> = {
   list: { run: cmdList, usage: "list [--json]", blurb: "presets and hardware profiles" },

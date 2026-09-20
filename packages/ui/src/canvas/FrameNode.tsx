@@ -16,7 +16,7 @@ import { memo } from "react";
 import { type Node, type NodeProps } from "@xyflow/react";
 import { partColor } from "./blocks.js";
 import type { Severity } from "../state/derive.js";
-import { formatCount } from "@tensorcad/engine";
+import { formatCount } from "@tensor-cad/engine";
 
 export interface FrameNodeData extends Record<string, unknown> {
   path: string;

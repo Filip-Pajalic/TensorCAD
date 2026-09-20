@@ -1,4 +1,4 @@
-import { countParams, getPreset, loadEngine } from "@tensorcad/engine/node";
+import { countParams, getPreset, loadEngine } from "@tensor-cad/engine/node";
 
 await loadEngine();
 

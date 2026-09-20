@@ -19,8 +19,8 @@ import {
   parseDoc,
   serializeDoc,
   type ResolvedTheme,
-} from "@tensorcad/ui";
-import { generateTorch } from "@tensorcad/ui/engine";
+} from "@tensor-cad/ui";
+import { generateTorch } from "@tensor-cad/ui/engine";
 import {
   DesignService,
   RuntimeService,

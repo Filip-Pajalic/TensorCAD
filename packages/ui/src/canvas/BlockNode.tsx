@@ -19,7 +19,7 @@ import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import { dtypeColor, partColor, type BlockKind } from "./blocks.js";
 import { SIDES, handleId, type Side } from "./wiring.js";
 import type { Severity } from "../state/derive.js";
-import { formatCount } from "@tensorcad/engine";
+import { formatCount } from "@tensor-cad/engine";
 import { useEditor } from "../state/store.js";
 
 export interface PortView {

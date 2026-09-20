@@ -12,7 +12,7 @@ import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
 import { categoryColor } from "../canvas/blocks.js";
 import Section from "./Section.js";
-import { DTYPE_BYTES, formatBytes, formatCount, formatDollars, formatFlops, formatHours } from "@tensorcad/engine";
+import { DTYPE_BYTES, formatBytes, formatCount, formatDollars, formatFlops, formatHours } from "@tensor-cad/engine";
 
 function pct(part: number, whole: number): string {
   if (!whole) return "—";

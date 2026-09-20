@@ -34,8 +34,8 @@ import {
   type SymbolTable,
   type TorchOptions,
   type UserBlockDef,
-} from "@tensorcad/engine";
-import "@tensorcad/engine/wasm_exec";
+} from "@tensor-cad/engine";
+import "@tensor-cad/engine/wasm_exec";
 
 // Re-exported so a panel asking what kind of block it has does not have to
 // reach past this module for it.

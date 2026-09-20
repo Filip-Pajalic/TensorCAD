@@ -13,8 +13,8 @@ import { useLevel } from "../state/hooks.js";
 import { TextArea, TextField } from "./Field.js";
 import { categoryColor } from "../canvas/blocks.js";
 import { formatShape } from "../canvas/shapes.js";
-import type { NodeDef, ParamSpec, ParamValue, Resolved } from "@tensorcad/engine";
-import { formatCount } from "@tensorcad/engine";
+import type { NodeDef, ParamSpec, ParamValue, Resolved } from "@tensor-cad/engine";
+import { formatCount } from "@tensor-cad/engine";
 import { CATALOG, type BlockDef } from "../engine.js";
 
 function isPlainNumber(text: string): boolean {

@@ -1,4 +1,4 @@
-# @tensorcad/engine
+# @tensor-cad/engine
 
 The TensorCAD analysis engine: one WebAssembly module with a JSON interface, and
 the TypeScript that loads it.
@@ -14,8 +14,8 @@ the desktop shell, so an answer cannot depend on where it was asked.
 In a browser or anything with `fetch`:
 
 ```ts
-import { createEngine } from "@tensorcad/engine";
-import "@tensorcad/engine/wasm_exec";
+import { createEngine } from "@tensor-cad/engine";
+import "@tensor-cad/engine/wasm_exec";
 
 const engine = await createEngine({ wasm: "/tensorcad.wasm" });
 const doc = engine.preset("llama-3-8b");
@@ -26,7 +26,7 @@ From a Node process, where the module is read rather than fetched and held as a
 singleton:
 
 ```ts
-import { analyze, getPreset, loadEngine } from "@tensorcad/engine/node";
+import { analyze, getPreset, loadEngine } from "@tensor-cad/engine/node";
 
 await loadEngine();
 const report = analyze(getPreset("mixtral-8x7b"), { T: 4096 });

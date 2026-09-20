@@ -16,8 +16,8 @@ import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
 import { categoryColor } from "../canvas/blocks.js";
 import * as ops from "../state/ops.js";
-import type { NodeDef } from "@tensorcad/engine";
-import { formatCount } from "@tensorcad/engine";
+import type { NodeDef } from "@tensor-cad/engine";
+import { formatCount } from "@tensor-cad/engine";
 import { getBlock } from "../engine.js";
 
 /**

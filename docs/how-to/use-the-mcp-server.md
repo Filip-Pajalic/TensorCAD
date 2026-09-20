@@ -67,7 +67,7 @@ and never touches a window. Start it with `TENSORCAD_BRIDGE=1` and a running
 editor attaches to it instead.
 
 ```bash
-TENSORCAD_BRIDGE=1 npx @tensorcad/mcp
+TENSORCAD_BRIDGE=1 npx @tensor-cad/mcp
 ```
 
 Open the editor and the rightmost cell of the status bar says `agent`. What

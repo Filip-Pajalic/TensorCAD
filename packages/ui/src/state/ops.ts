@@ -7,8 +7,8 @@ import type {
   RuleSeverity,
   SymbolDef,
   UserBlockDef,
-} from "@tensorcad/engine";
-import { splitEndpoint } from "@tensorcad/engine";
+} from "@tensor-cad/engine";
+import { splitEndpoint } from "@tensor-cad/engine";
 import { CATALOG } from "../engine.js";
 import { DEF_PREFIX, storeInDefinition } from "./definition.js";
 /**

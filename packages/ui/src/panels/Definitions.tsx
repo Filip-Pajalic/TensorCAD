@@ -19,7 +19,7 @@ import { useEditor } from "../state/store.js";
 import { defsOf, renameBlock, usageOf, withoutBlock } from "../state/blocks.js";
 import { DEF_PREFIX } from "../state/definition.js";
 import { validateUserBlock } from "../engine.js";
-import type { Doc, Graph, UserBlockDef } from "@tensorcad/engine";
+import type { Doc, Graph, UserBlockDef } from "@tensor-cad/engine";
 
 function names(record: Record<string, unknown> | undefined): string[] {
   return Object.keys(record ?? {});

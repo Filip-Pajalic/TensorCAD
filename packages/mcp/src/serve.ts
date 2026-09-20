@@ -9,7 +9,7 @@
  */
 
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
-import { loadEngine } from "@tensorcad/engine/node";
+import { loadEngine } from "@tensor-cad/engine/node";
 import { BridgeServer, DEFAULT_BRIDGE_PORT } from "./bridge/server.js";
 import { clearSessionSync } from "./bridge/session.js";
 import { createServer, SERVER_NAME, SERVER_VERSION } from "./server.js";

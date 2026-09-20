@@ -4,7 +4,7 @@
 
 import { useEditor } from "../state/store.js";
 import { useLevel } from "../state/hooks.js";
-import { formatCount } from "@tensorcad/engine";
+import { formatCount } from "@tensor-cad/engine";
 
 export default function Breadcrumb(): React.ReactElement {
   const { level, derived } = useLevel();

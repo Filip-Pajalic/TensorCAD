@@ -10,11 +10,11 @@
       },
     },
     "desktop/frontend": {
-      "name": "@tensorcad/desktop-frontend",
+      "name": "@tensor-cad/desktop-frontend",
       "version": "0.0.1",
       "dependencies": {
-        "@tensorcad/engine": "workspace:*",
-        "@tensorcad/ui": "workspace:*",
+        "@tensor-cad/engine": "workspace:*",
+        "@tensor-cad/ui": "workspace:*",
         "@wailsio/runtime": "latest",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
@@ -28,28 +28,28 @@
       },
     },
     "packages/cli": {
-      "name": "@tensorcad/cli",
+      "name": "@tensor-cad/cli",
       "version": "0.0.1",
       "bin": {
         "tensorcad": "./src/index.ts",
       },
       "dependencies": {
-        "@tensorcad/engine": "workspace:*",
+        "@tensor-cad/engine": "workspace:*",
       },
     },
     "packages/engine": {
-      "name": "@tensorcad/engine",
+      "name": "@tensor-cad/engine",
       "version": "0.1.0",
     },
     "packages/mcp": {
-      "name": "@tensorcad/mcp",
+      "name": "@tensor-cad/mcp",
       "version": "0.1.0",
       "bin": {
         "tensorcad-mcp": "./src/stdio.ts",
       },
       "dependencies": {
         "@modelcontextprotocol/server": "^2.0.0",
-        "@tensorcad/engine": "workspace:*",
+        "@tensor-cad/engine": "workspace:*",
         "ws": "^8.21.3",
         "zod": "^4.2.0",
       },
@@ -59,11 +59,11 @@
       },
     },
     "packages/ui": {
-      "name": "@tensorcad/ui",
+      "name": "@tensor-cad/ui",
       "version": "0.0.1",
       "dependencies": {
         "@base-ui-components/react": "^1.0.0-rc.0",
-        "@tensorcad/engine": "workspace:*",
+        "@tensor-cad/engine": "workspace:*",
         "@xyflow/react": "^12.4.4",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -376,15 +376,15 @@
 
     "@tailwindcss/vite": ["@tailwindcss/vite@4.3.3", "", { "dependencies": { "@tailwindcss/node": "4.3.3", "@tailwindcss/oxide": "4.3.3", "tailwindcss": "4.3.3" }, "peerDependencies": { "vite": "^5.2.0 || ^6 || ^7 || ^8" } }, "sha512-yYU8cogLeSh/ms2jh8Fj7jaba/EWa7Ja6GoUqYZaraEuCI5YS6ms6ObZgjjedm+jm6XZjdNRWBpPP6Z86oOxcw=="],
 
-    "@tensorcad/cli": ["@tensorcad/cli@workspace:packages/cli"],
+    "@tensor-cad/cli": ["@tensor-cad/cli@workspace:packages/cli"],
 
-    "@tensorcad/desktop-frontend": ["@tensorcad/desktop-frontend@workspace:desktop/frontend"],
+    "@tensor-cad/desktop-frontend": ["@tensor-cad/desktop-frontend@workspace:desktop/frontend"],
 
-    "@tensorcad/engine": ["@tensorcad/engine@workspace:packages/engine"],
+    "@tensor-cad/engine": ["@tensor-cad/engine@workspace:packages/engine"],
 
-    "@tensorcad/mcp": ["@tensorcad/mcp@workspace:packages/mcp"],
+    "@tensor-cad/mcp": ["@tensor-cad/mcp@workspace:packages/mcp"],
 
-    "@tensorcad/ui": ["@tensorcad/ui@workspace:packages/ui"],
+    "@tensor-cad/ui": ["@tensor-cad/ui@workspace:packages/ui"],
 
     "@tweenjs/tween.js": ["@tweenjs/tween.js@23.1.3", "", {}, "sha512-vJmvvwFxYuGnF2axRtPYocag6Clbb5YS7kLL+SO/TeVFzHqDIWrNKYtcsPMibjDx9O+bu+psAy9NKfWklassUA=="],
 
@@ -428,7 +428,7 @@
 
     "@vitejs/plugin-react": ["@vitejs/plugin-react@4.7.0", "", { "dependencies": { "@babel/core": "^7.28.0", "@babel/plugin-transform-react-jsx-self": "^7.27.1", "@babel/plugin-transform-react-jsx-source": "^7.27.1", "@rolldown/pluginutils": "1.0.0-beta.27", "@types/babel__core": "^7.20.5", "react-refresh": "^0.17.0" }, "peerDependencies": { "vite": "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0" } }, "sha512-gUu9hwfWvvEDBBmgtAowQCojwZmJ5mcLn3aufeCsitijs3+f2NsrPtlAWIR6OPiqljl96GVCUbLe0HyqIpVaoA=="],
 
-    "@wailsio/runtime": ["@wailsio/runtime@3.0.0-beta.23", "", {}, "sha512-Am9N7nvA9WBpVzOkrJ0PzTg/cgEFL72I97ksOfOuryLP4VOdnl7viP59+6Nx5zMoHJo207k85WINJaWfCY1CQQ=="],
+    "@wailsio/runtime": ["@wailsio/runtime@3.0.0-beta.24", "", {}, "sha512-lm4AjsohsTn6jheQ1QYCT3+7WG3QZM15R5mKVabSp2GyptjKFNLcOxCdp1+lbdQTxi0qEdTfEsjNezNQFNtjGw=="],
 
     "@xyflow/react": ["@xyflow/react@12.11.6", "", { "dependencies": { "@xyflow/system": "0.0.82", "classcat": "^5.0.3", "zustand": "^4.4.0" }, "peerDependencies": { "@types/react": ">=17", "@types/react-dom": ">=17", "react": ">=17", "react-dom": ">=17" }, "optionalPeers": ["@types/react", "@types/react-dom"] }, "sha512-9XsEJNHjatKYndszKTF/bsU7FOP9dJ6V/EQwzy3oMdtqgBuUq7BjKSwkEo+C7s4qHstHQfwwoHA3E8QfpPxZZQ=="],
 

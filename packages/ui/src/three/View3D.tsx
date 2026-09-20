@@ -24,7 +24,7 @@ import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
 import { onThemeChange, resolvedTheme, themeValue } from "../state/theme.js";
 import { buildModel3D, describeBlk, type Arrow, type Blk, type Model3D } from "./model3d.js";
-import { formatCount } from "@tensorcad/engine";
+import { formatCount } from "@tensor-cad/engine";
 
 /**
  * A cell grid on every face.

@@ -8,8 +8,8 @@
 
 import { createRoot } from "react-dom/client";
 import "@xyflow/react/dist/style.css";
-import "@tensorcad/ui/style.css";
-import { App, initTheme } from "@tensorcad/ui";
+import "@tensor-cad/ui/style.css";
+import { App, initTheme } from "@tensor-cad/ui";
 import { connect } from "./bridge.js";
 
 initTheme();

@@ -12,7 +12,7 @@
  */
 
 import type { Op } from "../ops.js";
-import type { Doc } from "@tensorcad/engine";
+import type { Doc } from "@tensor-cad/engine";
 
 /**
  * Where a design in this session came from. `derived` is one the engine

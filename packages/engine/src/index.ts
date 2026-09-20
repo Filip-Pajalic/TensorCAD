@@ -213,12 +213,12 @@ async function bytesOf(wasm: LoadOptions["wasm"]): Promise<BufferSource> {
  *
  * `globalThis.Go` has to exist first: it comes from the Go toolchain's
  * `wasm_exec.js`, which is vendored beside this file. A bundler wants
- * `import "@tensorcad/engine/wasm_exec"` before the first call.
+ * `import "@tensor-cad/engine/wasm_exec"` before the first call.
  */
 export async function createEngine(options: LoadOptions = {}): Promise<Engine> {
   if (typeof globalThis.Go !== "function") {
     throw new EngineError(
-      'The Go WebAssembly runtime is missing. Import "@tensorcad/engine/wasm_exec" before creating the engine.',
+      'The Go WebAssembly runtime is missing. Import "@tensor-cad/engine/wasm_exec" before creating the engine.',
     );
   }
 

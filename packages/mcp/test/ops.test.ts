@@ -7,8 +7,8 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import type { Doc } from "@tensorcad/engine";
-import { countParams, getPreset, loadEngine } from "@tensorcad/engine/node";
+import type { Doc } from "@tensor-cad/engine";
+import { countParams, getPreset, loadEngine } from "@tensor-cad/engine/node";
 import { applyOps, OpError, type Op } from "../src/ops.js";
 import { FileStore } from "../src/store/file-store.js";
 import { outlineOf } from "../src/summarize.js";

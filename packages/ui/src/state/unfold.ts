@@ -19,8 +19,8 @@
 
 import type { Derived } from "./derive.js";
 import type { Level } from "./level.js";
-import type { Doc, Graph, NodeDef } from "@tensorcad/engine";
-import { joinPath, splitEndpoint } from "@tensorcad/engine";
+import type { Doc, Graph, NodeDef } from "@tensor-cad/engine";
+import { joinPath, splitEndpoint } from "@tensor-cad/engine";
 import { catalogOf, isComposite, isContainer, type BlockDef } from "../engine.js";
 
 export interface UnfoldedNode {

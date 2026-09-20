@@ -278,15 +278,18 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 	tokens := orDefault(options.Tokens, 20*params.NonEmbeddingActive)
 
 	throughput := AnalyzeThroughput(ThroughputOptions{
-		Hardware:          hardware,
-		Peak:              peak,
-		MFU:               mfu,
-		DecodeEfficiency:  decodeEfficiency,
-		Batch:             concurrency,
-		Seq:               t,
-		ActiveWeightBytes: params.Active * DtypeBytes[inferenceDtype],
-		Kv:                kv,
-		Flops:             flops,
+		Hardware:         hardware,
+		Peak:             peak,
+		MFU:              mfu,
+		DecodeEfficiency: decodeEfficiency,
+		Batch:            concurrency,
+		Seq:              t,
+		// What a step at this batch reads, which for a mixture of experts is
+		// more than one token's share and less than every weight.
+		DecodeWeightBytes:   StreamedParams(flat, concurrency) * DtypeBytes[inferenceDtype],
+		ResidentWeightBytes: params.Total * DtypeBytes[inferenceDtype],
+		Kv:                  kv,
+		Flops:               flops,
 	})
 
 	cost := AnalyzeCost(CostOptions{

@@ -414,6 +414,14 @@ export default function Analysis(): React.ReactElement {
               title="Above the ridge point the device is compute-bound; below it, bandwidth sets the pace."
             />
             <Row label="bytes per step" value={formatBytes(a.throughput.decodeBytesPerStep)} />
+            {a.throughput.residentWeightBytes > a.throughput.decodeWeightBytes && (
+              <Row
+                label="weights read"
+                value={formatBytes(a.throughput.decodeWeightBytes)}
+                aside={`of ${formatBytes(a.throughput.residentWeightBytes)} held`}
+                title="A batch reads the union of what its tokens routed to, which is more than one token's share and less than every expert."
+              />
+            )}
             <Row
               label="prefill"
               value={`${(a.throughput.prefillSeconds * 1000).toFixed(1)} ms`}

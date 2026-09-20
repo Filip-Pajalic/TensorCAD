@@ -341,6 +341,15 @@ export interface ThroughputResult {
   /** FLOP per byte above which the device is compute-bound. */
   ridgePoint: number;
   decodeBytesPerStep: number;
+  /**
+   * The weights of that, which for a mixture of experts is neither the active
+   * count nor the resident one: a batch reads the union of what its tokens
+   * routed to, and that reaches nearly every expert well before the batch
+   * reaches the expert count.
+   */
+  decodeWeightBytes: number;
+  /** Every weight the device holds, whether or not a given step reads it. */
+  residentWeightBytes: number;
   decodeFlopsPerStep: number;
   decodeSecondsPerStep: number;
   decodeTokensPerSecond: number;

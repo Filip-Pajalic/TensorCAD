@@ -529,6 +529,10 @@ export function analysisJson(a: AnalysisResult): Record<string, unknown> {
     },
     throughput: {
       decode_tokens_per_second: n(a.throughput.decodeTokensPerSecond),
+      // For a mixture of experts these differ: a batch reads the union of what
+      // its tokens routed to, not one token's share.
+      decode_weight_bytes: n(a.throughput.decodeWeightBytes),
+      resident_weight_bytes: n(a.throughput.residentWeightBytes),
       prefill_seconds: n(a.throughput.prefillSeconds),
       memory_bound: a.throughput.memoryBound,
       notes: a.throughput.notes,

@@ -563,13 +563,16 @@
       "throughput": {
         "ridgePoint": 295.2238805970149,
         "decodeBytesPerStep": 75392429056,
+        "decodeWeightBytes": 75104594944,
+        "residentWeightBytes": 1342052838400,
         "decodeFlopsPerStep": 85530116096,
         "decodeSecondsPerStep": 0.022505202703283583,
         "decodeTokensPerSecond": 44.434169875488244,
         "memoryBound": true,
         "prefillSeconds": 0.8855696550283518,
         "notes": [
-          "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
+          "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte.",
+          "One token routes to 69.95 GiB of the 1.22 TiB of weights held, so that is what a step reads at this batch. A larger batch reads the union of its tokens' choices, which reaches nearly every expert long before the batch reaches the expert count."
         ]
       },
       "cost": {
@@ -1032,14 +1035,17 @@
       },
       "throughput": {
         "ridgePoint": 590.7462686567164,
-        "decodeBytesPerStep": 42157643264,
+        "decodeBytesPerStep": 438880635826.9708,
+        "decodeWeightBytes": 434275290034.9708,
+        "residentWeightBytes": 671026419200,
         "decodeFlopsPerStep": 2736963715072,
-        "decodeSecondsPerStep": 0.01258437112358209,
-        "decodeTokensPerSecond": 2542.836641239434,
+        "decodeSecondsPerStep": 0.13100914502297636,
+        "decodeTokensPerSecond": 244.25775768850215,
         "memoryBound": true,
         "prefillSeconds": 14.161954746001657,
         "notes": [
-          "Decoding is memory-bound at batch 32. It stays that way until the batch passes this device's ridge point of about 591 FLOP per byte."
+          "Decoding is memory-bound at batch 32. It stays that way until the batch passes this device's ridge point of about 591 FLOP per byte.",
+          "A step at batch 32 reads 404.45 GiB of the 624.94 GiB of weights held, because its tokens between them route to that much: a batch reads the union of their choices rather than one token's share. Routing is taken to be independent and uniform, and a router trained towards balance spreads a batch wider still, so this is a floor and the rate above it a ceiling."
         ]
       },
       "cost": {
@@ -1658,13 +1664,16 @@
       "throughput": {
         "ridgePoint": 295.2238805970149,
         "decodeBytesPerStep": 75392429056,
+        "decodeWeightBytes": 75104594944,
+        "residentWeightBytes": 1342052838400,
         "decodeFlopsPerStep": 97811038208,
         "decodeSecondsPerStep": 0.022505202703283583,
         "decodeTokensPerSecond": 44.434169875488244,
         "memoryBound": true,
         "prefillSeconds": 2.0254500126388675,
         "notes": [
-          "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
+          "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte.",
+          "One token routes to 69.95 GiB of the 1.22 TiB of weights held, so that is what a step reads at this batch. A larger batch reads the union of its tokens' choices, which reaches nearly every expert long before the batch reaches the expert count."
         ]
       },
       "cost": {

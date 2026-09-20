@@ -17,7 +17,14 @@ type ThroughputResult struct {
 	RidgePoint float64 `json:"ridgePoint"`
 	// DecodeBytesPerStep is the bytes read per decode step.
 	DecodeBytesPerStep float64 `json:"decodeBytesPerStep"`
-	DecodeFlopsPerStep float64 `json:"decodeFlopsPerStep"`
+	// DecodeWeightBytes is the weights of that, which for a mixture of experts
+	// is neither the active count nor the resident one: a batch reads the union
+	// of what its tokens routed to.
+	DecodeWeightBytes float64 `json:"decodeWeightBytes"`
+	// ResidentWeightBytes is every weight the device has to hold, whether or
+	// not a given step reads it.
+	ResidentWeightBytes float64 `json:"residentWeightBytes"`
+	DecodeFlopsPerStep  float64 `json:"decodeFlopsPerStep"`
 	// DecodeSecondsPerStep is the larger of the memory and compute times.
 	DecodeSecondsPerStep  float64 `json:"decodeSecondsPerStep"`
 	DecodeTokensPerSecond float64 `json:"decodeTokensPerSecond"`
@@ -36,12 +43,16 @@ type ThroughputOptions struct {
 	MFU float64
 	// DecodeEfficiency is the fraction of peak reached by decode's small
 	// matmuls.
-	DecodeEfficiency  float64
-	Batch             float64
-	Seq               float64
-	ActiveWeightBytes float64
-	Kv                *KvResult
-	Flops             *FlopsResult
+	DecodeEfficiency float64
+	Batch            float64
+	Seq              float64
+	// DecodeWeightBytes is what a step at this batch reads, from
+	// `StreamedParams`. For a dense model it is every weight.
+	DecodeWeightBytes float64
+	// ResidentWeightBytes is every weight, which is what has to be held.
+	ResidentWeightBytes float64
+	Kv                  *KvResult
+	Flops               *FlopsResult
 }
 
 // AnalyzeThroughput runs the roofline.
@@ -50,7 +61,7 @@ func AnalyzeThroughput(o ThroughputOptions) *ThroughputResult {
 	ridgePoint := o.Peak / o.Hardware.Bandwidth
 
 	kvBytes := KvBytesFor(o.Kv, o.Seq, o.Batch)
-	decodeBytesPerStep := o.ActiveWeightBytes + kvBytes
+	decodeBytesPerStep := o.DecodeWeightBytes + kvBytes
 	decodeFlopsPerStep := o.Batch * o.Flops.FwdTotal
 
 	tMem := decodeBytesPerStep / o.Hardware.Bandwidth
@@ -66,6 +77,26 @@ func AnalyzeThroughput(o ThroughputOptions) *ThroughputResult {
 		notes = append(notes, fmt.Sprintf("Decoding is compute-bound at batch %s.", JSNumber(o.Batch)))
 	}
 
+	// A sparse model reads more than one token's share and less than all of it,
+	// and which end it is near is the difference between a plausible decode
+	// figure and a fanciful one.
+	if o.ResidentWeightBytes > o.DecodeWeightBytes {
+		if o.Batch <= 1 {
+			notes = append(notes, fmt.Sprintf(
+				"One token routes to %s of the %s of weights held, so that is what a step reads at this "+
+					"batch. A larger batch reads the union of its tokens' choices, which reaches nearly "+
+					"every expert long before the batch reaches the expert count.",
+				FormatBytes(o.DecodeWeightBytes), FormatBytes(o.ResidentWeightBytes)))
+		} else {
+			notes = append(notes, fmt.Sprintf(
+				"A step at batch %s reads %s of the %s of weights held, because its tokens between them "+
+					"route to that much: a batch reads the union of their choices rather than one token's "+
+					"share. Routing is taken to be independent and uniform, and a router trained towards "+
+					"balance spreads a batch wider still, so this is a floor and the rate above it a ceiling.",
+				JSNumber(o.Batch), FormatBytes(o.DecodeWeightBytes), FormatBytes(o.ResidentWeightBytes)))
+		}
+	}
+
 	prefillSeconds := (o.Batch * o.Seq * o.Flops.FwdTotal) / (o.Peak * o.MFU)
 
 	tokensPerSecond := 0.0
@@ -76,6 +107,8 @@ func AnalyzeThroughput(o ThroughputOptions) *ThroughputResult {
 	return &ThroughputResult{
 		RidgePoint:            ridgePoint,
 		DecodeBytesPerStep:    decodeBytesPerStep,
+		DecodeWeightBytes:     o.DecodeWeightBytes,
+		ResidentWeightBytes:   o.ResidentWeightBytes,
 		DecodeFlopsPerStep:    decodeFlopsPerStep,
 		DecodeSecondsPerStep:  step,
 		DecodeTokensPerSecond: tokensPerSecond,

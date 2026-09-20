@@ -241,6 +241,8 @@ export const AnalysisOutput = z.object({
   }),
   throughput: z.object({
     decode_tokens_per_second: num(),
+    decode_weight_bytes: num().describe("What a step at this batch reads: for a mixture of experts, the union of what its tokens routed to."),
+    resident_weight_bytes: num().describe("Every weight the device holds, read or not."),
     prefill_seconds: num(),
     memory_bound: z.boolean(),
     notes: z.array(z.string()),

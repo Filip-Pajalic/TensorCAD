@@ -307,6 +307,8 @@
       "throughput": {
         "ridgePoint": 295.2238805970149,
         "decodeBytesPerStep": 21213308928,
+        "decodeWeightBytes": 16381470720,
+        "residentWeightBytes": 16381470720,
         "decodeFlopsPerStep": 24799870976,
         "decodeSecondsPerStep": 0.006332331023283582,
         "decodeTokensPerSecond": 157.91972913656332,
@@ -605,6 +607,8 @@
       "throughput": {
         "ridgePoint": 590.7462686567164,
         "decodeBytesPerStep": 85500146688,
+        "decodeWeightBytes": 8190735360,
+        "residentWeightBytes": 8190735360,
         "decodeFlopsPerStep": 793595871232,
         "decodeSecondsPerStep": 0.02552243184716418,
         "decodeTokensPerSecond": 1253.799018511457,
@@ -962,6 +966,8 @@
       "throughput": {
         "ridgePoint": 295.2238805970149,
         "decodeBytesPerStep": 16985450496,
+        "decodeWeightBytes": 16381470720,
+        "residentWeightBytes": 16381470720,
         "decodeFlopsPerStep": 17552113664,
         "decodeSecondsPerStep": 0.005070283730149254,
         "decodeTokensPerSecond": 197.22762141568813,

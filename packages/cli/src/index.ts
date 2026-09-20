@@ -14,7 +14,6 @@ import { cmdAnalyze } from "./commands/analyze.js";
 import { cmdCodegen } from "./commands/codegen.js";
 import { cmdDiff } from "./commands/diff.js";
 import { cmdPlan } from "./commands/plan.js";
-import { cmdImport } from "./commands/import.js";
 import { cmdShow } from "./commands/show.js";
 import { PRESET_NAMES, loadEngine } from "@tensorcad/engine/node";
 
@@ -47,11 +46,6 @@ const COMMANDS: Record<string, { run: (args: Args) => number; usage: string; blu
     blurb: "ways to split training across a cluster; exits 1 if none fit",
   },
   diff: { run: cmdDiff, usage: "diff <a> <b> [--json]", blurb: "structural and numeric difference" },
-  import: {
-    run: cmdImport,
-    usage: "import <config.json> [--name n] [--out dir|file] [--json]",
-    blurb: "read a Hugging Face config into a design; exits 1 on any warning",
-  },
   show: { run: cmdShow, usage: "show <file|preset> [--json]", blurb: "block tree with inferred shapes" },
 };
 

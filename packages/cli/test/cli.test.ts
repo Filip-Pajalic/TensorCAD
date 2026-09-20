@@ -7,7 +7,7 @@
 
 import { describe, expect, test, afterAll } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -274,68 +274,5 @@ describe("plan", () => {
     const r = cli("plan", "gpt2-small");
     expect(r.code).toBe(1);
     expect(r.stdout).toContain("--gpus");
-  });
-});
-
-describe("import", () => {
-  const configs = JSON.parse(
-    readFileSync(resolve(import.meta.dir, "../../core-go/testdata/hf-configs.json"), "utf8"),
-  ) as Record<string, Record<string, unknown>>;
-
-  /** A config on disk, in a directory named after the model the way a download is. */
-  function config(name: string, body: unknown = configs[name]): string {
-    const dir = join(tempDir(), name);
-    mkdirSync(dir, { recursive: true });
-    const path = join(dir, "config.json");
-    writeFileSync(path, JSON.stringify(body, null, 2));
-    return path;
-  }
-
-  test("lands on the same parameter count as the preset", () => {
-    const r = cli("import", config("llama-3-8b"));
-    expect(r.code).toBe(0);
-    expect(r.stdout).toContain("8.03B parameters");
-    // The name comes from the directory, which is what a model download is
-    // called; "config" would not be.
-    expect(r.stdout).toContain("llama-3-8b");
-  });
-
-  test("--json gives the document, and the warnings stay on stderr", () => {
-    const r = cli("import", config("mixtral-8x7b"), "--json");
-    expect(r.code).toBe(0);
-    const out = JSON.parse(r.stdout) as { doc: { meta: { name: string } }; params: number };
-    expect(out.doc.meta.name).toBe("mixtral-8x7b");
-    expect(out.params).toBe(46_702_792_704);
-  });
-
-  test("--out writes a design that can be read back", () => {
-    const dir = tempDir();
-    const r = cli("import", config("gpt2-small"), "--out", dir, "--name", "from-config");
-    expect(r.code).toBe(0);
-    const path = join(dir, "from-config.tensorcad.json");
-    expect(existsSync(path)).toBe(true);
-    const back = cli("analyze", path, "--json");
-    expect(back.code).toBe(0);
-    expect((JSON.parse(back.stdout) as { params: { total: number } }).params.total).toBe(124_439_808);
-  });
-
-  test("a family it does not know is refused by name", () => {
-    const r = cli("import", config("mystery", { model_type: "not-a-model", num_hidden_layers: 4 }));
-    expect(r.code).not.toBe(0);
-    expect(`${r.stdout}${r.stderr}`).toContain("not-a-model");
-  });
-
-  test("a file that is not JSON is refused readably", () => {
-    const path = join(tempDir(), "broken.json");
-    writeFileSync(path, "{ oops");
-    const r = cli("import", path);
-    expect(r.code).not.toBe(0);
-    expect(`${r.stdout}${r.stderr}`.toLowerCase()).toContain("parse");
-  });
-
-  test("a file that is not there says so", () => {
-    const r = cli("import", join(tempDir(), "absent.json"));
-    expect(r.code).not.toBe(0);
-    expect(`${r.stdout}${r.stderr}`).toContain("Could not read");
   });
 });

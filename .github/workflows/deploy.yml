@@ -11,7 +11,13 @@
 #
 # Needs two repository secrets.
 #
-#   CLOUDFLARE_API_TOKEN   One policy, scoped to the *whole account* — not to
+#   CLOUDFLARE_API_TOKEN   An *account* token — Manage Account > Account API
+#                          Tokens, not the user token page. Cloudflare calls
+#                          these service principals and recommends them for
+#                          CI/CD; they carry a `cfat_` prefix and are 53
+#                          characters, not the 40 a user token is.
+#
+#                          One policy, scoped to the whole account — not to
 #                          the zone, because uploading a Worker is an
 #                          account-level call. Four permissions:
 #
@@ -68,6 +74,14 @@ jobs:
           # /user/tokens/verify about one gets "Invalid API Token" — which is
           # true of the question and says nothing about the token. That
           # mistake cost an afternoon, so both are tried.
+          #
+          # An account token is the right kind here: Cloudflare describes them
+          # as service principals for exactly this, durable past whoever set
+          # the integration up. It is also why counting characters proved
+          # nothing — a new account token carries a `cfat_` prefix and runs to
+          # 53, where the user-token format everyone quotes is 40.
+          #
+          #   https://developers.cloudflare.com/fundamentals/api/get-started/account-owned-tokens/
           verify() {
             curl -sS --max-time 30 "https://api.cloudflare.com/client/v4$1/tokens/verify" \
               -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
@@ -139,6 +153,14 @@ jobs:
           # /user/tokens/verify about one gets "Invalid API Token" — which is
           # true of the question and says nothing about the token. That
           # mistake cost an afternoon, so both are tried.
+          #
+          # An account token is the right kind here: Cloudflare describes them
+          # as service principals for exactly this, durable past whoever set
+          # the integration up. It is also why counting characters proved
+          # nothing — a new account token carries a `cfat_` prefix and runs to
+          # 53, where the user-token format everyone quotes is 40.
+          #
+          #   https://developers.cloudflare.com/fundamentals/api/get-started/account-owned-tokens/
           verify() {
             curl -sS --max-time 30 "https://api.cloudflare.com/client/v4$1/tokens/verify" \
               -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"

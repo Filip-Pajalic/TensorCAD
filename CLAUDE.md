@@ -95,6 +95,13 @@ Two cross-checks worth knowing:
   nested drawing the published figures use: containers become frames around their contents and
   container boundaries are short-circuited out of the wiring. Merging frames must happen after
   edges are resolved, because the set of open frames is what the edge tracer walks through.
+  `state/storage.ts` is the seam a store plugs into and `state/session.ts` is where you *were*
+  as distinct from what you had — the level, the selection, the unfold depth and the operating
+  point, composed out of the store's own actions so a restore goes through the same doors an
+  edit does. A view is kept beside a document and the two can drift, so a stale part is dropped
+  rather than taking the whole restore with it. `/d/<id>` is handled by `openFromLocation`,
+  called by whatever assembled the editor; there is still no router, because
+  `not_found_handling: "single-page-application"` already returns `index.html` for every path.
   `state/derive.ts` makes one `derive()` call per
   document and operating point and every panel reads the result; nothing in the UI computes
   its own numbers. `src/engine.ts` is the editor's handle on the engine: it loads the module
@@ -211,7 +218,17 @@ Two cross-checks worth knowing:
    dtype, device, GPU count and the sharding plan are conditions the analysis is measured
    under, not properties of the design. `packages/ui/src/state/operating.ts` owns them and
    translates them to `AnalysisOptions`; the CLI and MCP pass their own.
-9. **Presets are the regression suite.** Every preset carries `meta.published` and the tests assert the analysis reproduces it. Seventeen of twenty match to the parameter; the other three are checked against rounded vendor figures with an explicit `tolerance`. Not all of them are language models. `ijepa-vit-h14` is a vision transformer with bidirectional attention and no vocabulary (`presets/jepa.ts`), and `alexnet` is a convolutional classifier whose tensors are `B C H W` rather than a sequence (`presets/convnet.ts`). A convnet's token is one image, so `T` is 1 and every per-token figure reads as per-image; its FLOPs match `torch.utils.flop_counter` exactly, there being no causal mask to disagree about. Everything downstream treats all three kinds identically.
+9. **This repository is the open one, and keeps nothing private in it.** Accounts, sessions,
+   billing and the hosted service live in a separate private repository. The seam is
+   `packages/ui/src/state/storage.ts`: a `StorageProvider` that names no vendor, no host and no
+   protocol, handed **text** from `serializeDoc` rather than a `Doc`, so it cannot disagree with
+   the engine about what a design is. A deployment registers a provider before the first frame;
+   a plain checkout registers none, the `Designs` tab is not in the row, and the editor is
+   exactly what it was — which is a test, not a hope. `bun run boundary` reads every file and
+   fails on a vendor name, a vendor's environment variable, a stateful Cloudflare binding or a
+   privileged key's name; it runs in `test:all` and in CI before the tests, because what it
+   guards against is a commit rather than a behaviour.
+10. **Presets are the regression suite.** Every preset carries `meta.published` and the tests assert the analysis reproduces it. Seventeen of twenty match to the parameter; the other three are checked against rounded vendor figures with an explicit `tolerance`. Not all of them are language models. `ijepa-vit-h14` is a vision transformer with bidirectional attention and no vocabulary (`presets/jepa.ts`), and `alexnet` is a convolutional classifier whose tensors are `B C H W` rather than a sequence (`presets/convnet.ts`). A convnet's token is one image, so `T` is 1 and every per-token figure reads as per-image; its FLOPs match `torch.utils.flop_counter` exactly, there being no causal mask to disagree about. Everything downstream treats all three kinds identically.
 
 ## When adding a block
 

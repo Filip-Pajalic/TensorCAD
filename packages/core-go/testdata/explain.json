@@ -20,12 +20,6 @@
               "L",
               12,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -773,12 +767,6 @@
               "L",
               24,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -1526,12 +1514,6 @@
               "L",
               36,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -2279,12 +2261,6 @@
               "L",
               48,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -3038,12 +3014,6 @@
               "L",
               12,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -3791,12 +3761,6 @@
               "L",
               32,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -4572,12 +4536,6 @@
               "L",
               32,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -5353,12 +5311,6 @@
               "L",
               32,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -6134,12 +6086,6 @@
               "L",
               80,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -6915,12 +6861,6 @@
               "L",
               126,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -7696,12 +7636,6 @@
               "L",
               28,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -8471,12 +8405,6 @@
               "L",
               36,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -9273,15 +9201,9 @@
           "params": [
             [
               "count",
-              "L",
-              42,
+              "L/2",
+              21,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -9296,72 +9218,77 @@
             "params": 8324198400,
             "activeParams": 8324198400,
             "shareOfParams": 0.9007209723412036,
-            "flopsPerToken": 19465764864,
-            "shareOfFlops": 0.9138525155065472,
+            "flopsPerToken": 18761121792,
+            "shareOfFlops": 0.9109052031361369,
             "activationBytes": 60621324288,
-            "cacheBytesPerToken": 344064,
-            "cacheBytesPerSequence": 0
+            "cacheBytesPerToken": 172032,
+            "cacheBytesPerSequence": 704643072
           },
           "breakdown": [
             {
-              "path": "layers/block/mlp/gate",
+              "path": "layers/local/mlp/gate",
               "type": "linear",
-              "params": 2157969408
+              "params": 1078984704
             },
             {
-              "path": "layers/block/mlp/up",
+              "path": "layers/local/mlp/up",
               "type": "linear",
-              "params": 2157969408
+              "params": 1078984704
             },
             {
-              "path": "layers/block/mlp/down",
+              "path": "layers/local/mlp/down",
               "type": "linear",
-              "params": 2157969408
+              "params": 1078984704
             },
             {
-              "path": "layers/block/attn/q_proj",
+              "path": "layers/global/mlp/gate",
               "type": "linear",
-              "params": 616562688
+              "params": 1078984704
             },
             {
-              "path": "layers/block/attn/o_proj",
+              "path": "layers/global/mlp/up",
               "type": "linear",
-              "params": 616562688
+              "params": 1078984704
             },
             {
-              "path": "layers/block/attn/k_proj",
+              "path": "layers/global/mlp/down",
+              "type": "linear",
+              "params": 1078984704
+            },
+            {
+              "path": "layers/local/attn/q_proj",
               "type": "linear",
               "params": 308281344
             },
             {
-              "path": "layers/block/attn/v_proj",
+              "path": "layers/local/attn/o_proj",
               "type": "linear",
               "params": 308281344
             },
             {
-              "path": "layers/block/norm1",
-              "type": "rmsnorm",
-              "params": 150528
+              "path": "layers/global/attn/q_proj",
+              "type": "linear",
+              "params": 308281344
             },
             {
-              "path": "layers/block/norm2",
-              "type": "rmsnorm",
-              "params": 150528
+              "path": "layers/global/attn/o_proj",
+              "type": "linear",
+              "params": 308281344
             },
             {
-              "path": "layers/block/post_attn_norm",
-              "type": "rmsnorm",
-              "params": 150528
+              "path": "layers/local/attn/k_proj",
+              "type": "linear",
+              "params": 154140672
             },
             {
-              "path": "layers/block/post_mlp_norm",
-              "type": "rmsnorm",
-              "params": 150528
+              "path": "layers/local/attn/v_proj",
+              "type": "linear",
+              "params": 154140672
             }
           ]
         },
         {
-          "path": "layers/block",
+          "path": "layers/local",
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
@@ -9369,8 +9296,268 @@
             "formula": "params = attention + mlp + 2 norms"
           },
           "copies": {
-            "total": 42,
-            "active": 42
+            "total": 21,
+            "active": 21
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              3584,
+              null
+            ],
+            [
+              "heads",
+              "H",
+              16,
+              null
+            ],
+            [
+              "kv_heads",
+              "Hkv",
+              8,
+              null
+            ],
+            [
+              "head_dim",
+              "dh",
+              256,
+              null
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              14336,
+              null
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              null
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              null
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              null
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              null
+            ],
+            [
+              "norm",
+              null,
+              "rmsnorm",
+              null
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              true,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "gated",
+              null
+            ],
+            [
+              "experts",
+              null,
+              0,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              null,
+              1,
+              null
+            ],
+            [
+              "expert_hidden",
+              null,
+              0,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              null
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              null
+            ],
+            [
+              "act",
+              null,
+              "gelu_tanh",
+              null
+            ],
+            [
+              "attn_bias",
+              null,
+              false,
+              null
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              null
+            ],
+            [
+              "mlp_bias",
+              null,
+              false,
+              null
+            ],
+            [
+              "qk_norm",
+              null,
+              false,
+              null
+            ],
+            [
+              "causal",
+              null,
+              true,
+              null
+            ],
+            [
+              "window",
+              "W",
+              4096,
+              null
+            ],
+            [
+              "rope",
+              null,
+              {
+                "theta": 10000
+              },
+              "RoPE settings, or null for no rotary embedding"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 4162099200,
+            "activeParams": 4162099200,
+            "shareOfParams": 0.4503604861706018,
+            "flopsPerToken": 9028239360,
+            "shareOfFlops": 0.4383464005702067,
+            "activationBytes": 30310662144,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 704643072
+          },
+          "breakdown": [
+            {
+              "path": "layers/local/mlp/gate",
+              "type": "linear",
+              "params": 1078984704
+            },
+            {
+              "path": "layers/local/mlp/up",
+              "type": "linear",
+              "params": 1078984704
+            },
+            {
+              "path": "layers/local/mlp/down",
+              "type": "linear",
+              "params": 1078984704
+            },
+            {
+              "path": "layers/local/attn/q_proj",
+              "type": "linear",
+              "params": 308281344
+            },
+            {
+              "path": "layers/local/attn/o_proj",
+              "type": "linear",
+              "params": 308281344
+            },
+            {
+              "path": "layers/local/attn/k_proj",
+              "type": "linear",
+              "params": 154140672
+            },
+            {
+              "path": "layers/local/attn/v_proj",
+              "type": "linear",
+              "params": 154140672
+            },
+            {
+              "path": "layers/local/norm1",
+              "type": "rmsnorm",
+              "params": 75264
+            },
+            {
+              "path": "layers/local/norm2",
+              "type": "rmsnorm",
+              "params": 75264
+            },
+            {
+              "path": "layers/local/post_attn_norm",
+              "type": "rmsnorm",
+              "params": 75264
+            },
+            {
+              "path": "layers/local/post_mlp_norm",
+              "type": "rmsnorm",
+              "params": 75264
+            }
+          ]
+        },
+        {
+          "path": "layers/global",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 21,
+            "active": 21
           },
           "params": [
             [
@@ -9553,75 +9740,75 @@
             }
           },
           "contributes": {
-            "params": 8324198400,
-            "activeParams": 8324198400,
-            "shareOfParams": 0.9007209723412036,
-            "flopsPerToken": 19465764864,
-            "shareOfFlops": 0.9138525155065472,
-            "activationBytes": 60621324288,
-            "cacheBytesPerToken": 344064,
+            "params": 4162099200,
+            "activeParams": 4162099200,
+            "shareOfParams": 0.4503604861706018,
+            "flopsPerToken": 9732882432,
+            "shareOfFlops": 0.47255880256593014,
+            "activationBytes": 30310662144,
+            "cacheBytesPerToken": 172032,
             "cacheBytesPerSequence": 0
           },
           "breakdown": [
             {
-              "path": "layers/block/mlp/gate",
+              "path": "layers/global/mlp/gate",
               "type": "linear",
-              "params": 2157969408
+              "params": 1078984704
             },
             {
-              "path": "layers/block/mlp/up",
+              "path": "layers/global/mlp/up",
               "type": "linear",
-              "params": 2157969408
+              "params": 1078984704
             },
             {
-              "path": "layers/block/mlp/down",
+              "path": "layers/global/mlp/down",
               "type": "linear",
-              "params": 2157969408
+              "params": 1078984704
             },
             {
-              "path": "layers/block/attn/q_proj",
-              "type": "linear",
-              "params": 616562688
-            },
-            {
-              "path": "layers/block/attn/o_proj",
-              "type": "linear",
-              "params": 616562688
-            },
-            {
-              "path": "layers/block/attn/k_proj",
+              "path": "layers/global/attn/q_proj",
               "type": "linear",
               "params": 308281344
             },
             {
-              "path": "layers/block/attn/v_proj",
+              "path": "layers/global/attn/o_proj",
               "type": "linear",
               "params": 308281344
             },
             {
-              "path": "layers/block/norm1",
-              "type": "rmsnorm",
-              "params": 150528
+              "path": "layers/global/attn/k_proj",
+              "type": "linear",
+              "params": 154140672
             },
             {
-              "path": "layers/block/norm2",
-              "type": "rmsnorm",
-              "params": 150528
+              "path": "layers/global/attn/v_proj",
+              "type": "linear",
+              "params": 154140672
             },
             {
-              "path": "layers/block/post_attn_norm",
+              "path": "layers/global/norm1",
               "type": "rmsnorm",
-              "params": 150528
+              "params": 75264
             },
             {
-              "path": "layers/block/post_mlp_norm",
+              "path": "layers/global/norm2",
               "type": "rmsnorm",
-              "params": 150528
+              "params": 75264
+            },
+            {
+              "path": "layers/global/post_attn_norm",
+              "type": "rmsnorm",
+              "params": 75264
+            },
+            {
+              "path": "layers/global/post_mlp_norm",
+              "type": "rmsnorm",
+              "params": 75264
             }
           ]
         },
         {
-          "path": "layers/block/mlp",
+          "path": "layers/local/mlp",
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
@@ -9632,8 +9819,8 @@
             ]
           },
           "copies": {
-            "total": 42,
-            "active": 42
+            "total": 21,
+            "active": 21
           },
           "params": [
             [
@@ -9670,289 +9857,71 @@
             }
           },
           "contributes": {
-            "params": 6473908224,
-            "activeParams": 6473908224,
-            "shareOfParams": 0.7005100827929563,
-            "flopsPerToken": 12947816448,
-            "shareOfFlops": 0.6078566505858028,
-            "activationBytes": 41926262784,
+            "params": 3236954112,
+            "activeParams": 3236954112,
+            "shareOfParams": 0.3502550413964782,
+            "flopsPerToken": 6473908224,
+            "shareOfFlops": 0.3143264433357092,
+            "activationBytes": 20963131392,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
           },
           "breakdown": [
             {
-              "path": "layers/block/mlp/gate",
+              "path": "layers/local/mlp/gate",
               "type": "linear",
-              "params": 2157969408
+              "params": 1078984704
             },
             {
-              "path": "layers/block/mlp/up",
+              "path": "layers/local/mlp/up",
               "type": "linear",
-              "params": 2157969408
+              "params": 1078984704
             },
             {
-              "path": "layers/block/mlp/down",
+              "path": "layers/local/mlp/down",
               "type": "linear",
-              "params": 2157969408
+              "params": 1078984704
             }
           ]
         },
         {
-          "path": "layers/block/mlp/gate",
-          "type": "linear",
-          "kind": "primitive",
-          "docs": {
-            "summary": "Dense projection.",
-            "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
-          },
-          "copies": {
-            "total": 42,
-            "active": 42
-          },
-          "params": [
-            [
-              "in_features",
-              "D",
-              3584,
-              null
-            ],
-            [
-              "out_features",
-              "F",
-              14336,
-              null
-            ],
-            [
-              "bias",
-              null,
-              false,
-              null
-            ]
-          ],
-          "shapes": {
-            "in": {
-              "x": "... in_features"
-            },
-            "out": {
-              "y": "... out_features"
-            }
-          },
-          "contributes": {
-            "params": 2157969408,
-            "activeParams": 2157969408,
-            "shareOfParams": 0.23350336093098545,
-            "flopsPerToken": 4315938816,
-            "shareOfFlops": 0.20261888352860097,
-            "activationBytes": 9865003008,
-            "cacheBytesPerToken": 0,
-            "cacheBytesPerSequence": 0
-          },
-          "breakdown": [
-            {
-              "path": "layers/block/mlp/gate",
-              "type": "linear",
-              "params": 2157969408
-            }
-          ]
-        },
-        {
-          "path": "layers/block/mlp/up",
-          "type": "linear",
-          "kind": "primitive",
-          "docs": {
-            "summary": "Dense projection.",
-            "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
-          },
-          "copies": {
-            "total": 42,
-            "active": 42
-          },
-          "params": [
-            [
-              "in_features",
-              "D",
-              3584,
-              null
-            ],
-            [
-              "out_features",
-              "F",
-              14336,
-              null
-            ],
-            [
-              "bias",
-              null,
-              false,
-              null
-            ]
-          ],
-          "shapes": {
-            "in": {
-              "x": "... in_features"
-            },
-            "out": {
-              "y": "... out_features"
-            }
-          },
-          "contributes": {
-            "params": 2157969408,
-            "activeParams": 2157969408,
-            "shareOfParams": 0.23350336093098545,
-            "flopsPerToken": 4315938816,
-            "shareOfFlops": 0.20261888352860097,
-            "activationBytes": 9865003008,
-            "cacheBytesPerToken": 0,
-            "cacheBytesPerSequence": 0
-          },
-          "breakdown": [
-            {
-              "path": "layers/block/mlp/up",
-              "type": "linear",
-              "params": 2157969408
-            }
-          ]
-        },
-        {
-          "path": "layers/block/mlp/down",
-          "type": "linear",
-          "kind": "primitive",
-          "docs": {
-            "summary": "Dense projection.",
-            "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
-          },
-          "copies": {
-            "total": 42,
-            "active": 42
-          },
-          "params": [
-            [
-              "in_features",
-              "F",
-              14336,
-              null
-            ],
-            [
-              "out_features",
-              "D",
-              3584,
-              null
-            ],
-            [
-              "bias",
-              null,
-              false,
-              null
-            ]
-          ],
-          "shapes": {
-            "in": {
-              "x": "... in_features"
-            },
-            "out": {
-              "y": "... out_features"
-            }
-          },
-          "contributes": {
-            "params": 2157969408,
-            "activeParams": 2157969408,
-            "shareOfParams": 0.23350336093098545,
-            "flopsPerToken": 4315938816,
-            "shareOfFlops": 0.20261888352860097,
-            "activationBytes": 0,
-            "cacheBytesPerToken": 0,
-            "cacheBytesPerSequence": 0
-          },
-          "breakdown": [
-            {
-              "path": "layers/block/mlp/down",
-              "type": "linear",
-              "params": 2157969408
-            }
-          ]
-        },
-        {
-          "path": "layers/block/attn",
-          "type": "gqa_attention",
+          "path": "layers/global/mlp",
+          "type": "gated_mlp",
           "kind": "composite",
           "docs": {
-            "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
-            "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
+            "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
+            "formula": "params = 3 * d_model * hidden",
             "refs": [
-              "https://arxiv.org/abs/2305.13245"
+              "https://arxiv.org/abs/2002.05202"
             ]
           },
           "copies": {
-            "total": 42,
-            "active": 42
+            "total": 21,
+            "active": 21
           },
           "params": [
             [
               "d_model",
               "D",
               3584,
-              "Residual stream width"
+              null
             ],
             [
-              "heads",
-              "H",
-              16,
-              "Query heads"
+              "hidden",
+              "F",
+              14336,
+              "Intermediate width"
             ],
             [
-              "kv_heads",
-              "Hkv",
-              8,
-              "Key/value heads. Equal to heads gives MHA, 1 gives MQA"
-            ],
-            [
-              "head_dim",
-              "dh",
-              256,
+              "act",
+              null,
+              "gelu_tanh",
               null
             ],
             [
               "bias",
               null,
               false,
-              "Bias on the q/k/v/o projections"
-            ],
-            [
-              "o_bias",
-              null,
-              null,
-              "Override the output-projection bias (Qwen2.5 has qkv bias only)"
-            ],
-            [
-              "causal",
-              null,
-              true,
-              null
-            ],
-            [
-              "window",
-              "0",
-              0,
-              "Sliding-window width; 0 means full attention"
-            ],
-            [
-              "qk_norm",
-              null,
-              false,
-              "RMSNorm on the query and key heads (Qwen3, Gemma 3)"
-            ],
-            [
-              "rope",
-              null,
-              {
-                "theta": 10000
-              },
-              "RoPE settings, or null for no rotary embedding"
-            ],
-            [
-              "flash",
-              null,
-              true,
               null
             ]
           ],
@@ -9965,87 +9934,204 @@
             }
           },
           "contributes": {
-            "params": 1849688064,
-            "activeParams": 1849688064,
-            "shareOfParams": 0.20014573794084467,
-            "flopsPerToken": 6517948416,
-            "shareOfFlops": 0.3059958649207443,
-            "activationBytes": 13762560000,
-            "cacheBytesPerToken": 344064,
+            "params": 3236954112,
+            "activeParams": 3236954112,
+            "shareOfParams": 0.3502550413964782,
+            "flopsPerToken": 6473908224,
+            "shareOfFlops": 0.3143264433357092,
+            "activationBytes": 20963131392,
+            "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
           },
           "breakdown": [
             {
-              "path": "layers/block/attn/q_proj",
+              "path": "layers/global/mlp/gate",
               "type": "linear",
-              "params": 616562688
+              "params": 1078984704
             },
             {
-              "path": "layers/block/attn/o_proj",
+              "path": "layers/global/mlp/up",
               "type": "linear",
-              "params": 616562688
+              "params": 1078984704
             },
             {
-              "path": "layers/block/attn/k_proj",
+              "path": "layers/global/mlp/down",
               "type": "linear",
-              "params": 308281344
-            },
-            {
-              "path": "layers/block/attn/v_proj",
-              "type": "linear",
-              "params": 308281344
+              "params": 1078984704
             }
           ]
         },
         {
-          "path": "embed",
-          "type": "embedding",
+          "path": "layers/local/mlp/gate",
+          "type": "linear",
           "kind": "primitive",
           "docs": {
-            "summary": "Token embedding table.",
-            "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
+            "summary": "Dense projection.",
+            "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
           "copies": {
-            "total": 1,
-            "active": 1
+            "total": 21,
+            "active": 21
           },
           "params": [
             [
-              "vocab",
-              "V",
-              256000,
-              "Vocabulary size"
-            ],
-            [
-              "dim",
+              "in_features",
               "D",
               3584,
-              "Embedding width"
+              null
+            ],
+            [
+              "out_features",
+              "F",
+              14336,
+              null
+            ],
+            [
+              "bias",
+              null,
+              false,
+              null
             ]
           ],
           "shapes": {
             "in": {
-              "ids": "..."
+              "x": "... in_features"
             },
             "out": {
-              "y": "... dim"
+              "y": "... out_features"
             }
           },
           "contributes": {
-            "params": 917504000,
-            "activeParams": 917504000,
-            "shareOfParams": 0.09927863985160945,
-            "flopsPerToken": 0,
-            "shareOfFlops": 0,
+            "params": 1078984704,
+            "activeParams": 1078984704,
+            "shareOfParams": 0.11675168046549272,
+            "flopsPerToken": 2157969408,
+            "shareOfFlops": 0.10477548111190306,
+            "activationBytes": 4932501504,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/local/mlp/gate",
+              "type": "linear",
+              "params": 1078984704
+            }
+          ]
+        },
+        {
+          "path": "layers/local/mlp/up",
+          "type": "linear",
+          "kind": "primitive",
+          "docs": {
+            "summary": "Dense projection.",
+            "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
+          },
+          "copies": {
+            "total": 21,
+            "active": 21
+          },
+          "params": [
+            [
+              "in_features",
+              "D",
+              3584,
+              null
+            ],
+            [
+              "out_features",
+              "F",
+              14336,
+              null
+            ],
+            [
+              "bias",
+              null,
+              false,
+              null
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... in_features"
+            },
+            "out": {
+              "y": "... out_features"
+            }
+          },
+          "contributes": {
+            "params": 1078984704,
+            "activeParams": 1078984704,
+            "shareOfParams": 0.11675168046549272,
+            "flopsPerToken": 2157969408,
+            "shareOfFlops": 0.10477548111190306,
+            "activationBytes": 4932501504,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/local/mlp/up",
+              "type": "linear",
+              "params": 1078984704
+            }
+          ]
+        },
+        {
+          "path": "layers/local/mlp/down",
+          "type": "linear",
+          "kind": "primitive",
+          "docs": {
+            "summary": "Dense projection.",
+            "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
+          },
+          "copies": {
+            "total": 21,
+            "active": 21
+          },
+          "params": [
+            [
+              "in_features",
+              "F",
+              14336,
+              null
+            ],
+            [
+              "out_features",
+              "D",
+              3584,
+              null
+            ],
+            [
+              "bias",
+              null,
+              false,
+              null
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... in_features"
+            },
+            "out": {
+              "y": "... out_features"
+            }
+          },
+          "contributes": {
+            "params": 1078984704,
+            "activeParams": 1078984704,
+            "shareOfParams": 0.11675168046549272,
+            "flopsPerToken": 2157969408,
+            "shareOfFlops": 0.10477548111190306,
             "activationBytes": 0,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
           },
           "breakdown": [
             {
-              "path": "embed",
-              "type": "embedding",
-              "params": 917504000
+              "path": "layers/local/mlp/down",
+              "type": "linear",
+              "params": 1078984704
             }
           ]
         }
@@ -10071,12 +10157,6 @@
               "L",
               32,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -10853,12 +10933,6 @@
               "L",
               48,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -11655,12 +11729,6 @@
               "L",
               94,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -12457,12 +12525,6 @@
               "Lm",
               58,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -13274,12 +13336,6 @@
               null,
               1,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -13849,12 +13905,6 @@
               "L",
               32,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {
@@ -14178,12 +14228,6 @@
               "L",
               32,
               "How many times the subgraph is stacked"
-            ],
-            [
-              "pattern",
-              null,
-              null,
-              "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"
             ]
           ],
           "shapes": {

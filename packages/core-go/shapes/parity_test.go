@@ -12,7 +12,7 @@ import (
 
 // The expression algebra against the TypeScript it replaces. A symbol table
 // only exercises the paths its presets happen to take; these are the corners.
-// Regenerate with `bun run scripts/golden.ts`.
+// Regenerate with `go run ./cmd/golden`.
 
 type exprCase struct {
 	Src     string   `json:"src"`
@@ -57,7 +57,7 @@ func ctxOf(g exprGolden) shapes.EvalCtx {
 	return shapes.EvalCtx{Values: g.Env, Known: known}
 }
 
-func TestExpressionsMatchTypeScript(t *testing.T) {
+func TestExpressionsMatchTheGoldens(t *testing.T) {
 	g := loadExpressions(t)
 	ctx := ctxOf(g)
 
@@ -88,7 +88,7 @@ func TestExpressionsMatchTypeScript(t *testing.T) {
 	}
 }
 
-func TestExpressionErrorsMatchTypeScript(t *testing.T) {
+func TestExpressionErrorsMatchTheGoldens(t *testing.T) {
 	g := loadExpressions(t)
 	ctx := ctxOf(g)
 

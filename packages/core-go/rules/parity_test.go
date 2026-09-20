@@ -18,7 +18,7 @@ import (
 // are as much the specification as the severity is: "the cache dominates" and
 // "quantize the weights" send someone to different parts of their design. The
 // comparison is therefore on the whole finding, including the rounding in its
-// percentages. Regenerate with `bun run scripts/golden.ts`.
+// percentages. Regenerate with `go run ./cmd/golden`.
 
 type goldenFinding struct {
 	Rule     string `json:"rule"`
@@ -55,7 +55,7 @@ func loadRules(t *testing.T, name string) []goldenRuleCase {
 	return g.Cases
 }
 
-func TestFindingsMatchTypeScript(t *testing.T) {
+func TestFindingsMatchTheGoldens(t *testing.T) {
 	opts := variants()
 	for _, name := range presetNames(t) {
 		for _, c := range loadRules(t, name) {
@@ -153,7 +153,7 @@ func f(v float64) *float64 { return &v }
 func b(v bool) *bool       { return &v }
 func i(v int) *int         { return &v }
 
-// variants must stay in step with ANALYSIS_VARIANTS in scripts/golden.ts.
+// variants must stay in step with OperatingPoints in golden/cases.go.
 func variants() map[string]analysis.Options {
 	return map[string]analysis.Options{
 		"default": {},
@@ -198,14 +198,14 @@ func loadDoc(t *testing.T, name string) *ir.Doc {
 	return doc
 }
 
-// TestBrokenDesignsMatchTypeScript covers the rules a correct preset never
+// TestBrokenDesignsMatchTheGoldens covers the rules a correct preset never
 // reaches.
 //
 // Eight of the eighteen rules only fire on a mistake, and their messages are
 // what a person sees when their design is broken — the most important sentences
 // the engine writes. The documents live in the golden file next to the findings
 // they produce, so a fixture and its expectations cannot drift apart.
-func TestBrokenDesignsMatchTypeScript(t *testing.T) {
+func TestBrokenDesignsMatchTheGoldens(t *testing.T) {
 	raw, err := os.ReadFile(filepath.Join("..", "testdata", "broken.json"))
 	if err != nil {
 		t.Fatalf("read broken golden: %v", err)

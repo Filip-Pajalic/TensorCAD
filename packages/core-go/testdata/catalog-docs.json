@@ -971,12 +971,6 @@
           "int",
           "How many times the subgraph is stacked",
           null
-        ],
-        [
-          "pattern",
-          "str",
-          "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times",
-          null
         ]
       ]
     },

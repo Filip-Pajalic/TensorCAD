@@ -119,12 +119,12 @@ Done:
 
 - `mla_attention`, DeepSeek's latent attention, with `split`, `concat`, `expand_heads` and a `kv_latent_cache` primitive so the compressed cache is modelled honestly rather than approximated. DeepSeek-V3 reproduces 671.03B total, 37.55B active and 70,272 cache bytes per token.
 - `mamba2_block` with `conv1d` and `ssd_scan`, and irregular stacks written as one character per layer. Nemotron-H-8B reproduces exactly, and correctly reports a fixed per-sequence state instead of a cache that grows per token.
-- Hugging Face `config.json` import for nine families, asserted against the hand-written presets.
+- Hugging Face `config.json` import for nine families, asserted against the hand-written presets on both the parameter count and the cache.
+- Alternating local and global attention, as Gemma 2 and 3 use it: a repeat of the group rather than of the layer, so half of Gemma-2-9B's cache is bounded by the window. At 128k context that is 21.66 GiB where treating every layer as global said 42.00 GiB. The importer builds it rather than warning about it.
 
 Remaining:
 - `gated_deltanet_block` via `fla`, and the 2026 linear-attention hybrids that use it.
 - `mtp_head`, logit softcap, value embeddings and U-net skips.
-- Gemma 2 and 3's alternating local and global attention layers: the importer warns rather than approximating them.
 - Presets: Gemma-3, Jamba, and 2026 models as their configs stabilize.
 - Analysis extensions: MoE active vs resident, MLA absorbed vs decompressed KV, SSM fixed state, sliding-window cache, expert parallelism.
 - Parallelism planner: pick DP/FSDP/TP/PP/EP for a cluster and show memory per GPU.

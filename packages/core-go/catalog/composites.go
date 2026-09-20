@@ -763,11 +763,17 @@ var repeatContainer = &BlockDef{
 	Kind: "container", Type: "repeat", Category: "container",
 	Params: ParamList{
 		{"count", pInt(1, "How many times the subgraph is stacked")},
-		{"pattern", ParamSpec{Type: ParamStr, Default: nil, HasDefault: true,
-			Doc: "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"}},
 	},
 	Docs: BlockDocs{
 		Summary: "Stacks its subgraph count times. The subgraph's input and output shapes must match.",
+		// There was a `pattern` parameter here, for hybrid stacks written as one
+		// character per layer. Nothing ever read it: the inspector offered the
+		// field, the analysis ignored what was typed into it, and the answer was
+		// wrong without saying so. The two things it was meant for both work
+		// without it. A stack that alternates on a fixed period is a repeat of
+		// the *group* — Gemma's local and global layers are one repeat of L/2
+		// holding both blocks in series. A stack with no period at all is
+		// written out, as Nemotron-H's fifty-two layers are.
 	},
 }
 

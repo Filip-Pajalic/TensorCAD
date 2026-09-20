@@ -34,6 +34,22 @@ type Hybrid struct {
 	Mamba   Mamba
 }
 
+// Alternating is a stack whose attention layers are not all the same: most
+// attend within a bounded window and one in every Period attends to everything.
+//
+// Gemma 2 alternates every other layer; Gemma 3 makes every sixth one global.
+// The repeating unit is the group, not the layer, which is why this becomes a
+// repeat of L/Period with Period blocks inside it rather than anything new.
+// When Period does not divide L the leftover layers are all local, and they
+// follow as a second stack.
+type Alternating struct {
+	// Window is how far back a local layer may attend.
+	Window float64
+	// Period is layers per group. The last one in each group is the global one,
+	// which is the order every model doing this uses: local first.
+	Period float64
+}
+
 // MLA is latent attention. When present, KVHeads and HeadDim are unused.
 type MLA struct {
 	QLora   float64
@@ -96,6 +112,9 @@ type DecoderSpec struct {
 	MLPBias   *bool
 	QKNorm    *bool
 	Window    *float64
+	// Alternating, when set, overrides Window: the stack is local and global
+	// layers in a fixed cycle rather than one kind throughout.
+	Alternating *Alternating
 
 	Hybrid *Hybrid
 	MLA    *MLA
@@ -199,6 +218,9 @@ func DecoderOnly(spec DecoderSpec) *ir.Doc {
 	if spec.Window != nil && *spec.Window != 0 {
 		s.design("W", *spec.Window, "Sliding-window width")
 	}
+	if spec.Alternating != nil {
+		s.design("W", spec.Alternating.Window, "Sliding-window width on the local attention layers")
+	}
 	if spec.MLA != nil {
 		s.design("Ql", spec.MLA.QLora, "Compressed query width")
 		s.design("Kl", spec.MLA.KVLora, "Cached latent width")
@@ -286,6 +308,8 @@ func DecoderOnly(spec DecoderSpec) *ir.Doc {
 				fmt.Sprintf("Dense block x%s", num(spec.MoE.DenseLayers))),
 			stack("layers", "Lm", moeParams,
 				fmt.Sprintf("Sparse block x%s", num(spec.Layers-spec.MoE.DenseLayers))))
+	case spec.Alternating != nil:
+		stacks = append(stacks, alternatingStacks(spec, moeParams)...)
 	default:
 		stacks = append(stacks,
 			stack("layers", "L", moeParams, fmt.Sprintf("Transformer block x%s", num(spec.Layers))))
@@ -329,6 +353,71 @@ func DecoderOnly(spec DecoderSpec) *ir.Doc {
 
 	doc.Graph = ir.Graph{Nodes: nodes, Edges: edges}
 	return doc
+}
+
+// alternatingStacks writes a local/global cycle as one repeat of the group.
+//
+// A group is Period-1 windowed layers and then one full-attention layer, in
+// series, which is exactly what the cycle is; repeating that L/Period times
+// gives back the stack. Everything downstream — the parameter count, the cache,
+// the attention FLOPs — falls out of the blocks themselves, because a windowed
+// layer already reports a cache bounded by its window rather than one that
+// grows.
+func alternatingStacks(spec DecoderSpec, params map[string]any) []ir.NodeDef {
+	period := spec.Alternating.Period
+	if period < 2 {
+		period = 2
+	}
+	locals := int(period) - 1
+	groups := int(spec.Layers / period)
+	leftover := int(spec.Layers) - groups*int(period)
+
+	local := func(params map[string]any) map[string]any { return withWindow(params, "W") }
+	global := func(params map[string]any) map[string]any { return withWindow(params, 0.0) }
+
+	var nodes []ir.NodeDef
+	var edges []ir.Edge
+	nodes = append(nodes, ir.NodeDef{ID: "_in", Type: "boundary_in",
+		Params: map[string]any{"ports": map[string]any{"x": "B T D"}}})
+	tail := "_in:x"
+	for i := 0; i < locals; i++ {
+		id := "local"
+		if locals > 1 {
+			id = fmt.Sprintf("local%d", i+1)
+		}
+		nodes = append(nodes, ir.NodeDef{ID: id, Type: "transformer_block", Params: local(params)})
+		edges = append(edges, ir.Edge{tail, id + ":x"})
+		tail = id + ":y"
+	}
+	nodes = append(nodes, ir.NodeDef{ID: "global", Type: "transformer_block", Params: global(params)})
+	edges = append(edges, ir.Edge{tail, "global:x"})
+	nodes = append(nodes, ir.NodeDef{ID: "_out", Type: "boundary_out",
+		Params: map[string]any{"ports": map[string]any{"x": "B T D"}}})
+	edges = append(edges, ir.Edge{"global:y", "_out:x"})
+
+	out := []ir.NodeDef{{
+		ID: "layers", Type: "repeat",
+		Label:  fmt.Sprintf("%d local + 1 global x%d", locals, groups),
+		Params: map[string]any{"count": fmt.Sprintf("L/%s", num(period))},
+		Graph:  &ir.Graph{Nodes: nodes, Edges: edges},
+	}}
+	if leftover > 0 {
+		// The cycle does not divide the depth, so the tail of the stack is
+		// local layers with no global one after them.
+		out = append(out, stack("tail_layers", num(float64(leftover)), local(params),
+			fmt.Sprintf("Local block x%d", leftover)))
+	}
+	return out
+}
+
+// withWindow is params with one value changed, leaving the original alone.
+func withWindow(params map[string]any, window any) map[string]any {
+	out := make(map[string]any, len(params))
+	for k, v := range params {
+		out[k] = v
+	}
+	out["window"] = window
+	return out
 }
 
 func stack(id, count string, params map[string]any, label string) ir.NodeDef {

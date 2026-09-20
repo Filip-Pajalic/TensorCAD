@@ -15,7 +15,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { generateTorch, getPreset, loadEngine } from "../src/node.js";
+import { generateTorch, getPreset, loadEngine, PRESET_NAMES } from "../src/node.js";
 
 await loadEngine();
 
@@ -171,6 +171,54 @@ describe.skipIf(!available)("tensorcad-runtime verify", () => {
         expect(output?.[1]).not.toBe("128");
       } finally {
         rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+});
+
+/**
+ * Every preset, through `ast.parse`.
+ *
+ * Cheaper than the block above and answering a different question: not "does
+ * this model have the weights we said" but "is this a Python file at all".
+ * Nothing in the IR stops a block being called `global` or `class`, and
+ * `self.global = ...` is a syntax error — a file that imports nowhere, in a
+ * design whose every number is right. Needs an interpreter, not PyTorch.
+ */
+const PYTHONS = ["python", "python3"] as const;
+
+function anyPython(): string | null {
+  for (const exe of PYTHONS) {
+    const probe = spawnSync(exe, ["-c", "import ast"], { encoding: "utf8" });
+    if (probe.status === 0) return exe;
+  }
+  return null;
+}
+
+const python = anyPython();
+if (!python) console.warn("[python.test] skipping the parse check: no interpreter");
+
+describe.skipIf(!python)("every generated model is valid Python", () => {
+  it(
+    "parses, for all twenty presets and both mixture-of-experts dispatches",
+    () => {
+      for (const name of PRESET_NAMES) {
+        const doc = getPreset(name);
+        for (const options of [{}, { moeDispatch: "dense" as const }]) {
+          const model = generateTorch(doc, options).files.find((f) => f.path === "model.py");
+          expect({ name, has: model !== undefined }).toEqual({ name, has: true });
+          const check = spawnSync(
+            python!,
+            ["-c", "import ast,sys;ast.parse(sys.stdin.read())"],
+            { encoding: "utf8", input: model!.contents },
+          );
+          expect({ name, dispatch: options.moeDispatch ?? "sparse", error: check.stderr.trim() }).toEqual({
+            name,
+            dispatch: options.moeDispatch ?? "sparse",
+            error: "",
+          });
+        }
       }
     },
     TIMEOUT_MS,

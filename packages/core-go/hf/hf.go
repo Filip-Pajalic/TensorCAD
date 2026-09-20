@@ -242,10 +242,16 @@ func Import(config Config, name string) (*Result, error) {
 		if v, ok := flag(config, "tie_word_embeddings"); ok {
 			spec.Tied = b(v)
 		}
-		if w, ok := num(config, "sliding_window"); ok && w != 0 && typ == "gemma2" {
-			warnings = append(warnings,
-				"Gemma 2 alternates sliding-window and full-attention layers. This import makes every layer full-attention, "+
-					"which is right for the parameter count but understates how much the cache is reduced.")
+		// Gemma alternates: most layers attend within a window and one in every
+		// `sliding_window_pattern` attends to everything. Gemma 2 writes no
+		// pattern because it is always every other layer.
+		if w, ok := num(config, "sliding_window"); ok && w != 0 {
+			period := 2.0
+			if p, ok := num(config, "sliding_window_pattern"); ok && p >= 2 {
+				period = p
+			}
+			spec.Alternating = &design.Alternating{Window: w, Period: period}
+			_ = w // fault
 		}
 	}
 

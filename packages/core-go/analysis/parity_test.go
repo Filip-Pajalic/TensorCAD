@@ -14,15 +14,15 @@ import (
 	"github.com/tensorcad/core/presets"
 )
 
-// The analysis against the TypeScript, number for number.
+// The analysis against the goldens, number for number.
 //
 // Three operating points per preset, because the default one never exercises
 // sharding, full recomputation or an eager attention kernel, and those are
 // three of the places the arithmetic is easiest to get subtly wrong. The
-// variants below must stay in step with ANALYSIS_VARIANTS in scripts/golden.ts;
+// variants below must stay in step with OperatingPoints in golden/cases.go;
 // each case records its resolved options, and those are compared first, so
 // drift shows up as "the two engines were asked different questions" rather
-// than as an unexplained number. Regenerate with `bun run scripts/golden.ts`.
+// than as an unexplained number. Regenerate with `go run ./cmd/golden`.
 
 func f(v float64) *float64 { return &v }
 func b(v bool) *bool       { return &v }
@@ -216,7 +216,7 @@ func loadAnalysis(t *testing.T, name string) []goldenCase {
 	return g.Cases
 }
 
-func TestAnalysisMatchesTypeScript(t *testing.T) {
+func TestAnalysisMatchesTheGoldens(t *testing.T) {
 	opts := variants()
 	for _, name := range presetNames(t) {
 		for _, c := range loadAnalysis(t, name) {
@@ -447,7 +447,7 @@ func compareMap(t *testing.T, label string, got map[string]float64, want []pair,
 	}
 	sort.Strings(extra)
 	for _, k := range extra {
-		t.Errorf("%s: %s = %s is not in the TypeScript", label, k, show(got[k]))
+		t.Errorf("%s: %s = %s is not in the golden", label, k, show(got[k]))
 	}
 }
 

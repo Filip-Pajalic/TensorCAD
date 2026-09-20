@@ -30,7 +30,7 @@
         {
           "rule": "logits-memory",
           "severity": "info",
-          "message": "The logits buffer is 9.77 GiB, which is 89% of all activation memory.",
+          "message": "The logits buffer is 9.77 GiB, which is 94% of all activation memory.",
           "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
         },
         {

@@ -23,7 +23,7 @@ import (
 // as the text the editor would print, so agreeing means agreeing on the
 // polynomial and on how it reads: `B T 4096` where the TypeScript says
 // `B T D` is a right number and a wrong answer. Regenerate with
-// `bun run scripts/golden.ts`.
+// `go run ./cmd/golden`.
 
 type goldenIssue struct {
 	Path     string `json:"path"`
@@ -81,7 +81,7 @@ func loadGolden(t *testing.T, name string) goldenFile {
 	return g
 }
 
-func TestInferredShapesMatchTypeScript(t *testing.T) {
+func TestInferredShapesMatchTheGoldens(t *testing.T) {
 	for _, name := range presetNames(t) {
 		g := loadGolden(t, name)
 		for _, mode := range []struct {
@@ -163,7 +163,7 @@ func compareStrings(t *testing.T, label string, got map[string]string, want [][2
 	}
 	sort.Strings(extra)
 	for _, k := range extra {
-		t.Errorf("%s: %s = %q is not in the TypeScript", label, k, got[k])
+		t.Errorf("%s: %s = %q is not in the golden", label, k, got[k])
 	}
 }
 

@@ -1,13 +1,17 @@
 // Package core is the TensorCAD analysis engine.
 //
-// This is the Go port of `packages/core`, which it replaces: the IR, the
-// symbolic shape algebra, the block catalog, the design rules, the analysis and
-// the code generator. The frontend is a client of it — every number on screen
-// comes from here, over Wails bindings, rather than being recomputed in the
-// window.
+// The IR, the symbolic shape algebra, the block catalog, shape inference, the
+// design rules, the analysis and the code generator. Everything that computes a
+// number about a design is here, and every client — the editor, the command
+// line, the MCP server, the desktop shell — asks this rather than working it
+// out again, so an answer cannot depend on where it was asked. The editor
+// reaches it as WebAssembly, built by `cmd/wasm`.
 //
-// The port is staged, and each stage is proven rather than asserted: the
-// TypeScript engine writes golden files for all seventeen presets under
-// `testdata/`, and the Go tests read the same documents and require the same
-// answers. `bun run scripts/golden.ts` regenerates them.
+// What holds it to its answers is `testdata/`: the symbol table and inferred
+// shapes for all twenty presets, the full analysis and the design-rule check at
+// three operating points, every byte of three generated `model.py` variants,
+// and the prose of every block. `go run ./cmd/golden` rewrites those files, and
+// nothing else does — a test that rewrote its own expectations would pass
+// whatever the engine did. They began as the answers of the TypeScript this was
+// ported from, and each one was compared against it before that was deleted.
 package core

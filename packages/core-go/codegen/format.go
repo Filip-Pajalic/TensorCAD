@@ -24,7 +24,28 @@ func pyName(raw string) string {
 	if s != "" && s[0] >= '0' && s[0] <= '9' {
 		return "_" + s
 	}
+	if pyKeywords[s] {
+		// PEP 8's answer, and the only one that keeps the name readable:
+		// `self.global_` rather than `self.global`, which is a syntax error.
+		return s + "_"
+	}
 	return s
+}
+
+// pyKeywords is every reserved word in Python 3, which cannot be an attribute
+// name, a local variable or an argument.
+//
+// A design is free to call a block `global` or `class`; nothing in the IR says
+// otherwise, and a person laying out attention layers reaches for `local` and
+// `global` without a thought. The file that came out of that did not parse.
+var pyKeywords = map[string]bool{
+	"False": true, "None": true, "True": true, "and": true, "as": true,
+	"assert": true, "async": true, "await": true, "break": true, "class": true,
+	"continue": true, "def": true, "del": true, "elif": true, "else": true,
+	"except": true, "finally": true, "for": true, "from": true, "global": true,
+	"if": true, "import": true, "in": true, "is": true, "lambda": true,
+	"nonlocal": true, "not": true, "or": true, "pass": true, "raise": true,
+	"return": true, "try": true, "while": true, "with": true, "yield": true,
 }
 
 // pascal joins the words of a name into a Python class name.

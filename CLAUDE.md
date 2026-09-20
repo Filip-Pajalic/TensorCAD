@@ -144,6 +144,14 @@ A catalog entry needs: parameter specs, port patterns, `docs.summary` and `docs.
 
 ## Known gaps
 
-See `ROADMAP.md` M5. The main ones: linear-attention blocks (gated DeltaNet), multi-token prediction, and Gemma's alternating local and global attention layers, which the importer warns about rather than approximating.
+See `ROADMAP.md` M5. The main ones: linear-attention blocks (gated DeltaNet) and multi-token prediction.
+
+A stack whose layers are not all alike needs no new mechanism, and there is no
+`pattern` parameter to reach for — there was one, it was never implemented, and
+it has been removed. When the variation has a period, the repeating unit is the
+*group*: Gemma 2 is one `repeat` of `L/2` holding a windowed block and a full
+one in series, which is what makes half its cache stop growing with the
+sequence. When there is no period, the layers are written out, as
+Nemotron-H's fifty-two are.
 
 Two figures in `docs/reference/analysis-math.md` were wrong in the original research and are corrected by the implementation: the Llama-3-70B cache is 320 KiB per token, not 160, and the per-layer activation estimate of 147 KB assumes a fused gated feed-forward. An unfused one keeps two more intermediate tensors, which is the 176 KB the analysis reports.

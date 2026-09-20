@@ -45,48 +45,92 @@
             3584
           ],
           [
-            "layers/block/attn/k_proj",
+            "layers/global/attn/k_proj",
+            154140672
+          ],
+          [
+            "layers/global/attn/o_proj",
             308281344
           ],
           [
-            "layers/block/attn/o_proj",
-            616562688
-          ],
-          [
-            "layers/block/attn/q_proj",
-            616562688
-          ],
-          [
-            "layers/block/attn/v_proj",
+            "layers/global/attn/q_proj",
             308281344
           ],
           [
-            "layers/block/mlp/down",
-            2157969408
+            "layers/global/attn/v_proj",
+            154140672
           ],
           [
-            "layers/block/mlp/gate",
-            2157969408
+            "layers/global/mlp/down",
+            1078984704
           ],
           [
-            "layers/block/mlp/up",
-            2157969408
+            "layers/global/mlp/gate",
+            1078984704
           ],
           [
-            "layers/block/norm1",
-            150528
+            "layers/global/mlp/up",
+            1078984704
           ],
           [
-            "layers/block/norm2",
-            150528
+            "layers/global/norm1",
+            75264
           ],
           [
-            "layers/block/post_attn_norm",
-            150528
+            "layers/global/norm2",
+            75264
           ],
           [
-            "layers/block/post_mlp_norm",
-            150528
+            "layers/global/post_attn_norm",
+            75264
+          ],
+          [
+            "layers/global/post_mlp_norm",
+            75264
+          ],
+          [
+            "layers/local/attn/k_proj",
+            154140672
+          ],
+          [
+            "layers/local/attn/o_proj",
+            308281344
+          ],
+          [
+            "layers/local/attn/q_proj",
+            308281344
+          ],
+          [
+            "layers/local/attn/v_proj",
+            154140672
+          ],
+          [
+            "layers/local/mlp/down",
+            1078984704
+          ],
+          [
+            "layers/local/mlp/gate",
+            1078984704
+          ],
+          [
+            "layers/local/mlp/up",
+            1078984704
+          ],
+          [
+            "layers/local/norm1",
+            75264
+          ],
+          [
+            "layers/local/norm2",
+            75264
+          ],
+          [
+            "layers/local/post_attn_norm",
+            75264
+          ],
+          [
+            "layers/local/post_mlp_norm",
+            75264
           ]
         ],
         "byCategory": [
@@ -120,13 +164,13 @@
       },
       "flops": {
         "fwdDense": 18482200576,
-        "fwdAttention": 2818572288,
-        "fwdAttentionUnmasked": 5637144576,
-        "fwdTotal": 21300772864,
-        "fwdTotalUnmasked": 24119345152,
+        "fwdAttention": 2113929216,
+        "fwdAttentionUnmasked": 4227858432,
+        "fwdTotal": 20596129792,
+        "fwdTotalUnmasked": 22710059008,
         "elementwise": 9691136,
-        "trainPerToken": 63902318592,
-        "attentionShare": 0.13232253618194348,
+        "trainPerToken": 61788389376,
+        "attentionShare": 0.10263720598717035,
         "ruleOfThumb2N": 16648403968,
         "ruleOfThumb6N": 49945211904,
         "byPath": [
@@ -135,42 +179,74 @@
             1835008000
           ],
           [
-            "layers/block/attn/attn",
-            2818572288
+            "layers/global/attn/attn",
+            1409286144
           ],
           [
-            "layers/block/attn/k_proj",
+            "layers/global/attn/k_proj",
+            308281344
+          ],
+          [
+            "layers/global/attn/o_proj",
             616562688
           ],
           [
-            "layers/block/attn/o_proj",
-            1233125376
-          ],
-          [
-            "layers/block/attn/q_proj",
-            1233125376
-          ],
-          [
-            "layers/block/attn/v_proj",
+            "layers/global/attn/q_proj",
             616562688
           ],
           [
-            "layers/block/mlp/down",
-            4315938816
+            "layers/global/attn/v_proj",
+            308281344
           ],
           [
-            "layers/block/mlp/gate",
-            4315938816
+            "layers/global/mlp/down",
+            2157969408
           ],
           [
-            "layers/block/mlp/up",
-            4315938816
+            "layers/global/mlp/gate",
+            2157969408
+          ],
+          [
+            "layers/global/mlp/up",
+            2157969408
+          ],
+          [
+            "layers/local/attn/attn",
+            704643072
+          ],
+          [
+            "layers/local/attn/k_proj",
+            308281344
+          ],
+          [
+            "layers/local/attn/o_proj",
+            616562688
+          ],
+          [
+            "layers/local/attn/q_proj",
+            616562688
+          ],
+          [
+            "layers/local/attn/v_proj",
+            308281344
+          ],
+          [
+            "layers/local/mlp/down",
+            2157969408
+          ],
+          [
+            "layers/local/mlp/gate",
+            2157969408
+          ],
+          [
+            "layers/local/mlp/up",
+            2157969408
           ]
         ],
         "byCategory": [
           [
             "attention",
-            2818572288
+            2113929216
           ],
           [
             "head",
@@ -183,12 +259,16 @@
         ]
       },
       "kv": {
-        "bytesPerToken": 344064,
-        "bytesPerSequenceFixed": 0,
+        "bytesPerToken": 172032,
+        "bytesPerSequenceFixed": 704643072,
         "byPath": [
           [
-            "layers/block/attn/attn",
-            344064
+            "layers/global/attn/attn",
+            172032
+          ],
+          [
+            "layers/local/attn/attn",
+            704643072
           ]
         ]
       },
@@ -222,93 +302,153 @@
               58720256
             ],
             [
-              "layers/block/_in",
-              2466250752
+              "layers/global/_in",
+              1233125376
             ],
             [
-              "layers/block/attn",
-              2466250752
+              "layers/global/attn",
+              1233125376
             ],
             [
-              "layers/block/attn/_in",
-              2466250752
+              "layers/global/attn/_in",
+              1233125376
             ],
             [
-              "layers/block/attn/attn",
-              2840592384
+              "layers/global/attn/attn",
+              1420296192
             ],
             [
-              "layers/block/attn/o_merge",
-              2818572288
-            ],
-            [
-              "layers/block/attn/rope_k",
+              "layers/global/attn/o_merge",
               1409286144
             ],
             [
-              "layers/block/attn/rope_q",
-              2818572288
+              "layers/global/attn/rope_k",
+              704643072
             ],
             [
-              "layers/block/attn/v_heads",
+              "layers/global/attn/rope_q",
               1409286144
             ],
             [
-              "layers/block/mlp",
-              2466250752
+              "layers/global/attn/v_heads",
+              704643072
             ],
             [
-              "layers/block/mlp/_in",
-              2466250752
+              "layers/global/mlp",
+              1233125376
             ],
             [
-              "layers/block/mlp/act",
-              9865003008
+              "layers/global/mlp/_in",
+              1233125376
             ],
             [
-              "layers/block/mlp/gate",
-              9865003008
+              "layers/global/mlp/act",
+              4932501504
             ],
             [
-              "layers/block/mlp/gated",
-              9865003008
+              "layers/global/mlp/gate",
+              4932501504
             ],
             [
-              "layers/block/mlp/up",
-              9865003008
+              "layers/global/mlp/gated",
+              4932501504
             ],
             [
-              "layers/block/resid1",
-              2466250752
+              "layers/global/mlp/up",
+              4932501504
+            ],
+            [
+              "layers/global/resid1",
+              1233125376
+            ],
+            [
+              "layers/local/_in",
+              1233125376
+            ],
+            [
+              "layers/local/attn",
+              1233125376
+            ],
+            [
+              "layers/local/attn/_in",
+              1233125376
+            ],
+            [
+              "layers/local/attn/attn",
+              1420296192
+            ],
+            [
+              "layers/local/attn/o_merge",
+              1409286144
+            ],
+            [
+              "layers/local/attn/rope_k",
+              704643072
+            ],
+            [
+              "layers/local/attn/rope_q",
+              1409286144
+            ],
+            [
+              "layers/local/attn/v_heads",
+              704643072
+            ],
+            [
+              "layers/local/mlp",
+              1233125376
+            ],
+            [
+              "layers/local/mlp/_in",
+              1233125376
+            ],
+            [
+              "layers/local/mlp/act",
+              4932501504
+            ],
+            [
+              "layers/local/mlp/gate",
+              4932501504
+            ],
+            [
+              "layers/local/mlp/gated",
+              4932501504
+            ],
+            [
+              "layers/local/mlp/up",
+              4932501504
+            ],
+            [
+              "layers/local/resid1",
+              1233125376
             ]
           ]
         },
         "infer": {
           "weights": 18483411968,
-          "kv": 2818572288,
-          "overhead": 4260396851.2000003,
-          "total": 25562381107.2
+          "kv": 2113929216,
+          "overhead": 4119468236.8,
+          "total": 24716809420.8
         },
         "optimizerLabel": "AdamW, mixed precision (16 B/param)",
         "notes": []
       },
       "throughput": {
         "ridgePoint": 295.2238805970149,
-        "decodeBytesPerStep": 21301984256,
-        "decodeFlopsPerStep": 21300772864,
-        "decodeSecondsPerStep": 0.006358801270447761,
-        "decodeTokensPerSecond": 157.26234512901894,
+        "decodeBytesPerStep": 20597341184,
+        "decodeFlopsPerStep": 20596129792,
+        "decodeSecondsPerStep": 0.006148460054925373,
+        "decodeTokensPerSecond": 162.64235126630217,
         "memoryBound": true,
-        "prefillSeconds": 0.4410918384779778,
+        "prefillSeconds": 0.4265002407888372,
         "notes": [
           "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
         ]
       },
       "cost": {
-        "totalFlops": 1.063871614411453e+22,
-        "gpuHours": 7470.169183318258,
-        "wallClockHours": 7470.169183318258,
-        "dollars": 18675.422958295643,
+        "totalFlops": 1.0286780668637274e+22,
+        "gpuHours": 7223.05125030704,
+        "wallClockHours": 7223.05125030704,
+        "dollars": 18057.628125767602,
         "tokens": 166484039680,
         "mfu": 0.4
       },
@@ -331,14 +471,14 @@
       },
       "errors": [],
       "flat": {
-        "nodes": 35,
-        "blocks": 39,
+        "nodes": 63,
+        "blocks": 70,
         "repeats": [
           {
             "path": "layers",
             "type": "repeat",
-            "count": 42,
-            "active": 42
+            "count": 21,
+            "active": 21
           }
         ],
         "errors": []
@@ -388,48 +528,92 @@
             3584
           ],
           [
-            "layers/block/attn/k_proj",
+            "layers/global/attn/k_proj",
+            154140672
+          ],
+          [
+            "layers/global/attn/o_proj",
             308281344
           ],
           [
-            "layers/block/attn/o_proj",
-            616562688
-          ],
-          [
-            "layers/block/attn/q_proj",
-            616562688
-          ],
-          [
-            "layers/block/attn/v_proj",
+            "layers/global/attn/q_proj",
             308281344
           ],
           [
-            "layers/block/mlp/down",
-            2157969408
+            "layers/global/attn/v_proj",
+            154140672
           ],
           [
-            "layers/block/mlp/gate",
-            2157969408
+            "layers/global/mlp/down",
+            1078984704
           ],
           [
-            "layers/block/mlp/up",
-            2157969408
+            "layers/global/mlp/gate",
+            1078984704
           ],
           [
-            "layers/block/norm1",
-            150528
+            "layers/global/mlp/up",
+            1078984704
           ],
           [
-            "layers/block/norm2",
-            150528
+            "layers/global/norm1",
+            75264
           ],
           [
-            "layers/block/post_attn_norm",
-            150528
+            "layers/global/norm2",
+            75264
           ],
           [
-            "layers/block/post_mlp_norm",
-            150528
+            "layers/global/post_attn_norm",
+            75264
+          ],
+          [
+            "layers/global/post_mlp_norm",
+            75264
+          ],
+          [
+            "layers/local/attn/k_proj",
+            154140672
+          ],
+          [
+            "layers/local/attn/o_proj",
+            308281344
+          ],
+          [
+            "layers/local/attn/q_proj",
+            308281344
+          ],
+          [
+            "layers/local/attn/v_proj",
+            154140672
+          ],
+          [
+            "layers/local/mlp/down",
+            1078984704
+          ],
+          [
+            "layers/local/mlp/gate",
+            1078984704
+          ],
+          [
+            "layers/local/mlp/up",
+            1078984704
+          ],
+          [
+            "layers/local/norm1",
+            75264
+          ],
+          [
+            "layers/local/norm2",
+            75264
+          ],
+          [
+            "layers/local/post_attn_norm",
+            75264
+          ],
+          [
+            "layers/local/post_mlp_norm",
+            75264
           ]
         ],
         "byCategory": [
@@ -463,13 +647,13 @@
       },
       "flops": {
         "fwdDense": 18482200576,
-        "fwdAttention": 2818572288,
-        "fwdAttentionUnmasked": 5637144576,
-        "fwdTotal": 21300772864,
-        "fwdTotalUnmasked": 24119345152,
+        "fwdAttention": 2113929216,
+        "fwdAttentionUnmasked": 4227858432,
+        "fwdTotal": 20596129792,
+        "fwdTotalUnmasked": 22710059008,
         "elementwise": 9691136,
-        "trainPerToken": 85203091456,
-        "attentionShare": 0.13232253618194348,
+        "trainPerToken": 82384519168,
+        "attentionShare": 0.10263720598717035,
         "ruleOfThumb2N": 16648403968,
         "ruleOfThumb6N": 49945211904,
         "byPath": [
@@ -478,42 +662,74 @@
             1835008000
           ],
           [
-            "layers/block/attn/attn",
-            2818572288
+            "layers/global/attn/attn",
+            1409286144
           ],
           [
-            "layers/block/attn/k_proj",
+            "layers/global/attn/k_proj",
+            308281344
+          ],
+          [
+            "layers/global/attn/o_proj",
             616562688
           ],
           [
-            "layers/block/attn/o_proj",
-            1233125376
-          ],
-          [
-            "layers/block/attn/q_proj",
-            1233125376
-          ],
-          [
-            "layers/block/attn/v_proj",
+            "layers/global/attn/q_proj",
             616562688
           ],
           [
-            "layers/block/mlp/down",
-            4315938816
+            "layers/global/attn/v_proj",
+            308281344
           ],
           [
-            "layers/block/mlp/gate",
-            4315938816
+            "layers/global/mlp/down",
+            2157969408
           ],
           [
-            "layers/block/mlp/up",
-            4315938816
+            "layers/global/mlp/gate",
+            2157969408
+          ],
+          [
+            "layers/global/mlp/up",
+            2157969408
+          ],
+          [
+            "layers/local/attn/attn",
+            704643072
+          ],
+          [
+            "layers/local/attn/k_proj",
+            308281344
+          ],
+          [
+            "layers/local/attn/o_proj",
+            616562688
+          ],
+          [
+            "layers/local/attn/q_proj",
+            616562688
+          ],
+          [
+            "layers/local/attn/v_proj",
+            308281344
+          ],
+          [
+            "layers/local/mlp/down",
+            2157969408
+          ],
+          [
+            "layers/local/mlp/gate",
+            2157969408
+          ],
+          [
+            "layers/local/mlp/up",
+            2157969408
           ]
         ],
         "byCategory": [
           [
             "attention",
-            2818572288
+            2113929216
           ],
           [
             "head",
@@ -526,12 +742,16 @@
         ]
       },
       "kv": {
-        "bytesPerToken": 172032,
-        "bytesPerSequenceFixed": 0,
+        "bytesPerToken": 86016,
+        "bytesPerSequenceFixed": 352321536,
         "byPath": [
           [
-            "layers/block/attn/attn",
-            172032
+            "layers/global/attn/attn",
+            86016
+          ],
+          [
+            "layers/local/attn/attn",
+            352321536
           ]
         ]
       },
@@ -541,15 +761,15 @@
           "weights": 18483411968,
           "grads": 18483411968,
           "optimizer": 55450235904,
-          "activations": 11777605632,
+          "activations": 11161042944,
           "logits": 10485760000,
-          "total": 104194665472,
+          "total": 103578102784,
           "perGpu": {
             "weights": 288803312,
             "grads": 288803312,
             "optimizer": 866409936,
-            "activations": 1472200704,
-            "total": 2916217264
+            "activations": 1395130368,
+            "total": 2839146928
           },
           "activationsByPath": [
             [
@@ -562,15 +782,15 @@
             ],
             [
               "layers",
-              1233125376
+              616562688
             ]
           ]
         },
         "infer": {
           "weights": 9241705984,
-          "kv": 45097156608,
-          "overhead": 10867772518.400002,
-          "total": 65206635110.4
+          "kv": 33822867456,
+          "overhead": 8612914688,
+          "total": 51677488128
         },
         "optimizerLabel": "8-bit AdamW (10 B/param)",
         "notes": [
@@ -580,21 +800,21 @@
       },
       "throughput": {
         "ridgePoint": 590.7462686567164,
-        "decodeBytesPerStep": 54338862592,
-        "decodeFlopsPerStep": 681624731648,
-        "decodeSecondsPerStep": 0.01622055599761194,
-        "decodeTokensPerSecond": 1972.8053714503485,
+        "decodeBytesPerStep": 43064573440,
+        "decodeFlopsPerStep": 659076153344,
+        "decodeSecondsPerStep": 0.012855096549253731,
+        "decodeTokensPerSecond": 2489.2850767315067,
         "memoryBound": true,
-        "prefillSeconds": 7.053903236054088,
+        "prefillSeconds": 6.8205556445099145,
         "notes": [
           "Decoding is memory-bound at batch 32. It stays that way until the batch passes this device's ridge point of about 591 FLOP per byte."
         ]
       },
       "cost": {
-        "totalFlops": 1.27804637184e+24,
-        "gpuHours": 448475.08977598115,
-        "wallClockHours": 7007.423277749705,
-        "dollars": 1121187.724439953,
+        "totalFlops": 1.23576778752e+24,
+        "gpuHours": 433639.24945258547,
+        "wallClockHours": 6775.613272696648,
+        "dollars": 1084098.1236314636,
         "tokens": 15000000000000,
         "mfu": 0.4
       },
@@ -617,14 +837,14 @@
       },
       "errors": [],
       "flat": {
-        "nodes": 35,
-        "blocks": 39,
+        "nodes": 63,
+        "blocks": 70,
         "repeats": [
           {
             "path": "layers",
             "type": "repeat",
-            "count": 42,
-            "active": 42
+            "count": 21,
+            "active": 21
           }
         ],
         "errors": []
@@ -674,48 +894,92 @@
             3584
           ],
           [
-            "layers/block/attn/k_proj",
+            "layers/global/attn/k_proj",
+            154140672
+          ],
+          [
+            "layers/global/attn/o_proj",
             308281344
           ],
           [
-            "layers/block/attn/o_proj",
-            616562688
-          ],
-          [
-            "layers/block/attn/q_proj",
-            616562688
-          ],
-          [
-            "layers/block/attn/v_proj",
+            "layers/global/attn/q_proj",
             308281344
           ],
           [
-            "layers/block/mlp/down",
-            2157969408
+            "layers/global/attn/v_proj",
+            154140672
           ],
           [
-            "layers/block/mlp/gate",
-            2157969408
+            "layers/global/mlp/down",
+            1078984704
           ],
           [
-            "layers/block/mlp/up",
-            2157969408
+            "layers/global/mlp/gate",
+            1078984704
           ],
           [
-            "layers/block/norm1",
-            150528
+            "layers/global/mlp/up",
+            1078984704
           ],
           [
-            "layers/block/norm2",
-            150528
+            "layers/global/norm1",
+            75264
           ],
           [
-            "layers/block/post_attn_norm",
-            150528
+            "layers/global/norm2",
+            75264
           ],
           [
-            "layers/block/post_mlp_norm",
-            150528
+            "layers/global/post_attn_norm",
+            75264
+          ],
+          [
+            "layers/global/post_mlp_norm",
+            75264
+          ],
+          [
+            "layers/local/attn/k_proj",
+            154140672
+          ],
+          [
+            "layers/local/attn/o_proj",
+            308281344
+          ],
+          [
+            "layers/local/attn/q_proj",
+            308281344
+          ],
+          [
+            "layers/local/attn/v_proj",
+            154140672
+          ],
+          [
+            "layers/local/mlp/down",
+            1078984704
+          ],
+          [
+            "layers/local/mlp/gate",
+            1078984704
+          ],
+          [
+            "layers/local/mlp/up",
+            1078984704
+          ],
+          [
+            "layers/local/norm1",
+            75264
+          ],
+          [
+            "layers/local/norm2",
+            75264
+          ],
+          [
+            "layers/local/post_attn_norm",
+            75264
+          ],
+          [
+            "layers/local/post_mlp_norm",
+            75264
           ]
         ],
         "byCategory": [
@@ -749,13 +1013,13 @@
       },
       "flops": {
         "fwdDense": 18482200576,
-        "fwdAttention": 2818572288,
-        "fwdAttentionUnmasked": 5637144576,
-        "fwdTotal": 21300772864,
-        "fwdTotalUnmasked": 24119345152,
+        "fwdAttention": 2113929216,
+        "fwdAttentionUnmasked": 4227858432,
+        "fwdTotal": 20596129792,
+        "fwdTotalUnmasked": 22710059008,
         "elementwise": 9691136,
-        "trainPerToken": 63902318592,
-        "attentionShare": 0.13232253618194348,
+        "trainPerToken": 61788389376,
+        "attentionShare": 0.10263720598717035,
         "ruleOfThumb2N": 16648403968,
         "ruleOfThumb6N": 49945211904,
         "byPath": [
@@ -764,42 +1028,74 @@
             1835008000
           ],
           [
-            "layers/block/attn/attn",
-            2818572288
+            "layers/global/attn/attn",
+            1409286144
           ],
           [
-            "layers/block/attn/k_proj",
+            "layers/global/attn/k_proj",
+            308281344
+          ],
+          [
+            "layers/global/attn/o_proj",
             616562688
           ],
           [
-            "layers/block/attn/o_proj",
-            1233125376
-          ],
-          [
-            "layers/block/attn/q_proj",
-            1233125376
-          ],
-          [
-            "layers/block/attn/v_proj",
+            "layers/global/attn/q_proj",
             616562688
           ],
           [
-            "layers/block/mlp/down",
-            4315938816
+            "layers/global/attn/v_proj",
+            308281344
           ],
           [
-            "layers/block/mlp/gate",
-            4315938816
+            "layers/global/mlp/down",
+            2157969408
           ],
           [
-            "layers/block/mlp/up",
-            4315938816
+            "layers/global/mlp/gate",
+            2157969408
+          ],
+          [
+            "layers/global/mlp/up",
+            2157969408
+          ],
+          [
+            "layers/local/attn/attn",
+            704643072
+          ],
+          [
+            "layers/local/attn/k_proj",
+            308281344
+          ],
+          [
+            "layers/local/attn/o_proj",
+            616562688
+          ],
+          [
+            "layers/local/attn/q_proj",
+            616562688
+          ],
+          [
+            "layers/local/attn/v_proj",
+            308281344
+          ],
+          [
+            "layers/local/mlp/down",
+            2157969408
+          ],
+          [
+            "layers/local/mlp/gate",
+            2157969408
+          ],
+          [
+            "layers/local/mlp/up",
+            2157969408
           ]
         ],
         "byCategory": [
           [
             "attention",
-            2818572288
+            2113929216
           ],
           [
             "head",
@@ -812,12 +1108,16 @@
         ]
       },
       "kv": {
-        "bytesPerToken": 172032,
-        "bytesPerSequenceFixed": 0,
+        "bytesPerToken": 86016,
+        "bytesPerSequenceFixed": 352321536,
         "byPath": [
           [
-            "layers/block/attn/attn",
-            172032
+            "layers/global/attn/attn",
+            86016
+          ],
+          [
+            "layers/local/attn/attn",
+            352321536
           ]
         ]
       },
@@ -851,72 +1151,132 @@
               234881024
             ],
             [
-              "layers/block/_in",
-              9865003008
+              "layers/global/_in",
+              4932501504
             ],
             [
-              "layers/block/attn",
-              9865003008
+              "layers/global/attn",
+              4932501504
             ],
             [
-              "layers/block/attn/_in",
-              9865003008
+              "layers/global/attn/_in",
+              4932501504
             ],
             [
-              "layers/block/attn/attn",
-              11362369536
+              "layers/global/attn/attn",
+              5681184768
             ],
             [
-              "layers/block/attn/o_merge",
-              11274289152
-            ],
-            [
-              "layers/block/attn/rope_k",
+              "layers/global/attn/o_merge",
               5637144576
             ],
             [
-              "layers/block/attn/rope_q",
-              11274289152
+              "layers/global/attn/rope_k",
+              2818572288
             ],
             [
-              "layers/block/attn/v_heads",
+              "layers/global/attn/rope_q",
               5637144576
             ],
             [
-              "layers/block/mlp",
-              9865003008
+              "layers/global/attn/v_heads",
+              2818572288
             ],
             [
-              "layers/block/mlp/_in",
-              9865003008
+              "layers/global/mlp",
+              4932501504
             ],
             [
-              "layers/block/mlp/act",
-              39460012032
+              "layers/global/mlp/_in",
+              4932501504
             ],
             [
-              "layers/block/mlp/gate",
-              39460012032
+              "layers/global/mlp/act",
+              19730006016
             ],
             [
-              "layers/block/mlp/gated",
-              39460012032
+              "layers/global/mlp/gate",
+              19730006016
             ],
             [
-              "layers/block/mlp/up",
-              39460012032
+              "layers/global/mlp/gated",
+              19730006016
             ],
             [
-              "layers/block/resid1",
-              9865003008
+              "layers/global/mlp/up",
+              19730006016
+            ],
+            [
+              "layers/global/resid1",
+              4932501504
+            ],
+            [
+              "layers/local/_in",
+              4932501504
+            ],
+            [
+              "layers/local/attn",
+              4932501504
+            ],
+            [
+              "layers/local/attn/_in",
+              4932501504
+            ],
+            [
+              "layers/local/attn/attn",
+              5681184768
+            ],
+            [
+              "layers/local/attn/o_merge",
+              5637144576
+            ],
+            [
+              "layers/local/attn/rope_k",
+              2818572288
+            ],
+            [
+              "layers/local/attn/rope_q",
+              5637144576
+            ],
+            [
+              "layers/local/attn/v_heads",
+              2818572288
+            ],
+            [
+              "layers/local/mlp",
+              4932501504
+            ],
+            [
+              "layers/local/mlp/_in",
+              4932501504
+            ],
+            [
+              "layers/local/mlp/act",
+              19730006016
+            ],
+            [
+              "layers/local/mlp/gate",
+              19730006016
+            ],
+            [
+              "layers/local/mlp/gated",
+              19730006016
+            ],
+            [
+              "layers/local/mlp/up",
+              19730006016
+            ],
+            [
+              "layers/local/resid1",
+              4932501504
             ]
           ]
         },
         "infer": {
           "weights": 18483411968,
-          "kv": 1409286144,
-          "overhead": 3978539622.4,
-          "total": 23871237734.4
+          "kv": 1056964608,
+          "overhead": 3908075315.2000003,
+          "total": 23448451891.2
         },
         "optimizerLabel": "AdamW, mixed precision (16 B/param)",
         "notes": [
@@ -925,21 +1285,21 @@
       },
       "throughput": {
         "ridgePoint": 295.2238805970149,
-        "decodeBytesPerStep": 19892698112,
-        "decodeFlopsPerStep": 21300772864,
-        "decodeSecondsPerStep": 0.005938118839402985,
-        "decodeTokensPerSecond": 168.40350067843025,
+        "decodeBytesPerStep": 19540376576,
+        "decodeFlopsPerStep": 20596129792,
+        "decodeSecondsPerStep": 0.005832948231641791,
+        "decodeTokensPerSecond": 171.43988944995857,
         "memoryBound": true,
-        "prefillSeconds": 0.4410918384779778,
+        "prefillSeconds": 0.4265002407888372,
         "notes": [
           "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
         ]
       },
       "cost": {
-        "totalFlops": 1.063871614411453e+22,
-        "gpuHours": 7470.169183318258,
-        "wallClockHours": 933.7711479147822,
-        "dollars": 18675.422958295643,
+        "totalFlops": 1.0286780668637274e+22,
+        "gpuHours": 7223.05125030704,
+        "wallClockHours": 902.88140628838,
+        "dollars": 18057.628125767602,
         "tokens": 166484039680,
         "mfu": 0.4
       },
@@ -962,14 +1322,14 @@
       },
       "errors": [],
       "flat": {
-        "nodes": 35,
-        "blocks": 39,
+        "nodes": 63,
+        "blocks": 70,
         "repeats": [
           {
             "path": "layers",
             "type": "repeat",
-            "count": 42,
-            "active": 42
+            "count": 21,
+            "active": 21
           }
         ],
         "errors": []

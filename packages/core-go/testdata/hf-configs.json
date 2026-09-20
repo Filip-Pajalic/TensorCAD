@@ -73,6 +73,7 @@
     "intermediate_size": 14336,
     "vocab_size": 256000,
     "rope_theta": 10000,
+    "sliding_window": 4096,
     "tie_word_embeddings": true,
     "max_position_embeddings": 8192
   },

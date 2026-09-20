@@ -63,8 +63,15 @@ jobs:
       - name: Check the token is a token
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
         run: |
+          # The shape of the value, which reveals nothing and has already been
+          # the answer once: a Cloudflare token is 40 characters, and whatever
+          # a paste picked up on the way is visible here and nowhere else.
+          trimmed=$(printf %s "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')
+          echo "token: ${#CLOUDFLARE_API_TOKEN} characters, ${#trimmed} with whitespace stripped (a token is 40)"
+          echo "account id: ${#CLOUDFLARE_ACCOUNT_ID} characters (an id is 32)"
+
           reply=$(curl -sS --max-time 30 https://api.cloudflare.com/client/v4/user/tokens/verify \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+            -H "Authorization: Bearer $trimmed")
           echo "$reply"
           case "$reply" in
             *'"success":true'*) ;;
@@ -119,8 +126,15 @@ jobs:
       - name: Check the token is a token
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
         run: |
+          # The shape of the value, which reveals nothing and has already been
+          # the answer once: a Cloudflare token is 40 characters, and whatever
+          # a paste picked up on the way is visible here and nowhere else.
+          trimmed=$(printf %s "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')
+          echo "token: ${#CLOUDFLARE_API_TOKEN} characters, ${#trimmed} with whitespace stripped (a token is 40)"
+          echo "account id: ${#CLOUDFLARE_ACCOUNT_ID} characters (an id is 32)"
+
           reply=$(curl -sS --max-time 30 https://api.cloudflare.com/client/v4/user/tokens/verify \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+            -H "Authorization: Bearer $trimmed")
           echo "$reply"
           case "$reply" in
             *'"success":true'*) ;;

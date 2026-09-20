@@ -66,6 +66,39 @@ bun packages/cli/src/index.ts diff <a> <b>
 Structural and numeric difference between two designs: symbols, blocks, and what
 moved in the analysis.
 
+## `import`
+
+```bash
+bun packages/cli/src/index.ts import <config.json>
+```
+
+Read a Hugging Face `config.json` into a design. The fastest honest way to get
+one for a published model that is not among the twenty presets: point this at
+the `config.json` from its model card.
+
+```
+Meta-Llama-3-8B  8.03B parameters
+  non-embedding 7.50B
+  rules 0 errors, 1 warnings
+```
+
+| flag | meaning |
+| --- | --- |
+| `--name n` | a name for the design. Otherwise the config's directory, which is what a download is called. |
+| `--out dir\|file` | write it as `.tensorcad.json`. A directory gets `<name>.tensorcad.json`. |
+| `--json` | the whole document on stdout. |
+
+Anything the importer cannot model faithfully comes back as a warning rather
+than being approximated silently, and warnings go to stderr so a redirected
+`--json` stays a document and nothing else. It exits non-zero when the import
+warned or when the design breaks a rule outright — an import that could not
+model the architecture is not a success, whatever the parameter count says.
+
+Known families: GPT-2, Llama, Mistral, Mixtral, Qwen2, Qwen3, Qwen3-MoE, Gemma,
+Gemma 2 and DeepSeek-V3. The eight in `packages/core-go/testdata/hf-configs.json`
+are held to reproducing the hand-written preset exactly, on the parameter count
+and on the cache.
+
 ## `plan`
 
 ```bash

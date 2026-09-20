@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 /**
- * Build the publishable form of `@tensor-cad/engine` and `@tensor-cad/mcp`.
+ * Build the publishable form of the packages somebody else would install.
  *
- * Inside this repository both packages are consumed as TypeScript, because Bun
+ * Inside this repository they are all consumed as TypeScript, because Bun
  * runs it. Neither would work for anybody else: `main` points at a `.ts` file
  * that Node cannot import, the MCP server's `bin` starts with a Bun shebang,
  * and its dependency on the engine is written `workspace:*`, which npm does not
- * understand. Publishing them as they sit would produce two packages that
- * install and then fail on the first import.
+ * understand. Publishing them as they sit would produce packages that install
+ * and then fail on the first import.
  *
  * So this emits what a consumer actually needs — JavaScript, type declarations
  * and a manifest with real version ranges — into each package's `dist`, and
@@ -33,10 +33,31 @@ const version = (await Bun.file(join(ROOT, "package.json")).json()).version as s
 type Pkg = {
   dir: string;
   entries: Record<string, string>;
+  /**
+   * Built by the package's own `build:lib` into this directory, and copied
+   * rather than bundled here.
+   *
+   * The editor needs a bundler that understands JSX, CSS and Tailwind, which
+   * is Vite and is already configured in that package. Teaching this script to
+   * do it again would be a second build of the same thing, disagreeing with
+   * the first the moment either changed.
+   */
+  prebuilt?: string;
   /** Extra files copied verbatim, relative to the package. */
   assets?: string[];
   /** Turned into `dependencies`, with `workspace:*` resolved to this version. */
   bin?: Record<string, string>;
+  /**
+   * Moved from `dependencies` to `peerDependencies` in the published manifest.
+   *
+   * For React this is not a preference. Two copies of React in one page do not
+   * make a larger download; they make every hook throw, because the component
+   * was built against one copy and mounted by the other. Declaring it a peer is
+   * what tells the installer there must be exactly one.
+   */
+  peers?: string[];
+  /** Globs for the declaration build, when `src/**\/*.ts` is not enough. */
+  declarations?: string[];
 };
 
 const PACKAGES: Pkg[] = [
@@ -53,6 +74,19 @@ const PACKAGES: Pkg[] = [
     assets: ["README.md", "mcp.example.json", "server.json"],
     bin: { "tensorcad-mcp": "./dist/stdio.js" },
   },
+  {
+    // The editor, for anybody assembling their own around it — which is what
+    // the `StorageProvider` seam is for. Built by Vite because it is JSX,
+    // Tailwind and CSS rather than a module Node could load.
+    dir: "packages/ui",
+    entries: { "index.js": "src/index.ts", "engine.js": "src/engine.ts" },
+    prebuilt: "lib",
+    // Plain CSS, Tailwind already run over it, so a consumer imports one file
+    // and needs none of this package's build setup.
+    assets: ["lib/style.css"],
+    peers: ["react", "react-dom"],
+    declarations: ["src/**/*.ts", "src/**/*.tsx"],
+  },
 ];
 
 async function build(pkg: Pkg): Promise<void> {
@@ -63,21 +97,28 @@ async function build(pkg: Pkg): Promise<void> {
 
   const manifest = await Bun.file(join(dir, "package.json")).json();
 
-  // Bundled rather than transpiled file by file, because the entry points are
-  // small and the alternative is publishing a directory of relative imports
-  // whose extensions have to be rewritten. Dependencies stay external: a
-  // published package that inlined `zod` would ship it twice.
-  const result = await Bun.build({
-    entrypoints: Object.values(pkg.entries).map((p) => join(dir, p)),
-    outdir: dist,
-    target: "node",
-    format: "esm",
-    external: Object.keys(manifest.dependencies ?? {}),
-    naming: "[name].js",
-  });
-  if (!result.success) {
-    for (const log of result.logs) console.error(log);
-    throw new Error(`${pkg.dir}: bundle failed`);
+  if (pkg.prebuilt) {
+    // The package builds itself; this only collects the result. `--cwd` rather
+    // than a chdir, because the builds run one after another in one process.
+    await $`bun run --cwd ${dir} build:lib`.quiet();
+    await cp(join(dir, pkg.prebuilt), dist, { recursive: true });
+  } else {
+    // Bundled rather than transpiled file by file, because the entry points are
+    // small and the alternative is publishing a directory of relative imports
+    // whose extensions have to be rewritten. Dependencies stay external: a
+    // published package that inlined `zod` would ship it twice.
+    const result = await Bun.build({
+      entrypoints: Object.values(pkg.entries).map((p) => join(dir, p)),
+      outdir: dist,
+      target: "node",
+      format: "esm",
+      external: Object.keys(manifest.dependencies ?? {}),
+      naming: "[name].js",
+    });
+    if (!result.success) {
+      for (const log of result.logs) console.error(log);
+      throw new Error(`${pkg.dir}: bundle failed`);
+    }
   }
 
   // Types, from the same source. `tsc` is the only thing that can write these,
@@ -99,7 +140,7 @@ async function build(pkg: Pkg): Promise<void> {
           outDir: "dist",
           rootDir: "src",
         },
-        include: ["src/**/*.ts"],
+        include: pkg.declarations ?? ["src/**/*.ts"],
       },
       null,
       2,
@@ -129,12 +170,23 @@ async function build(pkg: Pkg): Promise<void> {
     exports["./wasm_exec"] = "./wasm_exec.js";
     exports["./tensorcad.wasm"] = "./tensorcad.wasm";
   }
+  if (pkg.dir.endsWith("ui")) {
+    // Already compiled, so it is a stylesheet and not a build step. The name
+    // is the one this package's `exports` has always used.
+    exports["./style.css"] = "./style.css";
+  }
 
   const deps: Record<string, string> = {};
+  const peers: Record<string, string> = {};
   for (const [name, range] of Object.entries(manifest.dependencies ?? {})) {
     // `workspace:*` is a Bun and pnpm spelling that npm rejects. Inside one
     // release every package is the same version, so that is what it becomes.
-    deps[name] = String(range).startsWith("workspace:") ? version : String(range);
+    const resolved = String(range).startsWith("workspace:") ? version : String(range);
+    if (pkg.peers?.includes(name)) peers[name] = resolved;
+    else deps[name] = resolved;
+  }
+  for (const name of pkg.peers ?? []) {
+    if (!(name in peers)) throw new Error(`${pkg.dir}: ${name} is a declared peer but not a dependency`);
   }
 
   const published = {
@@ -148,6 +200,7 @@ async function build(pkg: Pkg): Promise<void> {
     exports,
     ...(pkg.bin ? { bin: Object.fromEntries(Object.entries(pkg.bin).map(([k, v]) => [k, v.replace("./dist/", "./")])) } : {}),
     ...(Object.keys(deps).length > 0 ? { dependencies: deps } : {}),
+    ...(Object.keys(peers).length > 0 ? { peerDependencies: peers } : {}),
     license: manifest.license,
     repository: { type: "git", url: "git+https://github.com/Filip-Pajalic/TensorCAD.git" },
     ...(manifest.sideEffects ? { sideEffects: ["./wasm_exec.js"] } : {}),
@@ -248,6 +301,21 @@ await writeFile(
     ``,
     `if (Object.keys(mcp).length === 0) throw new Error("the MCP library exports nothing");`,
     `console.log("  mcp: exports", Object.keys(mcp).join(", "));`,
+    ``,
+    // The editor is resolved rather than imported. Importing it would run a
+    // module that builds a document and touches `document`, neither of which
+    // exists here, so the failure would say nothing about whether the package
+    // is any good. What can go wrong in packaging is an `exports` map pointing
+    // at a file that was never copied in — which is exactly what resolving
+    // every entry finds, and which no amount of building in place would.
+    `import { statSync } from "node:fs";`,
+    `import { fileURLToPath } from "node:url";`,
+    `for (const spec of ["@tensor-cad/ui", "@tensor-cad/ui/engine", "@tensor-cad/ui/style.css"]) {`,
+    `  const file = fileURLToPath(import.meta.resolve(spec));`,
+    `  const { size } = statSync(file);`,
+    `  if (size === 0) throw new Error(spec + " resolves to an empty file");`,
+    `  console.log("  ui:", spec, "->", (size / 1024).toFixed(0) + " kB");`,
+    `}`,
   ].join("\n"),
 );
 const ran = Bun.spawnSync(["node", "check.mjs"], { cwd: tmp, stdout: "inherit", stderr: "inherit" });
@@ -293,4 +361,4 @@ if (await Bun.file(bin).exists()) {
   console.log("  mcp: tensorcad-mcp answered initialize");
 }
 
-console.log("\nBoth packages install and run under node. Nothing was published.");
+console.log(`\nAll ${PACKAGES.length} packages install and check out under node. Nothing was published.`);

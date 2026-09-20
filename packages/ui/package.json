@@ -3,10 +3,12 @@
   "version": "0.0.1",
   "private": true,
   "description": "Editor UI for TensorCAD: node canvas, inspector, symbols, analysis",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "node scripts/typecheck.mjs && vite build",
+    "build:lib": "vite build --config vite.lib.config.ts",
     "preview": "vite preview",
     "typecheck": "node scripts/typecheck.mjs"
   },

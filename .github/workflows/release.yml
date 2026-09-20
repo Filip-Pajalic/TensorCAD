@@ -139,14 +139,16 @@ jobs:
           name: mcpb
           path: dist/tensorcad.mcpb
 
-  # The two packages somebody would install rather than download.
+  # The packages somebody would install rather than download: the engine, the
+  # MCP server, and the editor for anybody assembling their own around it.
   #
-  # Neither is published in the form this repository consumes it: `main` points
-  # at TypeScript that Node cannot import, the server's `bin` carries a Bun
-  # shebang, and the dependency between them is written `workspace:*`, which npm
-  # rejects. `build:dist` emits the publishable form, packs it, installs it into
-  # an empty directory and starts the server under Node — so what is uploaded is
-  # the thing that was tested, not a hopeful repackaging of it.
+  # None is published in the form this repository consumes it: `main` points at
+  # TypeScript that Node cannot import, the server's `bin` carries a Bun
+  # shebang, the editor is JSX and uncompiled Tailwind, and the dependencies
+  # between them are written `workspace:*`, which npm rejects. `build:dist`
+  # emits the publishable form, packs it, installs it into an empty directory
+  # and checks it under Node — so what is uploaded is the thing that was
+  # tested, not a hopeful repackaging of it.
   npm:
     name: npm
     needs: verify
@@ -185,7 +187,7 @@ jobs:
         run: |
           tag="${{ inputs.tag || github.ref_name }}"
           want="${tag#v}"
-          for pkg in packages/engine/dist packages/mcp/dist; do
+          for pkg in packages/engine/dist packages/mcp/dist packages/ui/dist; do
             got=$(node -p "require('./$pkg/package.json').version")
             if [ "$got" != "$want" ]; then
               echo "$pkg is $got but the tag says $want"
@@ -198,8 +200,9 @@ jobs:
             exit 1
           fi
 
-      # The engine first: the server depends on it, and a server published
-      # against a version that is not there yet is one nobody can install.
+      # The engine first, and then in dependency order: both the server and the
+      # editor depend on it, and a package published against a version that is
+      # not there yet is one nobody can install.
       - name: Publish
         # Absent on a fork and until somebody sets it, and a release that fails
         # for want of a secret is worse than one that says it skipped this.
@@ -207,17 +210,17 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
         run: |
-          npm publish --provenance --access public --ignore-scripts
-          cd "$GITHUB_WORKSPACE/packages/mcp/dist"
-          npm publish --provenance --access public --ignore-scripts
-        working-directory: packages/engine/dist
+          for pkg in engine mcp ui; do
+            cd "$GITHUB_WORKSPACE/packages/$pkg/dist"
+            npm publish --provenance --access public --ignore-scripts
+          done
 
       - name: Say why it did not publish
         if: ${{ env.NPM_TOKEN == '' }}
         run: |
           echo "NPM_TOKEN is not set, so nothing was published." >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Both packages were built, packed, installed into an empty directory and started under Node, and the tarballs are attached to the release. Set the secret and re-run this job to publish them." >> "$GITHUB_STEP_SUMMARY"
+          echo "Every package was built, packed, installed into an empty directory and checked under Node, and the tarballs are attached to the release. Set the secret and re-run this job to publish them." >> "$GITHUB_STEP_SUMMARY"
 
       # Attached either way: somebody who cannot install from npm can still take
       # the exact tarball that would have been uploaded.

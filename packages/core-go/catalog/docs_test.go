@@ -9,14 +9,14 @@ import (
 	"github.com/tensorcad/core/catalog"
 )
 
-// The catalog's prose, against the TypeScript.
+// The catalog's prose, against the goldens.
 //
 // Every block's summary, formula and sources, and every parameter's one-line
 // documentation. This is what the inspector shows and what explain reads out,
 // so it is part of the engine's output rather than decoration around it — and
 // it is the easiest thing to lose in a port, because nothing computes with it
 // and every other test would still pass. Regenerate with
-// `bun run scripts/golden.ts`.
+// `go run ./cmd/golden`.
 
 // A parameter is [name, type, doc, values], which keeps the golden readable.
 type goldenParamDoc [4]json.RawMessage
@@ -31,7 +31,7 @@ type goldenBlockDocs struct {
 	Params   []goldenParamDoc `json:"params"`
 }
 
-func TestCatalogProseMatchesTypeScript(t *testing.T) {
+func TestCatalogProseMatchesTheGoldens(t *testing.T) {
 	raw, err := os.ReadFile(filepath.Join("..", "testdata", "catalog-docs.json"))
 	if err != nil {
 		t.Fatalf("read catalog prose golden: %v", err)
@@ -114,7 +114,7 @@ func TestCatalogProseMatchesTypeScript(t *testing.T) {
 
 	for name := range catalog.Builtin {
 		if !seen[name] {
-			t.Errorf("block %q is in the Go catalog but not the TypeScript", name)
+			t.Errorf("block %q is in the catalog but not the golden", name)
 		}
 	}
 }

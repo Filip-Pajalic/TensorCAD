@@ -11,12 +11,12 @@ import (
 	"github.com/tensorcad/core/ir"
 )
 
-// Composite expansions against the TypeScript, node for node.
+// Composite expansions against the goldens, node for node.
 //
 // A composite is nothing but the subgraph it stands for, so that subgraph is
 // the specification. Comparing parameter totals would let a wrong expansion
 // pass whenever two wrong numbers happened to cancel; comparing the graph
-// cannot. Regenerate with `bun run scripts/golden.ts`.
+// cannot. Regenerate with `go run ./cmd/golden`.
 
 type goldenNode struct {
 	ID     string         `json:"id"`
@@ -54,7 +54,7 @@ func loadComposites(t *testing.T) []compositeCase {
 	return g.Cases
 }
 
-func TestCompositeExpansionsMatchTypeScript(t *testing.T) {
+func TestCompositeExpansionsMatchTheGoldens(t *testing.T) {
 	cases := loadComposites(t)
 	symbols := primSymbols()
 
@@ -145,7 +145,7 @@ func compareNodeParams(t *testing.T, at string, got, want map[string]any) {
 	}
 	for k := range got {
 		if _, ok := want[k]; !ok {
-			t.Errorf("%s: parameter %q is not in the TypeScript", at, k)
+			t.Errorf("%s: parameter %q is not in the golden", at, k)
 		}
 	}
 }

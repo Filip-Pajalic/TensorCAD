@@ -1,5 +1,8 @@
-import { getPreset, generateTorch } from "../packages/core/src/index.js";
+import { generateTorch, getPreset, loadEngine } from "@tensorcad/engine/node";
 import { mkdirSync, writeFileSync } from "node:fs";
+
+await loadEngine();
+
 for (const name of ["mixtral-8x7b", "deepseek-v3"]) {
   const out = generateTorch(getPreset(name), { moeDispatch: "dense" });
   const dir = `out/${name}-dense`;

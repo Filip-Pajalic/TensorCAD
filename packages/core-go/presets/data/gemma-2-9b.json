@@ -3,7 +3,7 @@
   "meta": {
     "name": "gemma-2-9b",
     "family": "gemma",
-    "notes": "Tied embeddings, GeGLU, and a norm on both the input and the output of every sublayer.",
+    "notes": "Tied embeddings, GeGLU, and a norm on both the input and the output of every sublayer. Attention alternates: every other layer attends within a 4096-token window, starting with the first, so half the layers hold a cache bounded by W rather than one that grows with the sequence. The repeating unit is that pair, which is why the stack repeats L/2 times. Both the attention scores and the output logits are bounded by a tanh, at 50 and 30; the one on the scores is why a fused attention kernel cannot be used, because it never builds the matrix there is anything to bound.",
     "published": {
       "params": 9241705984,
       "source": "https://huggingface.co/google/gemma-2-9b"
@@ -24,6 +24,11 @@
       "kind": "design",
       "value": 42,
       "doc": "Number of transformer layers"
+    },
+    "W": {
+      "kind": "design",
+      "value": 4096,
+      "doc": "Sliding-window width on the local attention layers"
     },
     "D": {
       "kind": "design",
@@ -79,7 +84,7 @@
         "type": "repeat",
         "label": "Transformer block x42",
         "params": {
-          "count": "L"
+          "count": "L/2"
         },
         "graph": {
           "nodes": [
@@ -93,7 +98,33 @@
               }
             },
             {
-              "id": "block",
+              "id": "local",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "Hkv",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "rmsnorm",
+                "norm_bias": true,
+                "post_norm": true,
+                "mlp": "gated",
+                "act": "gelu_tanh",
+                "attn_bias": false,
+                "attn_o_bias": null,
+                "mlp_bias": false,
+                "qk_norm": false,
+                "causal": true,
+                "window": "W",
+                "rope": {
+                  "theta": 10000
+                },
+                "logit_softcap": 50.0
+              }
+            },
+            {
+              "id": "global",
               "type": "transformer_block",
               "params": {
                 "d_model": "D",
@@ -114,7 +145,8 @@
                 "window": 0,
                 "rope": {
                   "theta": 10000
-                }
+                },
+                "logit_softcap": 50.0
               }
             },
             {
@@ -130,10 +162,14 @@
           "edges": [
             [
               "_in:x",
-              "block:x"
+              "local:x"
             ],
             [
-              "block:y",
+              "local:y",
+              "global:x"
+            ],
+            [
+              "global:y",
               "_out:x"
             ]
           ]
@@ -152,7 +188,8 @@
         "params": {
           "vocab": "V",
           "dim": "D",
-          "tied": true
+          "tied": true,
+          "softcap": 30.0
         }
       },
       {

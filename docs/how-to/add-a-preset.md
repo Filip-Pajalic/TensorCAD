@@ -3,14 +3,14 @@
 A preset is an assertion about a real model, so it has to be checkable. The
 twenty of them are the regression suite.
 
-A preset is a *document*: `packages/core-go/presets/data/<name>.json`, named in
-`index.json` beside it, embedded into the engine by `go:embed`. Adding one is
-writing that document and then proving it.
+## Write the document
 
-## Import the config
+The library is `packages/core-go/presets/data`: twenty JSON documents and an
+`index.json` listing them, embedded into the binary by `go:embed`. There is no
+builder to go through — a preset is a document in exactly the format the editor
+saves, and the format `import` writes.
 
-The fastest honest way to get the document is to let the importer read the
-model's own `config.json`:
+If the model has a Hugging Face `config.json`, start there:
 
 ```bash
 bun packages/cli/src/index.ts import config.json \
@@ -18,31 +18,48 @@ bun packages/cli/src/index.ts import config.json \
   --out packages/core-go/presets/data/my-model-7b.json
 ```
 
-It prints two things and you want both. The parameter count is what the
-analysis makes of the document, ready to be held against the model card. The
-warnings are the importer saying where the document is not the model — Gemma 2's
-alternating attention, a multi-token-prediction head it left out — and each one
-either gets fixed by hand or written into `notes`.
+The importer reproduces eight of the presets to the parameter. It prints the
+count the analysis gets, to be held against the model card, and every warning
+about where the document is not the model — a multi-token-prediction head left
+out, layers made sparse that the model keeps dense. Each warning gets fixed by
+hand or written into the notes; none of them are swallowed. The families it
+knows are `gpt2`, `llama`, `mistral`, `mixtral`, `qwen2`, `qwen3`, `qwen3_moe`,
+`gemma`, `gemma2` and `deepseek_v3`, and it refuses anything else by name
+rather than guessing.
 
-The importer knows `gpt2`, `llama`, `mistral`, `mixtral`, `qwen2`, `qwen3`,
-`qwen3_moe`, `gemma`, `gemma2` and `deepseek_v3`. It refuses anything else by
-name rather than guessing, and a refusal is the case for copying the nearest
-preset's JSON and editing it. Something that is no kind of decoder at all is
-written block by block, as `ijepa-vit-h14` and `alexnet` are.
+`--out` puts the document straight into the library; the name still has to go
+into `index.json`.
+
+Otherwise start from the nearest preset rather than an empty file. Almost every
+decoder-only model differs from `llama-3-8b.json` in seven numbers and a note:
+
+```jsonc
+"symbols": {
+  "L":   { "kind": "design", "value": 32,     "doc": "Number of transformer layers" },
+  "D":   { "kind": "design", "value": 4096,   "doc": "Residual stream width (d_model)" },
+  "H":   { "kind": "design", "value": 32,     "doc": "Query heads" },
+  "Hkv": { "kind": "design", "value": 8,      "doc": "Key/value heads" },
+  "dh":  { "kind": "design", "value": "D/H",  "doc": "Head dimension" },
+  "F":   { "kind": "design", "value": 14336,  "doc": "Feed-forward hidden width" },
+  "V":   { "kind": "design", "value": 128256, "doc": "Vocabulary size" }
+}
+```
+
+The graph below them is four or five nodes, because `transformer_block` and the
+composites inside it carry the architecture. Change `meta.name`,
+`meta.published`, the notes, and whatever the model does differently — the
+normalization, the activation, the RoPE theta — and add the file to
+`index.json`.
+
+Two presets are not transformers at all and are written out block by block:
+`ijepa-vit-h14.json` has bidirectional attention and no vocabulary, and
+`alexnet.json` is convolutional with `B C H W` tensors. Copy those instead when
+that is what you are describing.
 
 ## `published` is the point
 
 An import gives you `meta.name` and `meta.family`. The claim is the rest, and
-you write it:
-
-```json
-"meta": {
-  "name": "my-model-7b",
-  "family": "my-family",
-  "notes": "What distinguishes it, in a sentence or two.",
-  "published": { "params": 8030261248, "source": "https://…" }
-}
-```
+either way you write it yourself:
 
 - `params` — what the authors report, with a `source` link to the config or paper.
 - `tolerance` — **only** where the published figure is itself rounded ("22B
@@ -53,38 +70,33 @@ down. I-JEPA's ViT-H is 630.4M, not the 632M everyone cites, because its
 positions are frozen sincos and it has no class token. That sentence is worth
 more than the number.
 
-Then add the name to `packages/core-go/presets/data/index.json`, which is both
-the library's membership and the order it presents.
-
 ## Check it
 
-From `packages/core-go`, the assertion itself — every preset against its
-published count:
-
 ```bash
-go test ./presets
+bun run scripts/report.ts
 ```
 
-The golden files are per preset, so a new preset needs new ones. Regenerate
-them deliberately and read the diff: it should be your preset and nothing else.
+Your preset should say `exact`. Every other row must be unchanged.
+
+Then against real PyTorch:
 
 ```bash
-go run ./cmd/golden
-go test ./...
-```
-
-Then the compiled engine against those same answers:
-
-```bash
-bun run build:wasm
-bun test packages
-```
-
-Finally against real PyTorch:
-
-```bash
-bun packages/cli/src/index.ts codegen my-model-7b --out out/my-model-7b
+bun run scripts/codegen-demo.ts my-model-7b
 python -m tensorcad_runtime verify out/my-model-7b/model.py
 ```
 
 See [Verify a design against PyTorch](verify-against-pytorch.md).
+
+## Write down what it says
+
+The golden files are the specification, so a new preset needs its own:
+
+```bash
+cd packages/core-go
+go run ./cmd/golden    # writes testdata/{golden,analysis,rules,codegen}/my-model-7b.json
+go test ./...
+```
+
+Read the diff. Four new files appear and nothing else should move; a number
+that changed under an existing preset means the preset was not the only thing
+you touched.

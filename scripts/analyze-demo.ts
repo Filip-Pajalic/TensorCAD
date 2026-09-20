@@ -1,6 +1,9 @@
 import {
-  getPreset, validate, formatCount, formatBytes, formatFlops, formatHours, formatDollars,
-} from "../packages/core/src/index.js";
+  getPreset, loadEngine, validate,
+  formatCount, formatBytes, formatFlops, formatHours, formatDollars,
+} from "@tensorcad/engine/node";
+
+await loadEngine();
 
 const doc = getPreset("llama-3-8b");
 const r = validate(doc, { T: 8192, B: 1, hardware: "h100-sxm", gpus: 8, tokens: 15e12 });

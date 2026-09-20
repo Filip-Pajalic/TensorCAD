@@ -136,10 +136,10 @@ approximate, never vague.
 
 - **Presets.** V-JEPA 2 needs only the existing builder with `frames` and
   `tubelet`. ResNet and VGG need the conv primitives that already exist.
-- **The Go engine.** `packages/core-go/` is the whole analysis now, and
-  `packages/core/` is the TypeScript it was ported from, kept as the oracle the
-  golden files are written by. Adding a block still means adding it to both
-  until that oracle goes.
+- **The engine.** `packages/core-go/` is the whole analysis, compiled to
+  WebAssembly and loaded by everything else. Adding a block means a catalog
+  entry, a preset or a test that pins its arithmetic, and
+  `go run ./cmd/golden` to write down what it changed.
 - **Known gaps** in [`ROADMAP.md`](./ROADMAP.md): linear attention (gated
   DeltaNet), multi-token prediction, Gemma's alternating local/global attention.
 - **Instancing in the 3D view.** It is currently one mesh and one material per

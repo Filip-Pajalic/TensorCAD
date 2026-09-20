@@ -2,7 +2,7 @@
 
 An MCP server that lets an assistant design transformer language models and find out what they would cost, before anyone writes a training script.
 
-It wraps [`@tensorcad/core`](../core): a typed block graph, symbolic shape inference, a design-rule check, the parameter/FLOPs/memory/cost model, and a PyTorch emitter. The server is headless — it works on `.tensorcad.json` files and the built-in reference architectures, with no editor running.
+It wraps [`@tensorcad/engine`](../engine), the analysis compiled from Go to WebAssembly: a typed block graph, symbolic shape inference, a design-rule check, the parameter/FLOPs/memory/cost model, and a PyTorch emitter. The server is headless — it works on `.tensorcad.json` files and the built-in reference architectures, with no editor running.
 
 Built on the official TypeScript SDK v2 (`@modelcontextprotocol/server` 2.0.0), served over stdio.
 

@@ -85,8 +85,8 @@ report, document included, comes back on stdout.
 
 It prints the parameter count the analysis gets, to be compared against the
 model card, and every warning about what the import could not represent
-faithfully — an alternating attention pattern flattened, a multi-token
-prediction head left out. See [Add a preset](../how-to/add-a-preset.md).
+faithfully — a multi-token-prediction head left out, layers made sparse that
+the model keeps dense. See [Add a preset](../how-to/add-a-preset.md).
 
 ## Scripts
 
@@ -97,5 +97,5 @@ bun run scripts/report.ts             # the parameter regression table
 bun run scripts/analyze-demo.ts       # full analysis for one preset
 bun run scripts/codegen-demo.ts <p>   # writes out/<preset>/model.py
 bun run scripts/scale-demo.ts         # shrink a design to a budget
-bun run scripts/golden.ts             # regenerate the Go port's golden files
+bun run golden                        # regenerate the engine's golden files
 ```

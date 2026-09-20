@@ -20,6 +20,10 @@ import (
 	"github.com/tensorcad/core/shapes"
 )
 
+// softcapCost is the arithmetic in `tanh(x / cap) * cap`: a divide, a tanh and
+// a multiply, per element.
+const softcapCost = 1 + 6 + 1
+
 var elementwiseCost = map[string]float64{
 	"relu":      1,
 	"relu2":     2,
@@ -226,6 +230,8 @@ var Primitives = []*BlockDef{
 			{"dim", pInt(1, "")},
 			{"tied", pBool(false, "Share weights with the token embedding")},
 			{"bias", pBool(false, "")},
+			{"softcap", ParamSpec{Type: ParamNum, Default: 0.0, HasDefault: true,
+				Doc: "Bound the logits to this magnitude with tanh; 0 leaves them alone"}},
 		},
 		Ports: Ports{
 			In:  map[string]PortSpec{"x": Port("... dim")},
@@ -242,7 +248,11 @@ var Primitives = []*BlockDef{
 			return n
 		},
 		Flops: func(r *Resolved, _ AnalysisCtx) FlopsPerToken {
-			return FlopsPerToken{Fwd: 2 * r.Num("vocab") * r.Num("dim")}
+			f := FlopsPerToken{Fwd: 2 * r.Num("vocab") * r.Num("dim")}
+			if r.Num("softcap") != 0 {
+				f.Elementwise = softcapCost * r.Num("vocab")
+			}
+			return f
 		},
 		Retains: func(*Resolved) []string { return []string{"x"} },
 		// bf16 logits plus the fp32 softmax/cross-entropy buffer.
@@ -537,6 +547,8 @@ var Primitives = []*BlockDef{
 			{"window", ParamSpec{Type: ParamInt, Default: 0.0, HasDefault: true, Doc: "Sliding-window width; 0 means full attention"}},
 			{"flash", pBool(true, "Memory-efficient kernel that never materializes the score matrix")},
 			{"cache", pBool(true, "Whether this block owns the inference cache. Latent attention caches a compressed vector instead.")},
+			{"logit_softcap", ParamSpec{Type: ParamNum, Default: 0.0, HasDefault: true,
+				Doc: "Bound the attention scores to this magnitude with tanh; 0 leaves them alone. A fused kernel cannot do this, so a layer that caps runs eager."}},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			v := "head_dim"
@@ -565,7 +577,13 @@ var Primitives = []*BlockDef{
 				causal = 0.5
 			}
 			unmasked := 4 * tEff * r.Num("heads") * r.Num("head_dim")
-			return FlopsPerToken{FwdSeq: unmasked * causal, FwdSeqUnmasked: unmasked}
+			f := FlopsPerToken{FwdSeq: unmasked * causal, FwdSeqUnmasked: unmasked}
+			if r.Num("logit_softcap") != 0 {
+				// Over the whole score matrix, not half of it: capping forces
+				// the eager form, which computes every score and then masks.
+				f.Elementwise = softcapCost * tEff * r.Num("heads")
+			}
+			return f
 		},
 		// q, k and v arrive on edges and are counted there; the output and the
 		// kernel's own statistics are not on any edge the backward pass reads.
@@ -580,7 +598,7 @@ var Primitives = []*BlockDef{
 				vDim = r.Num("head_dim")
 			}
 			output := r.Num("heads") * vDim * c.Bytes
-			if c.Flash && r.Bool("flash") {
+			if c.Flash && r.Bool("flash") && r.Num("logit_softcap") == 0 {
 				// A fused kernel keeps the output and the log-sum-exp
 				// statistics only.
 				return output + r.Num("heads")*4
@@ -616,6 +634,14 @@ var Primitives = []*BlockDef{
 				out = append(out, BlockFinding{
 					ID: "SDPA-02", Severity: "error", Param: "window",
 					Message: "window must be non-negative",
+				})
+			}
+			if r.Num("logit_softcap") != 0 && r.Bool("flash") {
+				out = append(out, BlockFinding{
+					ID: "SDPA-03", Severity: "warning", Param: "logit_softcap",
+					Message: "capping the attention scores rules out a fused kernel, which never " +
+						"materializes them to cap. This layer is counted as eager attention, so " +
+						"the score matrix is held for the backward pass.",
 				})
 			}
 			return out

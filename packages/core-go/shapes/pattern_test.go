@@ -11,7 +11,7 @@ import (
 
 // Shape patterns against the TypeScript they replace. The mismatch *messages*
 // matter as much as the verdicts: they are what a person reads off the canvas
-// when a design is wrong. Regenerate with `bun run scripts/golden.ts`.
+// when a design is wrong. Regenerate with `go run ./cmd/golden`.
 
 type patternParse struct {
 	Src          string   `json:"src"`
@@ -55,7 +55,7 @@ func loadPatterns(t *testing.T) patternGolden {
 	return g
 }
 
-func TestPatternsMatchTypeScript(t *testing.T) {
+func TestPatternsMatchTheGoldens(t *testing.T) {
 	g := loadPatterns(t)
 	env := loadExpressions(t).Env
 	ctx := shapes.EvalCtx{Values: env, Known: knownOf(env)}

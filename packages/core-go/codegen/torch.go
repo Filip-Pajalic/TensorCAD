@@ -128,6 +128,29 @@ const helperWindow = "def sliding_window_mask(seq: int, window: int, device, dty
 	"    mask = torch.zeros(seq, seq, device=device, dtype=dtype)\n" +
 	"    return mask.masked_fill(~allowed, float(\"-inf\"))\n"
 
+const helperSoftcap = "def softcap_attention(q, k, v, cap, mask=None, scale=None, enable_gqa=False):\n" +
+	"    \"\"\"Attention whose scores are bounded to +/-cap by a tanh.\n" +
+	"\n" +
+	"    Not `F.scaled_dot_product_attention`: the cap applies to the score matrix,\n" +
+	"    and a fused kernel never materializes one. This is the eager form, and it\n" +
+	"    costs the memory the fused kernel would have saved.\n" +
+	"    \"\"\"\n" +
+	"    if enable_gqa and k.shape[-3] != q.shape[-3]:\n" +
+	"        k = k.repeat_interleave(q.shape[-3] // k.shape[-3], dim=-3)\n" +
+	"        v = v.repeat_interleave(q.shape[-3] // v.shape[-3], dim=-3)\n" +
+	"    if scale is None:\n" +
+	"        scale = q.shape[-1] ** -0.5\n" +
+	"    scores = torch.tanh((q @ k.transpose(-2, -1)) * scale / cap) * cap\n" +
+	"    if mask is not None:\n" +
+	"        scores = scores + mask\n" +
+	"    return torch.softmax(scores, dim=-1).to(v.dtype) @ v\n"
+
+const helperCausal = "def causal_mask(seq: int, device, dtype) -> torch.Tensor:\n" +
+	"    \"\"\"Additive mask forbidding a token from attending to anything after it.\"\"\"\n" +
+	"    i = torch.arange(seq, device=device)\n" +
+	"    mask = torch.zeros(seq, seq, device=device, dtype=dtype)\n" +
+	"    return mask.masked_fill(i[:, None] < i[None, :], float(\"-inf\"))\n"
+
 const helperSsd = "class SSDScan(nn.Module):\n" +
 	"    \"\"\"Mamba-2 state-space scan.\n" +
 	"\n" +
@@ -207,13 +230,15 @@ type ctx struct {
 	symbols  *ir.SymbolTable
 	warnings []string
 	// classes are the deduplicated classes, in dependency order.
-	classes     []emitted
-	byKey       map[string]string
-	usedNames   map[string]bool
-	needsRope   bool
-	needsWindow bool
-	needsSsd    bool
-	moeDispatch string
+	classes      []emitted
+	byKey        map[string]string
+	usedNames    map[string]bool
+	needsRope    bool
+	needsWindow  bool
+	needsSoftcap bool
+	needsCausal  bool
+	needsSsd     bool
+	moeDispatch  string
 }
 
 func (c *ctx) warn(format string, args ...any) {
@@ -450,6 +475,13 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 				attr, pyValue(p["dim"]), pyValue(p["vocab"]), pyBool(p["bias"])))
 			out.forward = append(out.forward, fmt.Sprintf("%s = self.%s(%s)",
 				outName("y"), attr, inputVar(node.ID, "x")))
+			if cap := r.Num("softcap"); cap != 0 {
+				// Gemma's bound on the logits. It changes the loss, not the
+				// shapes, so it is one line after the projection.
+				out.forward = append(out.forward, fmt.Sprintf(
+					"%s = torch.tanh(%s / %s) * %s",
+					outName("y"), outName("y"), pyNum(cap), pyNum(cap)))
+			}
 			set("y", outName("y"))
 
 		case "rmsnorm":
@@ -583,7 +615,37 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 			if vd := r.Num("v_head_dim"); vd != 0 && vd != r.Num("head_dim") {
 				scale = ", scale=" + jsToPrecision(1/math.Sqrt(r.Num("head_dim")), 12)
 			}
-			if w := r.Num("window"); w > 0 {
+			w := r.Num("window")
+			cap := r.Num("logit_softcap")
+			switch {
+			case cap != 0:
+				// A cap on the scores rules the fused kernel out, so the mask
+				// has to be built here rather than left to `is_causal`.
+				c.needsSoftcap = true
+				mask := "None"
+				switch {
+				case w > 0:
+					c.needsWindow = true
+					out.forward = append(out.forward, fmt.Sprintf(
+						"%s_mask = sliding_window_mask(%s.shape[-2], %s, %s.device, %s.dtype)",
+						outName("y"), q, pyNum(w), q, q))
+					mask = outName("y") + "_mask"
+				case r.Bool("causal"):
+					c.needsCausal = true
+					out.forward = append(out.forward, fmt.Sprintf(
+						"%s_mask = causal_mask(%s.shape[-2], %s.device, %s.dtype)",
+						outName("y"), q, q, q))
+					mask = outName("y") + "_mask"
+				}
+				capScale := "None"
+				if scale != "" {
+					capScale = strings.TrimPrefix(scale, ", scale=")
+				}
+				out.forward = append(out.forward, fmt.Sprintf(
+					"%s = softcap_attention(%s, %s, %s, %s, mask=%s, scale=%s, enable_gqa=%s)",
+					outName("y"), q, k, v, pyNum(cap), mask, capScale,
+					pyBool(gqa != "")))
+			case w > 0:
 				c.needsWindow = true
 				out.forward = append(out.forward, fmt.Sprintf(
 					"%s_mask = sliding_window_mask(%s.shape[-2], %s, %s.device, %s.dtype)",
@@ -591,7 +653,7 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 				out.forward = append(out.forward, fmt.Sprintf(
 					"%s = F.scaled_dot_product_attention(%s, %s, %s, attn_mask=%s_mask%s%s)",
 					outName("y"), q, k, v, outName("y"), gqa, scale))
-			} else {
+			default:
 				out.forward = append(out.forward, fmt.Sprintf(
 					"%s = F.scaled_dot_product_attention(%s, %s, %s, is_causal=%s%s%s)",
 					outName("y"), q, k, v, pyBool(p["causal"]), gqa, scale))
@@ -952,6 +1014,12 @@ func GenerateTorch(doc *ir.Doc, options Options) *Generated {
 	}
 	if c.needsWindow {
 		helpers = append(helpers, helperWindow, "")
+	}
+	if c.needsCausal {
+		helpers = append(helpers, helperCausal, "")
+	}
+	if c.needsSoftcap {
+		helpers = append(helpers, helperSoftcap, "")
 	}
 	if c.needsSsd {
 		helpers = append(helpers, helperSsd, "")

@@ -1,5 +1,8 @@
-import { getPreset, generateTorch } from "../packages/core/src/index.js";
+import { generateTorch, getPreset, loadEngine } from "@tensorcad/engine/node";
 import { mkdirSync, writeFileSync } from "node:fs";
+
+await loadEngine();
+
 const name = process.argv[2] ?? "llama-3-8b";
 const out = generateTorch(getPreset(name));
 mkdirSync(`out/${name}`, { recursive: true });

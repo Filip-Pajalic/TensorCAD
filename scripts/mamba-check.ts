@@ -1,5 +1,7 @@
-import { DOC_VERSION, resolveSymbols, countParams, inferShapes, analyze } from "../packages/core/src/index.js";
-import type { Doc } from "../packages/core/src/index.js";
+import { analyze, countParams, DOC_VERSION, inferShapes, loadEngine } from "@tensorcad/engine/node";
+import type { Doc } from "@tensorcad/engine/node";
+
+await loadEngine();
 
 // Nemotron-H-8B's Mamba-2 block in isolation.
 const doc: Doc = {
@@ -19,12 +21,11 @@ const doc: Doc = {
     edges: [["tokens:x", "embed:ids"], ["embed:y", "blk:x"], ["blk:y", "out:x"]],
   },
 };
-const sym = resolveSymbols(doc);
-const inf = inferShapes(doc, sym, { expandComposites: true });
+const inf = inferShapes(doc, "expanded");
 const errs = inf.issues.filter((i) => i.severity === "error");
 console.log("shape errors:", errs.length);
 for (const e of errs) console.log("  ", e.path, e.port ?? "", e.message);
-const p = countParams(doc, sym);
+const p = countParams(doc);
 const blk = Object.entries(p.byPath).filter(([k]) => k.startsWith("blk/")).reduce((a, [, v]) => a + v, 0);
 console.log("mamba2 block params:", blk.toLocaleString("en-US"), "(expected 109,635,968)");
 const a = analyze(doc, { T: 8192 });

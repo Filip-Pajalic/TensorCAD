@@ -1,7 +1,10 @@
-import { getPreset, resolveSymbols, countParams, formatCount } from "../packages/core/src/index.js";
+import { countParams, getPreset, loadEngine } from "@tensorcad/engine/node";
+
+await loadEngine();
+
 for (const n of ["mixtral-8x7b", "qwen3-30b-a3b", "qwen3-235b-a22b"]) {
   const doc = getPreset(n);
-  const r = countParams(doc, resolveSymbols(doc));
+  const r = countParams(doc);
   const p = doc.meta.published!;
   console.log(
     n.padEnd(18),

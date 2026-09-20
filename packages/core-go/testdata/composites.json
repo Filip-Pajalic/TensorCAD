@@ -78,6 +78,7 @@
             "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
+            "logit_softcap": "0",
             "window": "0"
           }
         },
@@ -240,6 +241,7 @@
             "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
+            "logit_softcap": "0",
             "window": "0"
           }
         },
@@ -438,6 +440,7 @@
             "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
+            "logit_softcap": "0",
             "window": "0"
           }
         },
@@ -616,6 +619,7 @@
             "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
+            "logit_softcap": "0",
             "window": "4096"
           }
         },
@@ -1731,6 +1735,7 @@
             "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
+            "logit_softcap": "0",
             "o_bias": null,
             "qk_norm": false,
             "rope": null,
@@ -1862,6 +1867,7 @@
             "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
+            "logit_softcap": "0",
             "o_bias": null,
             "qk_norm": false,
             "rope": null,
@@ -1987,6 +1993,7 @@
             "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
+            "logit_softcap": "0",
             "o_bias": null,
             "qk_norm": false,
             "rope": null,
@@ -2136,6 +2143,7 @@
             "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
+            "logit_softcap": "0",
             "o_bias": null,
             "qk_norm": false,
             "rope": null,

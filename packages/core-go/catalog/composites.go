@@ -166,6 +166,8 @@ var gqaAttention = &BlockDef{
 		{"qk_norm", pBool(false, "RMSNorm on the query and key heads (Qwen3, Gemma 3)")},
 		{"rope", ropeSpec()},
 		{"flash", pBool(true, "")},
+		{"logit_softcap", ParamSpec{Type: ParamNum, Default: 0.0, HasDefault: true,
+			Doc: "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"}},
 	},
 	Ports: Ports{
 		In:  map[string]PortSpec{"x": Port("... d_model")},
@@ -244,9 +246,10 @@ func expandGQA(raw map[string]any, r *Resolved) Expansion {
 	nodes = append(nodes,
 		node("attn", "sdpa", map[string]any{
 			"heads": H, "kv_heads": KV, "head_dim": dh,
-			"causal": r.Bool("causal"),
-			"window": Ex(raw["window"], "0"),
-			"flash":  !isFalse(r.P["flash"]),
+			"causal":        r.Bool("causal"),
+			"window":        Ex(raw["window"], "0"),
+			"flash":         !isFalse(r.P["flash"]),
+			"logit_softcap": Ex(raw["logit_softcap"], "0"),
 		}),
 		node("o_merge", "rearrange", map[string]any{
 			"from": fmt.Sprintf("B %s T %s", H, dh), "to": fmt.Sprintf("B T (%s %s)", H, dh)}),
@@ -653,6 +656,8 @@ var transformerBlock = &BlockDef{
 		{"causal", pBool(true, "")},
 		{"window", ParamSpec{Type: ParamInt, Default: 0.0, HasDefault: true}},
 		{"rope", ropeSpec()},
+		{"logit_softcap", ParamSpec{Type: ParamNum, Default: 0.0, HasDefault: true,
+			Doc: "Bound the attention scores to this magnitude with tanh (Gemma 2)"}},
 	},
 	Ports: Ports{
 		In:  map[string]PortSpec{"x": Port("... d_model")},
@@ -714,16 +719,17 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 		})
 	} else {
 		attnNode = node("attn", "gqa_attention", map[string]any{
-			"d_model":  D,
-			"heads":    Ex(raw["heads"], "0"),
-			"kv_heads": Ex(raw["kv_heads"], "0"),
-			"head_dim": Ex(raw["head_dim"], "0"),
-			"bias":     r.Bool("attn_bias"),
-			"o_bias":   r.P["attn_o_bias"],
-			"causal":   r.Bool("causal"),
-			"window":   Ex(raw["window"], "0"),
-			"qk_norm":  r.Bool("qk_norm"),
-			"rope":     r.P["rope"],
+			"d_model":       D,
+			"heads":         Ex(raw["heads"], "0"),
+			"kv_heads":      Ex(raw["kv_heads"], "0"),
+			"head_dim":      Ex(raw["head_dim"], "0"),
+			"bias":          r.Bool("attn_bias"),
+			"o_bias":        r.P["attn_o_bias"],
+			"causal":        r.Bool("causal"),
+			"window":        Ex(raw["window"], "0"),
+			"qk_norm":       r.Bool("qk_norm"),
+			"rope":          r.P["rope"],
+			"logit_softcap": Ex(raw["logit_softcap"], "0"),
 		})
 	}
 
@@ -763,11 +769,17 @@ var repeatContainer = &BlockDef{
 	Kind: "container", Type: "repeat", Category: "container",
 	Params: ParamList{
 		{"count", pInt(1, "How many times the subgraph is stacked")},
-		{"pattern", ParamSpec{Type: ParamStr, Default: nil, HasDefault: true,
-			Doc: "Optional variant pattern for hybrid stacks, e.g. \"MMMA\" repeated count times"}},
 	},
 	Docs: BlockDocs{
 		Summary: "Stacks its subgraph count times. The subgraph's input and output shapes must match.",
+		// There was a `pattern` parameter here, for hybrid stacks written as one
+		// character per layer. Nothing ever read it: the inspector offered the
+		// field, the analysis ignored what was typed into it, and the answer was
+		// wrong without saying so. The two things it was meant for both work
+		// without it. A stack that alternates on a fixed period is a repeat of
+		// the *group* — Gemma's local and global layers are one repeat of L/2
+		// holding both blocks in series. A stack with no period at all is
+		// written out, as Nemotron-H's fifty-two layers are.
 	},
 }
 

@@ -54,9 +54,8 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      # The engine is Go compiled to WebAssembly, and the suite runs the
-      # compiled module against the TypeScript it replaces, so the toolchain is
-      # needed here too.
+      # The engine is Go compiled to WebAssembly, and nothing in the suite runs
+      # without it, so the toolchain is needed here too.
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}

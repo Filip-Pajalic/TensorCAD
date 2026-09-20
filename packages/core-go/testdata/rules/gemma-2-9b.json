@@ -6,15 +6,35 @@
       "ok": true,
       "counts": {
         "error": 0,
-        "info": 0,
-        "warning": 1
+        "info": 1,
+        "warning": 3
       },
       "findings": [
         {
           "rule": "training-fits",
           "severity": "warning",
-          "message": "Training needs about 210.59 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 17.21 GiB, gradients 17.21 GiB, optimizer 103.28 GiB, activations 72.88 GiB.",
-          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+          "message": "Training needs about 336.57 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 17.21 GiB, gradients 17.21 GiB, optimizer 103.28 GiB, activations 198.86 GiB.",
+          "hint": "Activations dominate. Turn on activation recomputation, or reduce the micro-batch."
+        },
+        {
+          "rule": "SDPA-03",
+          "severity": "warning",
+          "path": "layers/global/attn/attn",
+          "param": "logit_softcap",
+          "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass."
+        },
+        {
+          "rule": "SDPA-03",
+          "severity": "warning",
+          "path": "layers/local/attn/attn",
+          "param": "logit_softcap",
+          "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass."
+        },
+        {
+          "rule": "recompute-hint",
+          "severity": "info",
+          "message": "Activations are 59% of the training footprint at batch 1 and 8192 tokens.",
+          "hint": "Full recomputation trades about 33% more compute for most of that memory."
         }
       ]
     },
@@ -24,13 +44,27 @@
       "counts": {
         "error": 0,
         "info": 2,
-        "warning": 0
+        "warning": 2
       },
       "findings": [
         {
+          "rule": "SDPA-03",
+          "severity": "warning",
+          "path": "layers/global/attn/attn",
+          "param": "logit_softcap",
+          "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass."
+        },
+        {
+          "rule": "SDPA-03",
+          "severity": "warning",
+          "path": "layers/local/attn/attn",
+          "param": "logit_softcap",
+          "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass."
+        },
+        {
           "rule": "logits-memory",
           "severity": "info",
-          "message": "The logits buffer is 9.77 GiB, which is 89% of all activation memory.",
+          "message": "The logits buffer is 9.77 GiB, which is 94% of all activation memory.",
           "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
         },
         {
@@ -47,14 +81,28 @@
       "counts": {
         "error": 0,
         "info": 0,
-        "warning": 1
+        "warning": 3
       },
       "findings": [
         {
           "rule": "training-fits",
           "severity": "warning",
-          "message": "Training needs about 429.23 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 17.21 GiB, gradients 17.21 GiB, optimizer 103.28 GiB, activations 291.52 GiB.",
+          "message": "Training needs about 933.15 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 17.21 GiB, gradients 17.21 GiB, optimizer 103.28 GiB, activations 795.44 GiB.",
           "hint": "Activations dominate. Turn on activation recomputation, or reduce the micro-batch."
+        },
+        {
+          "rule": "SDPA-03",
+          "severity": "warning",
+          "path": "layers/global/attn/attn",
+          "param": "logit_softcap",
+          "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass."
+        },
+        {
+          "rule": "SDPA-03",
+          "severity": "warning",
+          "path": "layers/local/attn/attn",
+          "param": "logit_softcap",
+          "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass."
         }
       ]
     }

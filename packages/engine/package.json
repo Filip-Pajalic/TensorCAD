@@ -22,9 +22,6 @@
     "test": "bun test ../../packages/engine/test",
     "typecheck": "tsc --noEmit"
   },
-  "devDependencies": {
-    "@tensorcad/core": "workspace:*"
-  },
   "license": "MIT",
   "sideEffects": [
     "./vendor/wasm_exec.js"

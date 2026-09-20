@@ -1,4 +1,7 @@
-import { getPreset, analyze, formatFlops } from "../packages/core/src/index.js";
+import { analyze, formatFlops, getPreset, loadEngine } from "@tensorcad/engine/node";
+
+await loadEngine();
+
 const T = 128, B = 2;
 const a = analyze(getPreset("gpt2-small"), { T, B });
 const torchTotal = 64_456_359_936;       // measured by FlopCounterMode

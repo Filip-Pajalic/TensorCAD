@@ -15,7 +15,7 @@ import (
 // The TypeScript engine is the specification until it is gone. It writes the
 // document it builds and the answer it gets for every preset; this reads the
 // same documents and requires the same answers, to the last symbol. Regenerate
-// with `bun run scripts/golden.ts`.
+// with `go run ./cmd/golden`.
 
 type goldenSymbols struct {
 	Order        []string           `json:"order"`
@@ -89,7 +89,7 @@ func TestEveryPresetDecodes(t *testing.T) {
 	}
 }
 
-func TestSymbolTableMatchesTypeScript(t *testing.T) {
+func TestSymbolTableMatchesTheGoldens(t *testing.T) {
 	for _, name := range presetNames(t) {
 		t.Run(name, func(t *testing.T) {
 			got := ir.ResolveSymbols(loadDoc(t, name))

@@ -58,7 +58,67 @@ func TestImportReproducesThePreset(t *testing.T) {
 				t.Errorf("the import counts %s parameters, the preset counts %s",
 					analysis.FormatCount(g), analysis.FormatCount(w))
 			}
+			// And the cache, which is where a stack that is not uniform shows.
+			// A parameter count cannot tell a windowed layer from a full one;
+			// what a design costs to serve can.
+			gk, wk := cacheOf(t, got.Doc), cacheOf(t, want)
+			if gk.perToken != wk.perToken || gk.perSequence != wk.perSequence {
+				t.Errorf("the import holds %s per token and %s per sequence; the preset holds %s and %s",
+					analysis.FormatBytes(gk.perToken), analysis.FormatBytes(gk.perSequence),
+					analysis.FormatBytes(wk.perToken), analysis.FormatBytes(wk.perSequence))
+			}
 		})
+	}
+}
+
+type cache struct{ perToken, perSequence float64 }
+
+func cacheOf(t *testing.T, doc *ir.Doc) cache {
+	t.Helper()
+	res, err := analysis.Analyze(doc, analysis.Options{}, analysis.Inputs{})
+	if err != nil {
+		t.Fatalf("analyze: %v", err)
+	}
+	return cache{res.Kv.BytesPerToken, res.Kv.BytesPerSequenceFixed}
+}
+
+// Gemma alternates local and global attention, and the import has to say so.
+//
+// Nothing about the parameter count would notice: a window changes what a layer
+// attends to, not what it holds. The cache is where it shows, and for a 42-layer
+// model at a 4096-token window half of it stops growing with the sequence.
+func TestGemmaAlternatesLocalAndGlobalAttention(t *testing.T) {
+	got, err := hf.Import(configs(t)["gemma-2-9b"], "g")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Warnings) != 0 {
+		t.Errorf("warnings: %q", got.Warnings)
+	}
+	w, ok := got.Doc.Symbols["W"]
+	if !ok || w.Number != 4096 {
+		t.Fatalf("W is %+v", w)
+	}
+	var stack *ir.NodeDef
+	for i := range got.Doc.Graph.Nodes {
+		if got.Doc.Graph.Nodes[i].ID == "layers" {
+			stack = &got.Doc.Graph.Nodes[i]
+		}
+	}
+	if stack == nil || stack.Graph == nil {
+		t.Fatal("no layer stack")
+	}
+	windows := map[string]any{}
+	for _, n := range stack.Graph.Nodes {
+		if n.Type == "transformer_block" {
+			windows[n.ID] = n.Params["window"]
+		}
+	}
+	if len(windows) != 2 || windows["local"] != "W" || windows["global"] != 0.0 {
+		t.Errorf("the group is %+v, want one local layer at W and one global at 0", windows)
+	}
+	if c := cacheOf(t, got.Doc); c.perSequence == 0 {
+		t.Error("nothing is held per sequence, so every layer is still growing its cache")
 	}
 }
 

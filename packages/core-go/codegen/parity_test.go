@@ -12,42 +12,28 @@ import (
 	"github.com/tensorcad/core/presets"
 )
 
-// The generated PyTorch against the TypeScript, byte for byte.
+// The generated PyTorch against the golden files, byte for byte.
 //
 // The strongest test in the set. A model.py is the whole engine's output as one
 // artifact — every parameter it resolved, every composite it expanded, every
 // number it formatted — and a file that differs by one character is a file that
 // was generated differently. Three variants per preset, because each takes a
-// different path through the emitter. Regenerate with
-// `bun run scripts/golden.ts`.
-
-func f(v float64) *float64 { return &v }
-
-// variants must stay in step with CODEGEN_VARIANTS in scripts/golden.ts.
-func variants() map[string]codegen.Options {
-	return map[string]codegen.Options{
-		"default": {},
-		"dense":   {MoeDispatch: "dense"},
-		"bare":    {InitStd: f(0), NoSmokeTest: true, ClassName: "Net"},
-	}
-}
+// different path through the emitter, and the settings behind each come out of
+// the file rather than being restated here. Regenerate with
+// `go run ./cmd/golden`.
 
 type goldenCase struct {
-	Label    string   `json:"label"`
-	Warnings []string `json:"warnings"`
-	Model    string   `json:"model"`
+	Label    string              `json:"label"`
+	Options  codegen.WireOptions `json:"options"`
+	Warnings []string            `json:"warnings"`
+	Model    string              `json:"model"`
 }
 
-func TestGeneratedTorchMatchesTypeScript(t *testing.T) {
-	opts := variants()
+func TestGeneratedTorchMatchesGoldens(t *testing.T) {
 	for _, name := range presetNames(t) {
 		for _, c := range loadCodegen(t, name) {
 			t.Run(name+"/"+c.Label, func(t *testing.T) {
-				o, ok := opts[c.Label]
-				if !ok {
-					t.Fatalf("no Go variant named %q", c.Label)
-				}
-				got := codegen.GenerateTorch(loadDoc(t, name), o)
+				got := codegen.GenerateTorch(loadDoc(t, name), c.Options.Options())
 
 				if len(got.Warnings) != len(c.Warnings) {
 					t.Errorf("warnings: got %d, want %d\n go   %q\n want %q",
@@ -72,6 +58,69 @@ func TestGeneratedTorchMatchesTypeScript(t *testing.T) {
 			})
 		}
 	}
+}
+
+// A block may be called anything. Python may not.
+//
+// `local` and `global` is what a person reaches for when laying out Gemma's
+// alternating attention, and `self.global = ...` is a syntax error — the file
+// imported nowhere. Nothing in the IR restricts a node's name, so the emitter
+// is where this has to be handled.
+func TestPythonKeywordsAreNotUsedAsNames(t *testing.T) {
+	doc := loadDoc(t, "gpt2-small")
+	for _, id := range []string{"global", "class", "lambda", "None", "import"} {
+		t.Run(id, func(t *testing.T) {
+			renamed := renameNode(t, doc, "embed", id)
+			got := codegen.GenerateTorch(renamed, codegen.Options{})
+			var model string
+			for _, file := range got.Files {
+				if file.Path == "model.py" {
+					model = file.Contents
+				}
+			}
+			if model == "" {
+				t.Fatal("no model.py")
+			}
+			for _, bad := range []string{
+				"self." + id + " ", "self." + id + "=", "self." + id + "(",
+				"self." + id + ".", " " + id + " =",
+			} {
+				if strings.Contains(model, bad) {
+					t.Errorf("emitted %q, which Python will not parse", strings.TrimSpace(bad))
+				}
+			}
+			if !strings.Contains(model, "self."+id+"_") {
+				t.Errorf("expected the name to survive as %q", id+"_")
+			}
+		})
+	}
+}
+
+// renameNode is one node under a new name, edges and all.
+func renameNode(t *testing.T, doc *ir.Doc, from, to string) *ir.Doc {
+	t.Helper()
+	out, err := doc.Clone()
+	if err != nil {
+		t.Fatalf("clone: %v", err)
+	}
+	found := false
+	for i := range out.Graph.Nodes {
+		if out.Graph.Nodes[i].ID == from {
+			out.Graph.Nodes[i].ID = to
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("no node named %q", from)
+	}
+	for i, e := range out.Graph.Edges {
+		for j, end := range e {
+			if strings.HasPrefix(end, from+":") {
+				out.Graph.Edges[i][j] = to + strings.TrimPrefix(end, from)
+			}
+		}
+	}
+	return out
 }
 
 // TestDesignTravelsWithTheCode pins the second file: a generated model is not

@@ -160,7 +160,6 @@ post-norm, tied embeddings, hybrid stacks.
 ```
 packages/core-go/   the engine — Go, no dependencies outside the standard library
 packages/engine/    the engine compiled to WebAssembly, and its TypeScript client
-packages/core/      the TypeScript the engine replaced; the parity oracle
 packages/ui/        React + React Flow editor, 2D sheet and 3D volume view
 packages/cli/       command line: validate, analyze, show, diff, codegen
 packages/mcp/       MCP server
@@ -171,11 +170,12 @@ docs/               tutorials, how-to guides, reference and explanation
 
 One engine, everywhere. The editor, the command line, the MCP server and the
 desktop shell all load the same WebAssembly module and ask it the same
-questions, so an answer cannot depend on where it was asked. `packages/core` is
-the TypeScript the engine was ported from: it no longer ships, and what keeps
-it around is that the Go is checked against it — every preset's symbol table,
-inferred shapes, full analysis, design-rule findings and generated PyTorch,
-byte for byte, both from the source and from the compiled module.
+questions, so an answer cannot depend on where it was asked. What it is held to
+is `packages/core-go/testdata`: every preset's symbol table, inferred shapes,
+full analysis, design-rule findings and generated PyTorch, byte for byte,
+checked both against the Go source and against the compiled module. Those files
+began as the answers of the TypeScript this was ported from, which has since
+been deleted.
 
 ## For agents
 

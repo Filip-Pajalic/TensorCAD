@@ -19,8 +19,8 @@ import (
 // cases, chosen so each exercises a different corner — a dense model, one
 // scaled by its non-embedding count with a tied head, one at fixed depth, a
 // mixture of experts, latent attention, and a state-space model. The variants
-// must stay in step with SCALE_CASES in scripts/golden.ts. Regenerate with
-// `bun run scripts/golden.ts`.
+// must stay in step with ScaleCases in golden/cases.go. Regenerate with
+// `go run ./cmd/golden`.
 
 func f(v float64) *float64 { return &v }
 func b(v bool) *bool       { return &v }
@@ -49,7 +49,7 @@ type goldenScale struct {
 	Symbols    [][2]json.RawMessage `json:"symbols"`
 }
 
-func TestScaledDesignsMatchTypeScript(t *testing.T) {
+func TestScaledDesignsMatchTheGoldens(t *testing.T) {
 	raw, err := os.ReadFile(filepath.Join("..", "testdata", "scale.json"))
 	if err != nil {
 		t.Fatalf("read scale golden: %v", err)
@@ -156,7 +156,7 @@ func TestScaledDesignsMatchTypeScript(t *testing.T) {
 			}
 			for name, v := range table.DesignValues {
 				if _, ok := wantSymbols[name]; !ok {
-					t.Errorf("symbol %s = %g is not in the TypeScript", name, v)
+					t.Errorf("symbol %s = %g is not in the golden", name, v)
 				}
 			}
 		})

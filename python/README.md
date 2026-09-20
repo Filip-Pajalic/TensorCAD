@@ -1,6 +1,6 @@
 # `tensorcad-runtime`
 
-The Python half of TensorCAD. `packages/core` computes parameter counts, FLOPs and
+The Python half of TensorCAD. The engine computes parameter counts, FLOPs and
 memory symbolically and emits PyTorch; this package is what actually runs that
 PyTorch, so the estimates can be checked against the framework instead of against
 themselves.
@@ -162,10 +162,10 @@ clean `error_kind: "torch_missing"`) on machines that have not installed it.
 
 ## Tests
 
-`packages/core/test/python.test.ts` shells out to `tensorcad-runtime verify` for
+`packages/engine/test/python.test.ts` shells out to `tensorcad-runtime verify` for
 gpt2-small and asserts the counts agree. It skips — not fails — when the runtime
 or torch is missing, so the suite stays green without a GPU.
 
 ```bash
-bun test packages/core/test/python.test.ts
+bun test packages/engine/test/python.test.ts
 ```

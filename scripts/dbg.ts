@@ -1,7 +1,10 @@
-import { allPresets, resolveSymbols, inferShapes } from "../packages/core/src/index.js";
-for (const doc of allPresets()) {
-  const s = resolveSymbols(doc);
-  const r = inferShapes(doc, s, { expandComposites: true });
+import { getPreset, inferShapes, loadEngine, PRESET_NAMES } from "@tensorcad/engine/node";
+
+await loadEngine();
+
+for (const name of PRESET_NAMES) {
+  const doc = getPreset(name);
+  const r = inferShapes(doc, "expanded");
   const errs = r.issues.filter((i) => i.severity === "error");
   if (errs.length) {
     console.log(`\n== ${doc.meta.name}`);

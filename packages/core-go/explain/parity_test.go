@@ -12,13 +12,13 @@ import (
 	"github.com/tensorcad/core/presets"
 )
 
-// What the tool says about a block, against the TypeScript.
+// What the tool says about a block, against the goldens.
 //
 // Explain is the learning surface, so the prose matters as much as the numbers:
 // the expression a person wrote beside the value it came to, the block's own
 // summary, and the formula with its source. A wrong share of the parameter
 // count is a wrong number; a missing formula is a tool that stopped teaching.
-// Regenerate with `bun run scripts/golden.ts`.
+// Regenerate with `go run ./cmd/golden`.
 
 // A parameter is written as [name, expression, value, doc], which keeps the
 // golden readable next to the block it describes.
@@ -59,7 +59,7 @@ type goldenBlock struct {
 	} `json:"breakdown"`
 }
 
-func TestExplanationsMatchTypeScript(t *testing.T) {
+func TestExplanationsMatchTheGoldens(t *testing.T) {
 	raw, err := os.ReadFile(filepath.Join("..", "testdata", "explain.json"))
 	if err != nil {
 		t.Fatalf("read explain golden: %v", err)
@@ -88,7 +88,7 @@ func TestExplanationsMatchTypeScript(t *testing.T) {
 				t.Fatal(err)
 			}
 			if len(all) < len(c.Blocks) {
-				t.Fatalf("explained %d blocks, the TypeScript explained at least %d",
+				t.Fatalf("explained %d blocks, the golden has at least %d",
 					len(all), len(c.Blocks))
 			}
 
@@ -193,7 +193,7 @@ func compareShapes(t *testing.T, side string, got, want map[string]string) {
 	}
 	for name := range got {
 		if _, ok := want[name]; !ok {
-			t.Errorf("%s port %q is not in the TypeScript", side, name)
+			t.Errorf("%s port %q is not in the golden", side, name)
 		}
 	}
 }

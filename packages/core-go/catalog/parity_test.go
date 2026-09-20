@@ -12,13 +12,13 @@ import (
 	"github.com/tensorcad/core/ir"
 )
 
-// Every primitive, one block at a time, against the TypeScript it replaces.
+// Every primitive, one block at a time, against the goldens.
 //
 // A preset only exercises the primitives its architecture happens to use, at
 // the sizes that architecture happens to pick. This walks the catalog at a
 // fixed set of parameters and requires the same answer for each: resolved
 // parameters, ports, parameter count, FLOPs, retained inputs, cache state and
-// constraint messages. Regenerate with `bun run scripts/golden.ts`.
+// constraint messages. Regenerate with `go run ./cmd/golden`.
 
 type primPorts struct {
 	In      map[string]string `json:"in"`
@@ -88,7 +88,7 @@ func primSymbols() *ir.SymbolTable {
 	return ir.ResolveSymbols(doc)
 }
 
-func TestPrimitivesMatchTypeScript(t *testing.T) {
+func TestPrimitivesMatchTheGoldens(t *testing.T) {
 	g := loadPrimitives(t)
 	symbols := primSymbols()
 	ctx := catalog.AnalysisCtx{T: g.Ctx.T, B: g.Ctx.B, Bytes: g.Ctx.Bytes, Flash: g.Ctx.Flash}
@@ -146,7 +146,7 @@ func TestPrimitivesMatchTypeScript(t *testing.T) {
 			// thing in both engines, and a block that keeps nothing has to keep
 			// nothing: an unimplemented formula would otherwise read as free.
 			if (c.ExtraActivationBytes != nil) != (def.ExtraActivationBytes != nil) {
-				t.Errorf("extraActivationBytes: Go has %v, TypeScript has %v",
+				t.Errorf("extraActivationBytes: got %v, the golden has %v",
 					def.ExtraActivationBytes != nil, c.ExtraActivationBytes != nil)
 			} else if c.ExtraActivationBytes != nil {
 				checkFlop(t, "extraActivationBytes", def.ExtraActivationBytes(r, ctx), *c.ExtraActivationBytes)
@@ -230,7 +230,7 @@ func compareShapes(t *testing.T, side string, got map[string]catalog.PortSpec, w
 	}
 	for name := range got {
 		if _, ok := want[name]; !ok {
-			t.Errorf("%s port %q is not in the TypeScript", side, name)
+			t.Errorf("%s port %q is not in the golden", side, name)
 		}
 	}
 }

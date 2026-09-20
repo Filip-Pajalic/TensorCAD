@@ -1,5 +1,5 @@
 /**
- * Cross-check the TypeScript parameter analysis against PyTorch itself.
+ * Cross-check the analysis against PyTorch itself.
  *
  * These tests shell out to `tensorcad-runtime verify`, which imports the generated
  * module, instantiates it on the meta device and counts parameters. That closes
@@ -15,8 +15,9 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { generateTorch } from "../src/codegen/torch.js";
-import { getPreset } from "../src/presets/index.js";
+import { analyze, generateTorch, getPreset, loadEngine, PRESET_NAMES, scaleDesign } from "../src/node.js";
+
+await loadEngine();
 
 const PRESET = "gpt2-small";
 const TIMEOUT_MS = 180_000;
@@ -158,8 +159,15 @@ describe.skipIf(!available)("tensorcad-runtime verify", () => {
         expect(r.forward).toBe("ok");
         expect(r.shapes?.logits).toEqual([2, 128, 50257]);
 
-        // Roughly 2 * params per token, plus attention.
-        expect(r.flops).toBeGreaterThan(2 * r.params * 2 * 128);
+        // The FLOP count, against what PyTorch's profiler measures — not
+        // roughly, exactly. The two conventions differ over the causal mask
+        // and nothing else: a profiler counts the attention operator as if
+        // nothing were masked, because the operator's shape does not depend on
+        // the mask, and `fwdTotalUnmasked` is that convention. `fwdTotal` is
+        // what a fused causal kernel actually does, and is the smaller number.
+        const flops = analyze(getPreset(PRESET), { T: 128, B: 2 }).flops;
+        expect(r.flops! / (2 * 128)).toBe(flops.fwdTotalUnmasked);
+        expect(flops.fwdTotal).toBeLessThan(flops.fwdTotalUnmasked);
 
         // Both leading dimensions stay symbolic; the vocab does not.
         expect(r.export_ok).toBe(true);
@@ -170,6 +178,100 @@ describe.skipIf(!available)("tensorcad-runtime verify", () => {
         expect(output?.[1]).not.toBe("128");
       } finally {
         rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+});
+
+/**
+ * A design that alternates, windows and softcaps, small enough to run.
+ *
+ * GPT-2 exercises none of those. This one is Gemma 2 shrunk to twenty million
+ * parameters, which keeps every structural feature — local and global layers in
+ * one repeat, a tanh on the attention scores that rules out the fused kernel,
+ * and a tanh on the logits — and drops only the widths. If the emitted eager
+ * attention were wrong, this is where it would show.
+ */
+describe.skipIf(!available)("a windowed, softcapped design runs", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+
+  it(
+    "agrees with PyTorch on its parameters and its FLOPs",
+    () => {
+      const scaled = scaleDesign(getPreset("gemma-2-9b"), { targetParams: 20e6, vocab: 4096 });
+      const dir = mkdtempSync(join(tmpdir(), "tensorcad-gemma-"));
+      try {
+        const out = generateTorch(scaled.doc);
+        expect(out.warnings).toEqual([]);
+        for (const file of out.files) writeFileSync(join(dir, file.path), file.contents);
+
+        const full = runVerify(invocation, join(dir, "model.py"));
+        expect(full).not.toHaveProperty("spawnFailed");
+        const r = full as Verify;
+        expect({ ok: r.ok, matches: r.matches, forward: r.forward }).toEqual({
+          ok: true,
+          matches: true,
+          forward: "ok",
+        });
+        expect(r.params).toBe(scaled.achieved);
+
+        const flops = analyze(scaled.doc, { T: 128, B: 2 }).flops;
+        expect(r.flops! / (2 * 128)).toBe(flops.fwdTotalUnmasked);
+        // The tanh on the scores and on the logits is arithmetic the profiler
+        // does not count as a matmul, and neither do we.
+        expect(flops.elementwise).toBeGreaterThan(0);
+        expect(r.export_ok).toBe(true);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+});
+
+/**
+ * Every preset, through `ast.parse`.
+ *
+ * Cheaper than the block above and answering a different question: not "does
+ * this model have the weights we said" but "is this a Python file at all".
+ * Nothing in the IR stops a block being called `global` or `class`, and
+ * `self.global = ...` is a syntax error — a file that imports nowhere, in a
+ * design whose every number is right. Needs an interpreter, not PyTorch.
+ */
+const PYTHONS = ["python", "python3"] as const;
+
+function anyPython(): string | null {
+  for (const exe of PYTHONS) {
+    const probe = spawnSync(exe, ["-c", "import ast"], { encoding: "utf8" });
+    if (probe.status === 0) return exe;
+  }
+  return null;
+}
+
+const python = anyPython();
+if (!python) console.warn("[python.test] skipping the parse check: no interpreter");
+
+describe.skipIf(!python)("every generated model is valid Python", () => {
+  it(
+    "parses, for all twenty presets and both mixture-of-experts dispatches",
+    () => {
+      for (const name of PRESET_NAMES) {
+        const doc = getPreset(name);
+        for (const options of [{}, { moeDispatch: "dense" as const }]) {
+          const model = generateTorch(doc, options).files.find((f) => f.path === "model.py");
+          expect({ name, has: model !== undefined }).toEqual({ name, has: true });
+          const check = spawnSync(
+            python!,
+            ["-c", "import ast,sys;ast.parse(sys.stdin.read())"],
+            { encoding: "utf8", input: model!.contents },
+          );
+          expect({ name, dispatch: options.moeDispatch ?? "sparse", error: check.stderr.trim() }).toEqual({
+            name,
+            dispatch: options.moeDispatch ?? "sparse",
+            error: "",
+          });
+        }
       }
     },
     TIMEOUT_MS,

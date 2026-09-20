@@ -1,10 +1,14 @@
-import { allPresets, generateTorch } from "../packages/core/src/index.js";
+import { generateTorch, getPreset, loadEngine, PRESET_NAMES } from "@tensorcad/engine/node";
 import { mkdirSync, writeFileSync } from "node:fs";
-for (const doc of allPresets()) {
+
+await loadEngine();
+
+for (const name of PRESET_NAMES) {
+  const doc = getPreset(name);
   const out = generateTorch(doc);
   const dir = `out/${doc.meta.name}`;
   mkdirSync(dir, { recursive: true });
   for (const f of out.files) writeFileSync(`${dir}/${f.path}`, f.contents);
   if (out.warnings.length) console.error(`${doc.meta.name}: ${out.warnings.length} warnings`);
 }
-console.log("generated", allPresets().length, "models");
+console.log("generated", PRESET_NAMES.length, "models");

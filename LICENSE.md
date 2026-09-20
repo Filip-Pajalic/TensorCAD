@@ -63,7 +63,7 @@ Source: <https://github.com/bbycroft/llm-viz>
 
 ### Architectures described, not copied
 
-The presets in `packages/core/src/presets/` describe published architectures.
+The presets in `packages/core-go/presets/data/` describe published architectures.
 They are written from each model's configuration and paper — no code is copied
 from any of them, and an architecture's dimensions are facts rather than
 expression. They are listed here because the work deserves attribution:
@@ -97,7 +97,8 @@ documentation was read and the conventions were reimplemented.
 
 ### Runtime dependencies
 
-`packages/core` has none. The editor, desktop shell and Python runtime depend on
+The engine has none: `packages/core-go` is the Go standard library and nothing
+else. The editor, desktop shell and Python runtime depend on
 React, React Flow, ELK, Three.js, Base UI, Tailwind, Zustand, lucide-react,
 Wails and PyTorch, each under its own license. See the respective `package.json`,
 `go.mod` and `pyproject.toml` for exact versions.

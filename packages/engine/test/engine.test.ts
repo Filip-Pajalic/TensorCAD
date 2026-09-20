@@ -1,51 +1,58 @@
 /**
- * The compiled engine, against the one it replaces.
+ * The compiled engine, against the answers the goldens record.
  *
- * The golden files prove the Go source agrees with the TypeScript source. This
- * proves the thing that actually ships agrees too: the same code after a
- * compiler, a linker and a WebAssembly runtime have all had a turn at it, asked
- * the same questions through the boundary the editor will use.
+ * The Go tests prove the source. This proves the thing that actually ships:
+ * the same code after a compiler, a linker and a WebAssembly runtime have each
+ * had a turn at it, asked the same questions through the boundary the editor
+ * uses. The two can disagree, and have — a nil slice arrives as `null`, a NaN
+ * cannot be encoded at all, and Go and JavaScript print the same double
+ * differently. None of that is visible from inside Go.
  *
- * Needs the module built first: `bun run scripts/build-wasm.ts`.
+ * The comparison is against `packages/core-go/testdata` rather than a second
+ * implementation, so every expectation here is a file a person can read.
+ *
+ * Needs the module built first: `bun run build:wasm`.
  */
 
 import { beforeAll, describe, expect, it } from "bun:test";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import {
-  analyze,
-  generateTorch,
-  getPreset,
-  inferShapes,
-  PRESET_NAMES,
-  resolveSymbols,
-  scaleDesign,
-  shapeToString,
-  validate,
-} from "@tensorcad/core";
-import { createEngine, EngineError, type Doc as EngineDoc, type Engine } from "../src/index.js";
+  createEngine,
+  EngineError,
+  type AnalysisOptions,
+  type Doc,
+  type Engine,
+  type Severity,
+  type ScaleOptions,
+  type TorchOptions,
+} from "../src/index.js";
 import "../vendor/wasm_exec.js";
 
 const wasmPath = join(import.meta.dir, "..", "wasm", "tensorcad.wasm");
+const testdata = join(import.meta.dir, "..", "..", "core-go", "testdata");
 
-/**
- * The same document, described by two type worlds.
- *
- * `@tensorcad/core` and `@tensorcad/engine` each declare the IR, which is the
- * duplication this whole migration exists to remove. Until the TypeScript core
- * goes, comparing the two engines means handing one's document to the other,
- * and the cast is where that happens — once, here, rather than at every call.
- */
-function asDoc(doc: ReturnType<typeof getPreset>): EngineDoc {
-  return doc as unknown as EngineDoc;
+function golden<T>(...parts: string[]): T {
+  return JSON.parse(readFileSync(join(testdata, ...parts), "utf8")) as T;
+}
+
+/** The presets, taken from the files rather than from the engine under test. */
+const PRESET_NAMES = readdirSync(join(testdata, "golden"))
+  .filter((f) => f.endsWith(".json"))
+  .map((f) => f.slice(0, -".json".length))
+  .sort();
+
+interface Cases<T> {
+  preset: string;
+  cases: T[];
 }
 
 let engine: Engine;
 
 beforeAll(async () => {
   if (!existsSync(wasmPath)) {
-    throw new Error("The engine is not built. Run: bun run scripts/build-wasm.ts");
+    throw new Error("The engine is not built. Run: bun run build:wasm");
   }
   engine = await createEngine({ wasm: readFileSync(wasmPath) });
 });
@@ -55,94 +62,114 @@ describe("the compiled engine", () => {
     expect(engine.version()).toEqual({ engine: "go", target: "wasm" });
   });
 
-  it("ships the same design library", () => {
-    expect(engine.presets().sort()).toEqual([...PRESET_NAMES].sort());
+  it("ships the whole design library", () => {
+    expect(engine.presets().sort()).toEqual(PRESET_NAMES);
+    expect(PRESET_NAMES.length).toBe(20);
   });
 
-  it("hands back the same documents", () => {
+  it("hands back documents that still carry their published figures", () => {
     for (const name of PRESET_NAMES) {
-      const fromWasm = engine.preset(name);
-      const fromCore = getPreset(name);
-      expect(fromWasm.meta.name).toBe(fromCore.meta.name);
-      expect(fromWasm.graph.nodes.length).toBe(fromCore.graph.nodes.length);
-      expect(fromWasm.graph.edges).toEqual(fromCore.graph.edges);
+      const doc = engine.preset(name);
+      expect({ name, has: doc.meta.name }).toEqual({ name, has: name });
+      expect(doc.graph.nodes.length).toBeGreaterThan(0);
     }
   });
 
-  // The headline numbers, for every preset. A parameter count is a whole
-  // number of weights, so it is exact or it is wrong.
-  it("counts the same parameters", () => {
+  // The strongest of the numeric checks: not a handful of headline figures but
+  // every number the analysis produces, for every preset, at three operating
+  // points that between them turn on sharding, recomputation, fp8, a dtype for
+  // the cache that differs from the weights, and eager attention.
+  it("reproduces every number in the analysis goldens", () => {
     for (const name of PRESET_NAMES) {
-      const doc = getPreset(name);
-      expect({ name, ...pick(engine.analyze(asDoc(doc))) }).toEqual({ name, ...pick(analyze(doc)) });
+      const file = golden<Cases<{ label: string; options: AnalysisOptions }>>("analysis", `${name}.json`);
+      for (const one of file.cases) {
+        // `flat` is the flattening the analysis walked, recorded beside the
+        // answer rather than part of it; the Go tests check it on its own.
+        const { label, options, flat: _flat, ...want } = one as Record<string, unknown> & {
+          label: string;
+          options: AnalysisOptions;
+        };
+        const got = engine.analyze(engine.preset(name), options);
+        expect({ name, label, ...(asGolden(got, want) as object) }).toEqual({ name, label, ...want });
+      }
     }
   });
 
-  it("agrees at an operating point nobody defaults to", () => {
-    const options = {
-      T: 8192,
-      B: 4,
-      dtype: "fp8",
-      inferenceDtype: "fp8",
-      recompute: "full",
-      optimizer: "adamw8bit",
-      hardware: "a100-80",
-      gpus: 64,
-      concurrency: 32,
-      tokens: 15e12,
-      mfu: 0.4,
-      flash: false,
-      parallel: { dp: 4, tp: 8, pp: 2, zero: 3, sequenceParallel: true },
-    } as const;
-    for (const name of ["llama-3-8b", "mixtral-8x7b", "deepseek-v3", "nemotron-h-8b"]) {
-      const doc = getPreset(name);
-      const fromWasm = engine.analyze(asDoc(doc), options);
-      const fromCore = analyze(doc, options);
-      expect({ name, ...pick(fromWasm) }).toEqual({ name, ...pick(fromCore) });
-      expect(fromWasm.memory.train.perGpu.total).toBeCloseTo(fromCore.memory.train.perGpu.total, 6);
-      expect(fromWasm.memory.notes).toEqual(fromCore.memory.notes);
-      expect(fromWasm.throughput.notes).toEqual(fromCore.throughput.notes);
-    }
-  });
-
-  it("finds the same things wrong", () => {
+  it("finds the same things wrong, in the same order", () => {
     for (const name of PRESET_NAMES) {
-      const doc = getPreset(name);
-      const fromWasm = engine.validate(asDoc(doc));
-      const fromCore = validate(doc);
-      expect({ name, ok: fromWasm.ok, counts: fromWasm.counts }).toEqual({
-        name,
-        ok: fromCore.ok,
-        counts: fromCore.counts,
-      });
-      expect(fromWasm.findings.map(line)).toEqual(fromCore.findings.map(line));
+      const file = golden<Cases<{ label: string; ok: boolean; counts: Record<Severity, number>; findings: Finding[] }>>(
+        "rules",
+        `${name}.json`,
+      );
+      const options = golden<Cases<{ label: string; options: AnalysisOptions }>>("analysis", `${name}.json`);
+      for (const one of file.cases) {
+        const at = options.cases.find((c) => c.label === one.label);
+        const report = engine.validate(engine.preset(name), at?.options);
+        expect({ name, label: one.label, ok: report.ok, counts: report.counts }).toEqual({
+          name,
+          label: one.label,
+          ok: one.ok,
+          counts: one.counts,
+        });
+        expect({ name, label: one.label, findings: report.findings.map(line) }).toEqual({
+          name,
+          label: one.label,
+          findings: one.findings.map(line),
+        });
+      }
     }
   });
 
-  // The strongest one: a model.py is the whole engine's output as a single
-  // artifact, and a file that differs by one character was generated
-  // differently.
+  // A model.py is the whole engine's output as a single artifact, and a file
+  // that differs by one character was generated differently.
   it("generates the same PyTorch, byte for byte", () => {
     for (const name of PRESET_NAMES) {
-      const doc = getPreset(name);
-      for (const options of [{}, { moeDispatch: "dense" as const }]) {
-        const fromWasm = engine.generateTorch(asDoc(doc), options);
-        const fromCore = generateTorch(doc, options);
-        expect(fromWasm.warnings).toEqual(fromCore.warnings);
-        expect({ name, model: modelOf(fromWasm) }).toEqual({ name, model: modelOf(fromCore) });
+      const file = golden<Cases<{ label: string; options: TorchOptions; warnings: string[]; model: string }>>(
+        "codegen",
+        `${name}.json`,
+      );
+      for (const one of file.cases) {
+        const got = engine.generateTorch(engine.preset(name), one.options);
+        expect({ name, label: one.label, warnings: got.warnings }).toEqual({
+          name,
+          label: one.label,
+          warnings: one.warnings,
+        });
+        const model = got.files.find((f) => f.path === "model.py")?.contents ?? "";
+        expect({ name, label: one.label, model }).toEqual({ name, label: one.label, model: one.model });
       }
     }
   });
 
   it("shrinks a design to the same widths", () => {
-    const doc = getPreset("llama-3-8b");
-    const options = { targetParams: 30e6, targetBasis: "non-embedding" as const, vocab: 8192, tieHead: true };
-    const fromWasm = engine.scale(asDoc(doc), options);
-    const fromCore = scaleDesign(doc, options);
-    expect(fromWasm.achieved).toBe(fromCore.achieved);
-    expect(fromWasm.changes).toEqual(fromCore.changes);
-    expect(fromWasm.notes).toEqual(fromCore.notes);
-    expect(fromWasm.doc.meta.name).toBe(fromCore.doc.meta.name);
+    const file = golden<{
+      cases: {
+        label: string;
+        preset: string;
+        options: ScaleOptions;
+        achieved: number;
+        changes: [string, number, number][];
+        notes: string[];
+        name: string;
+      }[];
+    }>("scale.json");
+    expect(file.cases.length).toBe(6);
+    for (const one of file.cases) {
+      const got = engine.scale(engine.preset(one.preset), one.options);
+      expect({ label: one.label, achieved: got.achieved, notes: got.notes, name: got.doc.meta.name }).toEqual({
+        label: one.label,
+        achieved: one.achieved,
+        notes: one.notes,
+        name: one.name,
+      });
+      const changes = Object.entries(got.changes)
+        .map(([k, c]) => [k, c.from, c.to])
+        .sort();
+      expect({ label: one.label, changes }).toEqual({
+        label: one.label,
+        changes: one.changes.map((c) => [...c]).sort(),
+      });
+    }
   });
 
   // The editor's own call: one walk, both answers. The shapes come back as
@@ -150,24 +177,29 @@ describe("the compiled engine", () => {
   // canvas needs to be able to write either one on a wire.
   it("derives the findings and the shapes together", () => {
     for (const name of PRESET_NAMES) {
-      const doc = getPreset(name);
-      const derived = engine.derive(asDoc(doc));
-      const fromCore = validate(doc);
-      const inferred = inferShapes(doc, resolveSymbols(doc), { expandComposites: true });
+      const shapes = golden<{ inferExpanded: { outputs: [string, string][] } }>("golden", `${name}.json`);
+      const rules = golden<Cases<{ label: string; ok: boolean; findings: Finding[] }>>("rules", `${name}.json`);
+      const want = rules.cases.find((c) => c.label === "default")!;
 
-      expect({ name, ok: derived.report.ok }).toEqual({ name, ok: fromCore.ok });
-      expect(derived.report.findings.map(line)).toEqual(fromCore.findings.map(line));
+      const derived = engine.derive(engine.preset(name));
+      expect({ name, ok: derived.report.ok }).toEqual({ name, ok: want.ok });
+      expect({ name, findings: derived.report.findings.map(line) }).toEqual({
+        name,
+        findings: want.findings.map(line),
+      });
 
-      const wantOutputs = [...inferred.outputs].map(([k, v]) => [k, shapeToString(v)]).sort();
-      const gotOutputs = Object.entries(derived.infer.outputs)
+      const got = Object.entries(derived.infer.outputs)
         .map(([k, v]) => [k, v.symbolic])
         .sort();
-      expect({ name, shapes: gotOutputs }).toEqual({ name, shapes: wantOutputs });
+      expect({ name, shapes: got }).toEqual({
+        name,
+        shapes: shapes.inferExpanded.outputs.map((o) => [...o]).sort(),
+      });
     }
   });
 
   it("writes a shape in both the forms the canvas uses", () => {
-    const derived = engine.derive(asDoc(getPreset("gpt2-small")));
+    const derived = engine.derive(engine.preset("gpt2-small"));
     const stream = derived.infer.outputs["embed:y"];
     // The runtime symbols stay symbols in both; only the design ones resolve.
     expect(stream.symbolic).toBe("B T D");
@@ -175,53 +207,102 @@ describe("the compiled engine", () => {
   });
 
   it("infers shapes on their own, for the wire the pointer is over", () => {
-    const doc = getPreset("gpt2-small");
-    const flat = engine.infer(asDoc(doc));
-    const fromCore = inferShapes(doc, resolveSymbols(doc));
-    expect(flat.issues.length).toBe(fromCore.issues.length);
-    expect(Object.keys(flat.outputs).sort()).toEqual([...fromCore.outputs.keys()].sort());
-    // A parameter arrives with the symbol it was written as, not just its value.
+    for (const name of PRESET_NAMES) {
+      const want = golden<{ infer: { outputs: [string, string][]; issues: unknown[] } }>(
+        "golden",
+        `${name}.json`,
+      );
+      const flat = engine.infer(engine.preset(name));
+      const got = Object.entries(flat.outputs)
+        .map(([k, v]) => [k, v.symbolic])
+        .sort();
+      expect({ name, shapes: got }).toEqual({ name, shapes: want.infer.outputs.map((o) => [...o]).sort() });
+      expect({ name, issues: flat.issues.length }).toEqual({ name, issues: want.infer.issues.length });
+    }
+  });
+
+  it("carries a parameter as the symbol it was written as, not just its value", () => {
+    const flat = engine.infer(engine.preset("gpt2-small"));
     expect(flat.resolved["head"].p.vocab).toBe(50257);
     expect(flat.resolved["head"].s.vocab).toBe("V");
     expect(flat.ports["embed"].out.y.shape).toBe("... dim");
   });
 
   it("explains a block the same way", () => {
-    const doc = getPreset("gpt2-small");
-    const e = engine.explain(asDoc(doc), "layers/block/attn");
-    expect(e.type).toBe("gqa_attention");
-    expect(e.docs.summary).toBeTruthy();
-    expect(e.contributes.params).toBeGreaterThan(0);
-    // The parameters come back in the order the block declares them, which is
-    // the order the inspector lays its fields out in.
-    expect(e.paramOrder[0]).toBe("d_model");
-    expect(e.params.d_model.expression).toBe("D");
-    expect(e.params.d_model.value).toBe(768);
+    const file = golden<{ cases: { preset: string; blocks: ExplainedBlock[] }[] }>("explain.json");
+    for (const one of file.cases) {
+      const doc = engine.preset(one.preset);
+      for (const want of one.blocks) {
+        const got = engine.explain(doc, want.path);
+        const where = { preset: one.preset, path: want.path };
+        expect({ ...where, type: got.type, kind: got.kind }).toEqual({
+          ...where,
+          type: want.type,
+          kind: want.kind,
+        });
+        expect({ ...where, contributes: got.contributes.params }).toEqual({
+          ...where,
+          contributes: want.contributes.params,
+        });
+        // The parameters travel in the order the block declares them, which is
+        // the order the inspector lays its fields out in, and each arrives
+        // twice: as written, and as evaluated.
+        expect({ ...where, order: got.paramOrder }).toEqual({
+          ...where,
+          order: want.params.map((p) => p[0]),
+        });
+        for (const [key, expression, value] of want.params) {
+          expect({ ...where, key, e: got.params[key].expression ?? null, v: got.params[key].value ?? null }).toEqual(
+            { ...where, key, e: expression, v: value },
+          );
+        }
+      }
+    }
   });
 
-  it("carries the whole catalog", () => {
-    const blocks = engine.catalog();
-    expect(blocks.length).toBeGreaterThanOrEqual(30);
-    const attention = blocks.find((b) => b.type === "gqa_attention");
-    expect(attention?.kind).toBe("composite");
-    expect(attention?.docs.summary).toBeTruthy();
-    // The order travels beside the parameters, because a Go map has none and
-    // the inspector lays its fields out in the order the block declares them.
-    expect(attention?.paramOrder[0]).toBe("d_model");
-    expect(Object.keys(attention?.params ?? {}).length).toBe(attention?.paramOrder.length ?? 0);
-    expect(attention?.params.d_model.doc).toBeTruthy();
-    const linear = blocks.find((b) => b.type === "linear");
-    expect(linear?.ports.in.x).toBe("... in_features");
+  it("carries the whole catalog, prose and all", () => {
+    const want = golden<{ blocks: CatalogProse[] }>("catalog-docs.json");
+    const got = engine.catalog();
+    expect(got.length).toBe(want.blocks.length);
+    const byType = new Map(got.map((b) => [b.type, b]));
+    for (const block of want.blocks) {
+      const mine = byType.get(block.type);
+      expect({ type: block.type, found: mine !== undefined }).toEqual({ type: block.type, found: true });
+      expect({
+        type: block.type,
+        kind: mine!.kind,
+        category: mine!.category,
+        summary: mine!.docs.summary ?? "",
+        formula: mine!.docs.formula ?? "",
+        refs: mine!.docs.refs ?? [],
+      }).toEqual({
+        type: block.type,
+        kind: block.kind,
+        category: block.category,
+        summary: block.summary,
+        formula: block.formula,
+        refs: block.refs,
+      });
+      // A Go map has no order, so the order arrives beside the parameters.
+      expect({ type: block.type, order: mine!.paramOrder }).toEqual({
+        type: block.type,
+        order: block.params.map((p) => p[0]),
+      });
+      expect(Object.keys(mine!.params).length).toBe(mine!.paramOrder.length);
+    }
   });
 
-  it("imports a config the same way", () => {
-    const configs = JSON.parse(
-      readFileSync(join(import.meta.dir, "..", "..", "core-go", "testdata", "hf-configs.json"), "utf8"),
-    ) as Record<string, unknown>;
+  it("imports a config into the design it came from", () => {
+    const configs = golden<Record<string, unknown>>("hf-configs.json");
     for (const [name, config] of Object.entries(configs)) {
       const { doc, warnings } = engine.importHuggingFace(JSON.stringify(config), name);
       expect({ name, warnings }).toEqual({ name, warnings: [] });
-      expect(analyze(doc as never).params.total).toBe(analyze(getPreset(name)).params.total);
+      const want = golden<Cases<{ label: string; params: { total: number } }>>("analysis", `${name}.json`);
+      const at = want.cases.find((c) => c.label === "default")!;
+      expect({ name, params: engine.analyze(doc).params.total }).toEqual({
+        name,
+        params: at.params.total,
+      });
     }
   });
 
@@ -232,14 +313,37 @@ describe("the compiled engine", () => {
   });
 });
 
+describe("designs that are wrong", () => {
+  // The findings on documents built to break: an unknown block, a dangling
+  // edge, a shape that cannot match, a symbol that refers to itself.
+  it("reports what the goldens say it reports", () => {
+    const file = golden<{
+      cases: { name: string; doc: Doc; ok: boolean; counts: Record<Severity, number>; findings: Finding[] }[];
+    }>("broken.json");
+    expect(file.cases.length).toBeGreaterThan(0);
+    for (const one of file.cases) {
+      const report = engine.validate(one.doc);
+      expect({ name: one.name, ok: report.ok, counts: report.counts }).toEqual({
+        name: one.name,
+        ok: one.ok,
+        counts: one.counts,
+      });
+      expect({ name: one.name, findings: report.findings.map(line) }).toEqual({
+        name: one.name,
+        findings: one.findings.map(line),
+      });
+    }
+  });
+});
+
 describe("refusals", () => {
   it("names what is wrong rather than returning a default", () => {
     expect(() => engine.analyze({ version: 0 } as never)).toThrow(EngineError);
     expect(() => engine.preset("no-such-model")).toThrow(/unknown preset/);
-    expect(() => engine.analyze(asDoc(getPreset("gpt2-small")), { hardware: "made-up" })).toThrow(
+    expect(() => engine.analyze(engine.preset("gpt2-small"), { hardware: "made-up" })).toThrow(
       /hardware profile/,
     );
-    expect(() => engine.scale(asDoc(getPreset("gpt2-small")), { targetParams: 0 })).toThrow(/positive/);
+    expect(() => engine.scale(engine.preset("gpt2-small"), { targetParams: 0 })).toThrow(/positive/);
   });
 
   it("survives a design that is nonsense", () => {
@@ -256,24 +360,81 @@ describe("refusals", () => {
     expect(report.ok).toBe(false);
     expect(report.findings.length).toBeGreaterThan(0);
     // And it still works afterwards.
-    expect(engine.analyze(asDoc(getPreset("gpt2-small"))).params.total).toBe(124439808);
+    expect(engine.analyze(engine.preset("gpt2-small")).params.total).toBe(124439808);
   });
 });
 
-/** The numbers worth comparing exactly, for a whole preset. */
-function pick(a: { params: { total: number; active: number }; flops: { fwdTotal: number }; kv: { bytesPerToken: number } }) {
-  return {
-    params: a.params.total,
-    active: a.params.active,
-    flops: a.flops.fwdTotal,
-    kv: a.kv.bytesPerToken,
-  };
+/**
+ * The engine's answer, shaped the way the goldens write it down.
+ *
+ * A golden is a rendering of a result, not a copy of one: a map arrives as
+ * sorted [key, value] pairs, because the generator these files descend from
+ * held `byPath` and its neighbours as JavaScript Maps, which JSON cannot
+ * encode. The shape to convert to is read from the golden itself rather than
+ * listed here, so a new map-valued field needs no change.
+ *
+ * The comparison is one-sided on purpose. Every field the golden records must
+ * be there and must match, so an engine that drops one or moves a number
+ * fails; a field the engine has gained since is ignored, because the boundary
+ * emits an empty `errors` beside several sections that the generator hoists to
+ * the top of the file instead. A golden that quietly loses a field is the
+ * direction this cannot see, and that one is covered by the Go tests reading
+ * the same files and by the generator only ever running deliberately.
+ */
+function asGolden(got: unknown, want: unknown): unknown {
+  if (Array.isArray(want) && want.every(isPair)) {
+    if (got && typeof got === "object" && !Array.isArray(got)) {
+      return Object.entries(got).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    }
+    return got;
+  }
+  if (want && typeof want === "object" && !Array.isArray(want)) {
+    if (!got || typeof got !== "object") return got;
+    const out: Record<string, unknown> = {};
+    for (const key of Object.keys(want)) {
+      out[key] = asGolden((got as Record<string, unknown>)[key], (want as Record<string, unknown>)[key]);
+    }
+    return out;
+  }
+  return got;
 }
 
-function line(f: { severity: string; rule: string; path?: string; message: string; hint?: string }): string {
+function isPair(v: unknown): boolean {
+  return Array.isArray(v) && v.length === 2 && typeof v[0] === "string";
+}
+
+interface Finding {
+  severity: string;
+  rule: string;
+  path?: string;
+  message: string;
+  hint?: string;
+}
+
+/** One block as `explain.json` records it: the parameters as written, then as
+ *  evaluated, then what the block contributes. */
+interface ExplainedBlock {
+  path: string;
+  type: string;
+  kind: BlockKind;
+  params: [string, string | null, number | null, string][];
+  contributes: { params: number };
+}
+
+/** One block's prose, as `catalog-docs.json` records it. */
+interface CatalogProse {
+  type: string;
+  kind: BlockKind;
+  category: string;
+  summary: string;
+  formula: string;
+  refs: string[];
+  params: [string, string, string, string[]?][];
+}
+
+/** The catalog's three kinds, as both the engine and the goldens spell them. */
+type BlockKind = "primitive" | "composite" | "container";
+
+function line(f: Finding): string {
   return `${f.severity} ${f.rule} ${f.path ?? ""}: ${f.message}${f.hint ? ` — ${f.hint}` : ""}`;
-}
-
-function modelOf(g: { files: { path: string; contents: string }[] }): string {
-  return g.files.find((file) => file.path === "model.py")?.contents ?? "";
 }

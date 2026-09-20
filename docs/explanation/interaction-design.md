@@ -1312,6 +1312,35 @@ being edited does not change what the design weighs.
 
 E7: operations as first-class objects.
 
+## Eighteenth pass: a history you can read
+
+The store has kept a hundred states since the first pass. Undo walked them one
+press at a time, which meant that finding out whether the thing you regret was
+four edits ago or six was done by pressing Ctrl+Z and watching.
+
+Each state now carries the sentence the toolbar showed when it was made — the
+same words, not a second description of the same event — and the `History` tab
+lists them. Pressing a row goes there: undo several times at once, and the
+drawing lands where the row said it would.
+
+Two labels turned out to be worth distinguishing. Auto-layout and a person
+dragging blocks both go through `moveNodes`, and a history that called both
+"Moved 6 blocks" credits the machine's work to the person, who then looks for
+the drag they do not remember making. Auto-layout says "Laid out the sheet".
+
+### What it is not
+
+Not a feature timeline. A CAD timeline holds *operations*, and its point is
+that you can suppress one in the middle and everything after it replays without
+it. This holds states: jumping back and then editing discards what was ahead,
+exactly as undo-then-edit always has.
+
+The difference matters because the two look identical in a screenshot. Making
+it the other thing means every edit becoming a serialisable, replayable
+descriptor rather than a closure over its arguments — `commit` is the single
+door they would all go through, which is the encouraging part — and that is a
+change to the model everything else is built on, not a panel.
+
 ## Seventeenth pass: the wire is a thing
 
 Clicking a wire used to write its endpoints into the status bar and stop there.

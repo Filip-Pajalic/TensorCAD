@@ -29,6 +29,7 @@ import Dialogs from "../panels/Dialogs.js";
 import Ladder from "../panels/Ladder.js";
 import Runs from "../panels/Runs.js";
 import Tensor from "../panels/Tensor.js";
+import History from "../panels/History.js";
 import CanvasMenu from "../panels/CanvasMenu.js";
 import FindingsDock from "../panels/FindingsDock.js";
 import DockRail from "../panels/DockRail.js";
@@ -45,6 +46,7 @@ const TABS: { id: RightTab; label: string }[] = [
   { id: "cluster", label: "Cluster" },
   { id: "ladder", label: "Ladder" },
   { id: "runs", label: "Runs" },
+  { id: "history", label: "History" },
 ];
 
 const clamp = (value: number, min: number, max: number): number =>
@@ -151,6 +153,8 @@ export default function App(): React.ReactElement {
         return <Ladder />;
       case "runs":
         return <Runs />;
+      case "history":
+        return <History />;
       default:
         // The inspector tab shows whichever of the two is selected. They are
         // never both, and a separate tab for nets would mean clicking a wire

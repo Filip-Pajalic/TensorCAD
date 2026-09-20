@@ -760,7 +760,7 @@ export default function Canvas(): React.ReactElement {
     const skipped = Object.keys(placed).length - moved.length;
 
     if (level.editable) {
-      useEditor.getState().moveNodes(moved.map(([p, xy]) => ({ path: p, xy })));
+      useEditor.getState().moveNodes(moved.map(([p, xy]) => ({ path: p, xy })), "Laid out the sheet");
     } else {
       setEphemeral((prev) => ({ ...prev, ...Object.fromEntries(moved) }));
     }

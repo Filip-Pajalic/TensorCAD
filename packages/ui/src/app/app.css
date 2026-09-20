@@ -3576,3 +3576,59 @@ select.field {
   color: var(--text-dim);
   font-style: italic;
 }
+
+/* History ----------------------------------------------------------------- */
+
+.history__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.history__step {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+  font-size: 11px;
+  padding: 2px 4px;
+  cursor: pointer;
+  color: var(--text-dim);
+}
+
+.history__step:hover:not(:disabled) {
+  background: var(--bg-elev);
+  color: var(--text);
+}
+
+.history__step--current {
+  color: var(--text);
+  font-weight: 500;
+  cursor: default;
+}
+
+/* What is ahead of the mark is dimmer than what is behind it: one is where you
+   have been, the other is where you would be if you had not come back. */
+.history__step--ahead {
+  opacity: 0.55;
+}
+
+.history__mark {
+  font-size: 8px;
+  color: var(--accent);
+  flex: 0 0 8px;
+}
+
+.history__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history__note {
+  margin-top: 8px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+}

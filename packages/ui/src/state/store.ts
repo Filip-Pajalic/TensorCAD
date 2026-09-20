@@ -16,6 +16,9 @@ import { getPreset } from "../engine.js";
 
 const UNDO_LIMIT = 100;
 
+/** The last segment of a path, which is what a person calls the block. */
+const lastOf = (path: string): string => path.split("/").pop() ?? path;
+
 /**
  * Two levels open a `repeat` holding a `transformer_block`, which is exactly
  * the drawing every architecture figure shows: the stack, and inside it the
@@ -55,7 +58,13 @@ function loadDetail(): number {
   }
 }
 
-export type RightTab = "inspector" | "symbols" | "cluster" | "ladder" | "runs";
+/** One state in the history, and what was done to reach it. */
+export interface Step {
+  doc: Doc;
+  label: string;
+}
+
+export type RightTab = "inspector" | "symbols" | "cluster" | "ladder" | "runs" | "history";
 export type DialogId = "settings" | "shortcuts" | "compare" | "palette" | "definitions" | null;
 
 /**
@@ -119,8 +128,32 @@ export interface EditorState {
    */
   selectedNet: string | null;
   selectNet: (net: string | null) => void;
-  past: Doc[];
-  future: Doc[];
+  /**
+   * The history, as states rather than as a stack of documents alone.
+   *
+   * Each step carries the document *and* what was done to get it, because an
+   * undo stack you cannot read is one you have to step through blindly: three
+   * presses of Ctrl+Z to find out whether the thing you regret was four edits
+   * ago. The label is the same sentence the toolbar shows when the edit
+   * happens, so what you read then is what you read later.
+   *
+   * Still a pair of arrays and not a list with an index, because `past.length`
+   * and `future.length` are what the toolbar and the command list ask, and a
+   * refactor that made those two subtractions would be a refactor for its own
+   * sake.
+   */
+  past: Step[];
+  future: Step[];
+  /** What produced the document on screen. The current step's label. */
+  docLabel: string;
+  /**
+   * Go to a point in the history directly.
+   *
+   * The index is into `past.concat(current, future)`, which is the list the
+   * panel shows. Several undos in one gesture and the drawing lands where the
+   * row said it would — the property a list is worth having for.
+   */
+  jumpTo: (index: number) => void;
   rightTab: RightTab;
   /**
    * Whether the findings dock along the bottom is open.
@@ -266,7 +299,13 @@ export interface EditorState {
   removeConfiguration: (name: string) => void;
   renameSymbol: (from: string, to: string) => void;
   moveNode: (path: string, xy: [number, number]) => void;
-  moveNodes: (moves: { path: string; xy: [number, number] }[]) => void;
+  /**
+   * `label` because the two callers are not the same event: one is a person
+   * dragging blocks and the other is auto-layout placing them. A history that
+   * called both "Moved 6 blocks" would credit the machine's work to the
+   * person, who would then look for the drag they do not remember making.
+   */
+  moveNodes: (moves: { path: string; xy: [number, number] }[], label?: string) => void;
   renameNode: (path: string, label: string | undefined) => void;
   setNodeId: (path: string, id: string) => void;
   setMetaName: (name: string) => void;
@@ -296,16 +335,23 @@ const INITIAL_STATUS: CanvasStatus = {
 const initialDoc = getPreset("llama-3-8b");
 
 export const useEditor = create<EditorState>((set, get) => {
-  /** Apply a pure document operation and record it for undo. */
-  const commit = (fn: (doc: Doc) => Doc, status?: string): void => {
-    const { doc, past } = get();
+  /**
+   * Apply a pure document operation and record it for undo.
+   *
+   * `label` is not optional any more. It is what the history list shows and
+   * what the toolbar says while the edit is fresh, and an unlabelled row in a
+   * list of edits is a row you have to reconstruct from the drawing.
+   */
+  const commit = (fn: (doc: Doc) => Doc, label: string): void => {
+    const { doc, past, docLabel } = get();
     const next = fn(doc);
     if (next === doc) return;
     set({
       doc: next,
-      past: [...past.slice(-(UNDO_LIMIT - 1)), doc],
+      past: [...past.slice(-(UNDO_LIMIT - 1)), { doc, label: docLabel }],
       future: [],
-      status: status ?? null,
+      docLabel: label,
+      status: label,
     });
   };
 
@@ -318,6 +364,7 @@ export const useEditor = create<EditorState>((set, get) => {
     selectedNet: null,
     past: [],
     future: [],
+    docLabel: "Opened Llama 3 8B",
     rightTab: "inspector",
     dockOpen: false,
     shapeMode: "symbolic",
@@ -383,10 +430,11 @@ export const useEditor = create<EditorState>((set, get) => {
     setDoc: (doc, status) =>
       set((s) => ({
         doc,
+        docLabel: status ?? "Opened a design",
         // Replacing the whole document is opening a different design, so it
         // becomes its own baseline. An edit does not: that is the point.
         opened: doc,
-        past: [...s.past.slice(-(UNDO_LIMIT - 1)), s.doc],
+        past: [...s.past.slice(-(UNDO_LIMIT - 1)), { doc: s.doc, label: s.docLabel }],
         future: [],
         path: [],
         selection: null,
@@ -410,7 +458,8 @@ export const useEditor = create<EditorState>((set, get) => {
           net && producer && ops.nodeAtPath(doc, ops.segmentsOf(producer)) ? net : null;
         return {
           doc,
-          past: [...s.past.slice(-(UNDO_LIMIT - 1)), s.doc],
+          docLabel: status ?? "An edit from elsewhere",
+          past: [...s.past.slice(-(UNDO_LIMIT - 1)), { doc: s.doc, label: s.docLabel }],
           future: [],
           path,
           selection,
@@ -509,43 +558,67 @@ export const useEditor = create<EditorState>((set, get) => {
 
     undo: () =>
       set((s) => {
-        if (s.past.length === 0) return s;
         const previous = s.past[s.past.length - 1];
+        if (!previous) return s;
         return {
-          doc: previous,
+          doc: previous.doc,
+          docLabel: previous.label,
           past: s.past.slice(0, -1),
-          future: [s.doc, ...s.future].slice(0, UNDO_LIMIT),
-          status: null,
+          future: [{ doc: s.doc, label: s.docLabel }, ...s.future].slice(0, UNDO_LIMIT),
+          status: `Undid ${s.docLabel.toLowerCase()}`,
         };
       }),
     redo: () =>
       set((s) => {
-        if (s.future.length === 0) return s;
         const next = s.future[0];
+        if (!next) return s;
         return {
-          doc: next,
-          past: [...s.past.slice(-(UNDO_LIMIT - 1)), s.doc],
+          doc: next.doc,
+          docLabel: next.label,
+          past: [...s.past.slice(-(UNDO_LIMIT - 1)), { doc: s.doc, label: s.docLabel }],
           future: s.future.slice(1),
-          status: null,
+          status: next.label,
+        };
+      }),
+    jumpTo: (index) =>
+      set((s) => {
+        const steps = [...s.past, { doc: s.doc, label: s.docLabel }, ...s.future];
+        const target = steps[index];
+        if (!target || index === s.past.length) return s;
+        return {
+          doc: target.doc,
+          docLabel: target.label,
+          past: steps.slice(0, index),
+          future: steps.slice(index + 1),
+          // Not "undid five edits": which five is the question, and the row
+          // you pressed is the answer.
+          status: `Back to: ${target.label}`,
+          selection: null,
+          also: [],
+          selectedNet: null,
         };
       }),
 
-    addNode: (parent, node, xy) => commit((d) => ops.addNode(d, parent, node, xy)),
+    addNode: (parent, node, xy) => commit((d) => ops.addNode(d, parent, node, xy), `Added ${node.type}`),
     removeNode: (path) => {
-      commit((d) => ops.removeNode(d, ops.segmentsOf(path)));
+      commit((d) => ops.removeNode(d, ops.segmentsOf(path)), `Deleted ${lastOf(path)}`);
       const { selection, also } = get();
       if (selection === path) set({ selection: null });
       if (also.includes(path)) set({ also: also.filter((p) => p !== path) });
     },
-    setParam: (path, key, value) => commit((d) => ops.setParam(d, ops.segmentsOf(path), key, value)),
-    connect: (parent, from, to) => commit((d) => ops.connect(d, parent, from, to)),
-    disconnect: (parent, from, to) => commit((d) => ops.disconnect(d, parent, from, to)),
+    setParam: (path, key, value) => commit((d) => ops.setParam(d, ops.segmentsOf(path), key, value), `Set ${lastOf(path)}.${key}`),
+    connect: (parent, from, to) => commit((d) => ops.connect(d, parent, from, to), `Wired ${from} to ${to}`),
+    disconnect: (parent, from, to) =>
+      commit((d) => ops.disconnect(d, parent, from, to), `Unwired ${from} from ${to}`),
     reconnect: (parent, from, to, next) =>
-      commit((d) => ops.connect(ops.disconnect(d, parent, from, to), parent, next.from, next.to)),
-    setRuleSeverity: (rule, severity) => commit((d) => ops.setRuleSeverity(d, rule, severity)),
+      commit(
+        (d) => ops.connect(ops.disconnect(d, parent, from, to), parent, next.from, next.to),
+        `Moved a wire to ${next.to}`,
+      ),
+    setRuleSeverity: (rule, severity) => commit((d) => ops.setRuleSeverity(d, rule, severity), `Set the rule "${rule}" to ${severity}`),
     // Through the configuration in force, so an edit made while one is selected
     // lands in it rather than in the design underneath.
-    setSymbol: (name, def) => commit((d) => ops.setSymbolInConfiguration(d, name, def)),
+    setSymbol: (name, def) => commit((d) => ops.setSymbolInConfiguration(d, name, def), `Set ${name}`),
     setActiveConfiguration: (name) =>
       commit(
         (d) => ops.setActiveConfiguration(d, name),
@@ -555,17 +628,21 @@ export const useEditor = create<EditorState>((set, get) => {
       commit((d) => ops.captureConfiguration(d, name, doc), `Saved the configuration "${name}"`),
     removeConfiguration: (name) =>
       commit((d) => ops.removeConfiguration(d, name), `Removed the configuration "${name}"`),
-    renameSymbol: (from, to) => commit((d) => ops.renameSymbol(d, from, to)),
-    moveNode: (path, xy) => commit((d) => ops.moveNode(d, ops.segmentsOf(path), xy)),
-    moveNodes: (moves) => commit((d) => ops.moveNodes(d, moves)),
-    renameNode: (path, label) => commit((d) => ops.renameNode(d, ops.segmentsOf(path), label)),
+    renameSymbol: (from, to) => commit((d) => ops.renameSymbol(d, from, to), `Renamed ${from} to ${to}`),
+    moveNode: (path, xy) => commit((d) => ops.moveNode(d, ops.segmentsOf(path), xy), `Moved ${lastOf(path)}`),
+    moveNodes: (moves, label) =>
+      commit(
+        (d) => ops.moveNodes(d, moves),
+        label ?? (moves.length === 1 ? `Moved ${lastOf(moves[0]!.path)}` : `Moved ${moves.length} blocks`),
+      ),
+    renameNode: (path, label) => commit((d) => ops.renameNode(d, ops.segmentsOf(path), label), `Labelled ${lastOf(path)}`),
     setNodeId: (path, id) => {
       const segs = ops.segmentsOf(path);
-      commit((d) => ops.setNodeId(d, segs, id));
+      commit((d) => ops.setNodeId(d, segs, id), `Renamed ${lastOf(path)} to ${id.trim()}`);
       const renamed = [...segs.slice(0, -1), id.trim()].join("/");
       if (get().selection === path) set({ selection: renamed });
     },
-    setMetaName: (name) => commit((d) => ops.setMetaName(d, name)),
+    setMetaName: (name) => commit((d) => ops.setMetaName(d, name), `Named the design "${name}"`),
     loadPreset: (name) => {
       const doc = getPreset(name);
       get().setDoc(doc, `Loaded preset ${name}`);

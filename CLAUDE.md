@@ -104,6 +104,12 @@ Two cross-checks worth knowing:
   design-rule findings are a dock along the bottom rather than a tab — `panels/FindingsDock.tsx`
   wraps `Rules` in a strip that carries the counts even when collapsed, because the checks are
   about the drawing and belong under it.
+  `state/commands.ts` is the single list behind the keyboard, the menu and the shortcut sheet;
+  `commit(fn, label)` in `state/store.ts` is the single door every document edit goes through,
+  and its label is both what the toolbar says at the time and what the `History` tab shows
+  later — one sentence, not two descriptions of the same event. That history is a stack of
+  *states*, not of operations: jumping back and editing discards what was ahead, which is what
+  distinguishes it from the feature timeline E7 asks for.
   `Cluster`, `Ladder` and `Runs` are the panels that do not read `derive()`. `Runs` reads
   nothing from the engine at all — it is the one panel about what a design *did* rather than
   what it would cost, reading the records `tensorcad-runtime smoke-train` writes and drawing

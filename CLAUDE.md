@@ -94,7 +94,12 @@ Two cross-checks worth knowing:
   its own numbers. `src/engine.ts` is the editor's handle on the engine: it loads the module
   before the first frame, which is why `main.tsx` imports the app *after* the load rather
   than beside it — the store builds a starting design the moment its module runs. The right column splits: the readout (`Operating` + `Analysis`) is always
-  on screen above the tabbed editing pane (Inspector, Symbols, Rules). Colours live only in
+  on screen above the tabbed editing pane (Inspector, Symbols, Rules, Cluster). `Cluster` is
+  the one panel that does not read `derive()`: it calls `plan()` itself, because that is a few
+  hundred analyses and the answer only moves when the cluster or the design does. Pressing a
+  plan writes it into the operating point, which is why the parallelism has to be expressible
+  there — a plan the operating point cannot hold is a plan whose promised memory the readout
+  would then contradict. Colours live only in
   `app/theme.css` as `data-theme` tokens — a literal colour in a stylesheet or a component is
   a bug, because it will not switch themes.
   `three/model3d.ts` and `three/View3D.tsx` are the volume view, a port of Brendan Bycroft's

@@ -153,7 +153,7 @@ describe("the live editor bridge", () => {
   });
 
   test("greets a new connection with the protocol and what is open", async () => {
-    store.create({ preset: "gpt2-small" });
+    await store.create({ preset: "gpt2-small" });
 
     const client = await Client.open(bridge.url);
     const hello = await client.next("hello");
@@ -166,12 +166,12 @@ describe("the live editor bridge", () => {
   });
 
   test("an agent's edit reaches the canvas, with what it did", async () => {
-    const record = store.create({ preset: "gpt2-small" });
+    const record = await store.create({ preset: "gpt2-small" });
     const client = await Client.open(bridge.url);
     await client.next("hello");
     const before = client.seen.length;
 
-    store.apply(record.design_id, [{ op: "set_symbol", name: "L", value: 6 }]);
+    await store.apply(record.design_id, [{ op: "set_symbol", name: "L", value: 6 }]);
 
     const message = await client.next("design", before);
     expect(message.reason).toBe("applied");
@@ -191,13 +191,13 @@ describe("the live editor bridge", () => {
 
     const message = await client.next("design", before);
     expect(message.reason).toBe("published");
-    expect(store.list().map((d) => d.name)).toEqual(["llama-3-8b"]);
-    expect(store.get(message.design.design_id).doc.meta.name).toBe("llama-3-8b");
+    expect((await store.list()).map((d) => d.name)).toEqual(["llama-3-8b"]);
+    expect((await store.get(message.design.design_id)).doc.meta.name).toBe("llama-3-8b");
     client.close();
   });
 
   test("the human's edit goes through the same apply, and is not sent back to them", async () => {
-    const record = store.create({ preset: "gpt2-small" });
+    const record = await store.create({ preset: "gpt2-small" });
     const client = await Client.open(bridge.url);
     await client.next("hello");
     const before = client.seen.length;
@@ -211,7 +211,7 @@ describe("the live editor bridge", () => {
 
     const ack = await client.next("design", before);
     expect(ack.design.revision).toBe(2);
-    expect(store.get(record.design_id).doc.symbols?.L).toMatchObject({ value: 4 });
+    expect((await store.get(record.design_id)).doc.symbols?.L).toMatchObject({ value: 4 });
 
     // One message, not two: the acknowledgement, and no mirror of its own edit.
     expect(await client.quiet(before)).toHaveLength(1);
@@ -219,7 +219,7 @@ describe("the live editor bridge", () => {
   });
 
   test("a whole document from the editor lands like an edit, and undoes like one", async () => {
-    const record = store.create({ preset: "gpt2-small" });
+    const record = await store.create({ preset: "gpt2-small" });
     const client = await Client.open(bridge.url);
     await client.next("hello");
     const before = client.seen.length;
@@ -232,17 +232,17 @@ describe("the live editor bridge", () => {
     const ack = await client.next("design", before);
     expect(ack.reason).toBe("replaced");
     expect(ack.design.revision).toBe(2);
-    expect(store.get(record.design_id).doc.meta.name).toBe("renamed by a human");
+    expect((await store.get(record.design_id)).doc.meta.name).toBe("renamed by a human");
 
     // The undo log took it, which is what makes the agent's `tensorcad_restore`
     // able to put back what a human did.
-    store.restore(record.design_id);
-    expect(store.get(record.design_id).doc.meta.name).toBe("gpt2-small");
+    await store.restore(record.design_id);
+    expect((await store.get(record.design_id)).doc.meta.name).toBe("gpt2-small");
     client.close();
   });
 
   test("a second editor does see the first one's edit", async () => {
-    const record = store.create({ preset: "gpt2-small" });
+    const record = await store.create({ preset: "gpt2-small" });
     const one = await Client.open(bridge.url);
     const two = await Client.open(bridge.url);
     await one.next("hello");
@@ -259,8 +259,8 @@ describe("the live editor bridge", () => {
   });
 
   test("a stale revision is refused, and the truth follows so the editor can rebuild", async () => {
-    const record = store.create({ preset: "gpt2-small" });
-    store.apply(record.design_id, [{ op: "set_symbol", name: "L", value: 6 }]);
+    const record = await store.create({ preset: "gpt2-small" });
+    await store.apply(record.design_id, [{ op: "set_symbol", name: "L", value: 6 }]);
 
     const client = await Client.open(bridge.url);
     await client.next("hello");
@@ -280,7 +280,7 @@ describe("the live editor bridge", () => {
     const truth = await client.next("design", before);
     expect(truth.reason).toBe("requested");
     expect(truth.design.revision).toBe(2);
-    expect(store.get(record.design_id).doc.symbols?.L).toMatchObject({ value: 6 });
+    expect((await store.get(record.design_id)).doc.symbols?.L).toMatchObject({ value: 6 });
     client.close();
   });
 
@@ -299,12 +299,12 @@ describe("the live editor bridge", () => {
     const again = await two.next("design", before);
     expect(again.reason).toBe("requested");
     expect(again.design.design_id).toBe(published.design.design_id);
-    expect(store.list()).toHaveLength(1);
+    expect(await store.list()).toHaveLength(1);
     two.close();
   });
 
   test("an operation the schema does not know is refused rather than applied", async () => {
-    const record = store.create({ preset: "gpt2-small" });
+    const record = await store.create({ preset: "gpt2-small" });
     const client = await Client.open(bridge.url);
     await client.next("hello");
     const before = client.seen.length;
@@ -313,23 +313,23 @@ describe("the live editor bridge", () => {
 
     const error = await client.next("error", before);
     expect(error.message).toContain("rejected");
-    expect(store.get(record.design_id).revision).toBe(1);
+    expect((await store.get(record.design_id)).revision).toBe(1);
     client.close();
   });
 
   describe("telling the agent the human moved", () => {
     test("an edit the agent made is its own doing", async () => {
-      const record = store.create({ preset: "gpt2-small" });
+      const record = await store.create({ preset: "gpt2-small" });
       const seen: string[] = [];
       bridge.watch((_change, from) => seen.push(from));
 
-      store.apply(record.design_id, [{ op: "set_symbol", name: "L", value: 6 }]);
+      await store.apply(record.design_id, [{ op: "set_symbol", name: "L", value: 6 }]);
 
       expect(seen).toEqual(["agent"]);
     });
 
     test("an edit the editor made is not", async () => {
-      const record = store.create({ preset: "gpt2-small" });
+      const record = await store.create({ preset: "gpt2-small" });
       const seen: string[] = [];
       bridge.watch((_change, from) => seen.push(from));
 

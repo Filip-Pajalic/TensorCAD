@@ -5,10 +5,20 @@
  * session, which is what the 2026-07-28 spec asks for: state crosses calls as
  * an explicit handle in the arguments, never as an implicit connection.
  *
- * `FileStore` is the only implementation. The live editor bridge is *not* a
- * second store: it observes this one through `subscribe` and mirrors it to a
- * running editor. Two stores could disagree about what a design is; one store
- * with a listener cannot.
+ * The live editor bridge is *not* a second store: it observes this one through
+ * `subscribe` and mirrors it to a running editor. Two stores could disagree
+ * about what a design is; one store with a listener cannot.
+ *
+ * ## Everything returns a promise, including what a local store answers at once
+ *
+ * `FileStore` holds its designs in memory and could answer most of this
+ * synchronously. A store behind a database cannot, and a caller that has to
+ * know which kind it is holding is a caller that breaks when the kind changes.
+ * So the signatures say promise throughout and the local implementation returns
+ * ones that are already resolved.
+ *
+ * That costs `FileStore` nothing it cannot afford, and it does not cost the
+ * bridge its contract either — see `subscribe`.
  */
 
 import type { Op } from "../ops.js";
@@ -75,15 +85,23 @@ export interface DocumentStore {
    * something, which is what lets the bridge attribute a change to the
    * connection that caused it without threading an origin through every
    * signature.
+   *
+   * Still true now that the mutating calls return promises, and it is worth
+   * saying why: an `async` method runs its body synchronously until its first
+   * `await`, and `FileStore` has none before it announces the change. So the
+   * listener fires while the caller is still inside the call, exactly as
+   * before, and only the settling of the promise happens later. A store that
+   * *did* await before announcing would break the bridge's attribution rather
+   * than its types, which is the kind of failure worth naming in advance.
    */
   subscribe(listener: StoreListener): () => void;
 
   /** Designs this server has open, newest first. */
-  list(): DesignSummary[];
+  list(): Promise<DesignSummary[]>;
   /** `.tensorcad.json` files near the server's root that could be opened. */
   listFiles(): Promise<string[]>;
 
-  create(options: NewDesignOptions): DesignRecord;
+  create(options: NewDesignOptions): Promise<DesignRecord>;
   /**
    * Take a document the engine produced — scaled, imported, derived — as a new
    * design in this session.
@@ -91,11 +109,11 @@ export interface DocumentStore {
    * Separate from `create`, which builds one from a preset or from nothing:
    * these arrive whole and there is nothing to build.
    */
-  adopt(doc: Doc): DesignRecord;
+  adopt(doc: Doc): Promise<DesignRecord>;
   open(path: string): Promise<DesignRecord>;
-  get(id: string): DesignRecord;
+  get(id: string): Promise<DesignRecord>;
 
-  apply(id: string, ops: Op[], expectedRevision?: number): ApplyOutcome;
+  apply(id: string, ops: Op[], expectedRevision?: number): Promise<ApplyOutcome>;
   /**
    * The whole document, in place of a list of operations.
    *
@@ -105,13 +123,13 @@ export interface DocumentStore {
    * otherwise an `apply`: the revision is checked, the previous document goes
    * on the undo log, and the change is announced.
    */
-  replace(id: string, doc: Doc, expectedRevision?: number): ApplyOutcome;
+  replace(id: string, doc: Doc, expectedRevision?: number): Promise<ApplyOutcome>;
   save(id: string, path?: string): Promise<{ record: DesignRecord; path: string; bytes: number }>;
 
-  checkpoint(id: string, label?: string): CheckpointInfo;
-  checkpoints(id: string): CheckpointInfo[];
+  checkpoint(id: string, label?: string): Promise<CheckpointInfo>;
+  checkpoints(id: string): Promise<CheckpointInfo[]>;
   /** Without a checkpoint id this undoes the most recent `apply`. */
-  restore(id: string, checkpointId?: string): { record: DesignRecord; restoredFrom: string };
+  restore(id: string, checkpointId?: string): Promise<{ record: DesignRecord; restoredFrom: string }>;
 }
 
 /** Thrown when a mutating call names a revision that is no longer current. */

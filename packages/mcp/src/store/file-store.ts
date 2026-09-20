@@ -94,7 +94,7 @@ export class FileStore implements DocumentStore {
 
   // -- reads ---------------------------------------------------------------
 
-  list(): DesignSummary[] {
+  async list(): Promise<DesignSummary[]> {
     return [...this.entries.values()]
       .map((e) => summaryOf(e.record))
       .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
@@ -125,7 +125,7 @@ export class FileStore implements DocumentStore {
     return out.sort();
   }
 
-  get(id: string): DesignRecord {
+  async get(id: string): Promise<DesignRecord> {
     const entry = this.entries.get(id);
     if (!entry) throw new UnknownDesignError(id, [...this.entries.keys()]);
     return entry.record;
@@ -133,7 +133,7 @@ export class FileStore implements DocumentStore {
 
   // -- creation ------------------------------------------------------------
 
-  create(options: NewDesignOptions): DesignRecord {
+  async create(options: NewDesignOptions): Promise<DesignRecord> {
     let doc: Doc;
     let source: DesignRecord["source"];
 
@@ -152,7 +152,7 @@ export class FileStore implements DocumentStore {
     return this.register(doc, source, undefined, true);
   }
 
-  adopt(doc: Doc): DesignRecord {
+  async adopt(doc: Doc): Promise<DesignRecord> {
     return this.register(doc, "derived", undefined, true);
   }
 
@@ -199,7 +199,7 @@ export class FileStore implements DocumentStore {
 
   // -- mutation ------------------------------------------------------------
 
-  apply(id: string, ops: Op[], expectedRevision?: number): ApplyOutcome {
+  async apply(id: string, ops: Op[], expectedRevision?: number): Promise<ApplyOutcome> {
     const entry = this.entry(id);
     const { record } = entry;
     if (expectedRevision !== undefined && expectedRevision !== record.revision) {
@@ -221,7 +221,7 @@ export class FileStore implements DocumentStore {
     return { record, applied, previousRevision };
   }
 
-  replace(id: string, doc: Doc, expectedRevision?: number): ApplyOutcome {
+  async replace(id: string, doc: Doc, expectedRevision?: number): Promise<ApplyOutcome> {
     const entry = this.entry(id);
     const { record } = entry;
     if (expectedRevision !== undefined && expectedRevision !== record.revision) {
@@ -243,7 +243,7 @@ export class FileStore implements DocumentStore {
   }
 
   async save(id: string, path?: string): Promise<{ record: DesignRecord; path: string; bytes: number }> {
-    const record = this.get(id);
+    const record = await this.get(id);
     const target = path
       ? this.resolvePath(path)
       : (record.path ?? join(this.root, `${slug(record.name)}.tensorcad.json`));
@@ -262,7 +262,7 @@ export class FileStore implements DocumentStore {
 
   // -- history -------------------------------------------------------------
 
-  checkpoint(id: string, label?: string): CheckpointInfo {
+  async checkpoint(id: string, label?: string): Promise<CheckpointInfo> {
     const entry = this.entry(id);
     const info: CheckpointInfo = {
       checkpoint_id: `ckpt_${this.nextCheckpoint++}`,
@@ -274,12 +274,12 @@ export class FileStore implements DocumentStore {
     return info;
   }
 
-  checkpoints(id: string): CheckpointInfo[] {
+  async checkpoints(id: string): Promise<CheckpointInfo[]> {
     const entry = this.entry(id);
     return [...entry.checkpoints.values()].map(({ doc: _doc, ...info }) => info);
   }
 
-  restore(id: string, checkpointId?: string): { record: DesignRecord; restoredFrom: string } {
+  async restore(id: string, checkpointId?: string): Promise<{ record: DesignRecord; restoredFrom: string }> {
     const entry = this.entry(id);
     const { record } = entry;
 

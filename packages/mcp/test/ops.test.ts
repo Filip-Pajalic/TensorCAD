@@ -18,7 +18,7 @@ await loadEngine();
 const params = (doc: Doc) => countParams(doc).total;
 
 describe("applyOps", () => {
-  test("leaves the input document untouched", () => {
+  test("leaves the input document untouched", async () => {
     const before = getPreset("gpt2-small");
     const snapshot = JSON.stringify(before);
     const { doc } = applyOps(before, [{ op: "set_symbol", name: "L", value: 24 }]);
@@ -26,14 +26,14 @@ describe("applyOps", () => {
     expect(params(doc)).toBeGreaterThan(params(before));
   });
 
-  test("removing a block takes its edges with it", () => {
+  test("removing a block takes its edges with it", async () => {
     const { doc, applied } = applyOps(getPreset("gpt2-small"), [{ op: "remove_node", path: "final_norm" }]);
     expect(applied[0]).toContain("2 edges");
     expect(doc.graph.nodes.some((n) => n.id === "final_norm")).toBe(false);
     expect(doc.graph.edges.flat().some((e) => e.startsWith("final_norm:"))).toBe(false);
   });
 
-  test("disconnect then connect rewires a graph", () => {
+  test("disconnect then connect rewires a graph", async () => {
     const start = getPreset("gpt2-small");
     const ops: Op[] = [
       { op: "disconnect", from: "final_norm:y", to: "head:x" },
@@ -44,13 +44,13 @@ describe("applyOps", () => {
     expect(doc.graph.edges.some(([f]) => f === "final_norm:y")).toBe(false);
   });
 
-  test("a connection into an occupied port is refused", () => {
+  test("a connection into an occupied port is refused", async () => {
     expect(() =>
       applyOps(getPreset("gpt2-small"), [{ op: "connect", from: "embed:y", to: "head:x" }]),
     ).toThrow(/already receives/);
   });
 
-  test("blocks can be added inside a container", () => {
+  test("blocks can be added inside a container", async () => {
     const { doc } = applyOps(getPreset("gpt2-small"), [
       { op: "add_node", parent: "layers", id: "extra_norm", type: "rmsnorm", params: { dim: "D" } },
     ]);
@@ -60,7 +60,7 @@ describe("applyOps", () => {
     expect(params(doc) - params(getPreset("gpt2-small"))).toBe(12 * 768);
   });
 
-  test("a rejected operation aborts the whole batch", () => {
+  test("a rejected operation aborts the whole batch", async () => {
     const start = getPreset("gpt2-small");
     let thrown: unknown;
     try {
@@ -76,7 +76,7 @@ describe("applyOps", () => {
     expect((thrown as Error).message).toContain("has no parameter");
   });
 
-  test("set_symbol keeps a runtime symbol runtime, and null deletes", () => {
+  test("set_symbol keeps a runtime symbol runtime, and null deletes", async () => {
     const { doc } = applyOps(getPreset("gpt2-small"), [{ op: "set_symbol", name: "T", value: 2048 }]);
     expect(doc.symbols.T).toEqual({ kind: "runtime", default: 2048, doc: "Sequence length in tokens" });
 
@@ -87,7 +87,7 @@ describe("applyOps", () => {
     expect("V" in without.symbols).toBe(false);
   });
 
-  test("a path through a non-container is refused clearly", () => {
+  test("a path through a non-container is refused clearly", async () => {
     expect(() => applyOps(getPreset("gpt2-small"), [{ op: "remove_node", path: "embed/inner" }])).toThrow(
       /has no subgraph/,
     );
@@ -95,32 +95,37 @@ describe("applyOps", () => {
 });
 
 describe("FileStore", () => {
-  test("revisions advance and the op log drives undo", () => {
+  test("revisions advance and the op log drives undo", async () => {
     const store = new FileStore();
-    const record = store.create({ preset: "gpt2-small" });
+    const record = await store.create({ preset: "gpt2-small" });
     expect(record.revision).toBe(1);
     const original = params(record.doc);
 
-    store.apply(record.design_id, [{ op: "set_symbol", name: "L", value: 24 }]);
-    expect(store.get(record.design_id).revision).toBe(2);
-    expect(params(store.get(record.design_id).doc)).toBeGreaterThan(original);
+    await store.apply(record.design_id, [{ op: "set_symbol", name: "L", value: 24 }]);
+    expect((await store.get(record.design_id)).revision).toBe(2);
+    expect(params((await store.get(record.design_id)).doc)).toBeGreaterThan(original);
 
-    store.restore(record.design_id);
-    expect(params(store.get(record.design_id).doc)).toBe(original);
+    await store.restore(record.design_id);
+    expect(params((await store.get(record.design_id)).doc)).toBe(original);
     // Undo is itself a change, so the revision keeps climbing.
-    expect(store.get(record.design_id).revision).toBe(3);
+    expect((await store.get(record.design_id)).revision).toBe(3);
   });
 
-  test("a failed batch does not burn a revision", () => {
+  test("a failed batch does not burn a revision", async () => {
     const store = new FileStore();
-    const record = store.create({ preset: "gpt2-small" });
-    expect(() => store.apply(record.design_id, [{ op: "remove_node", path: "nope" }])).toThrow();
-    expect(store.get(record.design_id).revision).toBe(1);
+    const record = await store.create({ preset: "gpt2-small" });
+    // `rejects`, because the failure arrives as a rejected promise now rather
+    // than a thrown exception — and `expect(promise).toThrow()` passes
+    // vacuously, which would have made this test stop testing anything.
+    await expect(
+      store.apply(record.design_id, [{ op: "remove_node", path: "nope" }]),
+    ).rejects.toThrow();
+    expect((await store.get(record.design_id)).revision).toBe(1);
   });
 
-  test("an empty design starts with only the runtime symbols", () => {
+  test("an empty design starts with only the runtime symbols", async () => {
     const store = new FileStore();
-    const record = store.create({ name: "blank" });
+    const record = await store.create({ name: "blank" });
     expect(record.doc.graph.nodes).toEqual([]);
     expect(Object.keys(record.doc.symbols).sort()).toEqual(["B", "T"]);
     expect(record.source).toBe("empty");

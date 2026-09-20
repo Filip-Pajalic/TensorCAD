@@ -31,8 +31,8 @@ export function registerResources(server: McpServer, store: DocumentStore): void
       description: "Every finding for a design: shape errors, memory fit, kernel constraints, Chinchilla sanity.",
       mimeType: JSON_MIME,
     },
-    (uri, { id }) => {
-      const record = store.get(String(id));
+    async (uri, { id }) => {
+      const record = await store.get(String(id));
       const report = validate(record.doc);
       return json(uri, {
         design_id: record.design_id,
@@ -53,8 +53,8 @@ export function registerResources(server: McpServer, store: DocumentStore): void
       description: "Parameters, FLOPs, KV cache, memory, throughput and cost at the document's own defaults.",
       mimeType: JSON_MIME,
     },
-    (uri, { id }) => {
-      const record = store.get(String(id));
+    async (uri, { id }) => {
+      const record = await store.get(String(id));
       const result = analyze(record.doc);
       return json(uri, { design_id: record.design_id, revision: record.revision, ...analysisJson(result) });
     },
@@ -63,8 +63,8 @@ export function registerResources(server: McpServer, store: DocumentStore): void
   server.registerResource(
     "design",
     new ResourceTemplate("tensorcad://designs/{id}", {
-      list: () => ({
-        resources: store.list().map((d) => ({
+      list: async () => ({
+        resources: (await store.list()).map((d) => ({
           uri: `tensorcad://designs/${d.design_id}`,
           name: d.name,
           title: `${d.name} (revision ${d.revision})`,
@@ -79,8 +79,8 @@ export function registerResources(server: McpServer, store: DocumentStore): void
       description: "The literal .tensorcad.json document, with a compact outline beside it.",
       mimeType: JSON_MIME,
     },
-    (uri, { id }) => {
-      const record = store.get(String(id));
+    async (uri, { id }) => {
+      const record = await store.get(String(id));
       return json(uri, {
         design_id: record.design_id,
         revision: record.revision,
@@ -103,7 +103,7 @@ export function registerResources(server: McpServer, store: DocumentStore): void
         "Primitives carry the formulas; composites expand into primitives; repeat is the only container.",
       mimeType: JSON_MIME,
     },
-    (uri) => {
+    async (uri) => {
       const blocks = allCatalogEntries();
       return json(uri, {
         count: blocks.length,
@@ -116,7 +116,7 @@ export function registerResources(server: McpServer, store: DocumentStore): void
   server.registerResource(
     "catalog-block",
     new ResourceTemplate("tensorcad://catalog/{type}", {
-      list: () => ({
+      list: async () => ({
         resources: Object.keys(CATALOG)
           .sort()
           .map((type) => ({
@@ -167,9 +167,6 @@ export function registerResources(server: McpServer, store: DocumentStore): void
 }
 
 function completeDesignId(store: DocumentStore) {
-  return (value: string) =>
-    store
-      .list()
-      .map((d) => d.design_id)
-      .filter((id) => id.startsWith(value));
+  return async (value: string) =>
+    (await store.list()).map((d) => d.design_id).filter((id) => id.startsWith(value));
 }

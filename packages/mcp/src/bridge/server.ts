@@ -121,7 +121,15 @@ export class BridgeServer {
         setTimeout(() => socket.destroy(), 50).unref();
         return;
       }
-      this.wss.handleUpgrade(req, socket, head, (ws) => this.attach(ws));
+      this.wss.handleUpgrade(req, socket, head, (ws) => {
+        // Attaching reads the design list, so it is async now. A rejection
+        // here would otherwise be unhandled: the socket is already open and
+        // nobody is awaiting this.
+        void this.attach(ws).catch((e: unknown) => {
+          this.log(`tensorcad bridge: could not greet a client: ${(e as Error).message}`);
+          this.send(ws, { type: "error", message: (e as Error).message });
+        });
+      });
     });
   }
 
@@ -219,14 +227,14 @@ export class BridgeServer {
 
   // -- connections ---------------------------------------------------------
 
-  private attach(ws: WebSocket): void {
+  private async attach(ws: WebSocket): Promise<void> {
     this.send(ws, {
       type: "hello",
       protocol: BRIDGE_PROTOCOL,
       server: this.options.name,
       version: this.options.version,
       root: this.options.root,
-      designs: this.options.store.list(),
+      designs: await this.options.store.list(),
     });
 
     ws.on("message", (raw) => {
@@ -237,27 +245,29 @@ export class BridgeServer {
         this.send(ws, { type: "error", message: `not JSON: ${(e as Error).message}` });
         return;
       }
-      try {
-        this.handle(ws, message);
-      } catch (e) {
+      // The handler is async now, so a rejection can no longer be caught by a
+      // `try` around the call — it has to be caught on the promise. Missing
+      // this turns a store error into an unhandled rejection and takes the
+      // process down instead of answering the editor.
+      void this.handle(ws, message).catch((e: unknown) => {
         this.send(ws, { type: "error", message: (e as Error).message, about: message?.type });
-      }
+      });
     });
   }
 
-  private handle(ws: WebSocket, message: ClientMessage): void {
+  private async handle(ws: WebSocket, message: ClientMessage): Promise<void> {
     switch (message?.type) {
       case "publish": {
         const doc = asDocument(message.doc);
         // `acting` so the editor is not sent back the document it just sent.
         // It still needs the id, which is what the reply carries.
-        const record = this.during(ws, () => this.options.store.adopt(doc));
+        const record = await this.during(ws, () => this.options.store.adopt(doc));
         this.send(ws, designMessage(record, "published"));
         return;
       }
 
       case "attach": {
-        const record = this.options.store.get(message.design_id);
+        const record = await this.options.store.get(message.design_id);
         this.send(ws, designMessage(record, "requested"));
         return;
       }
@@ -269,7 +279,7 @@ export class BridgeServer {
             ? () => this.options.store.apply(message.design_id, parseOps(message.ops), message.revision)
             : () => this.options.store.replace(message.design_id, asDocument(message.doc), message.revision);
         try {
-          const { record } = this.during(ws, write);
+          const { record } = await this.during(ws, write);
           // Not a mirror of its own edit — an acknowledgement that it landed,
           // carrying the revision the editor must quote next.
           this.send(ws, designMessage(record, message.type === "ops" ? "applied" : "replaced"));
@@ -277,7 +287,7 @@ export class BridgeServer {
           if (e instanceof RevisionConflictError) {
             this.send(ws, { type: "error", message: e.message, about: message.type });
             // And the truth, so the editor can rebuild rather than guess.
-            this.send(ws, designMessage(this.options.store.get(message.design_id), "requested"));
+            this.send(ws, designMessage(await this.options.store.get(message.design_id), "requested"));
             return;
           }
           throw e;
@@ -311,13 +321,34 @@ export class BridgeServer {
     }
   }
 
-  private during<T>(ws: WebSocket, work: () => T): T {
+  /**
+   * Run `work` with this socket marked as the one causing the change.
+   *
+   * `acting` is how a change is attributed to the connection that caused it,
+   * so the editor is not sent back the document it just sent.
+   *
+   * ## The flag is held across the call, not across the promise
+   *
+   * The store's mutating calls return promises now, and the obvious rewrite is
+   * `try { return await work() } finally { acting = undefined }`. That is
+   * wrong in a way no test here catches, because it holds the flag for longer
+   * than the thing it is protecting: `subscribe` promises the listener fires
+   * *synchronously*, inside the call, before anything is awaited — so the only
+   * window that matters is the synchronous part of `work()`.
+   *
+   * Holding it across the await instead opens a window in which a second
+   * message can arrive, set `acting` to its own socket, and then have this
+   * call's `finally` clear it — attributing that message's change to nobody.
+   * Clearing it the moment `work()` yields cannot do that, because nothing
+   * else runs during a synchronous call.
+   */
+  private async during<T>(ws: WebSocket, work: () => Promise<T>): Promise<T> {
     this.acting = ws;
-    try {
-      return work();
-    } finally {
-      this.acting = undefined;
-    }
+    // Started, then unmarked, then awaited. The listener has already fired by
+    // the time `work()` returns its promise.
+    const running = work();
+    this.acting = undefined;
+    return await running;
   }
 
   private send(ws: WebSocket, message: ServerMessage): void {

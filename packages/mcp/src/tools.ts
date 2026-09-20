@@ -165,7 +165,7 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
     },
     async ({ include_files }) =>
       guard(async () => {
-        const designs = store.list();
+        const designs = await store.list();
         const presets = PRESET_NAMES.map((name) => {
           const doc = getPreset(name);
           const p: { name: string; family?: string; published_params?: number; notes?: string } = { name };
@@ -217,8 +217,8 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { ...WRITE, title: "New design" },
     },
     async (args) =>
-      guard(() => {
-        const record = store.create(args);
+      guard(async () => {
+        const record = await store.create(args);
         const outline = outlineOf(record.doc);
         return ok(
           `${record.design_id} (revision ${record.revision})\n\n${outlineText(outline)}`,
@@ -336,8 +336,8 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { ...READ, title: "Get design" },
     },
     async ({ design_id, format }) =>
-      guard(() => {
-        const record = store.get(design_id);
+      guard(async () => {
+        const record = await store.get(design_id);
         const outline = outlineOf(record.doc);
         const mode = format ?? "outline";
 
@@ -400,8 +400,8 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { ...READ, title: "Get block" },
     },
     async ({ design_id, path }) =>
-      guard(() => {
-        const record = store.get(design_id);
+      guard(async () => {
+        const record = await store.get(design_id);
         const detail = blockDetail(record.doc, path);
         return ok(blockText(detail), {
           design_id: record.design_id,
@@ -454,7 +454,7 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { ...READ, title: "Search catalog" },
     },
     async ({ query, category, kind, limit }) =>
-      guard(() => {
+      guard(async () => {
         const all = allCatalogEntries();
         const q = query?.toLowerCase();
         const matched = all.filter((e) => {
@@ -507,11 +507,11 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { ...WRITE, title: "Apply edits" },
     },
     async ({ design_id, expected_revision, ops }) =>
-      guard(() => {
-        const before = store.get(design_id);
+      guard(async () => {
+        const before = await store.get(design_id);
         const paramsBefore = outlineOf(before.doc).params_total;
 
-        const outcome = store.apply(design_id, ops as OpType[], expected_revision);
+        const outcome = await store.apply(design_id, ops as OpType[], expected_revision);
         const report = validate(outcome.record.doc);
         const total = report.analysis.params.total;
         const delta = total - paramsBefore;
@@ -566,8 +566,8 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { ...READ, title: "Validate design" },
     },
     async ({ design_id, severity, ...rest }) =>
-      guard(() => {
-        const record = store.get(design_id);
+      guard(async () => {
+        const record = await store.get(design_id);
         const report = validate(record.doc, toAnalysisOptions(rest));
         const rank = { error: 0, warning: 1, info: 2 };
         const findings = findingsJson(report).filter(
@@ -607,8 +607,8 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { ...READ, title: "Analyze design" },
     },
     async ({ design_id, ...rest }) =>
-      guard(() => {
-        const record = store.get(design_id);
+      guard(async () => {
+        const record = await store.get(design_id);
         const result = analyze(record.doc, toAnalysisOptions(rest));
         return ok(analysisText(result), {
           design_id: record.design_id,
@@ -652,7 +652,7 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
     },
     async ({ design_id, class_name, include_smoke_test, out_dir }) =>
       guard(async () => {
-        const record = store.get(design_id);
+        const record = await store.get(design_id);
         const generated = generateTorch(record.doc, {
           ...(class_name ? { className: class_name } : {}),
           includeSmokeTest: include_smoke_test ?? false,
@@ -721,12 +721,12 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { ...WRITE, title: "Checkpoint design" },
     },
     async ({ design_id, label }) =>
-      guard(() => {
-        const info = store.checkpoint(design_id, label);
+      guard(async () => {
+        const info = await store.checkpoint(design_id, label);
         return ok(`${info.checkpoint_id} at revision ${info.revision}: ${info.label}`, {
           design_id,
           ...info,
-          checkpoints: store.checkpoints(design_id),
+          checkpoints: await store.checkpoints(design_id),
         });
       }),
   );
@@ -754,8 +754,8 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { ...DESTRUCTIVE, title: "Restore design" },
     },
     async ({ design_id, checkpoint_id }) =>
-      guard(() => {
-        const { record, restoredFrom } = store.restore(design_id, checkpoint_id);
+      guard(async () => {
+        const { record, restoredFrom } = await store.restore(design_id, checkpoint_id);
         const report = validate(record.doc);
         return ok(
           `${record.design_id} restored from ${restoredFrom}; now revision ${record.revision}, ` +
@@ -814,8 +814,8 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { ...READ, title: "Explain a block" },
     },
     async ({ design_id, path, ...rest }) =>
-      guard(() => {
-        const record = store.get(design_id);
+      guard(async () => {
+        const record = await store.get(design_id);
         const e = explain(record.doc, path, toAnalysisOptions(rest));
         const lines = [
           `${path}  ${e.type} (${e.kind})`,
@@ -890,8 +890,8 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false, title: "Scale a design" },
     },
     async ({ design_id, target_params, target_basis, vocab, tie_head, keep_depth }) =>
-      guard(() => {
-        const record = store.get(design_id);
+      guard(async () => {
+        const record = await store.get(design_id);
         const result = scaleDesign(record.doc, {
           targetParams: target_params,
           ...(target_basis ? { targetBasis: target_basis } : {}),
@@ -899,7 +899,7 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
           ...(tie_head !== undefined ? { tieHead: tie_head } : {}),
           ...(keep_depth !== undefined ? { keepDepth: keep_depth } : {}),
         });
-        const saved = store.adopt(result.doc);
+        const saved = await store.adopt(result.doc);
         const changes = Object.entries(result.changes).map(([symbol, c]) => ({
           symbol,
           from: c.from,
@@ -970,14 +970,21 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false, title: "Build a width ladder" },
     },
     async ({ design_id, widths, base_width }) =>
-      guard(() => {
-        const record = store.get(design_id);
+      guard(async () => {
+        const record = await store.get(design_id);
         const ladder = mupLadder(record.doc, {
           ...(widths ? { widths } : {}),
           ...(base_width !== undefined ? { baseWidth: base_width } : {}),
         });
-        const rungs = ladder.rungs.map((rung) => ({
-          design_id: store.adopt(rung.doc).design_id,
+        // One at a time rather than `Promise.all`. Each rung is registered in
+        // the store, and a ladder is four or five of them — so there is nothing
+        // to gain from overlapping the writes, and a sequence is one less way
+        // for two of them to interleave inside a store that is not local.
+        const rungs = [];
+        for (const rung of ladder.rungs) {
+          const adopted = await store.adopt(rung.doc);
+          rungs.push({
+            design_id: adopted.design_id,
           width: rung.width,
           multiplier: rung.multiplier,
           heads: rung.heads,
@@ -990,8 +997,9 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
             paths: s.paths,
             why: s.why,
           })),
-          notes: rung.notes,
-        }));
+            notes: rung.notes,
+          });
+        }
         const text = [
           `${record.doc.meta.name} laddered by ${ladder.widthSymbol}, tuned at ${ladder.baseWidth}, ` +
             `heads of ${ladder.headDim} throughout`,
@@ -1063,8 +1071,8 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { ...READ, title: "Plan a cluster" },
     },
     async ({ design_id, gpus, gpus_per_node, headroom, limit, ...rest }) =>
-      guard(() => {
-        const record = store.get(design_id);
+      guard(async () => {
+        const record = await store.get(design_id);
         const result = planCluster(record.doc, toAnalysisOptions(rest), {
           gpus,
           ...(gpus_per_node !== undefined ? { gpusPerNode: gpus_per_node } : {}),
@@ -1162,9 +1170,9 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { ...READ, title: "Compare two designs" },
     },
     async ({ a, b, ...rest }) =>
-      guard(() => {
-        const left = store.get(a);
-        const right = store.get(b);
+      guard(async () => {
+        const left = await store.get(a);
+        const right = await store.get(b);
         const d = diffDesigns(left.doc, right.doc, toAnalysisOptions(rest));
         const brief = (v: unknown): string => {
           if (v === undefined || v === null) return "\u2014";
@@ -1241,9 +1249,9 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false, title: "Import a config" },
     },
     async ({ config, name }) =>
-      guard(() => {
+      guard(async () => {
         const result = importHfConfig(config, name);
-        const record = store.adopt(result.doc);
+        const record = await store.adopt(result.doc);
         const total = analyze(result.doc).params.total;
         const text = [
           `${result.doc.meta.name}: ${formatCount(total)} parameters`,

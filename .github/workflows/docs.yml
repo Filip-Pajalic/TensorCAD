@@ -1,0 +1,65 @@
+# The documentation site.
+#
+# Built on every push and every pull request, deployed only from `main`. The
+# build runs `--strict`, which turns a link to a page that does not exist into a
+# failure rather than a warning nobody reads — the docs are full of
+# cross-references and a rename is exactly how they rot.
+name: Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/**
+      - mkdocs.yml
+      - .github/workflows/docs.yml
+  pull_request:
+    paths:
+      - docs/**
+      - mkdocs.yml
+      - .github/workflows/docs.yml
+  # So the site can be re-published without a docs change, after enabling Pages
+  # for the first time.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs
+  # A newer commit's site is the one worth having; an older build still running
+  # would otherwise overwrite it.
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install mkdocs-material
+      # Every broken cross-reference is a failure here, not a warning.
+      - run: mkdocs build --strict
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: Deploy
+    # Only from `main`: a pull request's site would replace the published one.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

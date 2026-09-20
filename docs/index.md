@@ -60,6 +60,13 @@ is, or why it is not something else.
 
 ---
 
-Contributor-facing material lives at the root: [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
-for the workflow, [`../CLAUDE.md`](../CLAUDE.md) for the invariants and the
-agent entry point, [`../ROADMAP.md`](../ROADMAP.md) for what is planned.
+These pages are published at
+[filip-pajalic.github.io/TensorCAD](https://filip-pajalic.github.io/TensorCAD/),
+and read the same in the repository. `pip install mkdocs-material && mkdocs
+serve` brings the site up locally, with search.
+
+Contributor-facing material lives at the repository root, not here:
+[`CONTRIBUTING.md`](https://github.com/Filip-Pajalic/TensorCAD/blob/main/CONTRIBUTING.md) for the workflow,
+[`CLAUDE.md`](https://github.com/Filip-Pajalic/TensorCAD/blob/main/CLAUDE.md) for the invariants and the agent entry point,
+[`ROADMAP.md`](https://github.com/Filip-Pajalic/TensorCAD/blob/main/ROADMAP.md) for what is planned. Those links leave the site,
+because those files are for somebody with the repository open.

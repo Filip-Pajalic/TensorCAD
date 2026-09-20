@@ -51,4 +51,4 @@ batch, sequence length, dtype, GPU model and count, sharding plan.
 
 Every rule fires at its built-in severity. Per-rule `Error / Warning / Ignore`,
 stored in the document with persisted per-finding exclusions, is planned — KiCad's
-DRC severity matrix is the model. See [`../../ROADMAP.md`](../../ROADMAP.md).
+DRC severity matrix is the model. See [`ROADMAP.md`](https://github.com/Filip-Pajalic/TensorCAD/blob/main/ROADMAP.md).

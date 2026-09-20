@@ -1,0 +1,106 @@
+# The documentation site.
+#
+# The pages themselves live in `docs/` and are readable as they stand, in the
+# repository and on GitHub. This adds what a directory of Markdown cannot: a
+# navigation that states the Diátaxis split rather than leaving it implied, and
+# a search box, which is the thing a reference is useless without.
+#
+#   pip install mkdocs-material && mkdocs serve
+#
+# The nav below is written out rather than inferred from the tree. A generated
+# one would order these pages alphabetically, and "Add a block" before "Your
+# first design" is exactly backwards for somebody arriving.
+
+site_name: TensorCAD
+site_description: Node-based CAD for designing LLM architectures at the pretraining level
+site_url: https://filip-pajalic.github.io/TensorCAD/
+repo_url: https://github.com/Filip-Pajalic/TensorCAD
+repo_name: Filip-Pajalic/TensorCAD
+edit_uri: edit/main/docs/
+copyright: MIT
+
+docs_dir: docs
+
+theme:
+  name: material
+  # No logo and no colour beyond the accent: the drawings on these pages carry
+  # the colour, and a theme that competes with them makes both harder to read.
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue grey
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Dark
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue grey
+      accent: blue
+      toggle:
+        icon: material/weather-sunny
+        name: Light
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    # The four Diátaxis kinds become four tabs, so which one you are in is
+    # visible rather than something you have to work out from the tone.
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - content.code.copy
+    - content.action.edit
+    - search.suggest
+    - search.highlight
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Tutorials:
+      - Your first design: tutorials/first-design.md
+      - Tune small, run big: tutorials/tune-small-run-big.md
+  - How-to:
+      - Add a block to the catalog: how-to/add-a-block.md
+      - Add a preset: how-to/add-a-preset.md
+      - Define a block inside a document: how-to/define-a-block-in-a-document.md
+      - Verify a design against PyTorch: how-to/verify-against-pytorch.md
+      - Drive TensorCAD from an agent: how-to/use-the-mcp-server.md
+  - Reference:
+      - Ports: reference/ports.md
+      - The document format: reference/document.md
+      - Design rules: reference/design-rules.md
+      - Analysis outputs: reference/analysis.md
+      - The analysis maths: reference/analysis-math.md
+      - Command line: reference/cli.md
+  - Explanation:
+      - Why schematic capture: explanation/why-schematic-capture.md
+      - The shape algebra: explanation/shape-algebra.md
+      - Interaction design: explanation/interaction-design.md
+      - Landscape: explanation/landscape.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Filip-Pajalic/TensorCAD

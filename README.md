@@ -21,7 +21,7 @@
   <a href="#what-it-does">What it does</a> ·
   <a href="#how-it-is-kept-honest">Correctness</a> ·
   <a href="#for-agents">For agents</a> ·
-  <a href="https://doc.tensorcad.dev">Docs</a> ·
+  <a href="https://docs.tensorcad.dev">Docs</a> ·
   <a href="./CONTRIBUTING.md">Contributing</a> ·
   <a href="./ROADMAP.md">Roadmap</a> ·
   <a href="./LICENSE.md">License</a>
@@ -86,7 +86,7 @@ also what `File > Export the sheet as SVG` does from the editor.
 is no server behind it — the engine is the same WebAssembly module the command
 line and the MCP server load, so every number on the screen is computed in the
 tab and no design is uploaded anywhere. The documentation is at
-[doc.tensorcad.dev](https://doc.tensorcad.dev).
+[docs.tensorcad.dev](https://docs.tensorcad.dev).
 
 ## Quick start
 

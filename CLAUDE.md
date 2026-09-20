@@ -174,7 +174,7 @@ Two cross-checks worth knowing:
 - `docs/` — documentation, organised by Diátaxis (tutorials, how-to, reference, explanation). `reference/analysis-math.md` is the sourced maths behind the analysis engine.
 - **Both sites are static.** `packages/ui/wrangler.jsonc` serves the Vite bundle at
   `app.tensorcad.dev` and the apex; `wrangler.docs.jsonc` serves what MkDocs renders at
-  `doc.tensorcad.dev`. Neither has a Worker script — `assets` with no `main` is an
+  `docs.tensorcad.dev`. Neither has a Worker script — `assets` with no `main` is an
   assets-only deployment, which is all this needs, because the engine is WebAssembly and
   runs in the tab. `.github/workflows/deploy.yml` uploads both from `main` when
   `CLOUDFLARE_API_TOKEN` is set and says so in the job summary when it is not, so a fork

@@ -21,7 +21,7 @@
   },
   "routes": [
     {
-      "pattern": "doc.tensorcad.dev",
+      "pattern": "docs.tensorcad.dev",
       "custom_domain": true
     }
   ],

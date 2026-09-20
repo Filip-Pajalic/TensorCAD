@@ -13,7 +13,7 @@
 
 site_name: TensorCAD
 site_description: Node-based CAD for designing LLM architectures at the pretraining level
-site_url: https://doc.tensorcad.dev/
+site_url: https://docs.tensorcad.dev/
 repo_url: https://github.com/Filip-Pajalic/TensorCAD
 repo_name: Filip-Pajalic/TensorCAD
 edit_uri: edit/main/docs/

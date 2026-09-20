@@ -67,7 +67,7 @@ is, or why it is not something else.
 
 ---
 
-These pages are published at [doc.tensorcad.dev](https://doc.tensorcad.dev/),
+These pages are published at [docs.tensorcad.dev](https://docs.tensorcad.dev/),
 and read the same in the repository. The editor itself runs in a browser at
 [app.tensorcad.dev](https://app.tensorcad.dev/) — the engine is WebAssembly, so
 nothing is computed on a server and no design leaves the tab.

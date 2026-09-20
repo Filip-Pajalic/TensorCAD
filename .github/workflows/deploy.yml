@@ -2,7 +2,7 @@
 #
 #   app.tensorcad.dev  — the editor, which is the Vite bundle plus the engine
 #   tensorcad.dev      — the same Worker, because the editor is the front page
-#   doc.tensorcad.dev  — the documentation MkDocs renders from `docs/`
+#   docs.tensorcad.dev  — the documentation MkDocs renders from `docs/`
 #
 # Both are static-asset Workers: nothing is computed on a server, because the
 # engine is WebAssembly and runs in the browser. Deployed only from `main`, and
@@ -74,7 +74,7 @@ jobs:
           echo "The editor was built and type-checked; only the upload was skipped." >> "$GITHUB_STEP_SUMMARY"
 
   docs:
-    name: doc.tensorcad.dev
+    name: docs.tensorcad.dev
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

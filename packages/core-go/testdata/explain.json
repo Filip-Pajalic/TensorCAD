@@ -263,6 +263,12 @@
               null,
               null,
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -528,6 +534,12 @@
               null,
               true,
               null
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ]
           ],
           "shapes": {
@@ -1010,6 +1022,12 @@
               null,
               null,
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -1223,6 +1241,12 @@
               null,
               true,
               null
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ]
           ],
           "shapes": {
@@ -1757,6 +1781,12 @@
               null,
               null,
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -1970,6 +2000,12 @@
               null,
               true,
               null
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ]
           ],
           "shapes": {
@@ -2504,6 +2540,12 @@
               null,
               null,
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -2717,6 +2759,12 @@
               null,
               true,
               null
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ]
           ],
           "shapes": {
@@ -3257,6 +3305,12 @@
               null,
               null,
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -3522,6 +3576,12 @@
               null,
               true,
               null
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ]
           ],
           "shapes": {
@@ -4011,6 +4071,12 @@
                 "theta": 10000
               },
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -4239,6 +4305,12 @@
               null,
               true,
               null
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ]
           ],
           "shapes": {
@@ -4786,6 +4858,12 @@
                 "theta": 10000
               },
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -5188,6 +5266,12 @@
               null,
               true,
               null
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ]
           ],
           "shapes": {
@@ -5561,6 +5645,12 @@
                 "theta": 500000
               },
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -5963,6 +6053,12 @@
               null,
               true,
               null
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ]
           ],
           "shapes": {
@@ -6336,6 +6432,12 @@
                 "theta": 500000
               },
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -6738,6 +6840,12 @@
               null,
               true,
               null
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ]
           ],
           "shapes": {
@@ -7111,6 +7219,12 @@
                 "theta": 500000
               },
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -7513,6 +7627,12 @@
               null,
               true,
               null
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ]
           ],
           "shapes": {
@@ -7886,6 +8006,12 @@
                 "theta": 1000000
               },
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -8288,6 +8414,12 @@
               null,
               true,
               null
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ]
           ],
           "shapes": {
@@ -8665,6 +8797,12 @@
                 "theta": 1000000
               },
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -9077,6 +9215,12 @@
               null,
               true,
               null
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ]
           ],
           "shapes": {
@@ -9220,7 +9364,7 @@
             "shareOfParams": 0.9007209723412036,
             "flopsPerToken": 18761121792,
             "shareOfFlops": 0.9109052031361369,
-            "activationBytes": 60621324288,
+            "activationBytes": 195890774016,
             "cacheBytesPerToken": 172032,
             "cacheBytesPerSequence": 704643072
           },
@@ -9469,6 +9613,12 @@
                 "theta": 10000
               },
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              50,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -9485,7 +9635,7 @@
             "shareOfParams": 0.4503604861706018,
             "flopsPerToken": 9028239360,
             "shareOfFlops": 0.4383464005702067,
-            "activationBytes": 30310662144,
+            "activationBytes": 75396808704,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 704643072
           },
@@ -9729,6 +9879,12 @@
                 "theta": 10000
               },
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              50,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -9745,7 +9901,7 @@
             "shareOfParams": 0.4503604861706018,
             "flopsPerToken": 9732882432,
             "shareOfFlops": 0.47255880256593014,
-            "activationBytes": 30310662144,
+            "activationBytes": 120493965312,
             "cacheBytesPerToken": 172032,
             "cacheBytesPerSequence": 0
           },
@@ -10412,6 +10568,12 @@
                 "theta": 1000000
               },
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -11198,6 +11360,12 @@
                 "theta": 1000000
               },
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -11994,6 +12162,12 @@
                 "theta": 1000000
               },
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -12790,6 +12964,12 @@
                 "theta": 10000
               },
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -13510,6 +13690,12 @@
               null,
               false,
               null
+            ],
+            [
+              "softcap",
+              null,
+              0,
+              "Bound the logits to this magnitude with tanh; 0 leaves them alone"
             ]
           ],
           "shapes": {
@@ -14148,6 +14334,12 @@
               null,
               null,
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -14471,6 +14663,12 @@
               null,
               null,
               "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ]
           ],
           "shapes": {
@@ -14753,6 +14951,12 @@
               null,
               true,
               null
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ]
           ],
           "shapes": {

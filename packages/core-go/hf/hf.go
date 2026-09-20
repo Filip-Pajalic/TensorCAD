@@ -251,7 +251,13 @@ func Import(config Config, name string) (*Result, error) {
 				period = p
 			}
 			spec.Alternating = &design.Alternating{Window: w, Period: period}
-			_ = w // fault
+		}
+		// Gemma 2 bounds both the attention scores and the output logits.
+		if v, ok := num(config, "attn_logit_softcapping"); ok && v != 0 {
+			spec.AttnSoftcap = f(v)
+		}
+		if v, ok := num(config, "final_logit_softcapping"); ok && v != 0 {
+			spec.LogitSoftcap = f(v)
 		}
 	}
 

@@ -989,6 +989,21 @@
         "head:y"
       ]
     ],
-    "issues": []
+    "issues": [
+      {
+        "path": "layers/global/attn/attn",
+        "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass.",
+        "severity": "warning",
+        "rule": "SDPA-03",
+        "param": "logit_softcap"
+      },
+      {
+        "path": "layers/local/attn/attn",
+        "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass.",
+        "severity": "warning",
+        "rule": "SDPA-03",
+        "param": "logit_softcap"
+      }
+    ]
   }
 }

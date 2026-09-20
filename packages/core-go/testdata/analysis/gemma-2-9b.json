@@ -168,7 +168,7 @@
         "fwdAttentionUnmasked": 4227858432,
         "fwdTotal": 20596129792,
         "fwdTotalUnmasked": 22710059008,
-        "elementwise": 9691136,
+        "elementwise": 44769280,
         "trainPerToken": 61788389376,
         "attentionShare": 0.10263720598717035,
         "ruleOfThumb2N": 16648403968,
@@ -278,15 +278,15 @@
           "weights": 18483411968,
           "grads": 18483411968,
           "optimizer": 110900471808,
-          "activations": 78254178304,
+          "activations": 213523628032,
           "logits": 12582912000,
-          "total": 226121474048,
+          "total": 361390923776,
           "perGpu": {
             "weights": 18483411968,
             "grads": 18483411968,
             "optimizer": 110900471808,
-            "activations": 78254178304,
-            "total": 226121474048
+            "activations": 213523628032,
+            "total": 361390923776
           },
           "activationsByPath": [
             [
@@ -315,7 +315,7 @@
             ],
             [
               "layers/global/attn/attn",
-              1420296192
+              91603599360
             ],
             [
               "layers/global/attn/o_merge",
@@ -375,7 +375,7 @@
             ],
             [
               "layers/local/attn/attn",
-              1420296192
+              46506442752
             ],
             [
               "layers/local/attn/o_merge",
@@ -651,7 +651,7 @@
         "fwdAttentionUnmasked": 4227858432,
         "fwdTotal": 20596129792,
         "fwdTotalUnmasked": 22710059008,
-        "elementwise": 9691136,
+        "elementwise": 44769280,
         "trainPerToken": 82384519168,
         "attentionShare": 0.10263720598717035,
         "ruleOfThumb2N": 16648403968,
@@ -1017,7 +1017,7 @@
         "fwdAttentionUnmasked": 4227858432,
         "fwdTotal": 20596129792,
         "fwdTotalUnmasked": 22710059008,
-        "elementwise": 9691136,
+        "elementwise": 44769280,
         "trainPerToken": 61788389376,
         "attentionShare": 0.10263720598717035,
         "ruleOfThumb2N": 16648403968,
@@ -1127,15 +1127,15 @@
           "weights": 18483411968,
           "grads": 18483411968,
           "optimizer": 110900471808,
-          "activations": 313016713216,
+          "activations": 854094512128,
           "logits": 50331648000,
-          "total": 460884008960,
+          "total": 1001961807872,
           "perGpu": {
             "weights": 18483411968,
             "grads": 18483411968,
             "optimizer": 110900471808,
-            "activations": 313016713216,
-            "total": 460884008960
+            "activations": 854094512128,
+            "total": 1001961807872
           },
           "activationsByPath": [
             [
@@ -1164,7 +1164,7 @@
             ],
             [
               "layers/global/attn/attn",
-              5681184768
+              366414397440
             ],
             [
               "layers/global/attn/o_merge",
@@ -1224,7 +1224,7 @@
             ],
             [
               "layers/local/attn/attn",
-              5681184768
+              186025771008
             ],
             [
               "layers/local/attn/o_merge",

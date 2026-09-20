@@ -112,6 +112,10 @@ type DecoderSpec struct {
 	MLPBias   *bool
 	QKNorm    *bool
 	Window    *float64
+	// AttnSoftcap and LogitSoftcap bound the attention scores and the output
+	// logits with a tanh. Gemma 2 does both; nothing else does either.
+	AttnSoftcap  *float64
+	LogitSoftcap *float64
 	// Alternating, when set, overrides Window: the stack is local and global
 	// layers in a fixed cycle rather than one kind throughout.
 	Alternating *Alternating
@@ -269,6 +273,9 @@ func DecoderOnly(spec DecoderSpec) *ir.Doc {
 		"rope":        ropeParam,
 		"attn_o_bias": nil,
 	}
+	if spec.AttnSoftcap != nil && *spec.AttnSoftcap != 0 {
+		blockParams["logit_softcap"] = *spec.AttnSoftcap
+	}
 	if spec.AttnOBias != nil {
 		blockParams["attn_o_bias"] = *spec.AttnOBias
 	}
@@ -343,8 +350,7 @@ func DecoderOnly(spec DecoderSpec) *ir.Doc {
 	}
 	nodes = append(nodes,
 		ir.NodeDef{ID: "final_norm", Type: norm, Params: finalParams},
-		ir.NodeDef{ID: "head", Type: "lm_head",
-			Params: map[string]any{"vocab": "V", "dim": "D", "tied": tied}},
+		ir.NodeDef{ID: "head", Type: "lm_head", Params: headParams(spec, tied)},
 		ir.NodeDef{ID: "logits", Type: "output"})
 	edges = append(edges,
 		ir.Edge{tail, "final_norm:x"},
@@ -418,6 +424,16 @@ func withWindow(params map[string]any, window any) map[string]any {
 	}
 	out["window"] = window
 	return out
+}
+
+// headParams is the output projection, with Gemma's bound on the logits when
+// the design asks for one.
+func headParams(spec DecoderSpec, tied any) map[string]any {
+	p := map[string]any{"vocab": "V", "dim": "D", "tied": tied}
+	if spec.LogitSoftcap != nil && *spec.LogitSoftcap != 0 {
+		p["softcap"] = *spec.LogitSoftcap
+	}
+	return p
 }
 
 func stack(id, count string, params map[string]any, label string) ir.NodeDef {

@@ -445,6 +445,12 @@
           "bool",
           "",
           null
+        ],
+        [
+          "logit_softcap",
+          "num",
+          "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone",
+          null
         ]
       ]
     },
@@ -611,6 +617,12 @@
           "bias",
           "bool",
           "",
+          null
+        ],
+        [
+          "softcap",
+          "num",
+          "Bound the logits to this magnitude with tanh; 0 leaves them alone",
           null
         ]
       ]
@@ -1096,6 +1108,12 @@
           "bool",
           "Whether this block owns the inference cache. Latent attention caches a compressed vector instead.",
           null
+        ],
+        [
+          "logit_softcap",
+          "num",
+          "Bound the attention scores to this magnitude with tanh; 0 leaves them alone. A fused kernel cannot do this, so a layer that caps runs eager.",
+          null
         ]
       ]
     },
@@ -1413,6 +1431,12 @@
           "rope",
           "obj",
           "RoPE settings, or null for no rotary embedding",
+          null
+        ],
+        [
+          "logit_softcap",
+          "num",
+          "Bound the attention scores to this magnitude with tanh (Gemma 2)",
           null
         ]
       ]

@@ -90,7 +90,7 @@ func tokenize(src string) ([]tok, error) {
 			i++
 			continue
 		}
-		return nil, fmt.Errorf("unexpected character %q at %d in %q", string(c), i, src)
+		return nil, fmt.Errorf("Unexpected character %q at %d in %q", string(c), i, src)
 	}
 	out = append(out, tok{kind: tokEOF, pos: len(src)})
 	return out, nil
@@ -139,7 +139,7 @@ func (p *parser) eat(op string) bool {
 
 func (p *parser) expect(op string) error {
 	if !p.eat(op) {
-		return fmt.Errorf("expected %q at %d in %q", op, p.peek().pos, p.src)
+		return fmt.Errorf("Expected %q at %d in %q", op, p.peek().pos, p.src)
 	}
 	return nil
 }
@@ -150,7 +150,7 @@ func (p *parser) parse() (*Ast, error) {
 		return nil, err
 	}
 	if p.peek().kind != tokEOF {
-		return nil, fmt.Errorf("trailing input at %d in %q", p.peek().pos, p.src)
+		return nil, fmt.Errorf("Trailing input at %d in %q", p.peek().pos, p.src)
 	}
 	return e, nil
 }
@@ -277,7 +277,7 @@ func (p *parser) primary() (*Ast, error) {
 		}
 		return e, nil
 	}
-	return nil, fmt.Errorf("unexpected token at %d in %q", t.pos, p.src)
+	return nil, fmt.Errorf("Unexpected token at %d in %q", t.pos, p.src)
 }
 
 // Parsed expressions are cached because the same handful of strings are
@@ -361,7 +361,7 @@ func evalAst(ast *Ast, ctx EvalCtx) (Sym, error) {
 			return sub, nil
 		}
 		if !ctx.Known[ast.Name] {
-			return Zero(), fmt.Errorf("unknown symbol %q", ast.Name)
+			return Zero(), fmt.Errorf("Unknown symbol %q", ast.Name)
 		}
 		return V(ast.Name), nil
 
@@ -375,10 +375,10 @@ func evalAst(ast *Ast, ctx EvalCtx) (Sym, error) {
 	case AstCall:
 		f, ok := ExprFunctions[ast.Name]
 		if !ok {
-			return Zero(), fmt.Errorf("unknown function %q", ast.Name)
+			return Zero(), fmt.Errorf("Unknown function %q", ast.Name)
 		}
 		if len(ast.Args) != f.Arity {
-			return Zero(), fmt.Errorf("function %q expects %d argument(s), got %d", ast.Name, f.Arity, len(ast.Args))
+			return Zero(), fmt.Errorf("Function %q expects %d argument(s), got %d", ast.Name, f.Arity, len(ast.Args))
 		}
 		nums := make([]float64, len(ast.Args))
 		for i, a := range ast.Args {
@@ -388,7 +388,7 @@ func evalAst(ast *Ast, ctx EvalCtx) (Sym, error) {
 			}
 			n, ok := s.ToNumber(ctx.Values)
 			if !ok {
-				return Zero(), fmt.Errorf("argument of %q is not numeric: %s", ast.Name, s)
+				return Zero(), fmt.Errorf("Argument of %q is not numeric: %s", ast.Name, s)
 			}
 			nums[i] = n
 		}
@@ -418,7 +418,7 @@ func evalAst(ast *Ast, ctx EvalCtx) (Sym, error) {
 			// engines is a migration bug that would be found by eye.
 			if rc, ok := r.AsConst(); ok {
 				if rc == 0 {
-					return Zero(), fmt.Errorf("division by zero")
+					return Zero(), fmt.Errorf("Division by zero")
 				}
 				return l.Mul(ConRat(RatFromPair(1, rc))), nil
 			}
@@ -431,16 +431,16 @@ func evalAst(ast *Ast, ctx EvalCtx) (Sym, error) {
 			if lok && rok && rn != 0 {
 				return Con(ln / rn), nil
 			}
-			return Zero(), fmt.Errorf("cannot divide %s by %s exactly", l, r)
+			return Zero(), fmt.Errorf("Cannot divide %s by %s exactly", l, r)
 		case '^':
 			e, ok := r.AsConst()
 			if !ok || e != math.Trunc(e) || e < 0 {
-				return Zero(), fmt.Errorf("exponent must be a non-negative integer, got %s", r)
+				return Zero(), fmt.Errorf("Exponent must be a non-negative integer, got %s", r)
 			}
 			return l.Pow(int(e))
 		}
 	}
-	return Zero(), fmt.Errorf("unhandled expression node")
+	return Zero(), fmt.Errorf("Unhandled expression node")
 }
 
 // EvalExpr parses and evaluates an expression.

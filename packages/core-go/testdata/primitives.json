@@ -9,12 +9,12 @@
     {
       "type": "input",
       "params": {
-        "shape": "B T",
-        "dtype": "int64"
+        "dtype": "int64",
+        "shape": "B T"
       },
       "resolved": {
-        "shape": "B T",
-        "dtype": "int64"
+        "dtype": "int64",
+        "shape": "B T"
       },
       "errors": [],
       "ports": {
@@ -111,12 +111,12 @@
     {
       "type": "embedding",
       "params": {
-        "vocab": 128256,
-        "dim": 4096
+        "dim": 4096,
+        "vocab": 128256
       },
       "resolved": {
-        "vocab": 128256,
-        "dim": 4096
+        "dim": 4096,
+        "vocab": 128256
       },
       "errors": [],
       "ports": {
@@ -131,7 +131,10 @@
       "portError": "",
       "paramCount": 525336576,
       "flops": {
-        "fwd": 0
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
@@ -141,12 +144,12 @@
     {
       "type": "pos_embedding",
       "params": {
-        "max_seq": 1024,
-        "dim": 768
+        "dim": 768,
+        "max_seq": 1024
       },
       "resolved": {
-        "max_seq": 1024,
-        "dim": 768
+        "dim": 768,
+        "max_seq": 1024
       },
       "errors": [],
       "ports": {
@@ -161,8 +164,10 @@
       "portError": "",
       "paramCount": 786432,
       "flops": {
+        "elementwise": 768,
         "fwd": 0,
-        "elementwise": 768
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
@@ -192,7 +197,10 @@
       "portError": "",
       "paramCount": 384,
       "flops": {
-        "fwd": 0
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
@@ -222,7 +230,10 @@
       "portError": "",
       "paramCount": 384,
       "flops": {
-        "fwd": 0
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
@@ -232,14 +243,14 @@
     {
       "type": "linear",
       "params": {
+        "bias": false,
         "in_features": 4096,
-        "out_features": 14336,
-        "bias": false
+        "out_features": 14336
       },
       "resolved": {
+        "bias": false,
         "in_features": 4096,
-        "out_features": 14336,
-        "bias": false
+        "out_features": 14336
       },
       "errors": [],
       "ports": {
@@ -254,7 +265,10 @@
       "portError": "",
       "paramCount": 58720256,
       "flops": {
-        "fwd": 117440512
+        "elementwise": 0,
+        "fwd": 117440512,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -266,14 +280,14 @@
     {
       "type": "linear",
       "params": {
+        "bias": true,
         "in_features": 4096,
-        "out_features": 14336,
-        "bias": true
+        "out_features": 14336
       },
       "resolved": {
+        "bias": true,
         "in_features": 4096,
-        "out_features": 14336,
-        "bias": true
+        "out_features": 14336
       },
       "errors": [],
       "ports": {
@@ -288,7 +302,10 @@
       "portError": "",
       "paramCount": 58734592,
       "flops": {
-        "fwd": 117440512
+        "elementwise": 0,
+        "fwd": 117440512,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -300,16 +317,16 @@
     {
       "type": "lm_head",
       "params": {
-        "vocab": 128256,
+        "bias": false,
         "dim": 4096,
         "tied": false,
-        "bias": false
+        "vocab": 128256
       },
       "resolved": {
-        "vocab": 128256,
+        "bias": false,
         "dim": 4096,
         "tied": false,
-        "bias": false
+        "vocab": 128256
       },
       "errors": [],
       "ports": {
@@ -324,7 +341,10 @@
       "portError": "",
       "paramCount": 525336576,
       "flops": {
-        "fwd": 1050673152
+        "elementwise": 0,
+        "fwd": 1050673152,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -336,16 +356,16 @@
     {
       "type": "lm_head",
       "params": {
-        "vocab": 128256,
+        "bias": false,
         "dim": 4096,
         "tied": true,
-        "bias": false
+        "vocab": 128256
       },
       "resolved": {
-        "vocab": 128256,
+        "bias": false,
         "dim": 4096,
         "tied": true,
-        "bias": false
+        "vocab": 128256
       },
       "errors": [],
       "ports": {
@@ -360,7 +380,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
-        "fwd": 1050673152
+        "elementwise": 0,
+        "fwd": 1050673152,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -372,26 +395,26 @@
     {
       "type": "conv2d",
       "params": {
+        "act": "relu",
         "in_channels": 3,
-        "out_channels": 64,
-        "kernel": 11,
-        "stride": 4,
-        "padding": 2,
         "in_h": 224,
         "in_w": 224,
-        "act": "relu"
+        "kernel": 11,
+        "out_channels": 64,
+        "padding": 2,
+        "stride": 4
       },
       "resolved": {
-        "in_channels": 3,
-        "out_channels": 64,
-        "kernel": 11,
-        "stride": 4,
-        "padding": 2,
-        "groups": 1,
+        "act": "relu",
         "bias": true,
+        "groups": 1,
+        "in_channels": 3,
         "in_h": 224,
         "in_w": 224,
-        "act": "relu"
+        "kernel": 11,
+        "out_channels": 64,
+        "padding": 2,
+        "stride": 4
       },
       "errors": [],
       "ports": {
@@ -406,8 +429,10 @@
       "portError": "",
       "paramCount": 23296,
       "flops": {
+        "elementwise": 193600,
         "fwd": 140553600,
-        "elementwise": 193600
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -419,26 +444,26 @@
     {
       "type": "conv2d",
       "params": {
+        "act": "relu",
         "in_channels": 192,
-        "out_channels": 384,
-        "kernel": 3,
-        "stride": 1,
-        "padding": 1,
         "in_h": 13,
         "in_w": 13,
-        "act": "relu"
+        "kernel": 3,
+        "out_channels": 384,
+        "padding": 1,
+        "stride": 1
       },
       "resolved": {
-        "in_channels": 192,
-        "out_channels": 384,
-        "kernel": 3,
-        "stride": 1,
-        "padding": 1,
-        "groups": 1,
+        "act": "relu",
         "bias": true,
+        "groups": 1,
+        "in_channels": 192,
         "in_h": 13,
         "in_w": 13,
-        "act": "relu"
+        "kernel": 3,
+        "out_channels": 384,
+        "padding": 1,
+        "stride": 1
       },
       "errors": [],
       "ports": {
@@ -453,8 +478,10 @@
       "portError": "",
       "paramCount": 663936,
       "flops": {
+        "elementwise": 64896,
         "fwd": 224280576,
-        "elementwise": 64896
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -467,18 +494,18 @@
       "type": "maxpool2d",
       "params": {
         "channels": 64,
-        "kernel": 3,
-        "stride": 2,
         "in_h": 55,
-        "in_w": 55
+        "in_w": 55,
+        "kernel": 3,
+        "stride": 2
       },
       "resolved": {
         "channels": 64,
-        "kernel": 3,
-        "stride": 2,
-        "padding": 0,
         "in_h": 55,
-        "in_w": 55
+        "in_w": 55,
+        "kernel": 3,
+        "padding": 0,
+        "stride": 2
       },
       "errors": [],
       "ports": {
@@ -493,8 +520,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
+        "elementwise": 419904,
         "fwd": 0,
-        "elementwise": 419904
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -528,7 +557,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
-        "fwd": 0
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
@@ -558,8 +590,10 @@
       "portError": "",
       "paramCount": 4096,
       "flops": {
+        "elementwise": 16384,
         "fwd": 0,
-        "elementwise": 16384
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -592,8 +626,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
+        "elementwise": 16384,
         "fwd": 0,
-        "elementwise": 16384
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -605,13 +641,13 @@
     {
       "type": "layernorm",
       "params": {
-        "dim": 768,
-        "bias": true
+        "bias": true,
+        "dim": 768
       },
       "resolved": {
+        "bias": true,
         "dim": 768,
-        "eps": 0.00001,
-        "bias": true
+        "eps": 0.00001
       },
       "errors": [],
       "ports": {
@@ -626,8 +662,10 @@
       "portError": "",
       "paramCount": 1536,
       "flops": {
+        "elementwise": 4608,
         "fwd": 0,
-        "elementwise": 4608
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -639,13 +677,13 @@
     {
       "type": "layernorm",
       "params": {
-        "dim": 768,
-        "bias": false
+        "bias": false,
+        "dim": 768
       },
       "resolved": {
+        "bias": false,
         "dim": 768,
-        "eps": 0.00001,
-        "bias": false
+        "eps": 0.00001
       },
       "errors": [],
       "ports": {
@@ -660,8 +698,10 @@
       "portError": "",
       "paramCount": 768,
       "flops": {
+        "elementwise": 4608,
         "fwd": 0,
-        "elementwise": 4608
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -673,12 +713,12 @@
     {
       "type": "activation",
       "params": {
-        "kind": "silu",
-        "dim": 14336
+        "dim": 14336,
+        "kind": "silu"
       },
       "resolved": {
-        "kind": "silu",
-        "dim": 14336
+        "dim": 14336,
+        "kind": "silu"
       },
       "errors": [],
       "ports": {
@@ -693,8 +733,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
+        "elementwise": 71680,
         "fwd": 0,
-        "elementwise": 71680
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -706,12 +748,12 @@
     {
       "type": "activation",
       "params": {
-        "kind": "gelu",
-        "dim": 3072
+        "dim": 3072,
+        "kind": "gelu"
       },
       "resolved": {
-        "kind": "gelu",
-        "dim": 3072
+        "dim": 3072,
+        "kind": "gelu"
       },
       "errors": [],
       "ports": {
@@ -726,8 +768,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
+        "elementwise": 24576,
         "fwd": 0,
-        "elementwise": 24576
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -760,8 +804,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
+        "elementwise": 4096,
         "fwd": 0,
-        "elementwise": 4096
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
@@ -792,8 +838,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
+        "elementwise": 14336,
         "fwd": 0,
-        "elementwise": 14336
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "a",
@@ -826,7 +874,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
-        "fwd": 0
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
@@ -836,15 +887,15 @@
     {
       "type": "rope",
       "params": {
-        "heads": 32,
         "head_dim": 128,
+        "heads": 32,
         "theta": 500000
       },
       "resolved": {
-        "heads": 32,
         "head_dim": 128,
-        "theta": 500000,
-        "scaling": null
+        "heads": 32,
+        "scaling": null,
+        "theta": 500000
       },
       "errors": [],
       "ports": {
@@ -861,8 +912,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
+        "elementwise": 24576,
         "fwd": 0,
-        "elementwise": 24576
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
@@ -872,15 +925,15 @@
     {
       "type": "rope",
       "params": {
-        "heads": 32,
         "head_dim": 127,
+        "heads": 32,
         "theta": 10000
       },
       "resolved": {
-        "heads": 32,
         "head_dim": 127,
-        "theta": 10000,
-        "scaling": null
+        "heads": 32,
+        "scaling": null,
+        "theta": 10000
       },
       "errors": [],
       "ports": {
@@ -897,8 +950,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
+        "elementwise": 24384,
         "fwd": 0,
-        "elementwise": 24384
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
@@ -910,26 +965,26 @@
     {
       "type": "sdpa",
       "params": {
-        "heads": 32,
-        "kv_heads": 8,
+        "causal": true,
         "head_dim": 128,
-        "causal": true
+        "heads": 32,
+        "kv_heads": 8
       },
       "resolved": {
+        "cache": true,
+        "causal": true,
+        "flash": true,
+        "head_dim": 128,
         "heads": 32,
         "kv_heads": 8,
-        "head_dim": 128,
         "v_head_dim": 0,
-        "causal": true,
-        "window": 0,
-        "flash": true,
-        "cache": true
+        "window": 0
       },
       "errors": [],
       "ports": {
         "in": {
-          "q": "B heads T head_dim",
           "k": "B kv_heads T head_dim",
+          "q": "B heads T head_dim",
           "v": "B kv_heads T head_dim"
         },
         "out": {
@@ -940,6 +995,7 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
+        "elementwise": 0,
         "fwd": 0,
         "fwdSeq": 33554432,
         "fwdSeqUnmasked": 67108864
@@ -951,34 +1007,34 @@
       ],
       "extraActivationBytes": 8320,
       "stateBytes": {
-        "perToken": 4096,
-        "perSeq": 0
+        "perSeq": 0,
+        "perToken": 4096
       },
       "constraints": []
     },
     {
       "type": "sdpa",
       "params": {
-        "heads": 32,
-        "kv_heads": 8,
+        "causal": false,
         "head_dim": 128,
-        "causal": false
+        "heads": 32,
+        "kv_heads": 8
       },
       "resolved": {
+        "cache": true,
+        "causal": false,
+        "flash": true,
+        "head_dim": 128,
         "heads": 32,
         "kv_heads": 8,
-        "head_dim": 128,
         "v_head_dim": 0,
-        "causal": false,
-        "window": 0,
-        "flash": true,
-        "cache": true
+        "window": 0
       },
       "errors": [],
       "ports": {
         "in": {
-          "q": "B heads T head_dim",
           "k": "B kv_heads T head_dim",
+          "q": "B heads T head_dim",
           "v": "B kv_heads T head_dim"
         },
         "out": {
@@ -989,6 +1045,7 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
+        "elementwise": 0,
         "fwd": 0,
         "fwdSeq": 67108864,
         "fwdSeqUnmasked": 67108864
@@ -1000,34 +1057,34 @@
       ],
       "extraActivationBytes": 8320,
       "stateBytes": {
-        "perToken": 4096,
-        "perSeq": 0
+        "perSeq": 0,
+        "perToken": 4096
       },
       "constraints": []
     },
     {
       "type": "sdpa",
       "params": {
+        "head_dim": 128,
         "heads": 32,
         "kv_heads": 8,
-        "head_dim": 128,
         "window": 4096
       },
       "resolved": {
+        "cache": true,
+        "causal": true,
+        "flash": true,
+        "head_dim": 128,
         "heads": 32,
         "kv_heads": 8,
-        "head_dim": 128,
         "v_head_dim": 0,
-        "causal": true,
-        "window": 4096,
-        "flash": true,
-        "cache": true
+        "window": 4096
       },
       "errors": [],
       "ports": {
         "in": {
-          "q": "B heads T head_dim",
           "k": "B kv_heads T head_dim",
+          "q": "B heads T head_dim",
           "v": "B kv_heads T head_dim"
         },
         "out": {
@@ -1038,6 +1095,7 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
+        "elementwise": 0,
         "fwd": 0,
         "fwdSeq": 33554432,
         "fwdSeqUnmasked": 67108864
@@ -1049,33 +1107,33 @@
       ],
       "extraActivationBytes": 8320,
       "stateBytes": {
-        "perToken": 0,
-        "perSeq": 16777216
+        "perSeq": 16777216,
+        "perToken": 0
       },
       "constraints": []
     },
     {
       "type": "sdpa",
       "params": {
+        "head_dim": 128,
         "heads": 32,
-        "kv_heads": 7,
-        "head_dim": 128
+        "kv_heads": 7
       },
       "resolved": {
+        "cache": true,
+        "causal": true,
+        "flash": true,
+        "head_dim": 128,
         "heads": 32,
         "kv_heads": 7,
-        "head_dim": 128,
         "v_head_dim": 0,
-        "causal": true,
-        "window": 0,
-        "flash": true,
-        "cache": true
+        "window": 0
       },
       "errors": [],
       "ports": {
         "in": {
-          "q": "B heads T head_dim",
           "k": "B kv_heads T head_dim",
+          "q": "B heads T head_dim",
           "v": "B kv_heads T head_dim"
         },
         "out": {
@@ -1086,6 +1144,7 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
+        "elementwise": 0,
         "fwd": 0,
         "fwdSeq": 33554432,
         "fwdSeqUnmasked": 67108864
@@ -1097,8 +1156,8 @@
       ],
       "extraActivationBytes": 8320,
       "stateBytes": {
-        "perToken": 3584,
-        "perSeq": 0
+        "perSeq": 0,
+        "perToken": 3584
       },
       "constraints": [
         "SDPA-01: heads (32) must be divisible by kv_heads (7)"
@@ -1107,26 +1166,26 @@
     {
       "type": "sdpa",
       "params": {
-        "heads": 32,
-        "kv_heads": 8,
+        "cache": false,
         "head_dim": 128,
-        "cache": false
+        "heads": 32,
+        "kv_heads": 8
       },
       "resolved": {
+        "cache": false,
+        "causal": true,
+        "flash": true,
+        "head_dim": 128,
         "heads": 32,
         "kv_heads": 8,
-        "head_dim": 128,
         "v_head_dim": 0,
-        "causal": true,
-        "window": 0,
-        "flash": true,
-        "cache": false
+        "window": 0
       },
       "errors": [],
       "ports": {
         "in": {
-          "q": "B heads T head_dim",
           "k": "B kv_heads T head_dim",
+          "q": "B heads T head_dim",
           "v": "B kv_heads T head_dim"
         },
         "out": {
@@ -1137,6 +1196,7 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
+        "elementwise": 0,
         "fwd": 0,
         "fwdSeq": 33554432,
         "fwdSeqUnmasked": 67108864
@@ -1148,25 +1208,25 @@
       ],
       "extraActivationBytes": 8320,
       "stateBytes": {
-        "perToken": 0,
-        "perSeq": 0
+        "perSeq": 0,
+        "perToken": 0
       },
       "constraints": []
     },
     {
       "type": "topk_router",
       "params": {
+        "bias": true,
         "d_model": 7168,
         "experts": 256,
-        "top_k": 8,
-        "bias": true
+        "top_k": 8
       },
       "resolved": {
+        "bias": true,
         "d_model": 7168,
         "experts": 256,
-        "top_k": 8,
-        "bias": true,
-        "normalize": true
+        "normalize": true,
+        "top_k": 8
       },
       "errors": [],
       "ports": {
@@ -1183,7 +1243,10 @@
       "portError": "",
       "paramCount": 1835264,
       "flops": {
-        "fwd": 3670016
+        "elementwise": 0,
+        "fwd": 3670016,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -1200,11 +1263,11 @@
         "top_k": 9
       },
       "resolved": {
+        "bias": false,
         "d_model": 7168,
         "experts": 8,
-        "top_k": 9,
-        "bias": false,
-        "normalize": true
+        "normalize": true,
+        "top_k": 9
       },
       "errors": [],
       "ports": {
@@ -1221,7 +1284,10 @@
       "portError": "",
       "paramCount": 57344,
       "flops": {
-        "fwd": 114688
+        "elementwise": 0,
+        "fwd": 114688,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
@@ -1245,8 +1311,8 @@
       "errors": [],
       "ports": {
         "in": {
-          "x": "... dim",
-          "weights": "... n"
+          "weights": "... n",
+          "x": "... dim"
         },
         "out": {
           "y": "... dim"
@@ -1256,8 +1322,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
+        "elementwise": 32768,
         "fwd": 0,
-        "elementwise": 32768
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
@@ -1274,12 +1342,12 @@
         ]
       },
       "resolved": {
+        "axis": -1,
         "from": "B T D",
         "sizes": [
           512,
           64
-        ],
-        "axis": -1
+        ]
       },
       "errors": [],
       "ports": {
@@ -1295,7 +1363,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
-        "fwd": 0
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
@@ -1305,19 +1376,19 @@
     {
       "type": "concat",
       "params": {
-        "to": "B T D",
-        "sizes": [
-          512,
-          64
-        ]
-      },
-      "resolved": {
-        "to": "B T D",
         "sizes": [
           512,
           64
         ],
-        "axis": -1
+        "to": "B T D"
+      },
+      "resolved": {
+        "axis": -1,
+        "sizes": [
+          512,
+          64
+        ],
+        "to": "B T D"
       },
       "errors": [],
       "ports": {
@@ -1333,7 +1404,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
-        "fwd": 0
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
@@ -1343,20 +1417,20 @@
     {
       "type": "concat",
       "params": {
-        "to": "B T Dp",
+        "axis": 1,
         "sizes": [
           "Tc",
           "T-Tc"
         ],
-        "axis": 1
+        "to": "B T Dp"
       },
       "resolved": {
-        "to": "B T Dp",
+        "axis": 1,
         "sizes": [
           "Tc",
           "T-Tc"
         ],
-        "axis": 1
+        "to": "B T Dp"
       },
       "errors": [],
       "ports": {
@@ -1372,7 +1446,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
-        "fwd": 0
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
@@ -1382,12 +1459,12 @@
     {
       "type": "expand_heads",
       "params": {
-        "heads": 32,
-        "dim": 64
+        "dim": 64,
+        "heads": 32
       },
       "resolved": {
-        "heads": 32,
-        "dim": 64
+        "dim": 64,
+        "heads": 32
       },
       "errors": [],
       "ports": {
@@ -1402,7 +1479,10 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
-        "fwd": 0
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
@@ -1430,27 +1510,30 @@
       "portError": "",
       "paramCount": 0,
       "flops": {
-        "fwd": 0
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [],
       "extraActivationBytes": null,
       "stateBytes": {
-        "perToken": 1152,
-        "perSeq": 0
+        "perSeq": 0,
+        "perToken": 1152
       },
       "constraints": []
     },
     {
       "type": "conv1d",
       "params": {
+        "bias": true,
         "channels": 8192,
-        "kernel": 4,
-        "bias": true
+        "kernel": 4
       },
       "resolved": {
+        "bias": true,
         "channels": 8192,
-        "kernel": 4,
-        "bias": true
+        "kernel": 4
       },
       "errors": [],
       "ports": {
@@ -1465,15 +1548,18 @@
       "portError": "",
       "paramCount": 40960,
       "flops": {
-        "fwd": 65536
+        "elementwise": 0,
+        "fwd": 65536,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "x"
       ],
       "extraActivationBytes": null,
       "stateBytes": {
-        "perToken": 0,
-        "perSeq": 49152
+        "perSeq": 49152,
+        "perToken": 0
       },
       "constraints": []
     },
@@ -1481,26 +1567,26 @@
       "type": "ssd_scan",
       "params": {
         "d_inner": 8192,
-        "heads": 128,
-        "head_dim": 64,
-        "state": 128,
         "groups": 8,
+        "head_dim": 64,
+        "heads": 128,
+        "state": 128,
         "xbc_width": 10240
       },
       "resolved": {
+        "chunk": 256,
         "d_inner": 8192,
-        "heads": 128,
-        "head_dim": 64,
-        "state": 128,
         "groups": 8,
-        "xbc_width": 10240,
-        "chunk": 256
+        "head_dim": 64,
+        "heads": 128,
+        "state": 128,
+        "xbc_width": 10240
       },
       "errors": [],
       "ports": {
         "in": {
-          "xbc": "... xbc_width",
-          "dt": "... heads"
+          "dt": "... heads",
+          "xbc": "... xbc_width"
         },
         "out": {
           "y": "... d_inner"
@@ -1510,7 +1596,10 @@
       "portError": "",
       "paramCount": 384,
       "flops": {
-        "fwd": 14680064
+        "elementwise": 0,
+        "fwd": 14680064,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "xbc",
@@ -1518,8 +1607,8 @@
       ],
       "extraActivationBytes": null,
       "stateBytes": {
-        "perToken": 0,
-        "perSeq": 2097152
+        "perSeq": 2097152,
+        "perToken": 0
       },
       "constraints": []
     },
@@ -1527,26 +1616,26 @@
       "type": "ssd_scan",
       "params": {
         "d_inner": 8192,
-        "heads": 128,
-        "head_dim": 65,
-        "state": 128,
         "groups": 7,
+        "head_dim": 65,
+        "heads": 128,
+        "state": 128,
         "xbc_width": 10240
       },
       "resolved": {
+        "chunk": 256,
         "d_inner": 8192,
-        "heads": 128,
-        "head_dim": 65,
-        "state": 128,
         "groups": 7,
-        "xbc_width": 10240,
-        "chunk": 256
+        "head_dim": 65,
+        "heads": 128,
+        "state": 128,
+        "xbc_width": 10240
       },
       "errors": [],
       "ports": {
         "in": {
-          "xbc": "... xbc_width",
-          "dt": "... heads"
+          "dt": "... heads",
+          "xbc": "... xbc_width"
         },
         "out": {
           "y": "... d_inner"
@@ -1556,7 +1645,10 @@
       "portError": "",
       "paramCount": 384,
       "flops": {
-        "fwd": 14680064
+        "elementwise": 0,
+        "fwd": 14680064,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
       },
       "retains": [
         "xbc",
@@ -1564,8 +1656,8 @@
       ],
       "extraActivationBytes": null,
       "stateBytes": {
-        "perToken": 0,
-        "perSeq": 2129920
+        "perSeq": 2129920,
+        "perToken": 0
       },
       "constraints": [
         "SSD-01: heads (128) times head_dim (65) must equal d_inner (8192)",

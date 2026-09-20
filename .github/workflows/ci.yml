@@ -80,21 +80,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-go@v5
         with:
-          bun-version: latest
-      - run: bun install --frozen-lockfile
+          go-version-file: packages/core-go/go.mod
+          cache: false
       # A golden file that no longer matches what the generator writes is a
-      # parity test comparing the Go engine against a stale answer.
+      # parity test comparing the engine against a stale answer.
       - name: Regenerate
-        run: bun run scripts/golden.ts
-      # Scoped to what the generator writes. `bun install` marks the packages'
-      # bin entries executable, and a mode change elsewhere is not drift.
+        run: go run ./cmd/golden
+        working-directory: packages/core-go
+      # Scoped to what the generator writes, so that nothing else in the tree
+      # can be mistaken for drift.
       - name: Check for drift
         run: |
-          if ! git diff --quiet -- packages/core-go/testdata packages/core-go/presets/data; then
-            echo "The golden files are out of date. Run: bun run scripts/golden.ts"
-            git diff --stat -- packages/core-go/testdata packages/core-go/presets/data
+          if ! git diff --quiet -- packages/core-go/testdata; then
+            echo "The golden files are out of date. Run, from packages/core-go: go run ./cmd/golden"
+            git diff --stat -- packages/core-go/testdata
             exit 1
           fi
 

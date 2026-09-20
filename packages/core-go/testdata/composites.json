@@ -4,9 +4,9 @@
       "type": "gqa_attention",
       "params": {
         "d_model": "D",
+        "head_dim": "dh",
         "heads": "H",
-        "kv_heads": "Hkv",
-        "head_dim": "dh"
+        "kv_heads": "Hkv"
       },
       "nodes": [
         {
@@ -16,38 +16,34 @@
             "ports": {
               "x": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "q_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "D",
-            "out_features": "H*dh",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "H*dh"
+          }
         },
         {
           "id": "k_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "D",
-            "out_features": "Hkv*dh",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "Hkv*dh"
+          }
         },
         {
           "id": "v_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "D",
-            "out_features": "Hkv*dh",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "Hkv*dh"
+          }
         },
         {
           "id": "q_heads",
@@ -55,8 +51,7 @@
           "params": {
             "from": "B T (H dh)",
             "to": "B H T dh"
-          },
-          "graph": null
+          }
         },
         {
           "id": "k_heads",
@@ -64,8 +59,7 @@
           "params": {
             "from": "B T (Hkv dh)",
             "to": "B Hkv T dh"
-          },
-          "graph": null
+          }
         },
         {
           "id": "v_heads",
@@ -73,21 +67,19 @@
           "params": {
             "from": "B T (Hkv dh)",
             "to": "B Hkv T dh"
-          },
-          "graph": null
+          }
         },
         {
           "id": "attn",
           "type": "sdpa",
           "params": {
+            "causal": true,
+            "flash": true,
+            "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
-            "head_dim": "dh",
-            "causal": true,
-            "window": "0",
-            "flash": true
-          },
-          "graph": null
+            "window": "0"
+          }
         },
         {
           "id": "o_merge",
@@ -95,18 +87,16 @@
           "params": {
             "from": "B H T dh",
             "to": "B T (H dh)"
-          },
-          "graph": null
+          }
         },
         {
           "id": "o_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "H*dh",
-            "out_features": "D",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "D"
+          }
         },
         {
           "id": "_out",
@@ -115,8 +105,7 @@
             "ports": {
               "y": "... D"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -174,11 +163,11 @@
     {
       "type": "gqa_attention",
       "params": {
+        "bias": true,
         "d_model": "D",
+        "head_dim": "dh",
         "heads": "H",
         "kv_heads": "Hkv",
-        "head_dim": "dh",
-        "bias": true,
         "o_bias": false
       },
       "nodes": [
@@ -189,38 +178,34 @@
             "ports": {
               "x": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "q_proj",
           "type": "linear",
           "params": {
+            "bias": true,
             "in_features": "D",
-            "out_features": "H*dh",
-            "bias": true
-          },
-          "graph": null
+            "out_features": "H*dh"
+          }
         },
         {
           "id": "k_proj",
           "type": "linear",
           "params": {
+            "bias": true,
             "in_features": "D",
-            "out_features": "Hkv*dh",
-            "bias": true
-          },
-          "graph": null
+            "out_features": "Hkv*dh"
+          }
         },
         {
           "id": "v_proj",
           "type": "linear",
           "params": {
+            "bias": true,
             "in_features": "D",
-            "out_features": "Hkv*dh",
-            "bias": true
-          },
-          "graph": null
+            "out_features": "Hkv*dh"
+          }
         },
         {
           "id": "q_heads",
@@ -228,8 +213,7 @@
           "params": {
             "from": "B T (H dh)",
             "to": "B H T dh"
-          },
-          "graph": null
+          }
         },
         {
           "id": "k_heads",
@@ -237,8 +221,7 @@
           "params": {
             "from": "B T (Hkv dh)",
             "to": "B Hkv T dh"
-          },
-          "graph": null
+          }
         },
         {
           "id": "v_heads",
@@ -246,21 +229,19 @@
           "params": {
             "from": "B T (Hkv dh)",
             "to": "B Hkv T dh"
-          },
-          "graph": null
+          }
         },
         {
           "id": "attn",
           "type": "sdpa",
           "params": {
+            "causal": true,
+            "flash": true,
+            "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
-            "head_dim": "dh",
-            "causal": true,
-            "window": "0",
-            "flash": true
-          },
-          "graph": null
+            "window": "0"
+          }
         },
         {
           "id": "o_merge",
@@ -268,18 +249,16 @@
           "params": {
             "from": "B H T dh",
             "to": "B T (H dh)"
-          },
-          "graph": null
+          }
         },
         {
           "id": "o_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "H*dh",
-            "out_features": "D",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "D"
+          }
         },
         {
           "id": "_out",
@@ -288,8 +267,7 @@
             "ports": {
               "y": "... D"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -348,9 +326,9 @@
       "type": "gqa_attention",
       "params": {
         "d_model": "D",
+        "head_dim": "dh",
         "heads": "H",
         "kv_heads": "Hkv",
-        "head_dim": "dh",
         "qk_norm": true,
         "rope": {
           "theta": 500000
@@ -364,38 +342,34 @@
             "ports": {
               "x": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "q_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "D",
-            "out_features": "H*dh",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "H*dh"
+          }
         },
         {
           "id": "k_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "D",
-            "out_features": "Hkv*dh",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "Hkv*dh"
+          }
         },
         {
           "id": "v_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "D",
-            "out_features": "Hkv*dh",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "Hkv*dh"
+          }
         },
         {
           "id": "q_heads",
@@ -403,8 +377,7 @@
           "params": {
             "from": "B T (H dh)",
             "to": "B H T dh"
-          },
-          "graph": null
+          }
         },
         {
           "id": "k_heads",
@@ -412,8 +385,7 @@
           "params": {
             "from": "B T (Hkv dh)",
             "to": "B Hkv T dh"
-          },
-          "graph": null
+          }
         },
         {
           "id": "v_heads",
@@ -421,59 +393,53 @@
           "params": {
             "from": "B T (Hkv dh)",
             "to": "B Hkv T dh"
-          },
-          "graph": null
+          }
         },
         {
           "id": "q_norm",
           "type": "rmsnorm",
           "params": {
             "dim": "dh"
-          },
-          "graph": null
+          }
         },
         {
           "id": "k_norm",
           "type": "rmsnorm",
           "params": {
             "dim": "dh"
-          },
-          "graph": null
+          }
         },
         {
           "id": "rope_q",
           "type": "rope",
           "params": {
-            "heads": "H",
             "head_dim": "dh",
-            "theta": 500000,
-            "scaling": null
-          },
-          "graph": null
+            "heads": "H",
+            "scaling": null,
+            "theta": 500000
+          }
         },
         {
           "id": "rope_k",
           "type": "rope",
           "params": {
-            "heads": "Hkv",
             "head_dim": "dh",
-            "theta": 500000,
-            "scaling": null
-          },
-          "graph": null
+            "heads": "Hkv",
+            "scaling": null,
+            "theta": 500000
+          }
         },
         {
           "id": "attn",
           "type": "sdpa",
           "params": {
+            "causal": true,
+            "flash": true,
+            "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
-            "head_dim": "dh",
-            "causal": true,
-            "window": "0",
-            "flash": true
-          },
-          "graph": null
+            "window": "0"
+          }
         },
         {
           "id": "o_merge",
@@ -481,18 +447,16 @@
           "params": {
             "from": "B H T dh",
             "to": "B T (H dh)"
-          },
-          "graph": null
+          }
         },
         {
           "id": "o_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "H*dh",
-            "out_features": "D",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "D"
+          }
         },
         {
           "id": "_out",
@@ -501,8 +465,7 @@
             "ports": {
               "y": "... D"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -576,12 +539,12 @@
     {
       "type": "gqa_attention",
       "params": {
+        "causal": false,
         "d_model": "D",
+        "head_dim": "dh",
         "heads": "H",
         "kv_heads": "Hkv",
-        "head_dim": "dh",
-        "window": 4096,
-        "causal": false
+        "window": 4096
       },
       "nodes": [
         {
@@ -591,38 +554,34 @@
             "ports": {
               "x": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "q_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "D",
-            "out_features": "H*dh",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "H*dh"
+          }
         },
         {
           "id": "k_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "D",
-            "out_features": "Hkv*dh",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "Hkv*dh"
+          }
         },
         {
           "id": "v_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "D",
-            "out_features": "Hkv*dh",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "Hkv*dh"
+          }
         },
         {
           "id": "q_heads",
@@ -630,8 +589,7 @@
           "params": {
             "from": "B T (H dh)",
             "to": "B H T dh"
-          },
-          "graph": null
+          }
         },
         {
           "id": "k_heads",
@@ -639,8 +597,7 @@
           "params": {
             "from": "B T (Hkv dh)",
             "to": "B Hkv T dh"
-          },
-          "graph": null
+          }
         },
         {
           "id": "v_heads",
@@ -648,21 +605,19 @@
           "params": {
             "from": "B T (Hkv dh)",
             "to": "B Hkv T dh"
-          },
-          "graph": null
+          }
         },
         {
           "id": "attn",
           "type": "sdpa",
           "params": {
+            "causal": false,
+            "flash": true,
+            "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
-            "head_dim": "dh",
-            "causal": false,
-            "window": "4096",
-            "flash": true
-          },
-          "graph": null
+            "window": "4096"
+          }
         },
         {
           "id": "o_merge",
@@ -670,18 +625,16 @@
           "params": {
             "from": "B H T dh",
             "to": "B T (H dh)"
-          },
-          "graph": null
+          }
         },
         {
           "id": "o_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "H*dh",
-            "out_features": "D",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "D"
+          }
         },
         {
           "id": "_out",
@@ -690,8 +643,7 @@
             "ports": {
               "y": "... D"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -749,9 +701,9 @@
     {
       "type": "gated_mlp",
       "params": {
+        "act": "silu",
         "d_model": "D",
-        "hidden": "F",
-        "act": "silu"
+        "hidden": "F"
       },
       "nodes": [
         {
@@ -761,55 +713,49 @@
             "ports": {
               "x": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "gate",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "D",
-            "out_features": "F",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "F"
+          }
         },
         {
           "id": "up",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "D",
-            "out_features": "F",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "F"
+          }
         },
         {
           "id": "act",
           "type": "activation",
           "params": {
-            "kind": "silu",
-            "dim": "F"
-          },
-          "graph": null
+            "dim": "F",
+            "kind": "silu"
+          }
         },
         {
           "id": "gated",
           "type": "mul",
           "params": {
             "dim": "F"
-          },
-          "graph": null
+          }
         },
         {
           "id": "down",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "F",
-            "out_features": "D",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "D"
+          }
         },
         {
           "id": "_out",
@@ -818,8 +764,7 @@
             "ports": {
               "y": "... D"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -857,10 +802,10 @@
     {
       "type": "gated_mlp",
       "params": {
-        "d_model": "D",
-        "hidden": "F",
         "act": "gelu",
-        "bias": true
+        "bias": true,
+        "d_model": "D",
+        "hidden": "F"
       },
       "nodes": [
         {
@@ -870,55 +815,49 @@
             "ports": {
               "x": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "gate",
           "type": "linear",
           "params": {
+            "bias": true,
             "in_features": "D",
-            "out_features": "F",
-            "bias": true
-          },
-          "graph": null
+            "out_features": "F"
+          }
         },
         {
           "id": "up",
           "type": "linear",
           "params": {
+            "bias": true,
             "in_features": "D",
-            "out_features": "F",
-            "bias": true
-          },
-          "graph": null
+            "out_features": "F"
+          }
         },
         {
           "id": "act",
           "type": "activation",
           "params": {
-            "kind": "gelu",
-            "dim": "F"
-          },
-          "graph": null
+            "dim": "F",
+            "kind": "gelu"
+          }
         },
         {
           "id": "gated",
           "type": "mul",
           "params": {
             "dim": "F"
-          },
-          "graph": null
+          }
         },
         {
           "id": "down",
           "type": "linear",
           "params": {
+            "bias": true,
             "in_features": "F",
-            "out_features": "D",
-            "bias": true
-          },
-          "graph": null
+            "out_features": "D"
+          }
         },
         {
           "id": "_out",
@@ -927,8 +866,7 @@
             "ports": {
               "y": "... D"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -966,10 +904,10 @@
     {
       "type": "dense_mlp",
       "params": {
-        "d_model": "D",
-        "hidden": "4*D",
         "act": "gelu",
-        "bias": true
+        "bias": true,
+        "d_model": "D",
+        "hidden": "4*D"
       },
       "nodes": [
         {
@@ -979,37 +917,33 @@
             "ports": {
               "x": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "up",
           "type": "linear",
           "params": {
+            "bias": true,
             "in_features": "D",
-            "out_features": "(4*D)",
-            "bias": true
-          },
-          "graph": null
+            "out_features": "(4*D)"
+          }
         },
         {
           "id": "act",
           "type": "activation",
           "params": {
-            "kind": "gelu",
-            "dim": "(4*D)"
-          },
-          "graph": null
+            "dim": "(4*D)",
+            "kind": "gelu"
+          }
         },
         {
           "id": "down",
           "type": "linear",
           "params": {
+            "bias": true,
             "in_features": "(4*D)",
-            "out_features": "D",
-            "bias": true
-          },
-          "graph": null
+            "out_features": "D"
+          }
         },
         {
           "id": "_out",
@@ -1018,8 +952,7 @@
             "ports": {
               "y": "... D"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -1047,14 +980,14 @@
       "params": {
         "d_model": 7168,
         "heads": 128,
-        "q_lora": 1536,
         "kv_lora": 512,
         "nope_dim": 128,
-        "rope_dim": 64,
-        "v_dim": 128,
+        "q_lora": 1536,
         "rope": {
           "theta": 10000
-        }
+        },
+        "rope_dim": 64,
+        "v_dim": 128
       },
       "nodes": [
         {
@@ -1064,36 +997,32 @@
             "ports": {
               "x": "... 7168"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "q_down",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "7168",
-            "out_features": "1536",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "1536"
+          }
         },
         {
           "id": "q_norm",
           "type": "rmsnorm",
           "params": {
             "dim": "1536"
-          },
-          "graph": null
+          }
         },
         {
           "id": "q_up",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "1536",
-            "out_features": "128*(128+64)",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "128*(128+64)"
+          }
         },
         {
           "id": "q_heads",
@@ -1101,26 +1030,23 @@
           "params": {
             "from": "B T (128 (128+64))",
             "to": "B 128 T (128+64)"
-          },
-          "graph": null
+          }
         },
         {
           "id": "kv_down",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "7168",
-            "out_features": "512+64",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "512+64"
+          }
         },
         {
           "id": "latent",
           "type": "kv_latent_cache",
           "params": {
             "dim": "512+64"
-          },
-          "graph": null
+          }
         },
         {
           "id": "kv_split",
@@ -1131,26 +1057,23 @@
               "512",
               "64"
             ]
-          },
-          "graph": null
+          }
         },
         {
           "id": "kv_norm",
           "type": "rmsnorm",
           "params": {
             "dim": "512"
-          },
-          "graph": null
+          }
         },
         {
           "id": "k_up",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "512",
-            "out_features": "128*(128)",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "128*(128)"
+          }
         },
         {
           "id": "k_nope_heads",
@@ -1158,18 +1081,16 @@
           "params": {
             "from": "B T (128 (128))",
             "to": "B 128 T (128)"
-          },
-          "graph": null
+          }
         },
         {
           "id": "v_up",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "512",
-            "out_features": "128*(128)",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "128*(128)"
+          }
         },
         {
           "id": "v_heads",
@@ -1177,52 +1098,47 @@
           "params": {
             "from": "B T (128 (128))",
             "to": "B 128 T (128)"
-          },
-          "graph": null
+          }
         },
         {
           "id": "k_rope_shared",
           "type": "expand_heads",
           "params": {
-            "heads": "128",
-            "dim": "64"
-          },
-          "graph": null
+            "dim": "64",
+            "heads": "128"
+          }
         },
         {
           "id": "k_rope",
           "type": "rope",
           "params": {
-            "heads": "128",
             "head_dim": "64",
+            "heads": "128",
             "theta": 10000
-          },
-          "graph": null
+          }
         },
         {
           "id": "k_cat",
           "type": "concat",
           "params": {
-            "to": "B 128 T (128+64)",
             "sizes": [
               "128",
               "64"
-            ]
-          },
-          "graph": null
+            ],
+            "to": "B 128 T (128+64)"
+          }
         },
         {
           "id": "attn",
           "type": "sdpa",
           "params": {
+            "cache": false,
+            "causal": true,
+            "head_dim": "128+64",
             "heads": "128",
             "kv_heads": "128",
-            "head_dim": "128+64",
-            "v_head_dim": "128",
-            "causal": true,
-            "cache": false
-          },
-          "graph": null
+            "v_head_dim": "128"
+          }
         },
         {
           "id": "o_merge",
@@ -1230,18 +1146,16 @@
           "params": {
             "from": "B 128 T (128)",
             "to": "B T (128 (128))"
-          },
-          "graph": null
+          }
         },
         {
           "id": "o_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "128*(128)",
-            "out_features": "7168",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "7168"
+          }
         },
         {
           "id": "_out",
@@ -1250,8 +1164,7 @@
             "ports": {
               "y": "... 7168"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -1350,9 +1263,9 @@
       "type": "moe_layer",
       "params": {
         "d_model": "D",
+        "expert_hidden": "F",
         "experts": 8,
-        "top_k": 2,
-        "expert_hidden": "F"
+        "top_k": 2
       },
       "nodes": [
         {
@@ -1362,20 +1275,18 @@
             "ports": {
               "x": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "router",
           "type": "topk_router",
           "params": {
+            "bias": false,
             "d_model": "D",
             "experts": "8",
-            "top_k": "2",
-            "bias": false,
-            "normalize": true
-          },
-          "graph": null
+            "normalize": true,
+            "top_k": "2"
+          }
         },
         {
           "id": "experts",
@@ -1393,19 +1304,17 @@
                   "ports": {
                     "x": "... D"
                   }
-                },
-                "graph": null
+                }
               },
               {
                 "id": "expert",
                 "type": "gated_mlp",
                 "params": {
-                  "d_model": "D",
-                  "hidden": "F",
                   "act": "silu",
-                  "bias": false
-                },
-                "graph": null
+                  "bias": false,
+                  "d_model": "D",
+                  "hidden": "F"
+                }
               },
               {
                 "id": "_out",
@@ -1414,8 +1323,7 @@
                   "ports": {
                     "y": "... D"
                   }
-                },
-                "graph": null
+                }
               }
             ],
             "edges": [
@@ -1436,8 +1344,7 @@
           "params": {
             "dim": "D",
             "n": "2"
-          },
-          "graph": null
+          }
         },
         {
           "id": "_out",
@@ -1446,8 +1353,7 @@
             "ports": {
               "y": "... D"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -1478,11 +1384,11 @@
       "type": "moe_layer",
       "params": {
         "d_model": "D",
-        "experts": 256,
-        "top_k": 8,
         "expert_hidden": 2048,
+        "experts": 256,
+        "router_bias": true,
         "shared_experts": 1,
-        "router_bias": true
+        "top_k": 8
       },
       "nodes": [
         {
@@ -1492,20 +1398,18 @@
             "ports": {
               "x": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "router",
           "type": "topk_router",
           "params": {
+            "bias": true,
             "d_model": "D",
             "experts": "256",
-            "top_k": "8",
-            "bias": true,
-            "normalize": true
-          },
-          "graph": null
+            "normalize": true,
+            "top_k": "8"
+          }
         },
         {
           "id": "experts",
@@ -1523,19 +1427,17 @@
                   "ports": {
                     "x": "... D"
                   }
-                },
-                "graph": null
+                }
               },
               {
                 "id": "expert",
                 "type": "gated_mlp",
                 "params": {
-                  "d_model": "D",
-                  "hidden": "2048",
                   "act": "silu",
-                  "bias": false
-                },
-                "graph": null
+                  "bias": false,
+                  "d_model": "D",
+                  "hidden": "2048"
+                }
               },
               {
                 "id": "_out",
@@ -1544,8 +1446,7 @@
                   "ports": {
                     "y": "... D"
                   }
-                },
-                "graph": null
+                }
               }
             ],
             "edges": [
@@ -1566,27 +1467,24 @@
           "params": {
             "dim": "D",
             "n": "8"
-          },
-          "graph": null
+          }
         },
         {
           "id": "shared",
           "type": "gated_mlp",
           "params": {
-            "d_model": "D",
-            "hidden": "1*2048",
             "act": "silu",
-            "bias": false
-          },
-          "graph": null
+            "bias": false,
+            "d_model": "D",
+            "hidden": "1*2048"
+          }
         },
         {
           "id": "merge",
           "type": "add",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "_out",
@@ -1595,8 +1493,7 @@
             "ports": {
               "y": "... D"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -1638,12 +1535,12 @@
     {
       "type": "mamba2_block",
       "params": {
+        "conv_kernel": 4,
         "d_model": "D",
         "expand": 2,
-        "head_dim": 64,
-        "state": 128,
         "groups": 8,
-        "conv_kernel": 4
+        "head_dim": 64,
+        "state": 128
       },
       "nodes": [
         {
@@ -1653,18 +1550,16 @@
             "ports": {
               "x": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "in_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "D",
-            "out_features": "2*(2*D)+(2*(8)*(128))+((2*D)/(64))",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "2*(2*D)+(2*(8)*(128))+((2*D)/(64))"
+          }
         },
         {
           "id": "split",
@@ -1676,75 +1571,67 @@
               "(2*D)+(2*(8)*(128))",
               "(2*D)/(64)"
             ]
-          },
-          "graph": null
+          }
         },
         {
           "id": "gate_act",
           "type": "activation",
           "params": {
-            "kind": "silu",
-            "dim": "2*D"
-          },
-          "graph": null
+            "dim": "2*D",
+            "kind": "silu"
+          }
         },
         {
           "id": "conv",
           "type": "conv1d",
           "params": {
+            "bias": true,
             "channels": "(2*D)+(2*(8)*(128))",
-            "kernel": "4",
-            "bias": true
-          },
-          "graph": null
+            "kernel": "4"
+          }
         },
         {
           "id": "conv_act",
           "type": "activation",
           "params": {
-            "kind": "silu",
-            "dim": "(2*D)+(2*(8)*(128))"
-          },
-          "graph": null
+            "dim": "(2*D)+(2*(8)*(128))",
+            "kind": "silu"
+          }
         },
         {
           "id": "scan",
           "type": "ssd_scan",
           "params": {
             "d_inner": "2*D",
-            "heads": "(2*D)/(64)",
-            "head_dim": "64",
-            "state": "128",
             "groups": "8",
+            "head_dim": "64",
+            "heads": "(2*D)/(64)",
+            "state": "128",
             "xbc_width": "(2*D)+(2*(8)*(128))"
-          },
-          "graph": null
+          }
         },
         {
           "id": "norm",
           "type": "rmsnorm",
           "params": {
             "dim": "2*D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "gate",
           "type": "mul",
           "params": {
             "dim": "2*D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "out_proj",
           "type": "linear",
           "params": {
+            "bias": false,
             "in_features": "2*D",
-            "out_features": "D",
-            "bias": false
-          },
-          "graph": null
+            "out_features": "D"
+          }
         },
         {
           "id": "_out",
@@ -1753,8 +1640,7 @@
             "ports": {
               "y": "... D"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -1813,10 +1699,10 @@
       "type": "transformer_block",
       "params": {
         "d_model": "D",
-        "heads": "H",
-        "kv_heads": "Hkv",
+        "ffn_hidden": "F",
         "head_dim": "dh",
-        "ffn_hidden": "F"
+        "heads": "H",
+        "kv_heads": "Hkv"
       },
       "nodes": [
         {
@@ -1826,68 +1712,61 @@
             "ports": {
               "x": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "norm1",
           "type": "rmsnorm",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "attn",
           "type": "gqa_attention",
           "params": {
+            "bias": false,
+            "causal": true,
             "d_model": "D",
+            "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
-            "head_dim": "dh",
-            "bias": false,
             "o_bias": null,
-            "causal": true,
-            "window": "0",
             "qk_norm": false,
-            "rope": null
-          },
-          "graph": null
+            "rope": null,
+            "window": "0"
+          }
         },
         {
           "id": "resid1",
           "type": "add",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "norm2",
           "type": "rmsnorm",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "mlp",
           "type": "gated_mlp",
           "params": {
-            "d_model": "D",
-            "hidden": "F",
             "act": "silu",
-            "bias": false
-          },
-          "graph": null
+            "bias": false,
+            "d_model": "D",
+            "hidden": "F"
+          }
         },
         {
           "id": "resid2",
           "type": "add",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "_out",
@@ -1896,8 +1775,7 @@
             "ports": {
               "y": "... D"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -1943,17 +1821,17 @@
     {
       "type": "transformer_block",
       "params": {
-        "d_model": "D",
-        "heads": "H",
-        "kv_heads": "Hkv",
-        "head_dim": "dh",
-        "ffn_hidden": "F",
-        "norm": "layernorm",
-        "norm_bias": true,
-        "mlp": "dense",
         "act": "gelu",
         "attn_bias": true,
+        "d_model": "D",
+        "ffn_hidden": "F",
+        "head_dim": "dh",
+        "heads": "H",
+        "kv_heads": "Hkv",
+        "mlp": "dense",
         "mlp_bias": true,
+        "norm": "layernorm",
+        "norm_bias": true,
         "rope": null
       },
       "nodes": [
@@ -1964,70 +1842,63 @@
             "ports": {
               "x": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "norm1",
           "type": "layernorm",
           "params": {
-            "dim": "D",
-            "bias": true
-          },
-          "graph": null
+            "bias": true,
+            "dim": "D"
+          }
         },
         {
           "id": "attn",
           "type": "gqa_attention",
           "params": {
+            "bias": true,
+            "causal": true,
             "d_model": "D",
+            "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
-            "head_dim": "dh",
-            "bias": true,
             "o_bias": null,
-            "causal": true,
-            "window": "0",
             "qk_norm": false,
-            "rope": null
-          },
-          "graph": null
+            "rope": null,
+            "window": "0"
+          }
         },
         {
           "id": "resid1",
           "type": "add",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "norm2",
           "type": "layernorm",
           "params": {
-            "dim": "D",
-            "bias": true
-          },
-          "graph": null
+            "bias": true,
+            "dim": "D"
+          }
         },
         {
           "id": "mlp",
           "type": "dense_mlp",
           "params": {
-            "d_model": "D",
-            "hidden": "F",
             "act": "gelu",
-            "bias": true
-          },
-          "graph": null
+            "bias": true,
+            "d_model": "D",
+            "hidden": "F"
+          }
         },
         {
           "id": "resid2",
           "type": "add",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "_out",
@@ -2036,8 +1907,7 @@
             "ports": {
               "y": "... D"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -2084,10 +1954,10 @@
       "type": "transformer_block",
       "params": {
         "d_model": "D",
+        "ffn_hidden": "F",
+        "head_dim": "dh",
         "heads": "H",
         "kv_heads": "Hkv",
-        "head_dim": "dh",
-        "ffn_hidden": "F",
         "post_norm": true
       },
       "nodes": [
@@ -2098,68 +1968,61 @@
             "ports": {
               "x": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "norm1",
           "type": "rmsnorm",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "attn",
           "type": "gqa_attention",
           "params": {
+            "bias": false,
+            "causal": true,
             "d_model": "D",
+            "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
-            "head_dim": "dh",
-            "bias": false,
             "o_bias": null,
-            "causal": true,
-            "window": "0",
             "qk_norm": false,
-            "rope": null
-          },
-          "graph": null
+            "rope": null,
+            "window": "0"
+          }
         },
         {
           "id": "resid1",
           "type": "add",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "norm2",
           "type": "rmsnorm",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "mlp",
           "type": "gated_mlp",
           "params": {
-            "d_model": "D",
-            "hidden": "F",
             "act": "silu",
-            "bias": false
-          },
-          "graph": null
+            "bias": false,
+            "d_model": "D",
+            "hidden": "F"
+          }
         },
         {
           "id": "resid2",
           "type": "add",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "_out",
@@ -2168,24 +2031,21 @@
             "ports": {
               "y": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "post_attn_norm",
           "type": "rmsnorm",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "post_mlp_norm",
           "type": "rmsnorm",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -2240,14 +2100,14 @@
       "type": "transformer_block",
       "params": {
         "d_model": "D",
+        "expert_hidden": 2048,
+        "experts": 8,
+        "ffn_hidden": "F",
+        "head_dim": "dh",
         "heads": "H",
         "kv_heads": "Hkv",
-        "head_dim": "dh",
-        "ffn_hidden": "F",
         "mlp": "moe",
-        "experts": 8,
-        "top_k": 2,
-        "expert_hidden": 2048
+        "top_k": 2
       },
       "nodes": [
         {
@@ -2257,72 +2117,65 @@
             "ports": {
               "x": "... D"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "norm1",
           "type": "rmsnorm",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "attn",
           "type": "gqa_attention",
           "params": {
+            "bias": false,
+            "causal": true,
             "d_model": "D",
+            "head_dim": "dh",
             "heads": "H",
             "kv_heads": "Hkv",
-            "head_dim": "dh",
-            "bias": false,
             "o_bias": null,
-            "causal": true,
-            "window": "0",
             "qk_norm": false,
-            "rope": null
-          },
-          "graph": null
+            "rope": null,
+            "window": "0"
+          }
         },
         {
           "id": "resid1",
           "type": "add",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "norm2",
           "type": "rmsnorm",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "mlp",
           "type": "moe_layer",
           "params": {
-            "d_model": "D",
-            "experts": "8",
-            "top_k": "2",
-            "expert_hidden": "2048",
-            "shared_experts": "0",
             "act": "silu",
             "bias": false,
-            "router_bias": false
-          },
-          "graph": null
+            "d_model": "D",
+            "expert_hidden": "2048",
+            "experts": "8",
+            "router_bias": false,
+            "shared_experts": "0",
+            "top_k": "2"
+          }
         },
         {
           "id": "resid2",
           "type": "add",
           "params": {
             "dim": "D"
-          },
-          "graph": null
+          }
         },
         {
           "id": "_out",
@@ -2331,8 +2184,7 @@
             "ports": {
               "y": "... D"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [
@@ -2378,15 +2230,15 @@
     {
       "type": "transformer_block",
       "params": {
+        "attention": "mla",
         "d_model": 7168,
+        "ffn_hidden": 18432,
+        "head_dim": 128,
         "heads": 128,
         "kv_heads": 128,
-        "head_dim": 128,
-        "ffn_hidden": 18432,
-        "attention": "mla",
-        "q_lora": 1536,
         "kv_lora": 512,
         "nope_dim": 128,
+        "q_lora": 1536,
         "rope_dim": 64,
         "v_dim": 128
       },
@@ -2398,68 +2250,61 @@
             "ports": {
               "x": "... 7168"
             }
-          },
-          "graph": null
+          }
         },
         {
           "id": "norm1",
           "type": "rmsnorm",
           "params": {
             "dim": "7168"
-          },
-          "graph": null
+          }
         },
         {
           "id": "attn",
           "type": "mla_attention",
           "params": {
+            "bias": false,
+            "causal": true,
             "d_model": "7168",
             "heads": "128",
-            "q_lora": "1536",
             "kv_lora": "512",
             "nope_dim": "128",
-            "rope_dim": "64",
-            "v_dim": "128",
-            "causal": true,
+            "q_lora": "1536",
             "rope": null,
-            "bias": false
-          },
-          "graph": null
+            "rope_dim": "64",
+            "v_dim": "128"
+          }
         },
         {
           "id": "resid1",
           "type": "add",
           "params": {
             "dim": "7168"
-          },
-          "graph": null
+          }
         },
         {
           "id": "norm2",
           "type": "rmsnorm",
           "params": {
             "dim": "7168"
-          },
-          "graph": null
+          }
         },
         {
           "id": "mlp",
           "type": "gated_mlp",
           "params": {
-            "d_model": "7168",
-            "hidden": "18432",
             "act": "silu",
-            "bias": false
-          },
-          "graph": null
+            "bias": false,
+            "d_model": "7168",
+            "hidden": "18432"
+          }
         },
         {
           "id": "resid2",
           "type": "add",
           "params": {
             "dim": "7168"
-          },
-          "graph": null
+          }
         },
         {
           "id": "_out",
@@ -2468,8 +2313,7 @@
             "ports": {
               "y": "... 7168"
             }
-          },
-          "graph": null
+          }
         }
       ],
       "edges": [

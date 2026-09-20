@@ -93,7 +93,7 @@ func isWhole(v float64) bool { return v == math.Trunc(v) && !math.IsInf(v, 0) }
 func RatFromDecimal(text string) (*big.Rat, error) {
 	r, ok := new(big.Rat).SetString(text)
 	if !ok {
-		return nil, fmt.Errorf("bad number %q", text)
+		return nil, fmt.Errorf("Bad number %q", text)
 	}
 	return r, nil
 }
@@ -296,7 +296,7 @@ func (s Sym) Mul(other Sym) Sym {
 // Pow raises s to a non-negative integer power.
 func (s Sym) Pow(k int) (Sym, error) {
 	if k < 0 {
-		return Zero(), fmt.Errorf("shapes: unsupported exponent %d", k)
+		return Zero(), fmt.Errorf("SymExpr: unsupported exponent %d", k)
 	}
 	acc := Con(1)
 	for i := 0; i < k; i++ {

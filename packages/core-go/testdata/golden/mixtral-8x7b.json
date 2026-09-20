@@ -17,29 +17,29 @@
     ],
     "values": {
       "B": 1,
-      "T": 32768,
-      "L": 32,
       "D": 4096,
+      "E": 8,
+      "F": 14336,
+      "Fe": 14336,
       "H": 32,
       "Hkv": 8,
-      "dh": 128,
-      "F": 14336,
-      "V": 32000,
-      "E": 8,
       "K": 2,
-      "Fe": 14336
+      "L": 32,
+      "T": 32768,
+      "V": 32000,
+      "dh": 128
     },
     "designValues": {
-      "L": 32,
       "D": 4096,
+      "E": 8,
+      "F": 14336,
+      "Fe": 14336,
       "H": 32,
       "Hkv": 8,
-      "dh": 128,
-      "F": 14336,
-      "V": 32000,
-      "E": 8,
       "K": 2,
-      "Fe": 14336
+      "L": 32,
+      "V": 32000,
+      "dh": 128
     },
     "runtime": [
       "B",
@@ -47,17 +47,17 @@
     ],
     "docs": {
       "B": "Batch size",
-      "T": "Sequence length in tokens",
-      "L": "Number of transformer layers",
       "D": "Residual stream width (d_model)",
+      "E": "Routed experts per layer",
+      "F": "Feed-forward hidden width",
+      "Fe": "Hidden width of one expert",
       "H": "Query heads",
       "Hkv": "Key/value heads",
-      "dh": "Head dimension",
-      "F": "Feed-forward hidden width",
-      "V": "Vocabulary size",
-      "E": "Routed experts per layer",
       "K": "Experts each token is routed to",
-      "Fe": "Hidden width of one expert"
+      "L": "Number of transformer layers",
+      "T": "Sequence length in tokens",
+      "V": "Vocabulary size",
+      "dh": "Head dimension"
     },
     "errors": []
   },

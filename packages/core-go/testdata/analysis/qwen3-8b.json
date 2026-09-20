@@ -634,7 +634,7 @@
           ],
           [
             "hoffmann",
-            1.9518540694442583
+            1.9518540694442585
           ]
         ],
         "verdict": "Heavily over-trained, in the range of small models trained on very large corpora."

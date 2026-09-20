@@ -6,8 +6,8 @@
       "ok": true,
       "counts": {
         "error": 0,
-        "warning": 1,
-        "info": 2
+        "info": 2,
+        "warning": 1
       },
       "findings": [
         {
@@ -35,8 +35,8 @@
       "ok": true,
       "counts": {
         "error": 0,
-        "warning": 1,
-        "info": 3
+        "info": 3,
+        "warning": 1
       },
       "findings": [
         {
@@ -70,8 +70,8 @@
       "ok": true,
       "counts": {
         "error": 0,
-        "warning": 1,
-        "info": 0
+        "info": 0,
+        "warning": 1
       },
       "findings": [
         {

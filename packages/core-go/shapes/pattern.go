@@ -89,12 +89,12 @@ func parsePattern(src string) (Pattern, error) {
 				}
 			}
 			if depth != 0 {
-				return Pattern{}, fmt.Errorf("unbalanced parentheses in pattern %q", src)
+				return Pattern{}, fmt.Errorf("Unbalanced parentheses in pattern %q", src)
 			}
 			// Inside a group, whitespace separates the factors of one dimension.
 			parts := strings.Fields(strings.TrimSpace(s[i+1 : j]))
 			if len(parts) == 0 {
-				return Pattern{}, fmt.Errorf("empty group in pattern %q", src)
+				return Pattern{}, fmt.Errorf("Empty group in pattern %q", src)
 			}
 			atoms = append(atoms, PatternAtom{Kind: AtomDims, Parts: parts})
 			i = j + 1
@@ -110,7 +110,7 @@ func parsePattern(src string) (Pattern, error) {
 	}
 
 	if ellipses > 1 {
-		return Pattern{}, fmt.Errorf("pattern %q has more than one \"...\"", src)
+		return Pattern{}, fmt.Errorf("Pattern %q has more than one \"...\"", src)
 	}
 	return Pattern{Src: src, Atoms: atoms}, nil
 }

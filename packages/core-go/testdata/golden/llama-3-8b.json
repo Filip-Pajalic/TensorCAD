@@ -14,23 +14,23 @@
     ],
     "values": {
       "B": 1,
-      "T": 8192,
-      "L": 32,
       "D": 4096,
+      "F": 14336,
       "H": 32,
       "Hkv": 8,
-      "dh": 128,
-      "F": 14336,
-      "V": 128256
+      "L": 32,
+      "T": 8192,
+      "V": 128256,
+      "dh": 128
     },
     "designValues": {
-      "L": 32,
       "D": 4096,
+      "F": 14336,
       "H": 32,
       "Hkv": 8,
-      "dh": 128,
-      "F": 14336,
-      "V": 128256
+      "L": 32,
+      "V": 128256,
+      "dh": 128
     },
     "runtime": [
       "B",
@@ -38,14 +38,14 @@
     ],
     "docs": {
       "B": "Batch size",
-      "T": "Sequence length in tokens",
-      "L": "Number of transformer layers",
       "D": "Residual stream width (d_model)",
+      "F": "Feed-forward hidden width",
       "H": "Query heads",
       "Hkv": "Key/value heads",
-      "dh": "Head dimension",
-      "F": "Feed-forward hidden width",
-      "V": "Vocabulary size"
+      "L": "Number of transformer layers",
+      "T": "Sequence length in tokens",
+      "V": "Vocabulary size",
+      "dh": "Head dimension"
     },
     "errors": []
   },

@@ -296,11 +296,11 @@
         "predictedLoss": [
           [
             "epoch",
-            3.5349768052401975
+            3.534976805240197
           ],
           [
             "hoffmann",
-            3.5770450165008967
+            3.577045016500896
           ]
         ],
         "verdict": "Close to compute-optimal."
@@ -574,7 +574,7 @@
         "predictedLoss": [
           [
             "epoch",
-            2.690375710857223
+            2.6903757108572224
           ],
           [
             "hoffmann",
@@ -895,11 +895,11 @@
         "predictedLoss": [
           [
             "epoch",
-            3.5349768052401975
+            3.534976805240197
           ],
           [
             "hoffmann",
-            3.5770450165008967
+            3.577045016500896
           ]
         ],
         "verdict": "Close to compute-optimal."

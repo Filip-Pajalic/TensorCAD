@@ -592,7 +592,7 @@
           ],
           [
             "hoffmann",
-            1.9896593754664014
+            1.9896593754664016
           ]
         ],
         "verdict": "Close to compute-optimal."
@@ -1062,7 +1062,7 @@
           ],
           [
             "hoffmann",
-            1.8780442936645787
+            1.878044293664579
           ]
         ],
         "verdict": "Heavily over-trained, in the range of small models trained on very large corpora."
@@ -1687,7 +1687,7 @@
           ],
           [
             "hoffmann",
-            1.9896593754664014
+            1.9896593754664016
           ]
         ],
         "verdict": "Close to compute-optimal."

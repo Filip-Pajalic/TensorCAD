@@ -10,15 +10,15 @@
     ],
     "values": {
       "B": 1,
-      "T": 1,
       "Ccls": 1000,
+      "Fc": 4096,
       "Res": 224,
-      "Fc": 4096
+      "T": 1
     },
     "designValues": {
       "Ccls": 1000,
-      "Res": 224,
-      "Fc": 4096
+      "Fc": 4096,
+      "Res": 224
     },
     "runtime": [
       "B",
@@ -26,10 +26,10 @@
     ],
     "docs": {
       "B": "Images per batch",
-      "T": "One image per sample; a convnet has no sequence",
       "Ccls": "ImageNet-1k classes",
+      "Fc": "Width of the fully-connected layers",
       "Res": "Input resolution",
-      "Fc": "Width of the fully-connected layers"
+      "T": "One image per sample; a convnet has no sequence"
     },
     "errors": []
   },

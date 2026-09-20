@@ -168,6 +168,16 @@ type Doc struct {
 	Meta    DocMeta              `json:"meta"`
 	Symbols map[string]SymbolDef `json:"symbols"`
 	Graph   Graph                `json:"graph"`
+	// Rules is what this design has decided the design rules mean to it,
+	// keyed by rule id: "error", "warning", "info" or "off".
+	//
+	// A rule that is right in general is sometimes wrong here — Gemma cannot
+	// use a fused attention kernel and there is no arrangement of the design
+	// that changes it — and the alternative to recording that is people
+	// learning to read past a warning. It lives in the document rather than in
+	// the editor because it is a decision about the design, and it should
+	// travel with the file and show up in review.
+	Rules map[string]string `json:"rules,omitempty"`
 	// Defs are blocks this design defines for itself, keyed by type name.
 	//
 	// The built-in catalog is fixed, but a design can carry its own composites

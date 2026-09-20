@@ -19,6 +19,7 @@ import type {
   ParamsResult,
   Resolved,
   ResolvedPorts,
+  RuleOverride,
   Shape,
   SymbolTable,
 } from "@tensorcad/engine";
@@ -84,6 +85,13 @@ export interface Derived {
   flopsByPath: Map<string, number>;
   issues: UiIssue[];
   counts: Record<Severity, number>;
+  /**
+   * What the document's own rule severities did.
+   *
+   * Carried through so the panel can show it: a design that silences a rule
+   * should say so on screen, not only in the file.
+   */
+  overridden: RuleOverride[];
   /** True when nothing blocks building this design. */
   ok: boolean;
   /** Worst severity at a path or anywhere beneath it. */
@@ -183,6 +191,7 @@ export function derive(doc: Doc, operating: OperatingPoint): Derived {
     flopsByPath: rollUp(analysis.flops.byPath),
     issues,
     counts: report.counts,
+    overridden: report.overridden ?? [],
     ok: report.ok,
     severityByPath,
     findingsByPath,

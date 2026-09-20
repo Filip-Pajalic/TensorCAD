@@ -1,4 +1,4 @@
-import type { Doc, Edge, Graph, NodeDef, ParamValue, SymbolDef } from "@tensorcad/engine";
+import type { Doc, Edge, Graph, NodeDef, ParamValue, RuleSeverity, SymbolDef } from "@tensorcad/engine";
 import { splitEndpoint } from "@tensorcad/engine";
 import { CATALOG } from "../engine.js";
 /**
@@ -140,6 +140,22 @@ export function setSymbol(doc: Doc, name: string, def: SymbolDef | undefined): D
   const next = cloneDoc(doc);
   if (def === undefined) delete next.symbols[name];
   else next.symbols[name] = def;
+  return next;
+}
+
+/**
+ * Record what a rule means to this design, or stop recording it.
+ *
+ * The object goes away entirely when the last decision is removed, so a design
+ * that has decided nothing does not carry an empty `rules: {}` in its file.
+ */
+export function setRuleSeverity(doc: Doc, rule: string, severity: RuleSeverity | undefined): Doc {
+  const next = cloneDoc(doc);
+  const rules = { ...(next.rules ?? {}) };
+  if (severity === undefined) delete rules[rule];
+  else rules[rule] = severity;
+  if (Object.keys(rules).length === 0) delete next.rules;
+  else next.rules = rules;
   return next;
 }
 

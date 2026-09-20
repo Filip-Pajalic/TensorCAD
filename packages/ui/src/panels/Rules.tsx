@@ -14,20 +14,58 @@ import { useDerived } from "../state/hooks.js";
 import type { Severity, UiIssue } from "../state/derive.js";
 import Section from "./Section.js";
 import { RULES } from "../engine.js";
+import type { RuleSeverity } from "@tensorcad/engine";
 
 const SEVERITIES: Severity[] = ["error", "warning", "info"];
 
 const TITLE_BY_RULE: Record<string, string> = Object.fromEntries(RULES.map((r) => [r.id, r.title]));
 
+/** What this design has decided one rule means to it. */
+function RuleChoice({
+  rule,
+  value,
+}: {
+  rule: string;
+  value: RuleSeverity | undefined;
+}): React.ReactElement {
+  return (
+    <select
+      className={`field field--tiny${value ? " field--set" : ""}`}
+      value={value ?? ""}
+      title={
+        value
+          ? `This design treats ${rule} as ${value}`
+          : `This design takes ${rule} as it comes`
+      }
+      onClick={(e) => e.stopPropagation()}
+      onChange={(e) => {
+        e.stopPropagation();
+        useEditor
+          .getState()
+          .setRuleSeverity(rule, e.target.value === "" ? undefined : (e.target.value as RuleSeverity));
+      }}
+    >
+      <option value="">as it comes</option>
+      <option value="error">error</option>
+      <option value="warning">warning</option>
+      <option value="info">info</option>
+      <option value="off">off</option>
+    </select>
+  );
+}
+
 function Group({
   severity,
   issues,
   focus,
+  severities,
 }: {
   severity: Severity;
   issues: UiIssue[];
   /** The block whose marker was pressed on the drawing, if any. */
   focus: string | null;
+  /** What the document has already decided, keyed by rule. */
+  severities: Record<string, RuleSeverity>;
 }): React.ReactElement | null {
   if (issues.length === 0) return null;
   return (
@@ -53,6 +91,14 @@ function Group({
               </span>
               {i.path ?? "document"}
               {i.port ? `:${i.port}` : ""}
+              {/*
+                The decision belongs where the finding is read. The rule book
+                carries the same control, but only for the eighteen design
+                rules; a block's own constraint — SDPA-03, ATTN-01 — is a
+                finding with a rule id and no row in that book, and those are
+                the ones most worth being able to accept.
+              */}
+              <RuleChoice rule={i.rule} value={severities[i.rule]} />
             </div>
           </div>
         </div>
@@ -66,6 +112,7 @@ export default function Rules(): React.ReactElement {
   const focus = useEditor((s) => s.findingFocus);
   const focusNonce = useEditor((s) => s.findingNonce);
   const body = useRef<HTMLDivElement>(null);
+  const severities: Record<string, RuleSeverity> = useEditor((s) => s.doc.rules) ?? {};
   const [muted, setMuted] = useState<Set<Severity>>(() => new Set<Severity>(["info"]));
 
   // Pressing a marker on the drawing opens this list on that block. Scroll to
@@ -99,6 +146,9 @@ export default function Rules(): React.ReactElement {
   const nothingShown = shown.every((s) => grouped[s].length === 0);
 
   const focused = focus ? derived.issues.filter((i) => i.path === focus) : [];
+  const decided = Object.keys(severities).length;
+  const dropped = derived.overridden.filter((o) => o.to === "off").length;
+  const unreadable = derived.overridden.filter((o) => o.to.startsWith("?"));
 
   return (
     <div className="panel__body" ref={body}>
@@ -115,6 +165,28 @@ export default function Rules(): React.ReactElement {
           >
             clear
           </button>
+        </div>
+      )}
+      {derived.overridden.length > 0 && (
+        <div className="issues__overrides">
+          {dropped > 0 && (
+            <div>
+              {dropped} finding{dropped === 1 ? "" : "s"} dropped because this design says so.
+            </div>
+          )}
+          {derived.overridden.length > dropped && (
+            <div>
+              {derived.overridden.length - dropped} finding
+              {derived.overridden.length - dropped === 1 ? "" : "s"} shown at a severity this
+              design chose.
+            </div>
+          )}
+          {unreadable.map((o) => (
+            <div className="issues__bad" key={o.rule + o.path}>
+              {o.rule} is set to {o.to.slice(1)}, which is not a severity; the rule was left as it
+              is.
+            </div>
+          ))}
         </div>
       )}
       <div className="issues__summary">
@@ -144,13 +216,21 @@ export default function Rules(): React.ReactElement {
       )}
 
       {shown.map((s) => (
-        <Group key={s} severity={s} issues={grouped[s]} focus={focus} />
+        <Group key={s} severity={s} issues={grouped[s]} focus={focus} severities={severities} />
       ))}
 
-      <Section id="rulebook" title="Rule book" defaultOpen={false} note={`${RULES.length} rules`}>
+      <Section
+        id="rulebook"
+        title="Rule book"
+        defaultOpen={false}
+        note={
+          decided === 0 ? `${RULES.length} rules` : `${RULES.length} rules, ${decided} decided`
+        }
+      >
         <div className="rulebook">
           {RULES.map((r) => {
             const fired = derived.issues.filter((i) => i.rule === r.id).length;
+            const decision = severities[r.id];
             return (
               <div className="rulebook__row" key={r.id}>
                 <div className="rulebook__head">
@@ -158,6 +238,13 @@ export default function Rules(): React.ReactElement {
                   <span className={`badge badge--tiny${fired ? " badge--warning" : ""}`}>
                     {fired === 0 ? "clear" : fired}
                   </span>
+                  {/*
+                    What this design has decided the rule means to it. A rule
+                    that is right in general is sometimes wrong here, and the
+                    alternative to recording that is reading past a warning
+                    until the warnings stop meaning anything.
+                  */}
+                  <RuleChoice rule={r.id} value={decision} />
                 </div>
                 <div className="rulebook__title">{r.title}</div>
                 <div className="rulebook__desc">{r.description}</div>

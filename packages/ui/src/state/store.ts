@@ -11,7 +11,7 @@ import type { ShapeMode } from "../canvas/shapes.js";
 import * as ops from "./ops.js";
 import type { Segments } from "./ops.js";
 import { DEFAULT_OPERATING, loadOperating, saveOperating, type OperatingPoint } from "./operating.js";
-import type { Doc, NodeDef, ParamValue, SymbolDef } from "@tensorcad/engine";
+import type { Doc, NodeDef, ParamValue, RuleSeverity, SymbolDef } from "@tensorcad/engine";
 import { getPreset } from "../engine.js";
 
 const UNDO_LIMIT = 100;
@@ -183,6 +183,11 @@ export interface EditorState {
     to: string,
     next: { from: string; to: string },
   ) => void;
+  /**
+   * What this design has decided a rule means to it. Undefined removes the
+   * decision, putting the rule back to what it says about itself.
+   */
+  setRuleSeverity: (rule: string, severity: RuleSeverity | undefined) => void;
   setSymbol: (name: string, def: SymbolDef | undefined) => void;
   renameSymbol: (from: string, to: string) => void;
   moveNode: (path: string, xy: [number, number]) => void;
@@ -404,6 +409,7 @@ export const useEditor = create<EditorState>((set, get) => {
     disconnect: (parent, from, to) => commit((d) => ops.disconnect(d, parent, from, to)),
     reconnect: (parent, from, to, next) =>
       commit((d) => ops.connect(ops.disconnect(d, parent, from, to), parent, next.from, next.to)),
+    setRuleSeverity: (rule, severity) => commit((d) => ops.setRuleSeverity(d, rule, severity)),
     setSymbol: (name, def) => commit((d) => ops.setSymbol(d, name, def)),
     renameSymbol: (from, to) => commit((d) => ops.renameSymbol(d, from, to)),
     moveNode: (path, xy) => commit((d) => ops.moveNode(d, ops.segmentsOf(path), xy)),

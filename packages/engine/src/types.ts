@@ -88,10 +88,23 @@ export interface Doc {
   meta: DocMeta;
   symbols: Record<string, SymbolDef>;
   graph: Graph;
+  /**
+   * What this design has decided the design rules mean to it, keyed by rule id.
+   *
+   * A rule that is right in general is sometimes wrong here, and the
+   * alternative to recording that is people learning to read past a warning.
+   * It lives in the document because it is a decision about the design, so it
+   * travels with the file and shows up in review. Suppression is never silent:
+   * `ValidationReport.overridden` says what it did.
+   */
+  rules?: Record<string, RuleSeverity>;
   /** Blocks this design defines for itself, keyed by type name. */
   defs?: Record<string, UserBlockDef>;
   ui?: UiState;
 }
+
+/** What a document may ask a rule to be. `off` drops its findings. */
+export type RuleSeverity = Severity | "off";
 
 /** A composite a design defines for itself, written as data. */
 export interface UserBlockDef {
@@ -393,6 +406,21 @@ export interface ValidationReport {
   /** True when nothing blocks building this design. */
   ok: boolean;
   analysis: AnalysisResult;
+  /**
+   * What the document's own severities did, so suppression is never silent: a
+   * design cannot drop a finding without the report saying which and from what.
+   */
+  overridden: RuleOverride[];
+}
+
+/** One finding whose severity the document changed. */
+export interface RuleOverride {
+  rule: string;
+  path?: string;
+  /** What the rule produced, and what the document asked for. */
+  from: Severity;
+  /** `off` means the finding was dropped. An unreadable value arrives as `?x`. */
+  to: string;
 }
 
 // ---------------------------------------------------------------------------

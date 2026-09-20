@@ -1074,10 +1074,34 @@ contradicted its own number; it is a checkbox now, disabled when there is no
 tensor-parallel group to shard across. Expert parallelism had just become real
 in the engine and had no control at all.
 
+### What a design has decided a rule means
+
+The last piece of E2. Every design-rule tool has this and for the same reason: a
+rule that is right in general is sometimes wrong here — Gemma cannot use a fused
+attention kernel and no arrangement of the design changes that — and the
+alternative to recording the decision is people learning to read past a warning
+until the warnings stop meaning anything.
+
+`doc.rules` is a map from rule id to `error`, `warning`, `info` or `off`. It is
+in the document rather than in the editor because it is a decision about the
+design: it travels with the file and shows up in review. It can raise as well as
+lower, because "in this project a padded vocabulary is an error" is as real a
+decision as accepting a warning.
+
+Suppression is never silent. The report carries `overridden` — which rule, on
+which block, from what to what — and the panel shows a line saying how many
+findings the design dropped and how many it re-graded. A design that could
+quietly hide its own errors would make every report unreadable, including the
+ones the preset tests rely on.
+
+The control went in twice, and the second time was the one that mattered. The
+rule book lists the eighteen design rules, so putting it only there left out
+exactly the findings most worth accepting: a block's own constraint — `SDPA-03`,
+`ATTN-01` — is a finding with a rule id and no row in that book. It is on the
+finding itself as well, which is also simply where the decision gets made.
+
 ### Still outstanding
 
 E3 through E7: the command surface and palette, the inspector, the definition
 editor and library, multi-selection and the bottom dock, and then operations,
-configurations and tensors as first-class objects. E2's remaining piece is
-per-rule severity carried in the document, so a design can record that a rule it
-has considered and accepted should not keep firing.
+configurations and tensors as first-class objects.

@@ -2751,3 +2751,35 @@ select.field {
   outline: 1px solid var(--accent);
   outline-offset: 1px;
 }
+
+/* What the document's own rule severities did. Never silent. */
+.issues__overrides {
+  padding: 5px 8px;
+  margin-bottom: 6px;
+  border: 1px solid var(--border-soft);
+  border-left: 2px solid var(--accent);
+  background: var(--bg-elev);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.issues__bad {
+  color: var(--error);
+}
+
+.field--tiny {
+  font-size: 10px;
+  padding: 0 2px;
+  height: 16px;
+  margin-left: auto;
+}
+
+/* A rule this design has made a decision about. */
+.field--set {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.issue__where .field--tiny {
+  margin-left: auto;
+}

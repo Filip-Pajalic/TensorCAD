@@ -100,7 +100,12 @@ export const PANELS_MENU: MenuNode[] = [
   item("view.focus"),
 ];
 
-export const HELP_MENU: MenuNode[] = [item("help.settings"), item("help.shortcuts")];
+export const HELP_MENU: MenuNode[] = [
+  item("help.palette"),
+  sep(),
+  item("help.settings"),
+  item("help.shortcuts"),
+];
 
 /**
  * The application menu, as titles across a bar rather than one button that
@@ -127,6 +132,7 @@ export const CANVAS_MENU: MenuNode[] = [
   sub("Blocks", BLOCKS_MENU),
   sub("Panels", PANELS_MENU),
   sep(),
+  item("help.palette"),
   item("help.settings"),
 ];
 

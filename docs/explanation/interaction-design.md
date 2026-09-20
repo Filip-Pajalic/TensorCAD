@@ -1117,8 +1117,34 @@ and an edit does not touch — that is the whole distinction. "Compare against
 this from now on" moves it, for when the interesting question becomes what has
 changed since a particular point rather than since the file was loaded.
 
+### The command surface
+
+E3. The menu groups thirty-six commands behind six dropdowns, which is the right
+way to *browse* them and the wrong way to reach one whose name you already know.
+`Ctrl+K` lists them all, filtered as you type.
+
+`state/commands.ts` was already the single list behind the keyboard, the menu,
+the shortcut sheet and the native menu, so the palette is one component over it
+and cannot fall out of step with any of them. It shows each command's group and
+its shortcut, so using it teaches the shortcut — which is the point of a palette
+in a tool people use every day.
+
+Two decisions that took a second pass:
+
+- **Matching is a subsequence, weighted towards word starts.** "mb" should find
+  "Make a block from this level" because that is what typing initials means. The
+  first version scored only on how tightly the letters sat, which ranked
+  "Vi[e]w [B]oth docks" above "Export blocks" for "eb" — arithmetically true and
+  not what was asked for.
+- **A command that is unavailable sorts on its match, not below everything.**
+  Available-first buried a command named exactly under one that was not, which
+  is the same failure as hiding it, arrived at politely. The row is greyed and
+  cannot be pressed; that is what says it is unavailable. "Export blocks is
+  greyed out" is an answer, and a command that vanishes when a design has no
+  blocks of its own is one you conclude does not exist.
+
 ### Still outstanding
 
-E3 through E7: the command surface and palette, the inspector, the definition
-editor and library, multi-selection and the bottom dock, and then operations,
-configurations and tensors as first-class objects.
+E4 through E7: the inspector, the definition editor and library, multi-selection
+and the bottom dock, and then operations, configurations and tensors as
+first-class objects.

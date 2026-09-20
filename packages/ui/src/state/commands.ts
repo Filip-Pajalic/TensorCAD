@@ -412,6 +412,14 @@ export const COMMANDS: Command[] = [
 
   // --- help ---------------------------------------------------------------
   {
+    id: "help.palette",
+    label: "Commands…",
+    group: "help",
+    shortcut: `${MOD}+k`,
+    hint: "Every command by name, including the ones with no shortcut.",
+    run: () => editor().openDialog("palette"),
+  },
+  {
     id: "help.settings",
     label: "Settings…",
     group: "help",

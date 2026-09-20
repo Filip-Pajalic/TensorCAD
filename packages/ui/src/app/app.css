@@ -2907,3 +2907,94 @@ select.field {
 .cmp__down {
   color: var(--ok);
 }
+
+/* --- the command palette --------------------------------------------------- */
+
+.cpal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cpal__query {
+  width: 100%;
+  font-size: 13px;
+}
+
+.cpal__list {
+  display: flex;
+  flex-direction: column;
+  max-height: 24rem;
+  overflow-y: auto;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-elev);
+}
+
+.cpal__row {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cpal__row--at {
+  background: var(--accent);
+  color: var(--accent-on);
+}
+
+.cpal__row--off {
+  color: var(--dim);
+  cursor: default;
+}
+
+.cpal__row--off.cpal__row--at {
+  background: var(--bg-input);
+  color: var(--dim);
+}
+
+.cpal__group {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--dim);
+}
+
+.cpal__row--at .cpal__group {
+  color: var(--accent-on);
+  opacity: 0.75;
+}
+
+.cpal__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cpal__on {
+  color: var(--ok);
+  font-size: 10px;
+}
+
+.cpal__row--at .cpal__on {
+  color: var(--accent-on);
+}
+
+.cpal__key {
+  font-size: 10px;
+  color: var(--dim);
+}
+
+.cpal__row--at .cpal__key {
+  color: var(--accent-on);
+  opacity: 0.85;
+}

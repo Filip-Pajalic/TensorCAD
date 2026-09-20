@@ -198,14 +198,69 @@ function point(options: AnalysisOptions | undefined): string {
   return options ? JSON.stringify(options) : "";
 }
 
+/**
+ * The first four bytes of every WebAssembly module: `\0asm`.
+ *
+ * Checked rather than trusted, because the thing that goes wrong here does not
+ * look like an error. A development server answering an unknown path with its
+ * single-page fallback returns **200 OK** and `index.html`, so `response.ok`
+ * is true and the failure surfaces much later as
+ * "expected magic word 00 61 73 6d, found 3c 21 64 6f" — `3c 21 64 6f` being
+ * `<!do`. Four bytes here turn that into a sentence naming the file.
+ */
+const WASM_MAGIC = [0x00, 0x61, 0x73, 0x6d];
+
+/**
+ * Where the module sits relative to this one, in both layouts it can be in.
+ *
+ * In the repository this file is `src/index.ts` and the module is built to
+ * `wasm/tensorcad.wasm` beside `src`. In the published package the entry is at
+ * the root and the module is flattened next to it. `node.ts` has always tried
+ * both; this did not, which made the published browser build fetch a path one
+ * level above the package — and get the dev server's fallback HTML, with a 200.
+ */
+const CANDIDATES = ["./tensorcad.wasm", "../wasm/tensorcad.wasm"];
+
+function looksLikeWasm(bytes: ArrayBuffer): boolean {
+  if (bytes.byteLength < 4) return false;
+  const head = new Uint8Array(bytes, 0, 4);
+  return WASM_MAGIC.every((b, i) => head[i] === b);
+}
+
 async function bytesOf(wasm: LoadOptions["wasm"]): Promise<BufferSource> {
   if (wasm && typeof wasm !== "string" && !(wasm instanceof URL)) return wasm;
-  const url = wasm ?? new URL("../wasm/tensorcad.wasm", import.meta.url);
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new EngineError(`Could not load the engine from ${String(url)}: ${response.status}`);
+
+  // An explicit one is used as given: the caller knows where they put it, and
+  // guessing on their behalf would hide their mistake rather than report it.
+  const urls = wasm
+    ? [wasm]
+    : CANDIDATES.map((path) => new URL(path, import.meta.url));
+
+  const tried: string[] = [];
+  for (const url of urls) {
+    // `try`, not `fetch(...).catch(...)`. A missing `file://` makes Bun's
+    // fetch throw *synchronously* rather than return a rejected promise, so a
+    // `.catch()` is never attached in time and the first candidate takes the
+    // whole load down with it — which is how this was written first, and what
+    // the editor's own tests caught.
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        tried.push(`${String(url)} (${response.status})`);
+        continue;
+      }
+      const bytes = await response.arrayBuffer();
+      if (looksLikeWasm(bytes)) return bytes;
+      tried.push(`${String(url)} (not WebAssembly — ${bytes.byteLength} bytes)`);
+    } catch (error) {
+      tried.push(`${String(url)} (${(error as Error).message})`);
+    }
   }
-  return await response.arrayBuffer();
+
+  throw new EngineError(
+    `Could not load the engine. Tried ${tried.join(", ")}. ` +
+      `Pass \`wasm\` to createEngine() if it lives somewhere else.`,
+  );
 }
 
 /**

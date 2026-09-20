@@ -33,19 +33,72 @@ type ElkLike = {
 
 let elkPromise: Promise<ElkLike> | null = null;
 
+/**
+ * How long the probe waits before deciding the worker is not coming.
+ *
+ * It answers an empty graph in single-digit milliseconds when it is alive, so
+ * this is not a performance budget — it is the longest anybody waits for a
+ * worker that is never going to reply. The `error` event usually gets there
+ * first; this is for the cases where nothing is raised at all.
+ */
+const PROBE_TIMEOUT_MS = 2000;
+
 async function getElk(): Promise<ElkLike> {
   elkPromise ??= (async (): Promise<ElkLike> => {
     try {
       const api = await import("elkjs/lib/elk-api.js");
       const ELK = api.default;
+
+      // Set by the probe below, so a worker that dies on load rejects it
+      // rather than leaving it outstanding.
+      let abandon: ((reason: Error) => void) | null = null;
+
       const elk: ElkLike = new ELK({
-        workerFactory: () =>
-          new Worker(new URL("elkjs/lib/elk-worker.min.js", import.meta.url), { type: "classic" }),
+        workerFactory: () => {
+          const worker = new Worker(
+            new URL("elkjs/lib/elk-worker.min.js", import.meta.url),
+            { type: "classic" },
+          );
+          worker.addEventListener("error", (event) => {
+            abandon?.(new Error(`the layout worker did not start: ${event.message}`));
+          });
+          return worker;
+        },
       });
-      // Smoke test: a worker that failed to start only shows up on first use.
-      await elk.layout({ id: "probe", layoutOptions: {}, children: [], edges: [] });
+
+      // Smoke test, because a worker that failed to start only shows up on
+      // first use — and, worse, shows up as *nothing*. When the worker script
+      // is not where the bundler said it would be, a dev server answers the
+      // request with its single-page fallback: the worker is handed `index.html`,
+      // throws "Unexpected token '<'" inside itself, and never posts a message
+      // back. A bare `await elk.layout(...)` then waits forever, this promise
+      // never settles, no layout ever runs, and every node stays at the origin
+      // stacked on top of the next. The fallback below was already right; it
+      // simply never got the chance to run.
+      await new Promise<void>((resolve, reject) => {
+        abandon = reject;
+        const timer = setTimeout(
+          () => reject(new Error("the layout worker did not answer")),
+          PROBE_TIMEOUT_MS,
+        );
+        const done = (): void => clearTimeout(timer);
+        elk.layout({ id: "probe", layoutOptions: {}, children: [], edges: [] }).then(
+          () => {
+            done();
+            resolve();
+          },
+          (error: unknown) => {
+            done();
+            reject(error instanceof Error ? error : new Error(String(error)));
+          },
+        );
+      });
+
+      abandon = null;
       return elk;
     } catch {
+      // The same algorithm on this thread. Slower on a large graph, and a
+      // drawing that arrives late beats one that never arrives.
       const bundled = await import("elkjs/lib/elk.bundled.js");
       const ELK = bundled.default;
       return new ELK() as ElkLike;

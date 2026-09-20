@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
 import { TextField } from "./Field.js";
+import Configurations from "./Configurations.js";
 import type { SymbolDef } from "@tensorcad/engine";
 
 type Kind = "design" | "runtime";
@@ -55,10 +56,16 @@ export default function Symbols(): React.ReactElement {
   const [newName, setNewName] = useState("");
   const act = useEditor.getState();
 
-  const entries = Object.entries(doc.symbols);
+  // As the design is currently built, so the table and the readout agree. A
+  // configuration overrides by name, and a symbol it does not mention keeps
+  // whatever the design says.
+  const overrides = doc.active ? (doc.configurations?.[doc.active]?.symbols ?? {}) : {};
+  const entries = Object.entries(doc.symbols).map(
+    ([name, def]) => [name, overrides[name] ?? def] as const,
+  );
 
   const update = (name: string, patch: Partial<SymbolView>): void => {
-    const view = { ...read(doc.symbols[name]), ...patch };
+    const view = { ...read(overrides[name] ?? doc.symbols[name]), ...patch };
     act.setSymbol(name, write(view));
   };
 
@@ -72,6 +79,7 @@ export default function Symbols(): React.ReactElement {
 
   return (
     <div className="panel__body">
+      <Configurations />
       <table className="table table--symbols">
         <thead>
           <tr>

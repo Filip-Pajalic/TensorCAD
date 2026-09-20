@@ -18,9 +18,14 @@ on:
       - docs/**
       - mkdocs.yml
       - .github/workflows/docs.yml
-  # So the site can be re-published without a docs change, after enabling Pages
-  # for the first time.
+  # So the site can be re-published without a docs change, which is what to use
+  # after enabling Pages for the first time.
   workflow_dispatch:
+
+# Deploying needs Pages turned on for the repository, with its source set to
+# GitHub Actions: Settings -> Pages -> Build and deployment -> Source. Until
+# somebody does that, the build still runs and still catches a broken link; the
+# deploy is what fails, and it says so with a link to the setting.
 
 permissions:
   contents: read

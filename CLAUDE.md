@@ -153,11 +153,17 @@ Two cross-checks worth knowing:
 4. **Containers carry two multipliers.** `total` drives the parameter count, `active` drives FLOPs and activation memory. That single mechanism is what makes mixture-of-experts work.
 5. **Activation memory is attributed to tensors, not blocks.** A block lists the input ports it must keep alive (`retains`); each producing tensor is counted once even when several blocks read it.
 6. **`B` and `T` are reserved runtime symbols.** They stay indeterminate through shape checking, so a mismatch is a real polynomial difference.
-7. **The operating point is editor state, not document state.** Batch, sequence length,
+7. **A configuration is a view of the design; the operating point is a view of the measurement.**
+   `doc.configurations` are named sets of symbol values and `doc.active` says which is in
+   force — four GPT-2 presets are one architecture at four sizes. A configuration overrides
+   symbols and nothing else, says only what differs so an expression still follows, and never
+   touches the document's own symbols, so switching twice ends where it started. It is document
+   state because it changes what the design *is*.
+8. **The operating point is editor state, not document state.** Batch, sequence length,
    dtype, device, GPU count and the sharding plan are conditions the analysis is measured
    under, not properties of the design. `packages/ui/src/state/operating.ts` owns them and
    translates them to `AnalysisOptions`; the CLI and MCP pass their own.
-8. **Presets are the regression suite.** Every preset carries `meta.published` and the tests assert the analysis reproduces it. Seventeen of twenty match to the parameter; the other three are checked against rounded vendor figures with an explicit `tolerance`. Not all of them are language models. `ijepa-vit-h14` is a vision transformer with bidirectional attention and no vocabulary (`presets/jepa.ts`), and `alexnet` is a convolutional classifier whose tensors are `B C H W` rather than a sequence (`presets/convnet.ts`). A convnet's token is one image, so `T` is 1 and every per-token figure reads as per-image; its FLOPs match `torch.utils.flop_counter` exactly, there being no causal mask to disagree about. Everything downstream treats all three kinds identically.
+9. **Presets are the regression suite.** Every preset carries `meta.published` and the tests assert the analysis reproduces it. Seventeen of twenty match to the parameter; the other three are checked against rounded vendor figures with an explicit `tolerance`. Not all of them are language models. `ijepa-vit-h14` is a vision transformer with bidirectional attention and no vocabulary (`presets/jepa.ts`), and `alexnet` is a convolutional classifier whose tensors are `B C H W` rather than a sequence (`presets/convnet.ts`). A convnet's token is one image, so `T` is 1 and every per-token figure reads as per-image; its FLOPs match `torch.utils.flop_counter` exactly, there being no causal mask to disagree about. Everything downstream treats all three kinds identically.
 
 ## When adding a block
 

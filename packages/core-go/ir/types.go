@@ -189,13 +189,38 @@ type Doc struct {
 	// Typed loosely here because the definition lives in the catalog, which
 	// sits above the IR.
 	Defs map[string]any `json:"defs,omitempty"`
-	Ui   *UiState       `json:"ui,omitempty"`
+	// Configurations are named sets of symbol values this design can be built
+	// at, keyed by name.
+	//
+	// Four GPT-2 presets are the same architecture at four sizes, and holding
+	// them apart means an architectural change has to be made four times. A
+	// configuration overrides symbols and nothing else: a variant that changed
+	// the graph would be a different design, and calling it a configuration
+	// would be a way of losing track of that.
+	Configurations map[string]Configuration `json:"configurations,omitempty"`
+	// Active names the configuration in force. Empty means the symbols as
+	// written, which is what a design without configurations always has.
+	Active string   `json:"active,omitempty"`
+	Ui     *UiState `json:"ui,omitempty"`
 
 	// SymbolOrder is the order the document wrote its symbols in, recovered
 	// from the raw JSON because neither a Go map nor a JSON object keeps one.
 	// The symbol list is something a person wrote and reads back — D before H
 	// before dh, not alphabetical.
 	SymbolOrder []string `json:"-"`
+	// ConfigurationOrder is the same for configurations: the order they were
+	// written in, which is the order a picker should offer them in. Small
+	// before large, not alphabetical.
+	ConfigurationOrder []string `json:"-"`
+}
+
+// Configuration is one named set of symbol values.
+type Configuration struct {
+	Doc string `json:"doc,omitempty"`
+	// Symbols override the document's own, by name. A symbol the configuration
+	// does not mention keeps whatever the design says, so a configuration says
+	// only what is different about it.
+	Symbols map[string]SymbolDef `json:"symbols"`
 }
 
 // Clone is a deep copy.

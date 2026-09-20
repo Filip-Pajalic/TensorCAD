@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"regexp"
+	"sort"
 
 	"github.com/tensorcad/core/shapes"
 )
@@ -25,7 +26,50 @@ func (d *Doc) UnmarshalJSON(b []byte) error {
 	}
 	*d = Doc(p)
 	d.SymbolOrder = objectKeyOrder(b, "symbols")
+	d.ConfigurationOrder = objectKeyOrder(b, "configurations")
 	return nil
+}
+
+// ConfigurationNames is the configurations in the order they were written,
+// which is the order a picker should offer them in: small before large, not
+// alphabetical.
+func ConfigurationNames(doc *Doc) []string {
+	out := make([]string, 0, len(doc.Configurations))
+	seen := map[string]bool{}
+	for _, name := range doc.ConfigurationOrder {
+		if _, ok := doc.Configurations[name]; ok && !seen[name] {
+			seen[name] = true
+			out = append(out, name)
+		}
+	}
+	rest := make([]string, 0, len(doc.Configurations))
+	for name := range doc.Configurations {
+		if !seen[name] {
+			rest = append(rest, name)
+		}
+	}
+	sort.Strings(rest)
+	return append(out, rest...)
+}
+
+// ActiveSymbols is the design's symbols with the active configuration applied.
+//
+// The document's own symbols are left alone: a configuration is a view of the
+// design rather than an edit to it, and switching between two of them has to be
+// something you can do twice and end up where you started.
+func ActiveSymbols(doc *Doc) map[string]SymbolDef {
+	config, ok := doc.Configurations[doc.Active]
+	if !ok || len(config.Symbols) == 0 {
+		return doc.Symbols
+	}
+	out := make(map[string]SymbolDef, len(doc.Symbols)+len(config.Symbols))
+	for name, def := range doc.Symbols {
+		out[name] = def
+	}
+	for name, def := range config.Symbols {
+		out[name] = def
+	}
+	return out
 }
 
 // MarshalJSON writes the symbols back in the order they were written in.
@@ -238,8 +282,12 @@ func ResolveSymbols(doc *Doc) *SymbolTable {
 		defs[name] = n
 	}
 
+	// Through the active configuration, so every number downstream is the one
+	// the design is currently built at. The document's own symbols are left as
+	// written: a configuration is a view of the design, not an edit to it.
+	symbols := ActiveSymbols(doc)
 	for _, name := range symbolNames(doc) {
-		def := doc.Symbols[name]
+		def := symbols[name]
 		if !identRe.MatchString(name) {
 			table.Errors = append(table.Errors, fmt.Sprintf("Symbol name %q is not a valid identifier", name))
 			continue

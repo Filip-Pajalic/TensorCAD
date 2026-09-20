@@ -83,6 +83,17 @@ export interface UiState {
 }
 
 /** A design. */
+/** One named set of symbol values. */
+export interface Configuration {
+  doc?: string;
+  /**
+   * Overrides the document's own symbols, by name. A symbol it does not
+   * mention keeps whatever the design says, so an expression over one that is
+   * overridden follows it.
+   */
+  symbols: Record<string, SymbolDef>;
+}
+
 export interface Doc {
   version: number;
   meta: DocMeta;
@@ -98,6 +109,24 @@ export interface Doc {
    * `ValidationReport.overridden` says what it did.
    */
   rules?: Record<string, RuleSeverity>;
+  /**
+   * Named sets of symbol values this design can be built at.
+   *
+   * Four GPT-2 presets are the same architecture at four sizes, and holding
+   * them apart means an architectural change has to be made four times. A
+   * configuration overrides symbols and nothing else: a variant that changed
+   * the graph would be a different design.
+   */
+  configurations?: Record<string, Configuration>;
+  /**
+   * The configuration in force. Absent or unknown means the symbols as
+   * written, which is what a design without configurations always has.
+   *
+   * In the document rather than in the editor, because it changes what the
+   * design *is*. The operating point is editor state for the opposite reason:
+   * it only changes what the design is measured under.
+   */
+  active?: string;
   /** Blocks this design defines for itself, keyed by type name. */
   defs?: Record<string, UserBlockDef>;
   ui?: UiState;

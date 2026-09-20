@@ -230,6 +230,11 @@ export interface EditorState {
    */
   setRuleSeverity: (rule: string, severity: RuleSeverity | undefined) => void;
   setSymbol: (name: string, def: SymbolDef | undefined) => void;
+  /** Build the design at a named configuration, or at its own symbols. */
+  setActiveConfiguration: (name: string | null) => void;
+  /** Name the symbols as they stand now. */
+  captureConfiguration: (name: string, doc?: string) => void;
+  removeConfiguration: (name: string) => void;
   renameSymbol: (from: string, to: string) => void;
   moveNode: (path: string, xy: [number, number]) => void;
   moveNodes: (moves: { path: string; xy: [number, number] }[]) => void;
@@ -479,7 +484,18 @@ export const useEditor = create<EditorState>((set, get) => {
     reconnect: (parent, from, to, next) =>
       commit((d) => ops.connect(ops.disconnect(d, parent, from, to), parent, next.from, next.to)),
     setRuleSeverity: (rule, severity) => commit((d) => ops.setRuleSeverity(d, rule, severity)),
-    setSymbol: (name, def) => commit((d) => ops.setSymbol(d, name, def)),
+    // Through the configuration in force, so an edit made while one is selected
+    // lands in it rather than in the design underneath.
+    setSymbol: (name, def) => commit((d) => ops.setSymbolInConfiguration(d, name, def)),
+    setActiveConfiguration: (name) =>
+      commit(
+        (d) => ops.setActiveConfiguration(d, name),
+        name === null ? "Building the design as written" : `Building at "${name}"`,
+      ),
+    captureConfiguration: (name, doc) =>
+      commit((d) => ops.captureConfiguration(d, name, doc), `Saved the configuration "${name}"`),
+    removeConfiguration: (name) =>
+      commit((d) => ops.removeConfiguration(d, name), `Removed the configuration "${name}"`),
     renameSymbol: (from, to) => commit((d) => ops.renameSymbol(d, from, to)),
     moveNode: (path, xy) => commit((d) => ops.moveNode(d, ops.segmentsOf(path), xy)),
     moveNodes: (moves) => commit((d) => ops.moveNodes(d, moves)),

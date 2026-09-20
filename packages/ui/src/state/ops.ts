@@ -256,6 +256,73 @@ export function setNodeId(doc: Doc, segments: Segments, rawId: string): Doc {
   return next;
 }
 
+/**
+ * Build the design at a named configuration, or at its own symbols.
+ *
+ * A configuration is a view of the design and not an edit to it, so this only
+ * moves which one is in force. Switching twice ends up where it started, which
+ * is what makes it safe to click through them.
+ */
+export function setActiveConfiguration(doc: Doc, name: string | null): Doc {
+  const next = cloneDoc(doc);
+  if (name === null || name === "") delete next.active;
+  else next.active = name;
+  return next;
+}
+
+/**
+ * Name the symbols as they stand now, as a configuration.
+ *
+ * Only the design symbols, and only the ones that differ from what the document
+ * itself says: a configuration that restated every number would stop following
+ * an expression, which is the thing that makes one worth having.
+ */
+export function captureConfiguration(doc: Doc, name: string, docText?: string): Doc {
+  const next = cloneDoc(doc);
+  const base = doc.symbols;
+  const active = doc.active ? (doc.configurations?.[doc.active]?.symbols ?? {}) : {};
+  const symbols: Record<string, SymbolDef> = {};
+  for (const [key, def] of Object.entries(active)) {
+    if (JSON.stringify(def) !== JSON.stringify(base[key])) symbols[key] = def;
+  }
+  next.configurations = { ...next.configurations, [name]: { ...(docText ? { doc: docText } : {}), symbols } };
+  next.active = name;
+  return next;
+}
+
+/** Forget a configuration. The design's own symbols are never touched. */
+export function removeConfiguration(doc: Doc, name: string): Doc {
+  const next = cloneDoc(doc);
+  if (!next.configurations?.[name]) return doc;
+  const rest = { ...next.configurations };
+  delete rest[name];
+  next.configurations = rest;
+  if (next.active === name) delete next.active;
+  return next;
+}
+
+/**
+ * Change a symbol while a configuration is in force.
+ *
+ * The edit lands in the configuration, not in the design: that is what it means
+ * for one to be in force. With none in force it is an ordinary symbol edit.
+ */
+export function setSymbolInConfiguration(
+  doc: Doc,
+  name: string,
+  def: SymbolDef | undefined,
+): Doc {
+  const active = doc.active;
+  if (!active || !doc.configurations?.[active]) return setSymbol(doc, name, def);
+  const next = cloneDoc(doc);
+  const config = next.configurations![active]!;
+  const symbols = { ...config.symbols };
+  if (def === undefined) delete symbols[name];
+  else symbols[name] = def;
+  next.configurations = { ...next.configurations, [active]: { ...config, symbols } };
+  return next;
+}
+
 export function setMetaName(doc: Doc, name: string): Doc {
   const next = cloneDoc(doc);
   next.meta = { ...next.meta, name };

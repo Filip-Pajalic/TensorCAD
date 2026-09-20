@@ -2738,6 +2738,80 @@ select.field {
   margin: 0 0 8px;
 }
 
+/* One design, several sizes. Above the symbol table, because that is what it
+   selects between. */
+.configs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px 8px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 6px;
+}
+
+.configs__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.configs__label {
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.configs__select,
+.configs__name {
+  flex: 1;
+  min-width: 0;
+  border-radius: 0;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-input);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 11px;
+  padding: 2px 4px;
+}
+
+.configs__btn,
+.configs__add {
+  border-radius: 0;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-input);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.configs__add {
+  width: 100%;
+  text-align: left;
+  color: var(--dim);
+}
+
+.configs__btn:hover:not(:disabled),
+.configs__add:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.configs__btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Said while a configuration is in force, because an edit below now lands in
+   it rather than in the design. */
+.configs__note {
+  font-size: 11px;
+  color: var(--text-dim);
+  border-left: 2px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 4px 6px;
+}
+
 /* The design-rule check, along the bottom.
    A dock rather than a tab: the checks are about the drawing, so they belong
    under it and open while it is edited. */

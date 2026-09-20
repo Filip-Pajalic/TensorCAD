@@ -1143,8 +1143,33 @@ Two decisions that took a second pass:
   greyed out" is an answer, and a command that vanishes when a design has no
   blocks of its own is one you conclude does not exist.
 
+### The inspector, which was twenty-nine fields in a row
+
+E4. `transformer_block` declares twenty-nine parameters and about ten of them
+mean nothing at any given moment: a dense block has no `expert_hidden`,
+grouped-query attention has no `kv_lora`, an RMSNorm has no bias. They were all
+shown alike, so reading the panel meant already knowing the architecture well
+enough not to need it.
+
+A parameter can now say two things about itself. `group` is the heading it
+belongs under — Shape, Attention, Feed-forward, Normalization — and `when` is the
+condition under which it means anything, as one other parameter's value being
+one of a set. One level, deliberately: every case in the catalog is "this field
+matters when that enum is one of these", and a condition language would be a
+second thing to learn for no case that exists.
+
+Greyed and labelled "unused", not hidden. A field that disappears when you change
+`mlp` is a field you go looking for, and the value is still in the document
+either way — a block may legitimately be set up before the switch that turns it
+on. The heading carries the count, so "11 not in use" is visible before you have
+read a single row.
+
+The declared order is left alone. It is also the order a generated class
+documents its parameters in, and reordering it to suit one panel would have
+rewritten sixty `model.py` docstrings for a layout decision; the grouping is the
+panel's job.
+
 ### Still outstanding
 
-E4 through E7: the inspector, the definition editor and library, multi-selection
-and the bottom dock, and then operations, configurations and tensors as
-first-class objects.
+E5 through E7: the definition editor and library, multi-selection and the bottom
+dock, and then operations, configurations and tensors as first-class objects.

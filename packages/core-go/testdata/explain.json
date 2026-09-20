@@ -148,19 +148,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -196,7 +196,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -208,13 +208,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -226,37 +226,37 @@
               "attn_bias",
               null,
               true,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               true,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -907,19 +907,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -955,7 +955,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -967,13 +967,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -985,37 +985,37 @@
               "attn_bias",
               null,
               true,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               true,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -1666,19 +1666,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -1714,7 +1714,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -1726,13 +1726,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -1744,37 +1744,37 @@
               "attn_bias",
               null,
               true,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               true,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -2425,19 +2425,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -2473,7 +2473,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -2485,13 +2485,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -2503,37 +2503,37 @@
               "attn_bias",
               null,
               true,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               true,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -3190,19 +3190,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -3238,7 +3238,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -3250,13 +3250,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -3268,37 +3268,37 @@
               "attn_bias",
               null,
               true,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               true,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -3954,19 +3954,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -4002,7 +4002,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -4014,13 +4014,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -4032,37 +4032,37 @@
               "attn_bias",
               null,
               false,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               false,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -4741,19 +4741,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -4789,7 +4789,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -4801,13 +4801,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -4819,37 +4819,37 @@
               "attn_bias",
               null,
               false,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               false,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               "W",
               4096,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -5528,19 +5528,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -5576,7 +5576,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -5588,13 +5588,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -5606,37 +5606,37 @@
               "attn_bias",
               null,
               false,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               false,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -6315,19 +6315,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -6363,7 +6363,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -6375,13 +6375,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -6393,37 +6393,37 @@
               "attn_bias",
               null,
               false,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               false,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -7102,19 +7102,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -7150,7 +7150,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -7162,13 +7162,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -7180,37 +7180,37 @@
               "attn_bias",
               null,
               false,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               false,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -7889,19 +7889,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -7937,7 +7937,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -7949,13 +7949,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -7967,37 +7967,37 @@
               "attn_bias",
               null,
               true,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               false,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               false,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -8680,19 +8680,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -8728,7 +8728,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -8740,13 +8740,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -8758,37 +8758,37 @@
               "attn_bias",
               null,
               false,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               false,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               true,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -9496,19 +9496,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -9544,7 +9544,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -9556,13 +9556,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -9574,37 +9574,37 @@
               "attn_bias",
               null,
               false,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               false,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               "W",
               4096,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -9762,19 +9762,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -9810,7 +9810,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -9822,13 +9822,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -9840,37 +9840,37 @@
               "attn_bias",
               null,
               false,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               false,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -10451,19 +10451,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -10499,7 +10499,7 @@
               "top_k",
               "K",
               2,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -10511,13 +10511,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -10529,37 +10529,37 @@
               "attn_bias",
               null,
               false,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               false,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -11243,19 +11243,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -11291,7 +11291,7 @@
               "top_k",
               "K",
               8,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -11303,13 +11303,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -11321,37 +11321,37 @@
               "attn_bias",
               null,
               false,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               false,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               true,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -12045,19 +12045,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -12093,7 +12093,7 @@
               "top_k",
               "K",
               8,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -12105,13 +12105,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -12123,37 +12123,37 @@
               "attn_bias",
               null,
               false,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               false,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               true,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -12847,19 +12847,19 @@
               "nope_dim",
               "dnope",
               128,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               "drope",
               64,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               "dv",
               128,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -12895,7 +12895,7 @@
               "top_k",
               "K",
               8,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -12907,13 +12907,13 @@
               "shared_experts",
               "Ns",
               1,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               true,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -12925,37 +12925,37 @@
               "attn_bias",
               null,
               false,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               false,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               true,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -14219,19 +14219,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -14267,7 +14267,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -14279,13 +14279,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -14297,37 +14297,37 @@
               "attn_bias",
               null,
               true,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               true,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               false,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",
@@ -14548,19 +14548,19 @@
               "nope_dim",
               null,
               0,
-              null
+              "Per-head width without position"
             ],
             [
               "rope_dim",
               null,
               0,
-              null
+              "Per-head rotary width"
             ],
             [
               "v_dim",
               null,
               0,
-              null
+              "Per-head value width"
             ],
             [
               "norm",
@@ -14596,7 +14596,7 @@
               "top_k",
               null,
               1,
-              null
+              "Experts each token is routed to"
             ],
             [
               "expert_hidden",
@@ -14608,13 +14608,13 @@
               "shared_experts",
               null,
               0,
-              null
+              "Always-on experts, beside the routed ones"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "A learned bias on the router's scores"
             ],
             [
               "act",
@@ -14626,37 +14626,37 @@
               "attn_bias",
               null,
               true,
-              null
+              "Bias on the q/k/v projections"
             ],
             [
               "attn_o_bias",
               null,
               null,
-              null
+              "Override the output-projection bias; null follows attn_bias"
             ],
             [
               "mlp_bias",
               null,
               true,
-              null
+              "Bias on the feed-forward projections"
             ],
             [
               "qk_norm",
               null,
               false,
-              null
+              "RMSNorm on the query and key heads"
             ],
             [
               "causal",
               null,
               false,
-              null
+              "Whether a token may attend to what follows it"
             ],
             [
               "window",
               null,
               0,
-              null
+              "Sliding-window width; 0 means full attention"
             ],
             [
               "rope",

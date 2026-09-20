@@ -131,6 +131,27 @@ export interface ParamSpec {
   /** The permitted strings of an enum. */
   values?: string[];
   doc?: string;
+  /**
+   * The heading this field belongs under, for a block with enough parameters
+   * that one list is unreadable. Absent puts it with the rest.
+   */
+  group?: string;
+  /**
+   * The condition under which this parameter means anything.
+   *
+   * A dense block has no `expert_hidden`, grouped-query attention has no
+   * `kv_lora`, an RMSNorm has no bias. The block carries a value either way —
+   * this is what lets a panel say so rather than showing them all alike.
+   */
+  when?: ParamWhen;
+}
+
+/** One parameter's value deciding whether another is meaningful. */
+export interface ParamWhen {
+  /** The other parameter to look at. */
+  param: string;
+  /** The values of it under which this parameter is meaningful. */
+  is: string[];
 }
 
 /** What a pin declares. See docs/reference/ports.md. */

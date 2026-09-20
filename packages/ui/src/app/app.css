@@ -2998,3 +2998,39 @@ select.field {
   color: var(--accent-on);
   opacity: 0.85;
 }
+
+/* --- parameters that this block's own settings make irrelevant ------------- */
+
+.param__group + .param__group {
+  margin-top: 10px;
+}
+
+.param__groupName {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--dim);
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 2px;
+  margin-bottom: 4px;
+}
+
+/* Greyed rather than hidden: a field that disappears when you change `mlp` is
+   one you go looking for, and the value is still in the document either way. */
+.param--irrelevant {
+  opacity: 0.45;
+}
+
+.param--irrelevant:hover,
+.param--irrelevant:focus-within {
+  opacity: 1;
+}
+
+.section__note {
+  float: right;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--dim);
+  text-transform: none;
+  letter-spacing: 0;
+}

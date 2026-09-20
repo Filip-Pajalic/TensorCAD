@@ -74,6 +74,19 @@ func pInt(min float64, doc string) ParamSpec {
 func pIntD(def, min float64, doc string) ParamSpec {
 	return ParamSpec{Type: ParamInt, Default: def, HasDefault: true, Min: intp(min), Doc: doc}
 }
+
+// grouped puts a parameter under a heading in the inspector.
+func grouped(spec ParamSpec, group string) ParamSpec {
+	spec.Group = group
+	return spec
+}
+
+// when says which values of another parameter make this one meaningful.
+func when(spec ParamSpec, param string, is ...string) ParamSpec {
+	spec.When = &ParamWhen{Param: param, Is: is}
+	return spec
+}
+
 func pNum(def float64, doc string) ParamSpec {
 	return ParamSpec{Type: ParamNum, Default: def, HasDefault: true, Doc: doc}
 }

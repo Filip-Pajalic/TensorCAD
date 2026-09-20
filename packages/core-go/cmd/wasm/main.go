@@ -457,6 +457,10 @@ type catalogParam struct {
 	Min     *float64 `json:"min,omitempty"`
 	Max     *float64 `json:"max,omitempty"`
 	Values  []string `json:"values,omitempty"`
+	// Group is the heading the inspector lays this field out under.
+	Group string `json:"group,omitempty"`
+	// When is the condition under which the field means anything.
+	When *catalog.ParamWhen `json:"when,omitempty"`
 }
 
 // catalogPorts are the pins a block declares before any parameter is known, so
@@ -484,6 +488,7 @@ func blockCatalog([]string) (string, error) {
 			cp := catalogParam{
 				Type: string(p.Spec.Type), Doc: p.Spec.Doc,
 				Min: p.Spec.Min, Max: p.Spec.Max, Values: p.Spec.Values,
+				Group: p.Spec.Group, When: p.Spec.When,
 			}
 			if p.Spec.HasDefault {
 				cp.Default = p.Spec.Default

@@ -39,6 +39,28 @@ type ParamSpec struct {
 	// Values are the permitted strings of an enum.
 	Values []string
 	Doc    string
+	// Group is the heading this field belongs under, for a block with enough
+	// parameters that one list is unreadable. Empty puts it with the rest.
+	Group string
+	// When is the condition under which this parameter means anything.
+	//
+	// A dense block has no `expert_hidden`, grouped-query attention has no
+	// `kv_lora`, an RMSNorm has no bias. They are still parameters — the block
+	// carries a value for them either way — but showing them beside the ones
+	// that matter is what makes a twenty-five field block unreadable.
+	When *ParamWhen
+}
+
+// ParamWhen is one parameter's value deciding whether another is meaningful.
+//
+// One level, deliberately: every case in the catalog is "this field matters
+// when that enum is one of these", and a condition language would be a second
+// thing to learn for no case that exists.
+type ParamWhen struct {
+	// Param is the other parameter to look at.
+	Param string `json:"param"`
+	// Is are the values of that parameter under which this one is meaningful.
+	Is []string `json:"is"`
 }
 
 // ParamEntry is one named parameter of a block.

@@ -658,37 +658,54 @@ var gatedDeltanetBlock = &BlockDef{
 
 var transformerBlock = &BlockDef{
 	Kind: "composite", Type: "transformer_block", Category: "block",
+	// Grouped and conditioned, because twenty-five fields in one list is a list
+	// nobody reads. About ten of them mean nothing at any given moment — a
+	// dense block has no `expert_hidden`, grouped-query attention has no
+	// `kv_lora`, an RMSNorm has no bias — and `when` is how the inspector knows
+	// which ten.
+	// Grouped and conditioned, because twenty-five fields in one list is a list
+	// nobody reads. About ten of them mean nothing at any given moment — a
+	// dense block has no `expert_hidden`, grouped-query attention has no
+	// `kv_lora`, an RMSNorm has no bias — and `when` is how the inspector knows
+	// which ten.
+	//
+	// The declared order is left alone. It is also the order a generated class
+	// documents its parameters in, and reordering it to suit one panel would
+	// rewrite sixty docstrings for a layout decision; `group` is what the
+	// inspector reads.
 	Params: ParamList{
-		{"d_model", pInt(1, "")},
-		{"heads", pInt(1, "")},
-		{"kv_heads", pInt(1, "")},
-		{"head_dim", pInt(1, "")},
-		{"ffn_hidden", pInt(1, "")},
-		{"attention", pEnum([]string{"gqa", "mla"}, "gqa", "")},
-		{"q_lora", pIntD(0, 0, "Latent attention: compressed query width")},
-		{"kv_lora", pIntD(0, 0, "Latent attention: cached latent width")},
-		{"nope_dim", pIntD(0, 0, "")},
-		{"rope_dim", pIntD(0, 0, "")},
-		{"v_dim", pIntD(0, 0, "")},
-		{"norm", pEnum([]string{"rmsnorm", "layernorm"}, "rmsnorm", "")},
-		{"norm_bias", pBool(true, "Bias on layernorm; ignored for rmsnorm")},
-		{"post_norm", pBool(false, "Also normalize each sublayer's output before the residual add (Gemma 2/3)")},
-		{"mlp", pEnum([]string{"gated", "dense", "moe"}, "gated", "")},
-		{"experts", pIntD(0, 0, "Routed experts, when mlp is moe")},
-		{"top_k", pIntD(1, 1, "")},
-		{"expert_hidden", pIntD(0, 0, "Hidden width of one expert")},
-		{"shared_experts", pIntD(0, 0, "")},
-		{"router_bias", pBool(false, "")},
-		{"act", pEnum([]string{"silu", "gelu", "gelu_tanh", "relu", "relu2"}, "silu", "")},
-		{"attn_bias", pBool(false, "")},
-		{"attn_o_bias", ParamSpec{Type: ParamBool, Default: nil, HasDefault: true}},
-		{"mlp_bias", pBool(false, "")},
-		{"qk_norm", pBool(false, "")},
-		{"causal", pBool(true, "")},
-		{"window", ParamSpec{Type: ParamInt, Default: 0.0, HasDefault: true}},
-		{"rope", ropeSpec()},
-		{"logit_softcap", ParamSpec{Type: ParamNum, Default: 0.0, HasDefault: true,
-			Doc: "Bound the attention scores to this magnitude with tanh (Gemma 2)"}},
+		{"d_model", grouped(pInt(1, ""), "Shape")},
+		{"heads", when(grouped(pInt(1, ""), "Attention"), "attention", "gqa", "mla")},
+		{"kv_heads", when(grouped(pInt(1, ""), "Attention"), "attention", "gqa")},
+		{"head_dim", when(grouped(pInt(1, ""), "Attention"), "attention", "gqa")},
+		{"ffn_hidden", when(grouped(pInt(1, ""), "Feed-forward"), "mlp", "gated", "dense")},
+		{"attention", grouped(pEnum([]string{"gqa", "mla"}, "gqa", ""), "Attention")},
+		{"q_lora", when(grouped(pIntD(0, 0, "Latent attention: compressed query width"), "Attention"), "attention", "mla")},
+		{"kv_lora", when(grouped(pIntD(0, 0, "Latent attention: cached latent width"), "Attention"), "attention", "mla")},
+		{"nope_dim", when(grouped(pIntD(0, 0, "Per-head width without position"), "Attention"), "attention", "mla")},
+		{"rope_dim", when(grouped(pIntD(0, 0, "Per-head rotary width"), "Attention"), "attention", "mla")},
+		{"v_dim", when(grouped(pIntD(0, 0, "Per-head value width"), "Attention"), "attention", "mla")},
+		{"norm", grouped(pEnum([]string{"rmsnorm", "layernorm"}, "rmsnorm", ""), "Normalization")},
+		{"norm_bias", when(grouped(pBool(true, "Bias on layernorm; ignored for rmsnorm"), "Normalization"), "norm", "layernorm")},
+		{"post_norm", grouped(pBool(false, "Also normalize each sublayer's output before the residual add (Gemma 2/3)"), "Normalization")},
+		{"mlp", grouped(pEnum([]string{"gated", "dense", "moe"}, "gated", ""), "Feed-forward")},
+		{"experts", when(grouped(pIntD(0, 0, "Routed experts, when mlp is moe"), "Feed-forward"), "mlp", "moe")},
+		{"top_k", when(grouped(pIntD(1, 1, "Experts each token is routed to"), "Feed-forward"), "mlp", "moe")},
+		{"expert_hidden", when(grouped(pIntD(0, 0, "Hidden width of one expert"), "Feed-forward"), "mlp", "moe")},
+		{"shared_experts", when(grouped(pIntD(0, 0, "Always-on experts, beside the routed ones"), "Feed-forward"), "mlp", "moe")},
+		{"router_bias", when(grouped(pBool(false, "A learned bias on the router's scores"), "Feed-forward"), "mlp", "moe")},
+		{"act", grouped(pEnum([]string{"silu", "gelu", "gelu_tanh", "relu", "relu2"}, "silu", ""), "Feed-forward")},
+		{"attn_bias", grouped(pBool(false, "Bias on the q/k/v projections"), "Attention")},
+		{"attn_o_bias", grouped(ParamSpec{Type: ParamBool, Default: nil, HasDefault: true,
+			Doc: "Override the output-projection bias; null follows attn_bias"}, "Attention")},
+		{"mlp_bias", grouped(pBool(false, "Bias on the feed-forward projections"), "Feed-forward")},
+		{"qk_norm", when(grouped(pBool(false, "RMSNorm on the query and key heads"), "Attention"), "attention", "gqa")},
+		{"causal", grouped(pBool(true, "Whether a token may attend to what follows it"), "Attention")},
+		{"window", grouped(ParamSpec{Type: ParamInt, Default: 0.0, HasDefault: true,
+			Doc: "Sliding-window width; 0 means full attention"}, "Attention")},
+		{"rope", grouped(ropeSpec(), "Attention")},
+		{"logit_softcap", grouped(ParamSpec{Type: ParamNum, Default: 0.0, HasDefault: true,
+			Doc: "Bound the attention scores to this magnitude with tanh (Gemma 2)"}, "Attention")},
 	},
 	Ports: Ports{
 		In:  map[string]PortSpec{"x": Port("... d_model")},

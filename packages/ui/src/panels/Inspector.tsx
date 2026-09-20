@@ -79,6 +79,7 @@ function ParamRow({
   path,
   resolved,
   disabled,
+  irrelevant = false,
 }: {
   name: string;
   spec: ParamSpec;
@@ -86,6 +87,8 @@ function ParamRow({
   path: string;
   resolved: Resolved | undefined;
   disabled: boolean;
+  /** True when this block's own settings make the field mean nothing. */
+  irrelevant?: boolean;
 }): React.ReactElement {
   const raw = node.params?.[name];
   const hasDefault = (spec as { default?: ParamValue }).default !== undefined;
@@ -198,16 +201,124 @@ function ParamRow({
   }
 
   return (
-    <div className={`param${missing ? " param--missing" : ""}`}>
+    <div
+      className={
+        `param${missing ? " param--missing" : ""}` + (irrelevant ? " param--irrelevant" : "")
+      }
+      title={
+        irrelevant && spec.when
+          ? `Only used when ${spec.when.param} is ${spec.when.is.join(" or ")}`
+          : undefined
+      }
+    >
       <div className="param__head">
         <span className="param__name mono">{name}</span>
         <span className="param__type">{spec.type}</span>
-        {missing && <span className="badge badge--error">required</span>}
+        {missing && !irrelevant && <span className="badge badge--error">required</span>}
         {raw !== undefined && hasDefault && <span className="badge">set</span>}
+        {/*
+          Named rather than just greyed: "unused" beside the field is an answer,
+          where a dimmer row is a thing to wonder about. The value is still in
+          the document and still editable — a block may be set up before the
+          switch that turns it on.
+        */}
+        {irrelevant && spec.when && (
+          <span className="badge badge--quiet" title={`Only used when ${spec.when.param} is ${spec.when.is.join(" or ")}`}>
+            unused
+          </span>
+        )}
       </div>
       {control}
       {spec.doc && <div className="param__doc">{spec.doc}</div>}
     </div>
+  );
+}
+
+/**
+ * Whether a parameter means anything given what the block's others are set to.
+ *
+ * The resolved value rather than the raw one, so a condition reads through a
+ * default the document never wrote: a block that says nothing about `mlp` is
+ * still a gated one, and its `experts` field still means nothing.
+ */
+function meaningful(spec: ParamSpec, resolved: Resolved | undefined): boolean {
+  if (!spec.when) return true;
+  const value = resolved?.p?.[spec.when.param];
+  if (value === undefined) return true;
+  return spec.when.is.includes(String(value));
+}
+
+/**
+ * A block's parameters, under headings, with the irrelevant ones greyed.
+ *
+ * `transformer_block` has twenty-five and about ten of them mean nothing at any
+ * moment. Greyed rather than hidden: a field that disappears when you change
+ * `mlp` is one you go looking for, and the value is still in the document
+ * either way.
+ */
+function Parameters({
+  def,
+  node,
+  path,
+  resolved,
+  disabled,
+}: {
+  def: BlockDef;
+  node: NodeDef;
+  path: string;
+  resolved: Resolved | undefined;
+  disabled: boolean;
+}): React.ReactElement {
+  const specs = def.params as Record<string, ParamSpec>;
+  // The block's declared order, which the catalog carries beside the map
+  // because a JSON object's is only its insertion order and a Go map has none.
+  const order = def.paramOrder ?? Object.keys(specs);
+
+  // Groups in the order their first field appears, so the headings follow the
+  // block's own order rather than the alphabet.
+  const groups: { name: string; fields: string[] }[] = [];
+  for (const name of order) {
+    const spec = specs[name];
+    if (!spec) continue;
+    const group = spec.group ?? "";
+    const existing = groups.find((g) => g.name === group);
+    if (existing) existing.fields.push(name);
+    else groups.push({ name: group, fields: [name] });
+  }
+
+  const dim = groups.reduce(
+    (n, g) => n + g.fields.filter((f) => !meaningful(specs[f], resolved)).length,
+    0,
+  );
+
+  return (
+    <section className="section">
+      <h3>
+        Parameters
+        {dim > 0 && (
+          <span className="section__note" title="Fields this block's own settings make irrelevant">
+            {dim} not in use
+          </span>
+        )}
+      </h3>
+      {groups.map((group) => (
+        <div className="param__group" key={group.name || "_"}>
+          {group.name && <div className="param__groupName">{group.name}</div>}
+          {group.fields.map((name) => (
+            <ParamRow
+              key={name}
+              name={name}
+              spec={specs[name]}
+              node={node}
+              path={path}
+              resolved={resolved}
+              disabled={disabled}
+              irrelevant={!meaningful(specs[name], resolved)}
+            />
+          ))}
+        </div>
+      ))}
+    </section>
   );
 }
 
@@ -303,20 +414,13 @@ export default function Inspector(): React.ReactElement {
       </section>
 
       {def && Object.keys(def.params ?? {}).length > 0 && (
-        <section className="section">
-          <h3>Parameters</h3>
-          {Object.entries(def.params as Record<string, ParamSpec>).map(([name, spec]) => (
-            <ParamRow
-              key={name}
-              name={name}
-              spec={spec}
-              node={node}
-              path={selection}
-              resolved={resolved}
-              disabled={disabled}
-            />
-          ))}
-        </section>
+        <Parameters
+          def={def}
+          node={node}
+          path={selection}
+          resolved={resolved}
+          disabled={disabled}
+        />
       )}
 
       {ports && (Object.keys(ports.in).length > 0 || Object.keys(ports.out).length > 0) && (

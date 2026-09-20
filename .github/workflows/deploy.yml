@@ -9,14 +9,20 @@
 # only when the secrets are set, so a fork does not fail for want of a token it
 # was never going to have.
 #
-# Needs two repository secrets:
+# Needs two repository secrets. Cloudflare's own recipe for this is the
+# "Edit Cloudflare Workers" permission template, scoped to one account and to
+# the tensorcad.dev zone:
 #
-#   CLOUDFLARE_API_TOKEN   Account > Workers Scripts: Edit
-#                          Account > Account Settings: Read
-#                          Zone    > Workers Routes: Edit   (for the subdomains)
-#                          Zone    > DNS: Edit              (wrangler adds the records)
-#                          Zone resources: include tensorcad.dev
-#   CLOUDFLARE_ACCOUNT_ID  the account the zone is in
+#   https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/
+#
+#   CLOUDFLARE_API_TOKEN   Create Token > Custom > "Edit Cloudflare Workers".
+#                          Account resources: just this account.
+#                          Zone resources: just tensorcad.dev.
+#                          If the deploy is then refused on the *domains* rather
+#                          than the upload, add Zone > DNS: Edit — a custom
+#                          domain is Cloudflare writing a DNS record for you.
+#   CLOUDFLARE_ACCOUNT_ID  the account the zone is in, from the dashboard
+#                          sidebar or `wrangler whoami`.
 name: Deploy
 
 on:

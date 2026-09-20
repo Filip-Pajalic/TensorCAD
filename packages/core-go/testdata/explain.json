@@ -16998,6 +16998,788 @@
       ]
     },
     {
+      "preset": "jamba-v0.1",
+      "blocks": [
+        {
+          "path": "layers",
+          "type": "repeat",
+          "kind": "container",
+          "docs": {
+            "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
+          },
+          "copies": {
+            "total": 1,
+            "active": 1
+          },
+          "params": [
+            [
+              "count",
+              "G",
+              4,
+              "How many times the subgraph is stacked"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "B T D"
+            },
+            "out": {
+              "x": "B T D"
+            }
+          },
+          "contributes": {
+            "params": 51033448320,
+            "activeParams": 11573436288,
+            "shareOfParams": 0.989589458173738,
+            "flopsPerToken": 23428071424,
+            "shareOfFlops": 0.9775976547544821,
+            "activationBytes": 87107305472,
+            "cacheBytesPerToken": 16384,
+            "cacheBytesPerSequence": 8716288
+          },
+          "breakdown": [
+            {
+              "path": "layers/l1_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l1_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l1_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l3_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l3_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l3_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l5_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l5_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l5_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l7_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l7_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l7_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3758096384
+            }
+          ]
+        },
+        {
+          "path": "layers/l1_mlp",
+          "type": "moe_layer",
+          "kind": "composite",
+          "docs": {
+            "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
+            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
+            "refs": [
+              "https://arxiv.org/abs/2401.06066",
+              "https://arxiv.org/abs/2412.19437"
+            ]
+          },
+          "copies": {
+            "total": 4,
+            "active": 4
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              4096,
+              "Width of the residual stream"
+            ],
+            [
+              "experts",
+              "E",
+              16,
+              "Routed experts"
+            ],
+            [
+              "top_k",
+              "K",
+              2,
+              "Experts each token is sent to"
+            ],
+            [
+              "expert_hidden",
+              "F",
+              14336,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Experts every token always passes through"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity inside an expert"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each expert's projections"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "Give the router a per-expert bias, which is how DeepSeek balances load"
+            ],
+            [
+              "normalize",
+              null,
+              true,
+              "Renormalize the chosen weights to sum to one"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 11274551296,
+            "activeParams": 1409548288,
+            "shareOfParams": 0.21862479364907347,
+            "flopsPerToken": 2819096576,
+            "shareOfFlops": 0.11763418982924775,
+            "activationBytes": 8321499136,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/l1_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l1_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l1_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l1_mlp/router",
+              "type": "topk_router",
+              "params": 262144
+            }
+          ]
+        },
+        {
+          "path": "layers/l3_mlp",
+          "type": "moe_layer",
+          "kind": "composite",
+          "docs": {
+            "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
+            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
+            "refs": [
+              "https://arxiv.org/abs/2401.06066",
+              "https://arxiv.org/abs/2412.19437"
+            ]
+          },
+          "copies": {
+            "total": 4,
+            "active": 4
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              4096,
+              "Width of the residual stream"
+            ],
+            [
+              "experts",
+              "E",
+              16,
+              "Routed experts"
+            ],
+            [
+              "top_k",
+              "K",
+              2,
+              "Experts each token is sent to"
+            ],
+            [
+              "expert_hidden",
+              "F",
+              14336,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Experts every token always passes through"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity inside an expert"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each expert's projections"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "Give the router a per-expert bias, which is how DeepSeek balances load"
+            ],
+            [
+              "normalize",
+              null,
+              true,
+              "Renormalize the chosen weights to sum to one"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 11274551296,
+            "activeParams": 1409548288,
+            "shareOfParams": 0.21862479364907347,
+            "flopsPerToken": 2819096576,
+            "shareOfFlops": 0.11763418982924775,
+            "activationBytes": 8321499136,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/l3_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l3_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l3_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l3_mlp/router",
+              "type": "topk_router",
+              "params": 262144
+            }
+          ]
+        },
+        {
+          "path": "layers/l5_mlp",
+          "type": "moe_layer",
+          "kind": "composite",
+          "docs": {
+            "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
+            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
+            "refs": [
+              "https://arxiv.org/abs/2401.06066",
+              "https://arxiv.org/abs/2412.19437"
+            ]
+          },
+          "copies": {
+            "total": 4,
+            "active": 4
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              4096,
+              "Width of the residual stream"
+            ],
+            [
+              "experts",
+              "E",
+              16,
+              "Routed experts"
+            ],
+            [
+              "top_k",
+              "K",
+              2,
+              "Experts each token is sent to"
+            ],
+            [
+              "expert_hidden",
+              "F",
+              14336,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Experts every token always passes through"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity inside an expert"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each expert's projections"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "Give the router a per-expert bias, which is how DeepSeek balances load"
+            ],
+            [
+              "normalize",
+              null,
+              true,
+              "Renormalize the chosen weights to sum to one"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 11274551296,
+            "activeParams": 1409548288,
+            "shareOfParams": 0.21862479364907347,
+            "flopsPerToken": 2819096576,
+            "shareOfFlops": 0.11763418982924775,
+            "activationBytes": 8321499136,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/l5_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l5_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l5_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l5_mlp/router",
+              "type": "topk_router",
+              "params": 262144
+            }
+          ]
+        },
+        {
+          "path": "layers/l7_mlp",
+          "type": "moe_layer",
+          "kind": "composite",
+          "docs": {
+            "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
+            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
+            "refs": [
+              "https://arxiv.org/abs/2401.06066",
+              "https://arxiv.org/abs/2412.19437"
+            ]
+          },
+          "copies": {
+            "total": 4,
+            "active": 4
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              4096,
+              "Width of the residual stream"
+            ],
+            [
+              "experts",
+              "E",
+              16,
+              "Routed experts"
+            ],
+            [
+              "top_k",
+              "K",
+              2,
+              "Experts each token is sent to"
+            ],
+            [
+              "expert_hidden",
+              "F",
+              14336,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Experts every token always passes through"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity inside an expert"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each expert's projections"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "Give the router a per-expert bias, which is how DeepSeek balances load"
+            ],
+            [
+              "normalize",
+              null,
+              true,
+              "Renormalize the chosen weights to sum to one"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 11274551296,
+            "activeParams": 1409548288,
+            "shareOfParams": 0.21862479364907347,
+            "flopsPerToken": 2819096576,
+            "shareOfFlops": 0.11763418982924775,
+            "activationBytes": 8321499136,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/l7_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l7_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l7_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l7_mlp/router",
+              "type": "topk_router",
+              "params": 262144
+            }
+          ]
+        },
+        {
+          "path": "layers/l1_mlp/experts",
+          "type": "moe_experts",
+          "kind": "container",
+          "docs": {
+            "summary": "A bank of experts. Its subgraph describes one expert.",
+            "formula": "total params scale with experts; FLOPs and activations scale with top_k"
+          },
+          "copies": {
+            "total": 4,
+            "active": 4
+          },
+          "params": [
+            [
+              "experts",
+              "E",
+              16,
+              "How many expert copies exist"
+            ],
+            [
+              "top_k",
+              "K",
+              2,
+              "How many a single token passes through"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... D"
+            },
+            "out": {
+              "y": "... D"
+            }
+          },
+          "contributes": {
+            "params": 11274289152,
+            "activeParams": 1409286144,
+            "shareOfParams": 0.21861971041547937,
+            "flopsPerToken": 2818572288,
+            "shareOfFlops": 0.11761231253896892,
+            "activationBytes": 8053063680,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/l1_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l1_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l1_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3758096384
+            }
+          ]
+        },
+        {
+          "path": "layers/l1_mlp/experts/expert",
+          "type": "gated_mlp",
+          "kind": "composite",
+          "docs": {
+            "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
+            "formula": "params = 3 * d_model * hidden",
+            "refs": [
+              "https://arxiv.org/abs/2002.05202"
+            ]
+          },
+          "copies": {
+            "total": 64,
+            "active": 8
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              4096,
+              "Width of the residual stream"
+            ],
+            [
+              "hidden",
+              "F",
+              14336,
+              "Intermediate width"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity the gate passes through"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each projection"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 11274289152,
+            "activeParams": 1409286144,
+            "shareOfParams": 0.21861971041547937,
+            "flopsPerToken": 2818572288,
+            "shareOfFlops": 0.11761231253896892,
+            "activationBytes": 8053063680,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/l1_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l1_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l1_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3758096384
+            }
+          ]
+        },
+        {
+          "path": "layers/l3_mlp/experts",
+          "type": "moe_experts",
+          "kind": "container",
+          "docs": {
+            "summary": "A bank of experts. Its subgraph describes one expert.",
+            "formula": "total params scale with experts; FLOPs and activations scale with top_k"
+          },
+          "copies": {
+            "total": 4,
+            "active": 4
+          },
+          "params": [
+            [
+              "experts",
+              "E",
+              16,
+              "How many expert copies exist"
+            ],
+            [
+              "top_k",
+              "K",
+              2,
+              "How many a single token passes through"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... D"
+            },
+            "out": {
+              "y": "... D"
+            }
+          },
+          "contributes": {
+            "params": 11274289152,
+            "activeParams": 1409286144,
+            "shareOfParams": 0.21861971041547937,
+            "flopsPerToken": 2818572288,
+            "shareOfFlops": 0.11761231253896892,
+            "activationBytes": 8053063680,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/l3_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l3_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3758096384
+            },
+            {
+              "path": "layers/l3_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3758096384
+            }
+          ]
+        }
+      ]
+    },
+    {
       "preset": "nemotron-h-8b",
       "blocks": [
         {

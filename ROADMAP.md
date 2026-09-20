@@ -8,7 +8,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 
 | Milestone | State |
 |---|---|
-| M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 22 presets, exact parameter match on 19 of them. |
+| M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 23 presets, exact parameter match on 20 of them. |
 | M1 Check (design rules, full analysis) | **Done.** 18 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
 | M2 Manufacture (PyTorch codegen, verification) | **Done.** Every generated model's parameter count matches PyTorch exactly, and the FLOPs estimate matches a profiler once the causal mask is accounted for. |
 | M3 Agent (MCP server, CLI) | **Done**, minus the live-UI bridge. 13 MCP tools over stdio, 6 CLI commands, 67 tests. |
@@ -25,7 +25,7 @@ settings, the full analysis and the design-rule check at three operating points,
 and the generated PyTorch byte for byte. `go run ./cmd/golden` rewrites those
 files, deliberately and never as part of a test.
 
-22 presets, 19 matching their published parameter count exactly and 3 within a
+23 presets, 20 matching their published parameter count exactly and 3 within a
 stated tolerance, and every one of them confirmed against PyTorch 2.11 by
 instantiating the generated model. Not all are language models:
 `ijepa-vit-h14` is a vision transformer and `alexnet` a convolutional
@@ -127,6 +127,7 @@ Done:
 - `gated_deltanet_block` and a `gated_delta_scan` primitive: linear attention with DeltaNet's write rule and Mamba-2's decay gate, so a layer of it caches nothing that grows with context — a matrix per head, fixed for the sequence, plus what the depthwise convolution remembers. The generated file carries a readable sequential reference that runs unmodified; swap it for `fla`'s chunked kernel to train.
 - `mtp_head` and a `shift` primitive: multi-token prediction as DeepSeek-V3 describes it — normalize the hidden state, normalize the embedding of the token ahead, join, project 2D down to D — then a transformer block and the model's own output head, which is shared and so costs a second pass over the vocabulary and no weights. Depth is stacking rather than a parameter.
 - Logit softcapping, on the output logits and on the attention scores. The one on the scores rules out a fused kernel — it never builds the matrix there is anything to cap — so a capped layer is counted as eager attention, which for Gemma-2-9B at 8k is 199 GiB of activations rather than 73.
+- Jamba-v0.1, reproducing 51,570,323,328 exactly, which needed Mamba-1: a `selective_scan` primitive and a `mamba_block` around it. Not a variant of the Mamba-2 block already here — Mamba-1 reads its timestep at a rank and projects it back up, and that matrix in the middle is one the other does not have. Two periods run at once in the stack, attention every eighth layer and a mixture every second, so the repeating unit is eight layers and thirty-two is four of them. Twenty-eight of the thirty-two hold no cache that grows with the sequence. Jamba also norms the timestep and both gates before the scan, which the original does not: [256], [16] and [16], and being 8,064 short across the model is how that was found. The emitted scan runs a real forward pass and exports cleanly.
 - Qwen3-Next-80B-A3B, reproducing 79,674,391,296 exactly — the first linear-attention hybrid, and the one the roadmap had been waiting on a settled config for. Three layers in four are gated DeltaNet, so only twelve of the forty-eight hold a cache that grows with the sequence. Building it against the real weights found three things the catalog had wrong or missing: a gated DeltaNet can have more value heads than key heads (Qwen3-Next has twice as many, which is most of why its input projection is 12,288 wide); its output norm is per head, [128], where the expansion made it as wide as every head together, though the block's own documented formula had said `v_head_dim` all along; and attention can gate its own output, which is why `q_proj` is [8192, 2048] rather than [4096, 2048]. A shared expert can be gated too, by a single learned direction — [1, 2048], 98,304 parameters across the model, and exactly the sort of row an estimate drops.
 - Gemma-3-27B, reproducing 27,009,346,304 exactly. Not from a figure on a card — the card says 27.4B, which includes a SigLIP vision tower this does not model — but from the model's own safetensors headers, read with a range request rather than a download. Checking the arithmetic against those headers group by group is how `qk_norm` is known to be on: the 15,872 it came up short is exactly sixty-two layers times two 128-wide norms. Five layers in six attend within a 1024-token window, so at 128k context the cache is 10.41 GiB where treating every layer as global would give 62.
 - The definition editor: a block the design defines is opened and edited directly, not through an instance, so a change reaches every instance at once. `graphAtPath` is the single door every operation goes through, so one prefix made every existing tool write into `defs` — add, wire, move, rename, delete, with undo. What a literal dropped into a parameterised template means is settled by a rule rather than a guess: inside a definition a bare identifier naming a declared parameter *is* that parameter, which is how the built-in composites are already written. The canvas gets a preview with `$D` bound to `D` over the block's own parameters at their defaults, and an edit naming a parameter is stored back as a reference to it. Tested as a round trip, because one direction proves nothing.
@@ -136,7 +137,7 @@ Done:
 - Alternating local and global attention, as Gemma 2 and 3 use it: a repeat of the group rather than of the layer, so half of Gemma-2-9B's cache is bounded by the window. At 128k context that is 21.66 GiB where treating every layer as global said 42.00 GiB. The importer builds it rather than warning about it.
 
 Remaining:
-- Presets: Jamba, and 2026 models as their configs stabilize.
+- Presets for 2026 models as their configs stabilize.
 
 ### M6 — Ship
 

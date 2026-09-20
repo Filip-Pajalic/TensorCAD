@@ -1843,6 +1843,53 @@
       "constraints": []
     },
     {
+      "type": "selective_scan",
+      "params": {
+        "d_inner": 8192,
+        "state": 16
+      },
+      "resolved": {
+        "d_inner": 8192,
+        "state": 16
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "b": "... state",
+          "c": "... state",
+          "dt": "... d_inner",
+          "x": "... d_inner"
+        },
+        "out": {
+          "y": "... d_inner"
+        },
+        "anchors": {
+          "b": "side/inherit",
+          "c": "side/inherit"
+        }
+      },
+      "portError": "",
+      "paramCount": 139264,
+      "flops": {
+        "elementwise": 0,
+        "fwd": 786432,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
+      },
+      "retains": [
+        "x",
+        "dt",
+        "b",
+        "c"
+      ],
+      "extraActivationBytes": null,
+      "stateBytes": {
+        "perSeq": 262144,
+        "perToken": 0
+      },
+      "constraints": []
+    },
+    {
       "type": "ssd_scan",
       "params": {
         "d_inner": 8192,

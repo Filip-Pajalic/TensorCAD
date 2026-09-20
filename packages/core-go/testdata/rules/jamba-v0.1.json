@@ -1,0 +1,113 @@
+{
+  "preset": "jamba-v0.1",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 2,
+        "warning": 2
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 115.43 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 96.06 GiB and the cache is 136.31 MiB at 8192 tokens across 1 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 2 devices."
+        },
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 852.71 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 96.06 GiB, gradients 96.06 GiB, optimizer 576.34 GiB, activations 84.25 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        },
+        {
+          "rule": "unused-symbol",
+          "severity": "info",
+          "message": "Symbol \"L\" is not referenced by any block.",
+          "hint": "Remove it, or wire it into the parameter that should follow it."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "layers/l0_mamba/x_proj",
+          "message": "Projection width 288 is not a multiple of 64.",
+          "hint": "Rounding up to 320 usually costs little memory and speeds up the matmul."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 4,
+        "warning": 0
+      },
+      "findings": [
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 2.50 GiB, which is 93% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 63.3x the compute-optimal budget of 237B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        },
+        {
+          "rule": "unused-symbol",
+          "severity": "info",
+          "message": "Symbol \"L\" is not referenced by any block.",
+          "hint": "Remove it, or wire it into the parameter that should follow it."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "layers/l0_mamba/x_proj",
+          "message": "Projection width 288 is not a multiple of 64.",
+          "hint": "Rounding up to 320 usually costs little memory and speeds up the matmul."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 2,
+        "warning": 2
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 115.35 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 96.06 GiB and the cache is 68.16 MiB at 8192 tokens across 1 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 2 devices."
+        },
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 1.08 TiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 96.06 GiB, gradients 96.06 GiB, optimizer 576.34 GiB, activations 337.00 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        },
+        {
+          "rule": "unused-symbol",
+          "severity": "info",
+          "message": "Symbol \"L\" is not referenced by any block.",
+          "hint": "Remove it, or wire it into the parameter that should follow it."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "layers/l0_mamba/x_proj",
+          "message": "Projection width 288 is not a multiple of 64.",
+          "hint": "Rounding up to 320 usually costs little memory and speeds up the matmul."
+        }
+      ]
+    }
+  ]
+}

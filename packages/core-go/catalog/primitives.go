@@ -1008,6 +1008,47 @@ var Primitives = []*BlockDef{
 		},
 	},
 	{
+		Kind: "primitive", Type: "selective_scan", Category: "ssm",
+		Params: ParamList{
+			{"d_inner", pInt(1, "Width of the state-space stream")},
+			{"state", pInt(1, "Recurrent state width per channel (Mamba's N)")},
+		},
+		Ports: Ports{
+			In: map[string]PortSpec{
+				"x":  Port("... d_inner"),
+				"dt": Port("... d_inner"),
+				// B and C are shared by every channel, which is what makes the
+				// state cheap: one pair per token rather than one per channel.
+				"b": {Shape: "... state", Anchor: "side", Doc: "Input gate, shared across channels"},
+				"c": {Shape: "... state", Anchor: "side", Doc: "Output gate, shared across channels"},
+			},
+			Out: map[string]PortSpec{"y": Port("... d_inner")},
+		},
+		// The decay per channel and state, and the skip per channel: Mamba's
+		// A_log and D.
+		ParamCount: func(r *Resolved) float64 {
+			return r.Num("d_inner")*r.Num("state") + r.Num("d_inner")
+		},
+		Flops: func(r *Resolved, _ AnalysisCtx) FlopsPerToken {
+			// Linear in the sequence: each step discounts the state, writes into
+			// it and reads one vector out. The constant is approximate, as the
+			// paper gives asymptotics rather than counts.
+			return FlopsPerToken{Fwd: 6 * r.Num("d_inner") * r.Num("state")}
+		},
+		Retains: func(*Resolved) []string { return []string{"x", "dt", "b", "c"} },
+		// Fixed per sequence, which is the whole point: no cache grows with the
+		// context.
+		StateBytes: func(r *Resolved, c AnalysisCtx) StateBytes {
+			return StateBytes{PerSequence: r.Num("d_inner") * r.Num("state") * c.Bytes}
+		},
+		Docs: BlockDocs{
+			Summary: "Mamba's selective scan: a recurrence whose decay and gates are read from the " +
+				"token rather than fixed, so what it keeps depends on what it sees.",
+			Formula: "params = d_inner*state + d_inner (A_log and D); state = d_inner*state per sequence",
+			Refs:    []string{"https://arxiv.org/abs/2312.00752"},
+		},
+	},
+	{
 		Kind: "primitive", Type: "ssd_scan", Category: "ssm",
 		Params: ParamList{
 			{"d_inner", pInt(1, "Width of the state-space stream")},

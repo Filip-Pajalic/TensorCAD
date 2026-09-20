@@ -818,6 +818,66 @@
       ]
     },
     {
+      "type": "mamba_block",
+      "kind": "composite",
+      "category": "ssm",
+      "summary": "Mamba-1: a selective state-space layer. The stream is widened, convolved, and run through a recurrence whose gates are read from the token, then gated and projected back. Its state is fixed per sequence, so context costs nothing to hold.",
+      "formula": "params = d_model*2*d_inner + conv + d_inner*(dt_rank + 2*state) + dt_rank*d_inner + d_inner + d_inner*state + d_inner + d_inner*d_model (+ dt_rank + 2*state when the scan's inputs are normed)",
+      "refs": [
+        "https://arxiv.org/abs/2312.00752"
+      ],
+      "params": [
+        [
+          "d_model",
+          "int",
+          "Width of the residual stream",
+          null
+        ],
+        [
+          "expand",
+          "int",
+          "How much wider the state-space stream is than the residual one",
+          null
+        ],
+        [
+          "state",
+          "int",
+          "Recurrent state width per channel (Mamba's N)",
+          null
+        ],
+        [
+          "dt_rank",
+          "int",
+          "Rank the timestep is read at before being projected back up",
+          null
+        ],
+        [
+          "conv_kernel",
+          "int",
+          "Width of the short depthwise convolution before the scan",
+          null
+        ],
+        [
+          "conv_bias",
+          "bool",
+          "Learn a per-channel constant on that convolution",
+          null
+        ],
+        [
+          "bias",
+          "bool",
+          "Bias on the input and output projections",
+          null
+        ],
+        [
+          "norm_inputs",
+          "bool",
+          "RMSNorm the timestep and the two gates before the scan, as Jamba does",
+          null
+        ]
+      ]
+    },
+    {
       "type": "maxpool2d",
       "kind": "primitive",
       "category": "shape",
@@ -1312,6 +1372,30 @@
           "logit_softcap",
           "num",
           "Bound the attention scores to this magnitude with tanh; 0 leaves them alone. A fused kernel cannot do this, so a layer that caps runs eager.",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "selective_scan",
+      "kind": "primitive",
+      "category": "ssm",
+      "summary": "Mamba's selective scan: a recurrence whose decay and gates are read from the token rather than fixed, so what it keeps depends on what it sees.",
+      "formula": "params = d_inner*state + d_inner (A_log and D); state = d_inner*state per sequence",
+      "refs": [
+        "https://arxiv.org/abs/2312.00752"
+      ],
+      "params": [
+        [
+          "d_inner",
+          "int",
+          "Width of the state-space stream",
+          null
+        ],
+        [
+          "state",
+          "int",
+          "Recurrent state width per channel (Mamba's N)",
           null
         ]
       ]

@@ -1538,6 +1538,202 @@
       "constraints": []
     },
     {
+      "type": "mamba_block",
+      "params": {
+        "conv_kernel": 4,
+        "d_model": "D",
+        "dt_rank": 256,
+        "expand": 2,
+        "state": 16
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          }
+        },
+        {
+          "id": "in_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "D",
+            "out_features": "2*(2)*(D)"
+          }
+        },
+        {
+          "id": "split_gate",
+          "type": "split",
+          "params": {
+            "from": "B T (2*(2)*(D))",
+            "sizes": [
+              "(2)*(D)",
+              "(2)*(D)"
+            ]
+          }
+        },
+        {
+          "id": "conv",
+          "type": "conv1d",
+          "params": {
+            "bias": true,
+            "channels": "(2)*(D)",
+            "kernel": "4"
+          }
+        },
+        {
+          "id": "conv_act",
+          "type": "activation",
+          "params": {
+            "dim": "(2)*(D)",
+            "kind": "silu"
+          }
+        },
+        {
+          "id": "x_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "(2)*(D)",
+            "out_features": "(256)+2*(16)"
+          }
+        },
+        {
+          "id": "split_dtbc",
+          "type": "split",
+          "params": {
+            "from": "B T ((256)+2*(16))",
+            "sizes": [
+              "256",
+              "16",
+              "16"
+            ]
+          }
+        },
+        {
+          "id": "dt_proj",
+          "type": "linear",
+          "params": {
+            "bias": true,
+            "in_features": "256",
+            "out_features": "(2)*(D)"
+          }
+        },
+        {
+          "id": "scan",
+          "type": "selective_scan",
+          "params": {
+            "d_inner": "(2)*(D)",
+            "state": "16"
+          }
+        },
+        {
+          "id": "gate_act",
+          "type": "activation",
+          "params": {
+            "dim": "(2)*(D)",
+            "kind": "silu"
+          }
+        },
+        {
+          "id": "gate",
+          "type": "mul",
+          "params": {
+            "dim": "(2)*(D)"
+          }
+        },
+        {
+          "id": "out_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "(2)*(D)",
+            "out_features": "D"
+          }
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          }
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "in_proj:x"
+        ],
+        [
+          "in_proj:y",
+          "split_gate:x"
+        ],
+        [
+          "split_gate:y0",
+          "conv:x"
+        ],
+        [
+          "conv:y",
+          "conv_act:x"
+        ],
+        [
+          "conv_act:y",
+          "x_proj:x"
+        ],
+        [
+          "x_proj:y",
+          "split_dtbc:x"
+        ],
+        [
+          "split_dtbc:y0",
+          "dt_proj:x"
+        ],
+        [
+          "conv_act:y",
+          "scan:x"
+        ],
+        [
+          "dt_proj:y",
+          "scan:dt"
+        ],
+        [
+          "split_dtbc:y1",
+          "scan:b"
+        ],
+        [
+          "split_dtbc:y2",
+          "scan:c"
+        ],
+        [
+          "split_gate:y1",
+          "gate_act:x"
+        ],
+        [
+          "scan:y",
+          "gate:a"
+        ],
+        [
+          "gate_act:y",
+          "gate:b"
+        ],
+        [
+          "gate:y",
+          "out_proj:x"
+        ],
+        [
+          "out_proj:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
       "type": "mamba2_block",
       "params": {
         "conv_kernel": 4,

@@ -126,7 +126,7 @@ func scalingOf(rope map[string]any) any {
 }
 
 // Composites is every block that is an arrangement rather than a formula.
-var Composites = []*BlockDef{gqaAttention, gatedMlp, denseMlp, mlaAttention, moeLayer, mamba2Block, transformerBlock, mtpHeadComposite, gatedDeltanetBlock}
+var Composites = []*BlockDef{gqaAttention, gatedMlp, denseMlp, mlaAttention, moeLayer, mambaBlock, mamba2Block, transformerBlock, mtpHeadComposite, gatedDeltanetBlock}
 
 // Containers carry the multipliers that make sparsity and stacking work.
 var Containers = []*BlockDef{moeExperts, repeatContainer}
@@ -633,6 +633,113 @@ func expandMoeLayer(raw map[string]any, r *Resolved) Expansion {
 
 // --- state-space blocks -----------------------------------------------------
 
+// mambaBlock is Mamba-1, which Jamba is built from.
+//
+// The difference from Mamba-2 that matters here is the rank in the middle: the
+// timestep is read from the stream at `dt_rank` and projected back up to the
+// full width, where Mamba-2 reads one scalar per head directly. That is a
+// matrix Mamba-2 does not have, which is why this is its own block rather than
+// a parameter on that one.
+var mambaBlock = &BlockDef{
+	Kind: "composite", Type: "mamba_block", Category: "ssm",
+	Params: ParamList{
+		{"d_model", pInt(1, "Width of the residual stream")},
+		{"expand", pIntD(2, 1, "How much wider the state-space stream is than the residual one")},
+		{"state", pInt(1, "Recurrent state width per channel (Mamba's N)")},
+		{"dt_rank", pInt(1, "Rank the timestep is read at before being projected back up")},
+		{"conv_kernel", pIntD(4, 1, "Width of the short depthwise convolution before the scan")},
+		{"conv_bias", pBool(true, "Learn a per-channel constant on that convolution")},
+		{"bias", pBool(false, "Bias on the input and output projections")},
+		{"norm_inputs", pBool(false,
+			"RMSNorm the timestep and the two gates before the scan, as Jamba does")},
+	},
+	Ports: Ports{
+		In:  map[string]PortSpec{"x": Port("... d_model")},
+		Out: map[string]PortSpec{"y": Port("... d_model")},
+	},
+	Docs: BlockDocs{
+		Summary: "Mamba-1: a selective state-space layer. The stream is widened, convolved, and " +
+			"run through a recurrence whose gates are read from the token, then gated and " +
+			"projected back. Its state is fixed per sequence, so context costs nothing to hold.",
+		Formula: "params = d_model*2*d_inner + conv + d_inner*(dt_rank + 2*state) + " +
+			"dt_rank*d_inner + d_inner + d_inner*state + d_inner + d_inner*d_model " +
+			"(+ dt_rank + 2*state when the scan's inputs are normed)",
+		Refs: []string{"https://arxiv.org/abs/2312.00752"},
+	},
+}
+
+func expandMamba(raw map[string]any, r *Resolved) Expansion {
+	D := Ex(raw["d_model"], "0")
+	N := Ex(raw["state"], "0")
+	rank := Ex(raw["dt_rank"], "0")
+	inner := fmt.Sprintf("(%s)*(%s)", Ex(raw["expand"], "2"), D)
+	bias := r.Bool("bias")
+
+	// x and the gate in one matrix, which is how the reference writes it and
+	// what the checkpoint holds: Jamba's `in_proj` is [2*d_inner, d_model].
+	both := fmt.Sprintf("2*%s", inner)
+	// The timestep at its rank, then B and C, in one read of the stream.
+	xProj := fmt.Sprintf("(%s)+2*(%s)", rank, N)
+
+	// Jamba normalizes the timestep and both gates before the scan, which the
+	// original does not. Three narrow norms: [256], [16] and [16] in its case.
+	dtTail, bTail, cTail := "dt_proj:x", "scan:b", "scan:c"
+	extra := []ir.NodeDef{}
+	extraEdges := []ir.Edge{}
+	if r.Bool("norm_inputs") {
+		extra = append(extra,
+			node("dt_norm", "rmsnorm", map[string]any{"dim": rank}),
+			node("b_norm", "rmsnorm", map[string]any{"dim": N}),
+			node("c_norm", "rmsnorm", map[string]any{"dim": N}))
+		extraEdges = append(extraEdges,
+			edge("dt_norm:y", "dt_proj:x"),
+			edge("b_norm:y", "scan:b"), edge("c_norm:y", "scan:c"))
+		dtTail, bTail, cTail = "dt_norm:x", "b_norm:x", "c_norm:x"
+	}
+
+	inNode, outNode := streamBoundary(D)
+	return Expansion{
+		Nodes: append([]ir.NodeDef{
+			inNode,
+			node("in_proj", "linear", map[string]any{
+				"in_features": D, "out_features": both, "bias": bias}),
+			node("split_gate", "split", map[string]any{
+				"from": fmt.Sprintf("B T (%s)", both), "sizes": []any{inner, inner}}),
+			node("conv", "conv1d", map[string]any{
+				"channels": inner, "kernel": Ex(raw["conv_kernel"], "4"),
+				"bias": r.Bool("conv_bias")}),
+			node("conv_act", "activation", map[string]any{"kind": "silu", "dim": inner}),
+			// The one read of the stream that produces the timestep, the input
+			// gate and the output gate together.
+			node("x_proj", "linear", map[string]any{
+				"in_features": inner, "out_features": xProj, "bias": false}),
+			node("split_dtbc", "split", map[string]any{
+				"from": fmt.Sprintf("B T (%s)", xProj), "sizes": []any{rank, N, N}}),
+			// Back up to the full width. This matrix is what Mamba-2 does not
+			// have, and it is why the two are different blocks.
+			node("dt_proj", "linear", map[string]any{
+				"in_features": rank, "out_features": inner, "bias": true}),
+			node("scan", "selective_scan", map[string]any{"d_inner": inner, "state": N}),
+			node("gate_act", "activation", map[string]any{"kind": "silu", "dim": inner}),
+			node("gate", "mul", map[string]any{"dim": inner}),
+			node("out_proj", "linear", map[string]any{
+				"in_features": inner, "out_features": D, "bias": bias}),
+			outNode,
+		}, extra...),
+		Edges: append([]ir.Edge{
+			edge("_in:x", "in_proj:x"), edge("in_proj:y", "split_gate:x"),
+			edge("split_gate:y0", "conv:x"), edge("conv:y", "conv_act:x"),
+			edge("conv_act:y", "x_proj:x"), edge("x_proj:y", "split_dtbc:x"),
+			edge("split_dtbc:y0", dtTail), edge("conv_act:y", "scan:x"),
+			edge("dt_proj:y", "scan:dt"),
+			edge("split_dtbc:y1", bTail), edge("split_dtbc:y2", cTail),
+			edge("split_gate:y1", "gate_act:x"),
+			edge("scan:y", "gate:a"), edge("gate_act:y", "gate:b"),
+			edge("gate:y", "out_proj:x"), edge("out_proj:y", "_out:y"),
+		}, extraEdges...),
+	}
+}
+
 var mamba2Block = &BlockDef{
 	Kind: "composite", Type: "mamba2_block", Category: "ssm",
 	Params: ParamList{
@@ -1099,6 +1206,8 @@ func Expand(def *BlockDef, raw map[string]any, r *Resolved) (Expansion, bool) {
 		return expandMLA(full, r), true
 	case "moe_layer":
 		return expandMoeLayer(full, r), true
+	case "mamba_block":
+		return expandMamba(full, r), true
 	case "mamba2_block":
 		return expandMamba2(full, r), true
 	case "transformer_block":

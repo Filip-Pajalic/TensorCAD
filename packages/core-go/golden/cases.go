@@ -164,6 +164,8 @@ var Primitives = []BlockCase{
 	{"conv1d", map[string]any{"channels": 8192.0, "kernel": 4.0, "bias": true}},
 	{"gated_delta_scan", map[string]any{"heads": 16.0, "head_dim": 128.0}},
 	{"gated_delta_scan", map[string]any{"heads": 32.0, "head_dim": 128.0, "v_head_dim": 64.0}},
+	// Jamba's shape: one state per channel, shared B and C.
+	{"selective_scan", map[string]any{"d_inner": 8192.0, "state": 16.0}},
 	{"ssd_scan", map[string]any{"d_inner": 8192.0, "heads": 128.0, "head_dim": 64.0,
 		"state": 128.0, "groups": 8.0, "xbc_width": 10240.0}},
 	{"ssd_scan", map[string]any{"d_inner": 8192.0, "heads": 128.0, "head_dim": 65.0,
@@ -192,6 +194,10 @@ var Composites = []BlockCase{
 	{"moe_layer", map[string]any{"d_model": "D", "experts": 8.0, "top_k": 2.0, "expert_hidden": "F"}},
 	{"moe_layer", map[string]any{"d_model": "D", "experts": 256.0, "top_k": 8.0,
 		"expert_hidden": 2048.0, "shared_experts": 1.0, "router_bias": true}},
+	// Mamba-1, at Jamba's numbers: the low-rank timestep is what distinguishes
+	// it from the block below.
+	{"mamba_block", map[string]any{"d_model": "D", "expand": 2.0, "state": 16.0,
+		"dt_rank": 256.0, "conv_kernel": 4.0}},
 	{"mamba2_block", map[string]any{"d_model": "D", "expand": 2.0, "head_dim": 64.0,
 		"state": 128.0, "groups": 8.0, "conv_kernel": 4.0}},
 	{"gqa_attention", map[string]any{"d_model": "D", "heads": "H", "kv_heads": "Hkv", "head_dim": "dh",

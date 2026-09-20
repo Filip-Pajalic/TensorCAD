@@ -217,6 +217,40 @@ const helperGatedDelta = "class GatedDeltaScan(nn.Module):\n" +
 	"            out.append(torch.einsum(\"bhvd,bhd->bhv\", state, q[:, :, i]))\n" +
 	"        return torch.stack(out, dim=2).to(v.dtype)\n"
 
+const helperSelective = "class SelectiveScan(nn.Module):\n" +
+	"    \"\"\"Mamba-1's selective scan.\n" +
+	"\n" +
+	"        h_t = exp(dt_t A) h_{t-1} + dt_t B_t x_t\n" +
+	"        y_t = C_t h_t + D x_t\n" +
+	"\n" +
+	"    Selective because dt, B and C are read from the token rather than fixed,\n" +
+	"    so what the state keeps depends on what it just saw. A readable sequential\n" +
+	"    reference so the generated file runs unmodified; for a real training run,\n" +
+	"    swap it for the fused kernel in `mamba_ssm`, which computes the same thing\n" +
+	"    without a Python loop over the sequence.\n" +
+	"    \"\"\"\n" +
+	"\n" +
+	"    def __init__(self, d_inner: int, state: int):\n" +
+	"        super().__init__()\n" +
+	"        self.d_inner, self.state = d_inner, state\n" +
+	"        # A is held as a log so it stays negative and the recurrence decays.\n" +
+	"        self.A_log = nn.Parameter(torch.log(torch.arange(1, state + 1, dtype=torch.float32)).repeat(d_inner, 1))\n" +
+	"        self.D = nn.Parameter(torch.ones(d_inner))\n" +
+	"\n" +
+	"    def forward(self, x, dt, b, c):\n" +
+	"        batch, t, _ = x.shape\n" +
+	"        dt = F.softplus(dt.float())\n" +
+	"        a = -torch.exp(self.A_log.float())\n" +
+	"        h = torch.zeros(batch, self.d_inner, self.state, device=x.device, dtype=torch.float32)\n" +
+	"        out = []\n" +
+	"        for i in range(t):\n" +
+	"            dti = dt[:, i][..., None]\n" +
+	"            # Zero-order hold: the discount and the write both scale with dt.\n" +
+	"            h = h * torch.exp(dti * a[None]) + dti * b[:, i].float()[:, None, :] * x[:, i].float()[..., None]\n" +
+	"            out.append(torch.einsum(\"bdn,bn->bd\", h, c[:, i].float()))\n" +
+	"        y = torch.stack(out, dim=1)\n" +
+	"        return (y + x.float() * self.D).to(x.dtype)\n"
+
 const helperSsd = "class SSDScan(nn.Module):\n" +
 	"    \"\"\"Mamba-2 state-space scan.\n" +
 	"\n" +
@@ -296,17 +330,18 @@ type ctx struct {
 	symbols  *ir.SymbolTable
 	warnings []string
 	// classes are the deduplicated classes, in dependency order.
-	classes      []emitted
-	byKey        map[string]string
-	usedNames    map[string]bool
-	needsRope    bool
-	needsWindow  bool
-	needsSoftcap bool
-	needsShift   bool
-	needsCausal  bool
-	needsSsd     bool
-	needsGdn     bool
-	moeDispatch  string
+	classes        []emitted
+	byKey          map[string]string
+	usedNames      map[string]bool
+	needsRope      bool
+	needsWindow    bool
+	needsSoftcap   bool
+	needsShift     bool
+	needsCausal    bool
+	needsSsd       bool
+	needsSelective bool
+	needsGdn       bool
+	moeDispatch    string
 }
 
 func (c *ctx) warn(format string, args ...any) {
@@ -642,6 +677,15 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 			out.forward = append(out.forward, fmt.Sprintf(
 				"%s = self.%s(%s.transpose(1, 2))[..., : %s.shape[1]].transpose(1, 2)",
 				outName("y"), attr, src, src))
+			set("y", outName("y"))
+
+		case "selective_scan":
+			c.needsSelective = true
+			out.init = append(out.init, fmt.Sprintf("self.%s = SelectiveScan(%s, %s)",
+				attr, pyValue(p["d_inner"]), pyValue(p["state"])))
+			out.forward = append(out.forward, fmt.Sprintf("%s = self.%s(%s, %s, %s, %s)",
+				outName("y"), attr, inputVar(node.ID, "x"), inputVar(node.ID, "dt"),
+				inputVar(node.ID, "b"), inputVar(node.ID, "c")))
 			set("y", outName("y"))
 
 		case "ssd_scan":
@@ -1162,6 +1206,9 @@ func GenerateTorch(doc *ir.Doc, options Options) *Generated {
 	}
 	if c.needsShift {
 		helpers = append(helpers, helperShift, "")
+	}
+	if c.needsSelective {
+		helpers = append(helpers, helperSelective, "")
 	}
 	if c.needsSsd {
 		helpers = append(helpers, helperSsd, "")

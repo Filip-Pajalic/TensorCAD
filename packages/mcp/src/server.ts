@@ -8,6 +8,7 @@
  */
 
 import { McpServer } from "@modelcontextprotocol/server";
+import manifest from "../package.json" with { type: "json" };
 import { FileStore, type FileStoreOptions } from "./store/file-store.js";
 import { registerPrompts } from "./prompts.js";
 import { registerResources } from "./resources.js";
@@ -15,7 +16,13 @@ import { registerTools } from "./tools.js";
 import type { DocumentStore } from "./store/types.js";
 
 export const SERVER_NAME = "tensorcad";
-export const SERVER_VERSION = "0.0.1";
+/**
+ * What the server tells a client it is, read from the package rather than
+ * written here. A second copy is a copy that goes stale, and this one is
+ * compared against `server.json` and against what the registry was told — so
+ * the failure would be a published version claiming to be another.
+ */
+export const SERVER_VERSION: string = manifest.version;
 
 const INSTRUCTIONS = [
   "TensorCAD designs transformer language models as a graph of typed blocks and reports what they would cost.",

@@ -137,6 +137,93 @@ jobs:
           name: mcpb
           path: dist/tensorcad.mcpb
 
+  # The two packages somebody would install rather than download.
+  #
+  # Neither is published in the form this repository consumes it: `main` points
+  # at TypeScript that Node cannot import, the server's `bin` carries a Bun
+  # shebang, and the dependency between them is written `workspace:*`, which npm
+  # rejects. `build:dist` emits the publishable form, packs it, installs it into
+  # an empty directory and starts the server under Node — so what is uploaded is
+  # the thing that was tested, not a hopeful repackaging of it.
+  npm:
+    name: npm
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # For provenance: the attestation says which workflow at which commit
+      # built the tarball, which is the one claim a consumer can check.
+      id-token: write
+    # At the job rather than the step, because a step's `if` is evaluated before
+    # its own `env` block and so cannot see it.
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: https://registry.npmjs.org
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: packages/core-go/go.mod
+          cache: false
+      - run: bun install --frozen-lockfile
+      - run: bun run build:wasm
+      - name: Build, pack and start it under Node
+        run: bun run build:dist
+
+      # The version in the tag is the version that gets published. A mismatch
+      # means the tag was cut from a commit that forgot the bump, and finding
+      # that out after the upload is finding it out too late.
+      - name: The tag and the version agree
+        run: |
+          tag="${{ inputs.tag || github.ref_name }}"
+          want="${tag#v}"
+          for pkg in packages/engine/dist packages/mcp/dist; do
+            got=$(node -p "require('./$pkg/package.json').version")
+            if [ "$got" != "$want" ]; then
+              echo "$pkg is $got but the tag says $want"
+              exit 1
+            fi
+          done
+          got=$(node -p "require('./packages/mcp/server.json').version")
+          if [ "$got" != "$want" ]; then
+            echo "server.json is $got but the tag says $want"
+            exit 1
+          fi
+
+      # The engine first: the server depends on it, and a server published
+      # against a version that is not there yet is one nobody can install.
+      - name: Publish
+        # Absent on a fork and until somebody sets it, and a release that fails
+        # for want of a secret is worse than one that says it skipped this.
+        if: ${{ env.NPM_TOKEN != '' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
+        run: |
+          npm publish --provenance --access public --ignore-scripts
+          cd "$GITHUB_WORKSPACE/packages/mcp/dist"
+          npm publish --provenance --access public --ignore-scripts
+        working-directory: packages/engine/dist
+
+      - name: Say why it did not publish
+        if: ${{ env.NPM_TOKEN == '' }}
+        run: |
+          echo "NPM_TOKEN is not set, so nothing was published." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Both packages were built, packed, installed into an empty directory and started under Node, and the tarballs are attached to the release. Set the secret and re-run this job to publish them." >> "$GITHUB_STEP_SUMMARY"
+
+      # Attached either way: somebody who cannot install from npm can still take
+      # the exact tarball that would have been uploaded.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm
+          path: dist/verify/*.tgz
+
   desktop:
     name: Desktop (${{ matrix.label }})
     needs: verify
@@ -199,7 +286,7 @@ jobs:
 
   publish:
     name: Publish
-    needs: [engine, bundle, desktop]
+    needs: [engine, bundle, desktop, npm]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -246,8 +333,10 @@ jobs:
             echo "- \`tensorcad-<platform>.tar.gz\` — the desktop editor."
             echo "- \`tensorcad-engine-wasm.tar.gz\` — the analysis engine as one"
             echo "  WebAssembly module with its loader, for embedding anywhere else."
-            echo "- \`tensorcad.mcpb\` — the MCP server as a one-click install for"
+              echo "- \`tensorcad.mcpb\` — the MCP server as a one-click install for"
             echo "  Claude Desktop."
+            echo "- \`tensorcad-engine-<version>.tgz\` and \`tensorcad-mcp-<version>.tgz\` —"
+            echo "  the npm packages, for installing without npm."
             echo
             echo "Checksums are in \`checksums.txt\`."
             echo "TENSORCAD_NOTES"

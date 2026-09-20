@@ -17,8 +17,19 @@ import "../vendor/wasm_exec.js";
 let loaded: Engine | null = null;
 
 /** Where the compiled module sits, next to this package's source. */
-function modulePath(): string {
-  return join(dirname(fileURLToPath(import.meta.url)), "..", "wasm", "tensorcad.wasm");
+/**
+ * Where the WebAssembly module is, in either layout it lives in.
+ *
+ * In this repository the client is `src/node.ts` and the module is built to
+ * `wasm/tensorcad.wasm` beside it. In the published package they are flattened
+ * into one directory, because a consumer unpacking a tarball has no reason to
+ * care which of the two a file came from. Both are checked rather than one
+ * being assumed, since assuming the repository layout is what makes a package
+ * that works here and nowhere else.
+ */
+function modulePaths(): string[] {
+  const here = dirname(fileURLToPath(import.meta.url));
+  return [join(here, "tensorcad.wasm"), join(here, "..", "wasm", "tensorcad.wasm")];
 }
 
 /**
@@ -29,17 +40,23 @@ function modulePath(): string {
  */
 export async function loadEngine(): Promise<Engine> {
   if (loaded) return loaded;
-  const path = modulePath();
-  let bytes: ArrayBuffer;
-  try {
-    // Copied out of the Buffer rather than handed over: a Buffer is a view on
-    // a pool shared with other reads, and WebAssembly takes the whole backing
-    // store.
-    const file = readFileSync(path);
-    bytes = file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength) as ArrayBuffer;
-  } catch {
+  const paths = modulePaths();
+  let bytes: ArrayBuffer | null = null;
+  for (const path of paths) {
+    try {
+      // Copied out of the Buffer rather than handed over: a Buffer is a view on
+      // a pool shared with other reads, and WebAssembly takes the whole backing
+      // store.
+      const file = readFileSync(path);
+      bytes = file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength) as ArrayBuffer;
+      break;
+    } catch {
+      // Try the other layout before giving up.
+    }
+  }
+  if (bytes === null) {
     throw new EngineError(
-      `The analysis engine is not built (${path}). Run: bun run build:wasm`,
+      `The analysis engine is not built (looked in ${paths.join(" and ")}). Run: bun run build:wasm`,
     );
   }
   loaded = await createEngine({ wasm: bytes });

@@ -6,6 +6,8 @@
  * bundler can produce one, and falls back to the bundled main-thread build.
  */
 
+import { createLayoutWorker } from "./elk-worker.js";
+
 export interface LayoutNode {
   id: string;
   width: number;
@@ -46,6 +48,15 @@ const PROBE_TIMEOUT_MS = 2000;
 async function getElk(): Promise<ElkLike> {
   elkPromise ??= (async (): Promise<ElkLike> => {
     try {
+      // Null in the packaged build, which ships no worker file. Thrown rather
+      // than branched, so there is one path out of here and it is the fallback.
+      //
+      // Held in a local first because the narrowing has to survive into the
+      // factory closure below, and TypeScript will not carry it there through
+      // an imported binding.
+      const makeWorker = createLayoutWorker;
+      if (!makeWorker) throw new Error("this build ships no layout worker");
+
       const api = await import("elkjs/lib/elk-api.js");
       const ELK = api.default;
 
@@ -55,10 +66,7 @@ async function getElk(): Promise<ElkLike> {
 
       const elk: ElkLike = new ELK({
         workerFactory: () => {
-          const worker = new Worker(
-            new URL("elkjs/lib/elk-worker.min.js", import.meta.url),
-            { type: "classic" },
-          );
+          const worker = makeWorker();
           worker.addEventListener("error", (event) => {
             abandon?.(new Error(`the layout worker did not start: ${event.message}`));
           });

@@ -27,6 +27,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwind from "@tailwindcss/vite";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 
 const manifest = createRequire(import.meta.url)("./package.json");
 
@@ -45,6 +46,36 @@ const external = Object.keys(manifest.dependencies ?? {}).map(
 
 export default defineConfig({
   plugins: [react(), tailwind()],
+
+  /**
+   * No layout worker in the packaged build.
+   *
+   * A worker is a file, and a file is the one thing this cannot hand whoever
+   * installs it: the path baked into the module is wrong wherever the package
+   * ends up. In development it 404s to a single-page fallback and the drawing
+   * comes out stacked; in a consumer's production build their bundler tries to
+   * resolve the path as an entry module and the build fails outright.
+   *
+   * Swapped by resolution rather than switched by a flag, and that distinction
+   * is the whole point: Vite turns `new Worker(new URL(…))` into an emitted
+   * asset while it *transforms* the file, long before any runtime condition
+   * could matter. A flag leaves the asset and the wrong path in the bundle and
+   * only stops them being used. Pointing the specifier somewhere else means
+   * the pattern is never compiled at all.
+   *
+   * The site and desktop builds resolve the real module and still get a worker.
+   */
+  resolve: {
+    alias: [
+      {
+        // The whole specifier, because Vite rewrites by substitution: a regex
+        // that matched only part of it would leave the rest stuck to the front
+        // of an absolute path.
+        find: /^\.\/elk-worker\.js$/,
+        replacement: fileURLToPath(new URL("src/canvas/elk-worker.none.ts", import.meta.url)),
+      },
+    ],
+  },
   build: {
     target: "es2022",
     // Beside the site build rather than on top of it: `bun run build` and

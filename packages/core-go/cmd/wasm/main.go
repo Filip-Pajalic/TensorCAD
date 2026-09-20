@@ -24,6 +24,7 @@ import (
 	"github.com/tensorcad/core/analysis"
 	"github.com/tensorcad/core/catalog"
 	"github.com/tensorcad/core/codegen"
+	"github.com/tensorcad/core/diff"
 	"github.com/tensorcad/core/explain"
 	"github.com/tensorcad/core/hf"
 	"github.com/tensorcad/core/ir"
@@ -56,7 +57,10 @@ func main() {
 		// Every way of splitting the work across a cluster, and which of them
 		// fit. Three arguments rather than two: the design, the operating point
 		// it is measured at, and the cluster it is being fitted to.
-		"plan":           wrap(3, planCluster),
+		"plan": wrap(3, planCluster),
+		// What changed between two designs: structure and numbers together,
+		// because either alone is misleading.
+		"diff":           wrap(3, diffDesigns),
 		"presets":        wrap(0, presetNames),
 		"preset":         wrap(1, preset),
 		"importHf":       wrap(2, importHf),
@@ -380,6 +384,26 @@ func planCluster(args []string) (string, error) {
 		return "", fmt.Errorf("could not read the cluster: %w", err)
 	}
 	result, err := plan.Search(doc, options, req)
+	if err != nil {
+		return "", err
+	}
+	return encode(result)
+}
+
+func diffDesigns(args []string) (string, error) {
+	a, err := decodeDoc(args[0])
+	if err != nil {
+		return "", err
+	}
+	b, err := decodeDoc(args[1])
+	if err != nil {
+		return "", err
+	}
+	options, err := decodeOptions(args[2])
+	if err != nil {
+		return "", err
+	}
+	result, err := diff.Designs(a, b, options)
 	if err != nil {
 		return "", err
 	}

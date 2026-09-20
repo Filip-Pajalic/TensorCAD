@@ -39,7 +39,8 @@ evaluated, its shapes, its share of the model, and its documentation.
 cluster and returns the ones that fit, least demanding first — memory is the
 claim, which is arithmetic; which is *fastest* is not claimed, because that turns
 on the interconnect and the kernels, so each plan carries a note about what it
-costs to run instead. `importHuggingFace(text)` reads a `config.json`.
+costs to run instead. `diff(a, b, options)` says what changed between two designs, structure and numbers
+together, measuring both sides at one operating point. `importHuggingFace(text)` reads a `config.json`.
 
 Everything crosses as JSON text. A design *is* JSON and so is every report, so
 serialising costs a copy and buys a boundary with nothing clever in it.

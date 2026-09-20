@@ -511,6 +511,76 @@ export interface TrainPerGpu {
   total: number;
 }
 
+/** One named value that moved between two designs. */
+export interface DiffChange {
+  name: string;
+  from?: unknown;
+  to?: unknown;
+}
+
+/** A block as it stands in one of the two designs. */
+export interface DiffBlock {
+  path: string;
+  type: string;
+  label?: string;
+  params: Record<string, ParamValue>;
+}
+
+/** One parameter that moved on a block that exists in both. */
+export interface DiffParamChange {
+  key: string;
+  from?: ParamValue;
+  to?: ParamValue;
+}
+
+export interface DiffBlockChange {
+  path: string;
+  /** Set when the block became a different kind of block. */
+  type?: DiffChange;
+  label?: DiffChange;
+  params: DiffParamChange[];
+}
+
+export interface DiffEdge {
+  /** The graph the wire sits in; `<root>` is the top level. */
+  graph: string;
+  from: string;
+  to: string;
+}
+
+/** One number that moved. */
+export interface DiffDelta {
+  metric: string;
+  a: number;
+  b: number;
+  delta: number;
+  /** Null when `a` is zero, because the ratio says nothing then. */
+  ratio: number | null;
+}
+
+/**
+ * What changed between two designs.
+ *
+ * Structure and numbers together, because either alone is misleading: that `F`
+ * went from 11008 to 14336 does not tell you the model grew by 1.3B
+ * parameters, and that it grew by 1.3B does not tell you where.
+ */
+export interface DesignDiff {
+  a: string;
+  b: string;
+  symbols: { added: DiffChange[]; removed: DiffChange[]; changed: DiffChange[] };
+  blocks: { added: DiffBlock[]; removed: DiffBlock[]; changed: DiffBlockChange[] };
+  edges: { added: DiffEdge[]; removed: DiffEdge[] };
+  metrics: DiffDelta[];
+  /** The operating point both sides were measured under. */
+  at: { T: number; B: number; hardware: string };
+  /**
+   * True when nothing structural moved. The numbers may still differ, because
+   * they are measured at an operating point.
+   */
+  identical: boolean;
+}
+
 /** The cluster a design is being fitted to. */
 export interface ClusterRequest {
   /** How many devices there are. */

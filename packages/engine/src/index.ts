@@ -27,6 +27,7 @@ import type {
   ScaleResult,
   ClusterRequest,
   ClusterResult,
+  DesignDiff,
   TorchOptions,
   UserBlockDef,
   ValidationReport,
@@ -80,6 +81,8 @@ export interface Engine {
    * note about what it costs to run rather than a number pretending to.
    */
   plan(doc: Doc, options: AnalysisOptions, cluster: ClusterRequest): ClusterResult;
+  /** What changed between two designs, structurally and numerically. */
+  diff(a: Doc, b: Doc, options?: AnalysisOptions): DesignDiff;
   /** The design library this engine ships with. */
   presets(): string[];
   preset(name: string): Doc;
@@ -114,6 +117,7 @@ interface Exports {
   generateTorch(doc: string, options: string): string;
   scale(doc: string, options: string): string;
   plan(doc: string, options: string, cluster: string): string;
+  diff(a: string, b: string, options: string): string;
   presets(): string;
   preset(name: string): string;
   importHf(configText: string, name: string): string;
@@ -247,6 +251,10 @@ function wrap(api: Exports): Engine {
       unwrap(
         api.plan(JSON.stringify(doc), JSON.stringify(options ?? {}), JSON.stringify(cluster)),
       ) as ClusterResult,
+    diff: (a, b, options) =>
+      unwrap(
+        api.diff(JSON.stringify(a), JSON.stringify(b), JSON.stringify(options ?? {})),
+      ) as DesignDiff,
     presets: () => unwrap(api.presets()) as string[],
     preset: (name) => unwrap(api.preset(name)) as Doc,
     importHuggingFace: (configText, name) =>

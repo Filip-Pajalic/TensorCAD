@@ -7,7 +7,8 @@ import { bool, UsageError, type Args } from "../args.js";
 import { loadDesign } from "../load.js";
 import { analysisOptions, impliedGpus } from "../options.js";
 import { bold, dim, green, heading, pad, red, writeOut, yellow } from "../format.js";
-import { diffDesigns, type NumericDelta } from "../diff.js";
+import type { DiffDelta } from "@tensorcad/engine";
+import { diffDesigns } from "@tensorcad/engine/node";
 import { formatBytes, formatCount, formatFlops } from "@tensorcad/engine";
 
 const FORMATTERS: Record<string, (n: number) => string> = {
@@ -22,7 +23,7 @@ const FORMATTERS: Record<string, (n: number) => string> = {
   "serving memory": formatBytes,
 };
 
-function fmt(m: NumericDelta, v: number): string {
+function fmt(m: DiffDelta, v: number): string {
   const f = FORMATTERS[m.metric] ?? ((n: number) => String(n));
   return f(v);
 }
@@ -30,6 +31,35 @@ function fmt(m: NumericDelta, v: number): string {
 function short(v: unknown): string {
   const s = JSON.stringify(v ?? null);
   return s.length > 60 ? `${s.slice(0, 57)}...` : s;
+}
+
+/**
+ * A symbol as a reader wants to see it.
+ *
+ * `D` going from 768 to 1024 is the whole change; printing the documentation
+ * string and the kind either side of it buries that in sixty characters of
+ * things that did not move. When something other than the value *did* move, the
+ * whole definition is what to show.
+ */
+function symbolText(before: unknown, after: unknown): [string, string] {
+  const value = (v: unknown): string | null => {
+    if (typeof v === "number" || typeof v === "string") return String(v);
+    if (v && typeof v === "object") {
+      const o = v as Record<string, unknown>;
+      const n = o.value ?? o.expr ?? o.default;
+      if (typeof n === "number" || typeof n === "string") return String(n);
+    }
+    return null;
+  };
+  const rest = (v: unknown): string => {
+    if (!v || typeof v !== "object") return "";
+    const { value: _v, expr: _e, default: _d, ...other } = v as Record<string, unknown>;
+    return JSON.stringify(other);
+  };
+  const a = value(before);
+  const b = value(after);
+  if (a !== null && b !== null && rest(before) === rest(after)) return [a, b];
+  return [short(before), short(after)];
 }
 
 export function cmdDiff(args: Args): number {
@@ -50,10 +80,14 @@ export function cmdDiff(args: Args): number {
   if (symbols.added.length || symbols.removed.length || symbols.changed.length) {
     out.push(heading("Symbols"));
     for (const s of symbols.changed) {
-      out.push(`  ${yellow("~")} ${s.name}  ${dim(short(s.from))} ${dim("->")} ${short(s.to)}`);
+      const [was, now] = symbolText(s.from, s.to);
+      out.push(`  ${yellow("~")} ${s.name}  ${dim(was)} ${dim("->")} ${now}`);
     }
-    for (const s of symbols.added) out.push(`  ${green("+")} ${s.name} = ${short(s.value)}`);
-    for (const s of symbols.removed) out.push(`  ${red("-")} ${s.name} = ${short(s.value)}`);
+    // An addition has only a `to` and a removal only a `from`: one shape for
+    // every kind of change rather than a second one for the two that are
+    // one-sided.
+    for (const s of symbols.added) out.push(`  ${green("+")} ${s.name} = ${symbolText(s.to, s.to)[0]}`);
+    for (const s of symbols.removed) out.push(`  ${red("-")} ${s.name} = ${symbolText(s.from, s.from)[0]}`);
   }
 
   if (blocks.added.length || blocks.removed.length || blocks.changed.length) {

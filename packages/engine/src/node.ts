@@ -73,6 +73,7 @@ import type {
   ClusterRequest,
   ClusterResult,
   Derived,
+  DesignDiff,
   Doc,
   Dtype,
   Explanation,
@@ -132,6 +133,10 @@ export function planCluster(
   cluster: ClusterRequest,
 ): ClusterResult {
   return engine().plan(doc, options, cluster);
+}
+
+export function diffDesigns(a: Doc, b: Doc, options?: AnalysisOptions): DesignDiff {
+  return engine().diff(a, b, options);
 }
 
 export function importHfConfig(configText: string, name?: string): ImportResult {

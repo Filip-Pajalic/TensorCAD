@@ -56,7 +56,7 @@ function loadDetail(): number {
 }
 
 export type RightTab = "inspector" | "symbols" | "rules" | "cluster";
-export type DialogId = "settings" | "shortcuts" | null;
+export type DialogId = "settings" | "shortcuts" | "compare" | null;
 
 /**
  * The active tool, the way any drawing program has one. Select edits, pan moves
@@ -75,6 +75,14 @@ export type { ShapeMode } from "../canvas/shapes.js";
 
 export interface EditorState {
   doc: Doc;
+  /**
+   * The design as it stood when this one was opened, which is the other side of
+   * "what have I changed". Set by loading, opening or starting a design, and by
+   * asking for it; never by an edit.
+   */
+  opened: Doc;
+  /** Take the design as it stands now as the baseline to compare against. */
+  markOpened: () => void;
   /** Breadcrumb path of the graph level on screen. */
   path: string[];
   /** Full path of the selected node, or null. */
@@ -236,6 +244,7 @@ export const useEditor = create<EditorState>((set, get) => {
 
   return {
     doc: initialDoc,
+    opened: initialDoc,
     path: [],
     selection: null,
     past: [],
@@ -304,12 +313,16 @@ export const useEditor = create<EditorState>((set, get) => {
     setDoc: (doc, status) =>
       set((s) => ({
         doc,
+        // Replacing the whole document is opening a different design, so it
+        // becomes its own baseline. An edit does not: that is the point.
+        opened: doc,
         past: [...s.past.slice(-(UNDO_LIMIT - 1)), s.doc],
         future: [],
         path: [],
         selection: null,
         status: status ?? null,
       })),
+    markOpened: () => set((s) => ({ opened: s.doc, status: "Comparing against this design" })),
     setPath: (path) => set({ path, selection: null, findingFocus: null }),
     enter: (path) => set({ path: ops.segmentsOf(path), selection: null, findingFocus: null }),
     // Selecting something else puts the rules list back to showing

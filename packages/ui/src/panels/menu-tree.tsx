@@ -77,6 +77,9 @@ export const VIEW_MENU: MenuNode[] = [
   item("view.detailIn"),
   item("view.detailOut"),
   sep(),
+  item("view.compare"),
+  item("view.mark-baseline"),
+  sep(),
   sub("Show", SHOW_MENU),
 ];
 

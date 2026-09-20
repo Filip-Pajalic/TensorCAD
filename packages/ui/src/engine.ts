@@ -16,6 +16,7 @@ import {
   type AnalysisOptions,
   type ClusterRequest,
   type ClusterResult,
+  type DesignDiff,
   createEngine,
   isComposite,
   isContainer,
@@ -118,6 +119,11 @@ export function planCluster(
   cluster: ClusterRequest,
 ): ClusterResult {
   return engine().plan(doc, options, cluster);
+}
+
+/** What changed between two designs, structurally and numerically. */
+export function diffDesigns(a: Doc, b: Doc, options?: AnalysisOptions): DesignDiff {
+  return engine().diff(a, b, options);
 }
 
 /** Shape inference alone, for the wire the pointer is over. */

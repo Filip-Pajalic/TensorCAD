@@ -1100,6 +1100,23 @@ exactly the findings most worth accepting: a block's own constraint — `SDPA-03
 `ATTN-01` — is a finding with a rule id and no row in that book. It is on the
 finding itself as well, which is also simply where the decision gets made.
 
+### Comparing, in a dialog rather than a tab
+
+`View > Compare` against where this design started, or against any preset. Both
+halves, because either alone misleads: that `F` went from 11008 to 14336 does
+not tell you the model grew by 1.3B parameters, and that it grew by 1.3B does
+not tell you where. A changed block's path is a link into the drawing.
+
+A dialog rather than a fifth tab. Comparing is something you open, read and
+close; the four tabs are used constantly, and a fifth would cost them width for
+something that is not. The rule for the readout column is that everything in it
+is worth having on screen while you work, and a diff is not.
+
+The baseline is the design as it was when it was opened, which `setDoc` records
+and an edit does not touch — that is the whole distinction. "Compare against
+this from now on" moves it, for when the interesting question becomes what has
+changed since a particular point rather than since the file was loaded.
+
 ### Still outstanding
 
 E3 through E7: the command surface and palette, the inspector, the definition

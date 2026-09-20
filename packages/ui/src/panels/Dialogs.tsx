@@ -7,6 +7,7 @@
  */
 
 import { useEffect, useState } from "react";
+import Compare from "./Compare.js";
 import { Dialog, DialogContent } from "../ui/dialog.js";
 import { Label } from "../ui/label.js";
 import { Select } from "../ui/select.js";
@@ -179,6 +180,14 @@ export default function Dialogs(): React.ReactElement {
         {dialog === "settings" && (
           <DialogContent title="Settings" width="30rem">
             <SettingsBody />
+          </DialogContent>
+        )}
+      </Dialog>
+
+      <Dialog open={dialog === "compare"} onOpenChange={(open) => !open && close()}>
+        {dialog === "compare" && (
+          <DialogContent title="Compare" width="46rem">
+            <Compare />
           </DialogContent>
         )}
       </Dialog>

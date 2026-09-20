@@ -396,6 +396,20 @@ export const COMMANDS: Command[] = [
     enabled: () => Object.keys(defsOf(editor().doc)).length > 0,
   },
 
+  {
+    id: "view.compare",
+    label: "Compare…",
+    group: "view",
+    shortcut: `${MOD}+d`,
+    run: () => editor().openDialog("compare"),
+  },
+  {
+    id: "view.mark-baseline",
+    label: "Compare against this from now on",
+    group: "view",
+    run: () => editor().markOpened(),
+  },
+
   // --- help ---------------------------------------------------------------
   {
     id: "help.settings",

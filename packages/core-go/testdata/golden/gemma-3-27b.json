@@ -1,0 +1,3522 @@
+{
+  "preset": "gemma-3-27b",
+  "symbols": {
+    "order": [
+      "B",
+      "T",
+      "G",
+      "Ltail",
+      "L",
+      "W",
+      "D",
+      "H",
+      "Hkv",
+      "dh",
+      "F",
+      "V"
+    ],
+    "values": {
+      "B": 1,
+      "D": 5376,
+      "F": 21504,
+      "G": 10,
+      "H": 32,
+      "Hkv": 16,
+      "L": 62,
+      "Ltail": 2,
+      "T": 8192,
+      "V": 262208,
+      "W": 1024,
+      "dh": 128
+    },
+    "designValues": {
+      "D": 5376,
+      "F": 21504,
+      "G": 10,
+      "H": 32,
+      "Hkv": 16,
+      "L": 62,
+      "Ltail": 2,
+      "V": 262208,
+      "W": 1024,
+      "dh": 128
+    },
+    "runtime": [
+      "B",
+      "T"
+    ],
+    "docs": {
+      "B": "Batch size",
+      "D": "Residual stream width (d_model)",
+      "F": "Feed-forward hidden width",
+      "G": "Groups of five windowed layers and one global",
+      "H": "Query heads",
+      "Hkv": "Key/value heads",
+      "L": "Transformer layers in total",
+      "Ltail": "Windowed layers past the last whole group, written out rather than repeated",
+      "T": "Sequence length in tokens",
+      "V": "Vocabulary size",
+      "W": "Sliding-window width on the local layers",
+      "dh": "Head dimension"
+    },
+    "errors": []
+  },
+  "infer": {
+    "outputs": [
+      [
+        "embed:y",
+        "B T D"
+      ],
+      [
+        "final_norm:y",
+        "B T D"
+      ],
+      [
+        "head:y",
+        "B T V"
+      ],
+      [
+        "layers/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/global:y",
+        "B T D"
+      ],
+      [
+        "layers/local0:y",
+        "B T D"
+      ],
+      [
+        "layers/local1:y",
+        "B T D"
+      ],
+      [
+        "layers/local2:y",
+        "B T D"
+      ],
+      [
+        "layers/local3:y",
+        "B T D"
+      ],
+      [
+        "layers/local4:y",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "tail0:y",
+        "B T D"
+      ],
+      [
+        "tail1:y",
+        "B T D"
+      ],
+      [
+        "tokens:x",
+        "B T"
+      ]
+    ],
+    "inputs": [
+      [
+        "embed:ids",
+        "B T"
+      ],
+      [
+        "final_norm:x",
+        "B T D"
+      ],
+      [
+        "head:x",
+        "B T D"
+      ],
+      [
+        "layers/_out:x",
+        "B T D"
+      ],
+      [
+        "layers/global:x",
+        "B T D"
+      ],
+      [
+        "layers/local0:x",
+        "B T D"
+      ],
+      [
+        "layers/local1:x",
+        "B T D"
+      ],
+      [
+        "layers/local2:x",
+        "B T D"
+      ],
+      [
+        "layers/local3:x",
+        "B T D"
+      ],
+      [
+        "layers/local4:x",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "logits:x",
+        "B T V"
+      ],
+      [
+        "tail0:x",
+        "B T D"
+      ],
+      [
+        "tail1:x",
+        "B T D"
+      ]
+    ],
+    "producerOf": [
+      [
+        "embed:ids",
+        "tokens:x"
+      ],
+      [
+        "final_norm:x",
+        "tail1:y"
+      ],
+      [
+        "head:x",
+        "final_norm:y"
+      ],
+      [
+        "layers/_out:x",
+        "layers/global:y"
+      ],
+      [
+        "layers/global:x",
+        "layers/local4:y"
+      ],
+      [
+        "layers/local0:x",
+        "layers/_in:x"
+      ],
+      [
+        "layers/local1:x",
+        "layers/local0:y"
+      ],
+      [
+        "layers/local2:x",
+        "layers/local1:y"
+      ],
+      [
+        "layers/local3:x",
+        "layers/local2:y"
+      ],
+      [
+        "layers/local4:x",
+        "layers/local3:y"
+      ],
+      [
+        "layers:x",
+        "embed:y"
+      ],
+      [
+        "logits:x",
+        "head:y"
+      ],
+      [
+        "tail0:x",
+        "layers:x"
+      ],
+      [
+        "tail1:x",
+        "tail0:y"
+      ]
+    ],
+    "issues": []
+  },
+  "inferExpanded": {
+    "outputs": [
+      [
+        "embed:y",
+        "B T D"
+      ],
+      [
+        "final_norm:y",
+        "B T D"
+      ],
+      [
+        "head:y",
+        "B T V"
+      ],
+      [
+        "layers/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/global/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/global/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/global/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "layers/global/attn/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/global/attn/k_norm:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/global/attn/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/global/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/global/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/global/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "layers/global/attn/q_norm:y",
+        "B H T dh"
+      ],
+      [
+        "layers/global/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/global/attn/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/global/attn/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "layers/global/attn/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/global/attn/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/global/attn:y",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/act:y",
+        "B T F"
+      ],
+      [
+        "layers/global/mlp/down:y",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/gate:y",
+        "B T F"
+      ],
+      [
+        "layers/global/mlp/gated:y",
+        "B T F"
+      ],
+      [
+        "layers/global/mlp/up:y",
+        "B T F"
+      ],
+      [
+        "layers/global/mlp:y",
+        "B T D"
+      ],
+      [
+        "layers/global/norm1:y",
+        "B T D"
+      ],
+      [
+        "layers/global/norm2:y",
+        "B T D"
+      ],
+      [
+        "layers/global/post_attn_norm:y",
+        "B T D"
+      ],
+      [
+        "layers/global/post_mlp_norm:y",
+        "B T D"
+      ],
+      [
+        "layers/global/resid1:y",
+        "B T D"
+      ],
+      [
+        "layers/global/resid2:y",
+        "B T D"
+      ],
+      [
+        "layers/global:y",
+        "B T D"
+      ],
+      [
+        "layers/local0/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local0/attn/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local0/attn/k_norm:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local0/attn/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local0/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/local0/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/local0/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local0/attn/q_norm:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local0/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/local0/attn/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local0/attn/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local0/attn/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local0/attn/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local0/attn:y",
+        "B T D"
+      ],
+      [
+        "layers/local0/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/mlp/act:y",
+        "B T F"
+      ],
+      [
+        "layers/local0/mlp/down:y",
+        "B T D"
+      ],
+      [
+        "layers/local0/mlp/gate:y",
+        "B T F"
+      ],
+      [
+        "layers/local0/mlp/gated:y",
+        "B T F"
+      ],
+      [
+        "layers/local0/mlp/up:y",
+        "B T F"
+      ],
+      [
+        "layers/local0/mlp:y",
+        "B T D"
+      ],
+      [
+        "layers/local0/norm1:y",
+        "B T D"
+      ],
+      [
+        "layers/local0/norm2:y",
+        "B T D"
+      ],
+      [
+        "layers/local0/post_attn_norm:y",
+        "B T D"
+      ],
+      [
+        "layers/local0/post_mlp_norm:y",
+        "B T D"
+      ],
+      [
+        "layers/local0/resid1:y",
+        "B T D"
+      ],
+      [
+        "layers/local0/resid2:y",
+        "B T D"
+      ],
+      [
+        "layers/local0:y",
+        "B T D"
+      ],
+      [
+        "layers/local1/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local1/attn/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local1/attn/k_norm:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local1/attn/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local1/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/local1/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/local1/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local1/attn/q_norm:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local1/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/local1/attn/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local1/attn/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local1/attn/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local1/attn/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local1/attn:y",
+        "B T D"
+      ],
+      [
+        "layers/local1/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/mlp/act:y",
+        "B T F"
+      ],
+      [
+        "layers/local1/mlp/down:y",
+        "B T D"
+      ],
+      [
+        "layers/local1/mlp/gate:y",
+        "B T F"
+      ],
+      [
+        "layers/local1/mlp/gated:y",
+        "B T F"
+      ],
+      [
+        "layers/local1/mlp/up:y",
+        "B T F"
+      ],
+      [
+        "layers/local1/mlp:y",
+        "B T D"
+      ],
+      [
+        "layers/local1/norm1:y",
+        "B T D"
+      ],
+      [
+        "layers/local1/norm2:y",
+        "B T D"
+      ],
+      [
+        "layers/local1/post_attn_norm:y",
+        "B T D"
+      ],
+      [
+        "layers/local1/post_mlp_norm:y",
+        "B T D"
+      ],
+      [
+        "layers/local1/resid1:y",
+        "B T D"
+      ],
+      [
+        "layers/local1/resid2:y",
+        "B T D"
+      ],
+      [
+        "layers/local1:y",
+        "B T D"
+      ],
+      [
+        "layers/local2/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local2/attn/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local2/attn/k_norm:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local2/attn/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local2/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/local2/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/local2/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local2/attn/q_norm:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local2/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/local2/attn/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local2/attn/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local2/attn/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local2/attn/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local2/attn:y",
+        "B T D"
+      ],
+      [
+        "layers/local2/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/mlp/act:y",
+        "B T F"
+      ],
+      [
+        "layers/local2/mlp/down:y",
+        "B T D"
+      ],
+      [
+        "layers/local2/mlp/gate:y",
+        "B T F"
+      ],
+      [
+        "layers/local2/mlp/gated:y",
+        "B T F"
+      ],
+      [
+        "layers/local2/mlp/up:y",
+        "B T F"
+      ],
+      [
+        "layers/local2/mlp:y",
+        "B T D"
+      ],
+      [
+        "layers/local2/norm1:y",
+        "B T D"
+      ],
+      [
+        "layers/local2/norm2:y",
+        "B T D"
+      ],
+      [
+        "layers/local2/post_attn_norm:y",
+        "B T D"
+      ],
+      [
+        "layers/local2/post_mlp_norm:y",
+        "B T D"
+      ],
+      [
+        "layers/local2/resid1:y",
+        "B T D"
+      ],
+      [
+        "layers/local2/resid2:y",
+        "B T D"
+      ],
+      [
+        "layers/local2:y",
+        "B T D"
+      ],
+      [
+        "layers/local3/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local3/attn/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local3/attn/k_norm:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local3/attn/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local3/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/local3/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/local3/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local3/attn/q_norm:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local3/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/local3/attn/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local3/attn/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local3/attn/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local3/attn/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local3/attn:y",
+        "B T D"
+      ],
+      [
+        "layers/local3/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/mlp/act:y",
+        "B T F"
+      ],
+      [
+        "layers/local3/mlp/down:y",
+        "B T D"
+      ],
+      [
+        "layers/local3/mlp/gate:y",
+        "B T F"
+      ],
+      [
+        "layers/local3/mlp/gated:y",
+        "B T F"
+      ],
+      [
+        "layers/local3/mlp/up:y",
+        "B T F"
+      ],
+      [
+        "layers/local3/mlp:y",
+        "B T D"
+      ],
+      [
+        "layers/local3/norm1:y",
+        "B T D"
+      ],
+      [
+        "layers/local3/norm2:y",
+        "B T D"
+      ],
+      [
+        "layers/local3/post_attn_norm:y",
+        "B T D"
+      ],
+      [
+        "layers/local3/post_mlp_norm:y",
+        "B T D"
+      ],
+      [
+        "layers/local3/resid1:y",
+        "B T D"
+      ],
+      [
+        "layers/local3/resid2:y",
+        "B T D"
+      ],
+      [
+        "layers/local3:y",
+        "B T D"
+      ],
+      [
+        "layers/local4/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local4/attn/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local4/attn/k_norm:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local4/attn/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local4/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/local4/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/local4/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local4/attn/q_norm:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local4/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/local4/attn/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local4/attn/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local4/attn/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local4/attn/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local4/attn:y",
+        "B T D"
+      ],
+      [
+        "layers/local4/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/mlp/act:y",
+        "B T F"
+      ],
+      [
+        "layers/local4/mlp/down:y",
+        "B T D"
+      ],
+      [
+        "layers/local4/mlp/gate:y",
+        "B T F"
+      ],
+      [
+        "layers/local4/mlp/gated:y",
+        "B T F"
+      ],
+      [
+        "layers/local4/mlp/up:y",
+        "B T F"
+      ],
+      [
+        "layers/local4/mlp:y",
+        "B T D"
+      ],
+      [
+        "layers/local4/norm1:y",
+        "B T D"
+      ],
+      [
+        "layers/local4/norm2:y",
+        "B T D"
+      ],
+      [
+        "layers/local4/post_attn_norm:y",
+        "B T D"
+      ],
+      [
+        "layers/local4/post_mlp_norm:y",
+        "B T D"
+      ],
+      [
+        "layers/local4/resid1:y",
+        "B T D"
+      ],
+      [
+        "layers/local4/resid2:y",
+        "B T D"
+      ],
+      [
+        "layers/local4:y",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "tail0/_in:x",
+        "B T D"
+      ],
+      [
+        "tail0/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "tail0/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "tail0/attn/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "tail0/attn/k_norm:y",
+        "B Hkv T dh"
+      ],
+      [
+        "tail0/attn/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "tail0/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "tail0/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "tail0/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "tail0/attn/q_norm:y",
+        "B H T dh"
+      ],
+      [
+        "tail0/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "tail0/attn/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "tail0/attn/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "tail0/attn/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "tail0/attn/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "tail0/attn:y",
+        "B T D"
+      ],
+      [
+        "tail0/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "tail0/mlp/act:y",
+        "B T F"
+      ],
+      [
+        "tail0/mlp/down:y",
+        "B T D"
+      ],
+      [
+        "tail0/mlp/gate:y",
+        "B T F"
+      ],
+      [
+        "tail0/mlp/gated:y",
+        "B T F"
+      ],
+      [
+        "tail0/mlp/up:y",
+        "B T F"
+      ],
+      [
+        "tail0/mlp:y",
+        "B T D"
+      ],
+      [
+        "tail0/norm1:y",
+        "B T D"
+      ],
+      [
+        "tail0/norm2:y",
+        "B T D"
+      ],
+      [
+        "tail0/post_attn_norm:y",
+        "B T D"
+      ],
+      [
+        "tail0/post_mlp_norm:y",
+        "B T D"
+      ],
+      [
+        "tail0/resid1:y",
+        "B T D"
+      ],
+      [
+        "tail0/resid2:y",
+        "B T D"
+      ],
+      [
+        "tail0:y",
+        "B T D"
+      ],
+      [
+        "tail1/_in:x",
+        "B T D"
+      ],
+      [
+        "tail1/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "tail1/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "tail1/attn/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "tail1/attn/k_norm:y",
+        "B Hkv T dh"
+      ],
+      [
+        "tail1/attn/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "tail1/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "tail1/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "tail1/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "tail1/attn/q_norm:y",
+        "B H T dh"
+      ],
+      [
+        "tail1/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "tail1/attn/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "tail1/attn/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "tail1/attn/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "tail1/attn/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "tail1/attn:y",
+        "B T D"
+      ],
+      [
+        "tail1/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "tail1/mlp/act:y",
+        "B T F"
+      ],
+      [
+        "tail1/mlp/down:y",
+        "B T D"
+      ],
+      [
+        "tail1/mlp/gate:y",
+        "B T F"
+      ],
+      [
+        "tail1/mlp/gated:y",
+        "B T F"
+      ],
+      [
+        "tail1/mlp/up:y",
+        "B T F"
+      ],
+      [
+        "tail1/mlp:y",
+        "B T D"
+      ],
+      [
+        "tail1/norm1:y",
+        "B T D"
+      ],
+      [
+        "tail1/norm2:y",
+        "B T D"
+      ],
+      [
+        "tail1/post_attn_norm:y",
+        "B T D"
+      ],
+      [
+        "tail1/post_mlp_norm:y",
+        "B T D"
+      ],
+      [
+        "tail1/resid1:y",
+        "B T D"
+      ],
+      [
+        "tail1/resid2:y",
+        "B T D"
+      ],
+      [
+        "tail1:y",
+        "B T D"
+      ],
+      [
+        "tokens:x",
+        "B T"
+      ]
+    ],
+    "inputs": [
+      [
+        "embed:ids",
+        "B T"
+      ],
+      [
+        "final_norm:x",
+        "B T D"
+      ],
+      [
+        "head:x",
+        "B T D"
+      ],
+      [
+        "layers/_out:x",
+        "B T D"
+      ],
+      [
+        "layers/global/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/global/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/global/attn/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/global/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "layers/global/attn/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/global/attn/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/global/attn/k_norm:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/global/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/global/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "layers/global/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/global/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/global/attn/q_norm:x",
+        "B H T dh"
+      ],
+      [
+        "layers/global/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/global/attn/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/global/attn/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "layers/global/attn/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/global/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/global/attn:x",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/act:x",
+        "B T F"
+      ],
+      [
+        "layers/global/mlp/down:x",
+        "B T F"
+      ],
+      [
+        "layers/global/mlp/gate:x",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/gated:a",
+        "B T F"
+      ],
+      [
+        "layers/global/mlp/gated:b",
+        "B T F"
+      ],
+      [
+        "layers/global/mlp/up:x",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp:x",
+        "B T D"
+      ],
+      [
+        "layers/global/norm1:x",
+        "B T D"
+      ],
+      [
+        "layers/global/norm2:x",
+        "B T D"
+      ],
+      [
+        "layers/global/post_attn_norm:x",
+        "B T D"
+      ],
+      [
+        "layers/global/post_mlp_norm:x",
+        "B T D"
+      ],
+      [
+        "layers/global/resid1:a",
+        "B T D"
+      ],
+      [
+        "layers/global/resid1:b",
+        "B T D"
+      ],
+      [
+        "layers/global/resid2:a",
+        "B T D"
+      ],
+      [
+        "layers/global/resid2:b",
+        "B T D"
+      ],
+      [
+        "layers/global:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local0/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local0/attn/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local0/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "layers/local0/attn/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local0/attn/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local0/attn/k_norm:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local0/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local0/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/local0/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/local0/attn/q_norm:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local0/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/attn/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local0/attn/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local0/attn/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local0/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/attn:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local0/mlp/act:x",
+        "B T F"
+      ],
+      [
+        "layers/local0/mlp/down:x",
+        "B T F"
+      ],
+      [
+        "layers/local0/mlp/gate:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/mlp/gated:a",
+        "B T F"
+      ],
+      [
+        "layers/local0/mlp/gated:b",
+        "B T F"
+      ],
+      [
+        "layers/local0/mlp/up:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/mlp:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/norm1:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/norm2:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/post_attn_norm:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/post_mlp_norm:x",
+        "B T D"
+      ],
+      [
+        "layers/local0/resid1:a",
+        "B T D"
+      ],
+      [
+        "layers/local0/resid1:b",
+        "B T D"
+      ],
+      [
+        "layers/local0/resid2:a",
+        "B T D"
+      ],
+      [
+        "layers/local0/resid2:b",
+        "B T D"
+      ],
+      [
+        "layers/local0:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local1/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local1/attn/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local1/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "layers/local1/attn/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local1/attn/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local1/attn/k_norm:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local1/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local1/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/local1/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/local1/attn/q_norm:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local1/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/attn/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local1/attn/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local1/attn/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local1/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/attn:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local1/mlp/act:x",
+        "B T F"
+      ],
+      [
+        "layers/local1/mlp/down:x",
+        "B T F"
+      ],
+      [
+        "layers/local1/mlp/gate:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/mlp/gated:a",
+        "B T F"
+      ],
+      [
+        "layers/local1/mlp/gated:b",
+        "B T F"
+      ],
+      [
+        "layers/local1/mlp/up:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/mlp:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/norm1:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/norm2:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/post_attn_norm:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/post_mlp_norm:x",
+        "B T D"
+      ],
+      [
+        "layers/local1/resid1:a",
+        "B T D"
+      ],
+      [
+        "layers/local1/resid1:b",
+        "B T D"
+      ],
+      [
+        "layers/local1/resid2:a",
+        "B T D"
+      ],
+      [
+        "layers/local1/resid2:b",
+        "B T D"
+      ],
+      [
+        "layers/local1:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local2/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local2/attn/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local2/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "layers/local2/attn/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local2/attn/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local2/attn/k_norm:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local2/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local2/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/local2/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/local2/attn/q_norm:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local2/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/attn/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local2/attn/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local2/attn/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local2/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/attn:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local2/mlp/act:x",
+        "B T F"
+      ],
+      [
+        "layers/local2/mlp/down:x",
+        "B T F"
+      ],
+      [
+        "layers/local2/mlp/gate:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/mlp/gated:a",
+        "B T F"
+      ],
+      [
+        "layers/local2/mlp/gated:b",
+        "B T F"
+      ],
+      [
+        "layers/local2/mlp/up:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/mlp:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/norm1:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/norm2:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/post_attn_norm:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/post_mlp_norm:x",
+        "B T D"
+      ],
+      [
+        "layers/local2/resid1:a",
+        "B T D"
+      ],
+      [
+        "layers/local2/resid1:b",
+        "B T D"
+      ],
+      [
+        "layers/local2/resid2:a",
+        "B T D"
+      ],
+      [
+        "layers/local2/resid2:b",
+        "B T D"
+      ],
+      [
+        "layers/local2:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local3/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local3/attn/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local3/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "layers/local3/attn/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local3/attn/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local3/attn/k_norm:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local3/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local3/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/local3/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/local3/attn/q_norm:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local3/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/attn/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local3/attn/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local3/attn/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local3/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/attn:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local3/mlp/act:x",
+        "B T F"
+      ],
+      [
+        "layers/local3/mlp/down:x",
+        "B T F"
+      ],
+      [
+        "layers/local3/mlp/gate:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/mlp/gated:a",
+        "B T F"
+      ],
+      [
+        "layers/local3/mlp/gated:b",
+        "B T F"
+      ],
+      [
+        "layers/local3/mlp/up:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/mlp:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/norm1:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/norm2:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/post_attn_norm:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/post_mlp_norm:x",
+        "B T D"
+      ],
+      [
+        "layers/local3/resid1:a",
+        "B T D"
+      ],
+      [
+        "layers/local3/resid1:b",
+        "B T D"
+      ],
+      [
+        "layers/local3/resid2:a",
+        "B T D"
+      ],
+      [
+        "layers/local3/resid2:b",
+        "B T D"
+      ],
+      [
+        "layers/local3:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local4/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local4/attn/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local4/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "layers/local4/attn/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local4/attn/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local4/attn/k_norm:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local4/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local4/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/local4/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/local4/attn/q_norm:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local4/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/attn/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local4/attn/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local4/attn/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local4/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/attn:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local4/mlp/act:x",
+        "B T F"
+      ],
+      [
+        "layers/local4/mlp/down:x",
+        "B T F"
+      ],
+      [
+        "layers/local4/mlp/gate:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/mlp/gated:a",
+        "B T F"
+      ],
+      [
+        "layers/local4/mlp/gated:b",
+        "B T F"
+      ],
+      [
+        "layers/local4/mlp/up:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/mlp:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/norm1:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/norm2:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/post_attn_norm:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/post_mlp_norm:x",
+        "B T D"
+      ],
+      [
+        "layers/local4/resid1:a",
+        "B T D"
+      ],
+      [
+        "layers/local4/resid1:b",
+        "B T D"
+      ],
+      [
+        "layers/local4/resid2:a",
+        "B T D"
+      ],
+      [
+        "layers/local4/resid2:b",
+        "B T D"
+      ],
+      [
+        "layers/local4:x",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "logits:x",
+        "B T V"
+      ],
+      [
+        "tail0/_out:y",
+        "B T D"
+      ],
+      [
+        "tail0/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "tail0/attn/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "tail0/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "tail0/attn/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "tail0/attn/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "tail0/attn/k_norm:x",
+        "B Hkv T dh"
+      ],
+      [
+        "tail0/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "tail0/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "tail0/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "tail0/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "tail0/attn/q_norm:x",
+        "B H T dh"
+      ],
+      [
+        "tail0/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "tail0/attn/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "tail0/attn/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "tail0/attn/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "tail0/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "tail0/attn:x",
+        "B T D"
+      ],
+      [
+        "tail0/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "tail0/mlp/act:x",
+        "B T F"
+      ],
+      [
+        "tail0/mlp/down:x",
+        "B T F"
+      ],
+      [
+        "tail0/mlp/gate:x",
+        "B T D"
+      ],
+      [
+        "tail0/mlp/gated:a",
+        "B T F"
+      ],
+      [
+        "tail0/mlp/gated:b",
+        "B T F"
+      ],
+      [
+        "tail0/mlp/up:x",
+        "B T D"
+      ],
+      [
+        "tail0/mlp:x",
+        "B T D"
+      ],
+      [
+        "tail0/norm1:x",
+        "B T D"
+      ],
+      [
+        "tail0/norm2:x",
+        "B T D"
+      ],
+      [
+        "tail0/post_attn_norm:x",
+        "B T D"
+      ],
+      [
+        "tail0/post_mlp_norm:x",
+        "B T D"
+      ],
+      [
+        "tail0/resid1:a",
+        "B T D"
+      ],
+      [
+        "tail0/resid1:b",
+        "B T D"
+      ],
+      [
+        "tail0/resid2:a",
+        "B T D"
+      ],
+      [
+        "tail0/resid2:b",
+        "B T D"
+      ],
+      [
+        "tail0:x",
+        "B T D"
+      ],
+      [
+        "tail1/_out:y",
+        "B T D"
+      ],
+      [
+        "tail1/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "tail1/attn/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "tail1/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "tail1/attn/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "tail1/attn/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "tail1/attn/k_norm:x",
+        "B Hkv T dh"
+      ],
+      [
+        "tail1/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "tail1/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "tail1/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "tail1/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "tail1/attn/q_norm:x",
+        "B H T dh"
+      ],
+      [
+        "tail1/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "tail1/attn/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "tail1/attn/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "tail1/attn/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "tail1/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "tail1/attn:x",
+        "B T D"
+      ],
+      [
+        "tail1/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "tail1/mlp/act:x",
+        "B T F"
+      ],
+      [
+        "tail1/mlp/down:x",
+        "B T F"
+      ],
+      [
+        "tail1/mlp/gate:x",
+        "B T D"
+      ],
+      [
+        "tail1/mlp/gated:a",
+        "B T F"
+      ],
+      [
+        "tail1/mlp/gated:b",
+        "B T F"
+      ],
+      [
+        "tail1/mlp/up:x",
+        "B T D"
+      ],
+      [
+        "tail1/mlp:x",
+        "B T D"
+      ],
+      [
+        "tail1/norm1:x",
+        "B T D"
+      ],
+      [
+        "tail1/norm2:x",
+        "B T D"
+      ],
+      [
+        "tail1/post_attn_norm:x",
+        "B T D"
+      ],
+      [
+        "tail1/post_mlp_norm:x",
+        "B T D"
+      ],
+      [
+        "tail1/resid1:a",
+        "B T D"
+      ],
+      [
+        "tail1/resid1:b",
+        "B T D"
+      ],
+      [
+        "tail1/resid2:a",
+        "B T D"
+      ],
+      [
+        "tail1/resid2:b",
+        "B T D"
+      ],
+      [
+        "tail1:x",
+        "B T D"
+      ]
+    ],
+    "producerOf": [
+      [
+        "embed:ids",
+        "tokens:x"
+      ],
+      [
+        "final_norm:x",
+        "tail1:y"
+      ],
+      [
+        "head:x",
+        "final_norm:y"
+      ],
+      [
+        "layers/_out:x",
+        "layers/global:y"
+      ],
+      [
+        "layers/global/_out:y",
+        "layers/global/resid2:y"
+      ],
+      [
+        "layers/global/attn/_out:y",
+        "layers/global/attn/o_proj:y"
+      ],
+      [
+        "layers/global/attn/attn:k",
+        "layers/global/attn/rope_k:y"
+      ],
+      [
+        "layers/global/attn/attn:q",
+        "layers/global/attn/rope_q:y"
+      ],
+      [
+        "layers/global/attn/attn:v",
+        "layers/global/attn/v_heads:y"
+      ],
+      [
+        "layers/global/attn/k_heads:x",
+        "layers/global/attn/k_proj:y"
+      ],
+      [
+        "layers/global/attn/k_norm:x",
+        "layers/global/attn/k_heads:y"
+      ],
+      [
+        "layers/global/attn/k_proj:x",
+        "layers/global/attn/_in:x"
+      ],
+      [
+        "layers/global/attn/o_merge:x",
+        "layers/global/attn/attn:y"
+      ],
+      [
+        "layers/global/attn/o_proj:x",
+        "layers/global/attn/o_merge:y"
+      ],
+      [
+        "layers/global/attn/q_heads:x",
+        "layers/global/attn/q_proj:y"
+      ],
+      [
+        "layers/global/attn/q_norm:x",
+        "layers/global/attn/q_heads:y"
+      ],
+      [
+        "layers/global/attn/q_proj:x",
+        "layers/global/attn/_in:x"
+      ],
+      [
+        "layers/global/attn/rope_k:x",
+        "layers/global/attn/k_norm:y"
+      ],
+      [
+        "layers/global/attn/rope_q:x",
+        "layers/global/attn/q_norm:y"
+      ],
+      [
+        "layers/global/attn/v_heads:x",
+        "layers/global/attn/v_proj:y"
+      ],
+      [
+        "layers/global/attn/v_proj:x",
+        "layers/global/attn/_in:x"
+      ],
+      [
+        "layers/global/attn:x",
+        "layers/global/norm1:y"
+      ],
+      [
+        "layers/global/mlp/_out:y",
+        "layers/global/mlp/down:y"
+      ],
+      [
+        "layers/global/mlp/act:x",
+        "layers/global/mlp/gate:y"
+      ],
+      [
+        "layers/global/mlp/down:x",
+        "layers/global/mlp/gated:y"
+      ],
+      [
+        "layers/global/mlp/gate:x",
+        "layers/global/mlp/_in:x"
+      ],
+      [
+        "layers/global/mlp/gated:a",
+        "layers/global/mlp/act:y"
+      ],
+      [
+        "layers/global/mlp/gated:b",
+        "layers/global/mlp/up:y"
+      ],
+      [
+        "layers/global/mlp/up:x",
+        "layers/global/mlp/_in:x"
+      ],
+      [
+        "layers/global/mlp:x",
+        "layers/global/norm2:y"
+      ],
+      [
+        "layers/global/norm1:x",
+        "layers/global/_in:x"
+      ],
+      [
+        "layers/global/norm2:x",
+        "layers/global/resid1:y"
+      ],
+      [
+        "layers/global/post_attn_norm:x",
+        "layers/global/attn:y"
+      ],
+      [
+        "layers/global/post_mlp_norm:x",
+        "layers/global/mlp:y"
+      ],
+      [
+        "layers/global/resid1:a",
+        "layers/global/post_attn_norm:y"
+      ],
+      [
+        "layers/global/resid1:b",
+        "layers/global/_in:x"
+      ],
+      [
+        "layers/global/resid2:a",
+        "layers/global/post_mlp_norm:y"
+      ],
+      [
+        "layers/global/resid2:b",
+        "layers/global/resid1:y"
+      ],
+      [
+        "layers/global:x",
+        "layers/local4:y"
+      ],
+      [
+        "layers/local0/_out:y",
+        "layers/local0/resid2:y"
+      ],
+      [
+        "layers/local0/attn/_out:y",
+        "layers/local0/attn/o_proj:y"
+      ],
+      [
+        "layers/local0/attn/attn:k",
+        "layers/local0/attn/rope_k:y"
+      ],
+      [
+        "layers/local0/attn/attn:q",
+        "layers/local0/attn/rope_q:y"
+      ],
+      [
+        "layers/local0/attn/attn:v",
+        "layers/local0/attn/v_heads:y"
+      ],
+      [
+        "layers/local0/attn/k_heads:x",
+        "layers/local0/attn/k_proj:y"
+      ],
+      [
+        "layers/local0/attn/k_norm:x",
+        "layers/local0/attn/k_heads:y"
+      ],
+      [
+        "layers/local0/attn/k_proj:x",
+        "layers/local0/attn/_in:x"
+      ],
+      [
+        "layers/local0/attn/o_merge:x",
+        "layers/local0/attn/attn:y"
+      ],
+      [
+        "layers/local0/attn/o_proj:x",
+        "layers/local0/attn/o_merge:y"
+      ],
+      [
+        "layers/local0/attn/q_heads:x",
+        "layers/local0/attn/q_proj:y"
+      ],
+      [
+        "layers/local0/attn/q_norm:x",
+        "layers/local0/attn/q_heads:y"
+      ],
+      [
+        "layers/local0/attn/q_proj:x",
+        "layers/local0/attn/_in:x"
+      ],
+      [
+        "layers/local0/attn/rope_k:x",
+        "layers/local0/attn/k_norm:y"
+      ],
+      [
+        "layers/local0/attn/rope_q:x",
+        "layers/local0/attn/q_norm:y"
+      ],
+      [
+        "layers/local0/attn/v_heads:x",
+        "layers/local0/attn/v_proj:y"
+      ],
+      [
+        "layers/local0/attn/v_proj:x",
+        "layers/local0/attn/_in:x"
+      ],
+      [
+        "layers/local0/attn:x",
+        "layers/local0/norm1:y"
+      ],
+      [
+        "layers/local0/mlp/_out:y",
+        "layers/local0/mlp/down:y"
+      ],
+      [
+        "layers/local0/mlp/act:x",
+        "layers/local0/mlp/gate:y"
+      ],
+      [
+        "layers/local0/mlp/down:x",
+        "layers/local0/mlp/gated:y"
+      ],
+      [
+        "layers/local0/mlp/gate:x",
+        "layers/local0/mlp/_in:x"
+      ],
+      [
+        "layers/local0/mlp/gated:a",
+        "layers/local0/mlp/act:y"
+      ],
+      [
+        "layers/local0/mlp/gated:b",
+        "layers/local0/mlp/up:y"
+      ],
+      [
+        "layers/local0/mlp/up:x",
+        "layers/local0/mlp/_in:x"
+      ],
+      [
+        "layers/local0/mlp:x",
+        "layers/local0/norm2:y"
+      ],
+      [
+        "layers/local0/norm1:x",
+        "layers/local0/_in:x"
+      ],
+      [
+        "layers/local0/norm2:x",
+        "layers/local0/resid1:y"
+      ],
+      [
+        "layers/local0/post_attn_norm:x",
+        "layers/local0/attn:y"
+      ],
+      [
+        "layers/local0/post_mlp_norm:x",
+        "layers/local0/mlp:y"
+      ],
+      [
+        "layers/local0/resid1:a",
+        "layers/local0/post_attn_norm:y"
+      ],
+      [
+        "layers/local0/resid1:b",
+        "layers/local0/_in:x"
+      ],
+      [
+        "layers/local0/resid2:a",
+        "layers/local0/post_mlp_norm:y"
+      ],
+      [
+        "layers/local0/resid2:b",
+        "layers/local0/resid1:y"
+      ],
+      [
+        "layers/local0:x",
+        "layers/_in:x"
+      ],
+      [
+        "layers/local1/_out:y",
+        "layers/local1/resid2:y"
+      ],
+      [
+        "layers/local1/attn/_out:y",
+        "layers/local1/attn/o_proj:y"
+      ],
+      [
+        "layers/local1/attn/attn:k",
+        "layers/local1/attn/rope_k:y"
+      ],
+      [
+        "layers/local1/attn/attn:q",
+        "layers/local1/attn/rope_q:y"
+      ],
+      [
+        "layers/local1/attn/attn:v",
+        "layers/local1/attn/v_heads:y"
+      ],
+      [
+        "layers/local1/attn/k_heads:x",
+        "layers/local1/attn/k_proj:y"
+      ],
+      [
+        "layers/local1/attn/k_norm:x",
+        "layers/local1/attn/k_heads:y"
+      ],
+      [
+        "layers/local1/attn/k_proj:x",
+        "layers/local1/attn/_in:x"
+      ],
+      [
+        "layers/local1/attn/o_merge:x",
+        "layers/local1/attn/attn:y"
+      ],
+      [
+        "layers/local1/attn/o_proj:x",
+        "layers/local1/attn/o_merge:y"
+      ],
+      [
+        "layers/local1/attn/q_heads:x",
+        "layers/local1/attn/q_proj:y"
+      ],
+      [
+        "layers/local1/attn/q_norm:x",
+        "layers/local1/attn/q_heads:y"
+      ],
+      [
+        "layers/local1/attn/q_proj:x",
+        "layers/local1/attn/_in:x"
+      ],
+      [
+        "layers/local1/attn/rope_k:x",
+        "layers/local1/attn/k_norm:y"
+      ],
+      [
+        "layers/local1/attn/rope_q:x",
+        "layers/local1/attn/q_norm:y"
+      ],
+      [
+        "layers/local1/attn/v_heads:x",
+        "layers/local1/attn/v_proj:y"
+      ],
+      [
+        "layers/local1/attn/v_proj:x",
+        "layers/local1/attn/_in:x"
+      ],
+      [
+        "layers/local1/attn:x",
+        "layers/local1/norm1:y"
+      ],
+      [
+        "layers/local1/mlp/_out:y",
+        "layers/local1/mlp/down:y"
+      ],
+      [
+        "layers/local1/mlp/act:x",
+        "layers/local1/mlp/gate:y"
+      ],
+      [
+        "layers/local1/mlp/down:x",
+        "layers/local1/mlp/gated:y"
+      ],
+      [
+        "layers/local1/mlp/gate:x",
+        "layers/local1/mlp/_in:x"
+      ],
+      [
+        "layers/local1/mlp/gated:a",
+        "layers/local1/mlp/act:y"
+      ],
+      [
+        "layers/local1/mlp/gated:b",
+        "layers/local1/mlp/up:y"
+      ],
+      [
+        "layers/local1/mlp/up:x",
+        "layers/local1/mlp/_in:x"
+      ],
+      [
+        "layers/local1/mlp:x",
+        "layers/local1/norm2:y"
+      ],
+      [
+        "layers/local1/norm1:x",
+        "layers/local1/_in:x"
+      ],
+      [
+        "layers/local1/norm2:x",
+        "layers/local1/resid1:y"
+      ],
+      [
+        "layers/local1/post_attn_norm:x",
+        "layers/local1/attn:y"
+      ],
+      [
+        "layers/local1/post_mlp_norm:x",
+        "layers/local1/mlp:y"
+      ],
+      [
+        "layers/local1/resid1:a",
+        "layers/local1/post_attn_norm:y"
+      ],
+      [
+        "layers/local1/resid1:b",
+        "layers/local1/_in:x"
+      ],
+      [
+        "layers/local1/resid2:a",
+        "layers/local1/post_mlp_norm:y"
+      ],
+      [
+        "layers/local1/resid2:b",
+        "layers/local1/resid1:y"
+      ],
+      [
+        "layers/local1:x",
+        "layers/local0:y"
+      ],
+      [
+        "layers/local2/_out:y",
+        "layers/local2/resid2:y"
+      ],
+      [
+        "layers/local2/attn/_out:y",
+        "layers/local2/attn/o_proj:y"
+      ],
+      [
+        "layers/local2/attn/attn:k",
+        "layers/local2/attn/rope_k:y"
+      ],
+      [
+        "layers/local2/attn/attn:q",
+        "layers/local2/attn/rope_q:y"
+      ],
+      [
+        "layers/local2/attn/attn:v",
+        "layers/local2/attn/v_heads:y"
+      ],
+      [
+        "layers/local2/attn/k_heads:x",
+        "layers/local2/attn/k_proj:y"
+      ],
+      [
+        "layers/local2/attn/k_norm:x",
+        "layers/local2/attn/k_heads:y"
+      ],
+      [
+        "layers/local2/attn/k_proj:x",
+        "layers/local2/attn/_in:x"
+      ],
+      [
+        "layers/local2/attn/o_merge:x",
+        "layers/local2/attn/attn:y"
+      ],
+      [
+        "layers/local2/attn/o_proj:x",
+        "layers/local2/attn/o_merge:y"
+      ],
+      [
+        "layers/local2/attn/q_heads:x",
+        "layers/local2/attn/q_proj:y"
+      ],
+      [
+        "layers/local2/attn/q_norm:x",
+        "layers/local2/attn/q_heads:y"
+      ],
+      [
+        "layers/local2/attn/q_proj:x",
+        "layers/local2/attn/_in:x"
+      ],
+      [
+        "layers/local2/attn/rope_k:x",
+        "layers/local2/attn/k_norm:y"
+      ],
+      [
+        "layers/local2/attn/rope_q:x",
+        "layers/local2/attn/q_norm:y"
+      ],
+      [
+        "layers/local2/attn/v_heads:x",
+        "layers/local2/attn/v_proj:y"
+      ],
+      [
+        "layers/local2/attn/v_proj:x",
+        "layers/local2/attn/_in:x"
+      ],
+      [
+        "layers/local2/attn:x",
+        "layers/local2/norm1:y"
+      ],
+      [
+        "layers/local2/mlp/_out:y",
+        "layers/local2/mlp/down:y"
+      ],
+      [
+        "layers/local2/mlp/act:x",
+        "layers/local2/mlp/gate:y"
+      ],
+      [
+        "layers/local2/mlp/down:x",
+        "layers/local2/mlp/gated:y"
+      ],
+      [
+        "layers/local2/mlp/gate:x",
+        "layers/local2/mlp/_in:x"
+      ],
+      [
+        "layers/local2/mlp/gated:a",
+        "layers/local2/mlp/act:y"
+      ],
+      [
+        "layers/local2/mlp/gated:b",
+        "layers/local2/mlp/up:y"
+      ],
+      [
+        "layers/local2/mlp/up:x",
+        "layers/local2/mlp/_in:x"
+      ],
+      [
+        "layers/local2/mlp:x",
+        "layers/local2/norm2:y"
+      ],
+      [
+        "layers/local2/norm1:x",
+        "layers/local2/_in:x"
+      ],
+      [
+        "layers/local2/norm2:x",
+        "layers/local2/resid1:y"
+      ],
+      [
+        "layers/local2/post_attn_norm:x",
+        "layers/local2/attn:y"
+      ],
+      [
+        "layers/local2/post_mlp_norm:x",
+        "layers/local2/mlp:y"
+      ],
+      [
+        "layers/local2/resid1:a",
+        "layers/local2/post_attn_norm:y"
+      ],
+      [
+        "layers/local2/resid1:b",
+        "layers/local2/_in:x"
+      ],
+      [
+        "layers/local2/resid2:a",
+        "layers/local2/post_mlp_norm:y"
+      ],
+      [
+        "layers/local2/resid2:b",
+        "layers/local2/resid1:y"
+      ],
+      [
+        "layers/local2:x",
+        "layers/local1:y"
+      ],
+      [
+        "layers/local3/_out:y",
+        "layers/local3/resid2:y"
+      ],
+      [
+        "layers/local3/attn/_out:y",
+        "layers/local3/attn/o_proj:y"
+      ],
+      [
+        "layers/local3/attn/attn:k",
+        "layers/local3/attn/rope_k:y"
+      ],
+      [
+        "layers/local3/attn/attn:q",
+        "layers/local3/attn/rope_q:y"
+      ],
+      [
+        "layers/local3/attn/attn:v",
+        "layers/local3/attn/v_heads:y"
+      ],
+      [
+        "layers/local3/attn/k_heads:x",
+        "layers/local3/attn/k_proj:y"
+      ],
+      [
+        "layers/local3/attn/k_norm:x",
+        "layers/local3/attn/k_heads:y"
+      ],
+      [
+        "layers/local3/attn/k_proj:x",
+        "layers/local3/attn/_in:x"
+      ],
+      [
+        "layers/local3/attn/o_merge:x",
+        "layers/local3/attn/attn:y"
+      ],
+      [
+        "layers/local3/attn/o_proj:x",
+        "layers/local3/attn/o_merge:y"
+      ],
+      [
+        "layers/local3/attn/q_heads:x",
+        "layers/local3/attn/q_proj:y"
+      ],
+      [
+        "layers/local3/attn/q_norm:x",
+        "layers/local3/attn/q_heads:y"
+      ],
+      [
+        "layers/local3/attn/q_proj:x",
+        "layers/local3/attn/_in:x"
+      ],
+      [
+        "layers/local3/attn/rope_k:x",
+        "layers/local3/attn/k_norm:y"
+      ],
+      [
+        "layers/local3/attn/rope_q:x",
+        "layers/local3/attn/q_norm:y"
+      ],
+      [
+        "layers/local3/attn/v_heads:x",
+        "layers/local3/attn/v_proj:y"
+      ],
+      [
+        "layers/local3/attn/v_proj:x",
+        "layers/local3/attn/_in:x"
+      ],
+      [
+        "layers/local3/attn:x",
+        "layers/local3/norm1:y"
+      ],
+      [
+        "layers/local3/mlp/_out:y",
+        "layers/local3/mlp/down:y"
+      ],
+      [
+        "layers/local3/mlp/act:x",
+        "layers/local3/mlp/gate:y"
+      ],
+      [
+        "layers/local3/mlp/down:x",
+        "layers/local3/mlp/gated:y"
+      ],
+      [
+        "layers/local3/mlp/gate:x",
+        "layers/local3/mlp/_in:x"
+      ],
+      [
+        "layers/local3/mlp/gated:a",
+        "layers/local3/mlp/act:y"
+      ],
+      [
+        "layers/local3/mlp/gated:b",
+        "layers/local3/mlp/up:y"
+      ],
+      [
+        "layers/local3/mlp/up:x",
+        "layers/local3/mlp/_in:x"
+      ],
+      [
+        "layers/local3/mlp:x",
+        "layers/local3/norm2:y"
+      ],
+      [
+        "layers/local3/norm1:x",
+        "layers/local3/_in:x"
+      ],
+      [
+        "layers/local3/norm2:x",
+        "layers/local3/resid1:y"
+      ],
+      [
+        "layers/local3/post_attn_norm:x",
+        "layers/local3/attn:y"
+      ],
+      [
+        "layers/local3/post_mlp_norm:x",
+        "layers/local3/mlp:y"
+      ],
+      [
+        "layers/local3/resid1:a",
+        "layers/local3/post_attn_norm:y"
+      ],
+      [
+        "layers/local3/resid1:b",
+        "layers/local3/_in:x"
+      ],
+      [
+        "layers/local3/resid2:a",
+        "layers/local3/post_mlp_norm:y"
+      ],
+      [
+        "layers/local3/resid2:b",
+        "layers/local3/resid1:y"
+      ],
+      [
+        "layers/local3:x",
+        "layers/local2:y"
+      ],
+      [
+        "layers/local4/_out:y",
+        "layers/local4/resid2:y"
+      ],
+      [
+        "layers/local4/attn/_out:y",
+        "layers/local4/attn/o_proj:y"
+      ],
+      [
+        "layers/local4/attn/attn:k",
+        "layers/local4/attn/rope_k:y"
+      ],
+      [
+        "layers/local4/attn/attn:q",
+        "layers/local4/attn/rope_q:y"
+      ],
+      [
+        "layers/local4/attn/attn:v",
+        "layers/local4/attn/v_heads:y"
+      ],
+      [
+        "layers/local4/attn/k_heads:x",
+        "layers/local4/attn/k_proj:y"
+      ],
+      [
+        "layers/local4/attn/k_norm:x",
+        "layers/local4/attn/k_heads:y"
+      ],
+      [
+        "layers/local4/attn/k_proj:x",
+        "layers/local4/attn/_in:x"
+      ],
+      [
+        "layers/local4/attn/o_merge:x",
+        "layers/local4/attn/attn:y"
+      ],
+      [
+        "layers/local4/attn/o_proj:x",
+        "layers/local4/attn/o_merge:y"
+      ],
+      [
+        "layers/local4/attn/q_heads:x",
+        "layers/local4/attn/q_proj:y"
+      ],
+      [
+        "layers/local4/attn/q_norm:x",
+        "layers/local4/attn/q_heads:y"
+      ],
+      [
+        "layers/local4/attn/q_proj:x",
+        "layers/local4/attn/_in:x"
+      ],
+      [
+        "layers/local4/attn/rope_k:x",
+        "layers/local4/attn/k_norm:y"
+      ],
+      [
+        "layers/local4/attn/rope_q:x",
+        "layers/local4/attn/q_norm:y"
+      ],
+      [
+        "layers/local4/attn/v_heads:x",
+        "layers/local4/attn/v_proj:y"
+      ],
+      [
+        "layers/local4/attn/v_proj:x",
+        "layers/local4/attn/_in:x"
+      ],
+      [
+        "layers/local4/attn:x",
+        "layers/local4/norm1:y"
+      ],
+      [
+        "layers/local4/mlp/_out:y",
+        "layers/local4/mlp/down:y"
+      ],
+      [
+        "layers/local4/mlp/act:x",
+        "layers/local4/mlp/gate:y"
+      ],
+      [
+        "layers/local4/mlp/down:x",
+        "layers/local4/mlp/gated:y"
+      ],
+      [
+        "layers/local4/mlp/gate:x",
+        "layers/local4/mlp/_in:x"
+      ],
+      [
+        "layers/local4/mlp/gated:a",
+        "layers/local4/mlp/act:y"
+      ],
+      [
+        "layers/local4/mlp/gated:b",
+        "layers/local4/mlp/up:y"
+      ],
+      [
+        "layers/local4/mlp/up:x",
+        "layers/local4/mlp/_in:x"
+      ],
+      [
+        "layers/local4/mlp:x",
+        "layers/local4/norm2:y"
+      ],
+      [
+        "layers/local4/norm1:x",
+        "layers/local4/_in:x"
+      ],
+      [
+        "layers/local4/norm2:x",
+        "layers/local4/resid1:y"
+      ],
+      [
+        "layers/local4/post_attn_norm:x",
+        "layers/local4/attn:y"
+      ],
+      [
+        "layers/local4/post_mlp_norm:x",
+        "layers/local4/mlp:y"
+      ],
+      [
+        "layers/local4/resid1:a",
+        "layers/local4/post_attn_norm:y"
+      ],
+      [
+        "layers/local4/resid1:b",
+        "layers/local4/_in:x"
+      ],
+      [
+        "layers/local4/resid2:a",
+        "layers/local4/post_mlp_norm:y"
+      ],
+      [
+        "layers/local4/resid2:b",
+        "layers/local4/resid1:y"
+      ],
+      [
+        "layers/local4:x",
+        "layers/local3:y"
+      ],
+      [
+        "layers:x",
+        "embed:y"
+      ],
+      [
+        "logits:x",
+        "head:y"
+      ],
+      [
+        "tail0/_out:y",
+        "tail0/resid2:y"
+      ],
+      [
+        "tail0/attn/_out:y",
+        "tail0/attn/o_proj:y"
+      ],
+      [
+        "tail0/attn/attn:k",
+        "tail0/attn/rope_k:y"
+      ],
+      [
+        "tail0/attn/attn:q",
+        "tail0/attn/rope_q:y"
+      ],
+      [
+        "tail0/attn/attn:v",
+        "tail0/attn/v_heads:y"
+      ],
+      [
+        "tail0/attn/k_heads:x",
+        "tail0/attn/k_proj:y"
+      ],
+      [
+        "tail0/attn/k_norm:x",
+        "tail0/attn/k_heads:y"
+      ],
+      [
+        "tail0/attn/k_proj:x",
+        "tail0/attn/_in:x"
+      ],
+      [
+        "tail0/attn/o_merge:x",
+        "tail0/attn/attn:y"
+      ],
+      [
+        "tail0/attn/o_proj:x",
+        "tail0/attn/o_merge:y"
+      ],
+      [
+        "tail0/attn/q_heads:x",
+        "tail0/attn/q_proj:y"
+      ],
+      [
+        "tail0/attn/q_norm:x",
+        "tail0/attn/q_heads:y"
+      ],
+      [
+        "tail0/attn/q_proj:x",
+        "tail0/attn/_in:x"
+      ],
+      [
+        "tail0/attn/rope_k:x",
+        "tail0/attn/k_norm:y"
+      ],
+      [
+        "tail0/attn/rope_q:x",
+        "tail0/attn/q_norm:y"
+      ],
+      [
+        "tail0/attn/v_heads:x",
+        "tail0/attn/v_proj:y"
+      ],
+      [
+        "tail0/attn/v_proj:x",
+        "tail0/attn/_in:x"
+      ],
+      [
+        "tail0/attn:x",
+        "tail0/norm1:y"
+      ],
+      [
+        "tail0/mlp/_out:y",
+        "tail0/mlp/down:y"
+      ],
+      [
+        "tail0/mlp/act:x",
+        "tail0/mlp/gate:y"
+      ],
+      [
+        "tail0/mlp/down:x",
+        "tail0/mlp/gated:y"
+      ],
+      [
+        "tail0/mlp/gate:x",
+        "tail0/mlp/_in:x"
+      ],
+      [
+        "tail0/mlp/gated:a",
+        "tail0/mlp/act:y"
+      ],
+      [
+        "tail0/mlp/gated:b",
+        "tail0/mlp/up:y"
+      ],
+      [
+        "tail0/mlp/up:x",
+        "tail0/mlp/_in:x"
+      ],
+      [
+        "tail0/mlp:x",
+        "tail0/norm2:y"
+      ],
+      [
+        "tail0/norm1:x",
+        "tail0/_in:x"
+      ],
+      [
+        "tail0/norm2:x",
+        "tail0/resid1:y"
+      ],
+      [
+        "tail0/post_attn_norm:x",
+        "tail0/attn:y"
+      ],
+      [
+        "tail0/post_mlp_norm:x",
+        "tail0/mlp:y"
+      ],
+      [
+        "tail0/resid1:a",
+        "tail0/post_attn_norm:y"
+      ],
+      [
+        "tail0/resid1:b",
+        "tail0/_in:x"
+      ],
+      [
+        "tail0/resid2:a",
+        "tail0/post_mlp_norm:y"
+      ],
+      [
+        "tail0/resid2:b",
+        "tail0/resid1:y"
+      ],
+      [
+        "tail0:x",
+        "layers:x"
+      ],
+      [
+        "tail1/_out:y",
+        "tail1/resid2:y"
+      ],
+      [
+        "tail1/attn/_out:y",
+        "tail1/attn/o_proj:y"
+      ],
+      [
+        "tail1/attn/attn:k",
+        "tail1/attn/rope_k:y"
+      ],
+      [
+        "tail1/attn/attn:q",
+        "tail1/attn/rope_q:y"
+      ],
+      [
+        "tail1/attn/attn:v",
+        "tail1/attn/v_heads:y"
+      ],
+      [
+        "tail1/attn/k_heads:x",
+        "tail1/attn/k_proj:y"
+      ],
+      [
+        "tail1/attn/k_norm:x",
+        "tail1/attn/k_heads:y"
+      ],
+      [
+        "tail1/attn/k_proj:x",
+        "tail1/attn/_in:x"
+      ],
+      [
+        "tail1/attn/o_merge:x",
+        "tail1/attn/attn:y"
+      ],
+      [
+        "tail1/attn/o_proj:x",
+        "tail1/attn/o_merge:y"
+      ],
+      [
+        "tail1/attn/q_heads:x",
+        "tail1/attn/q_proj:y"
+      ],
+      [
+        "tail1/attn/q_norm:x",
+        "tail1/attn/q_heads:y"
+      ],
+      [
+        "tail1/attn/q_proj:x",
+        "tail1/attn/_in:x"
+      ],
+      [
+        "tail1/attn/rope_k:x",
+        "tail1/attn/k_norm:y"
+      ],
+      [
+        "tail1/attn/rope_q:x",
+        "tail1/attn/q_norm:y"
+      ],
+      [
+        "tail1/attn/v_heads:x",
+        "tail1/attn/v_proj:y"
+      ],
+      [
+        "tail1/attn/v_proj:x",
+        "tail1/attn/_in:x"
+      ],
+      [
+        "tail1/attn:x",
+        "tail1/norm1:y"
+      ],
+      [
+        "tail1/mlp/_out:y",
+        "tail1/mlp/down:y"
+      ],
+      [
+        "tail1/mlp/act:x",
+        "tail1/mlp/gate:y"
+      ],
+      [
+        "tail1/mlp/down:x",
+        "tail1/mlp/gated:y"
+      ],
+      [
+        "tail1/mlp/gate:x",
+        "tail1/mlp/_in:x"
+      ],
+      [
+        "tail1/mlp/gated:a",
+        "tail1/mlp/act:y"
+      ],
+      [
+        "tail1/mlp/gated:b",
+        "tail1/mlp/up:y"
+      ],
+      [
+        "tail1/mlp/up:x",
+        "tail1/mlp/_in:x"
+      ],
+      [
+        "tail1/mlp:x",
+        "tail1/norm2:y"
+      ],
+      [
+        "tail1/norm1:x",
+        "tail1/_in:x"
+      ],
+      [
+        "tail1/norm2:x",
+        "tail1/resid1:y"
+      ],
+      [
+        "tail1/post_attn_norm:x",
+        "tail1/attn:y"
+      ],
+      [
+        "tail1/post_mlp_norm:x",
+        "tail1/mlp:y"
+      ],
+      [
+        "tail1/resid1:a",
+        "tail1/post_attn_norm:y"
+      ],
+      [
+        "tail1/resid1:b",
+        "tail1/_in:x"
+      ],
+      [
+        "tail1/resid2:a",
+        "tail1/post_mlp_norm:y"
+      ],
+      [
+        "tail1/resid2:b",
+        "tail1/resid1:y"
+      ],
+      [
+        "tail1:x",
+        "tail0:y"
+      ]
+    ],
+    "issues": []
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "preset": "gemma-3-27b",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 1,
+        "warning": 1
+      },
+      "findings": [
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 547.90 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 50.31 GiB, gradients 50.31 GiB, optimizer 301.85 GiB, activations 145.43 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        },
+        {
+          "rule": "vocab-padding",
+          "severity": "info",
+          "path": "head",
+          "message": "Vocabulary 262208 is not a multiple of 128.",
+          "hint": "Padding to 262272 adds 344.1K parameters and speeds up the output projection."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 3,
+        "warning": 0
+      },
+      "findings": [
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 10.00 GiB, which is 79% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 29.3x the compute-optimal budget of 512B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        },
+        {
+          "rule": "vocab-padding",
+          "severity": "info",
+          "path": "head",
+          "message": "Vocabulary 262208 is not a multiple of 128.",
+          "hint": "Padding to 262272 adds 344.1K parameters and speeds up the output projection."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 1,
+        "warning": 1
+      },
+      "findings": [
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 984.19 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 50.31 GiB, gradients 50.31 GiB, optimizer 301.85 GiB, activations 581.72 GiB.",
+          "hint": "Activations dominate. Turn on activation recomputation, or reduce the micro-batch."
+        },
+        {
+          "rule": "vocab-padding",
+          "severity": "info",
+          "path": "head",
+          "message": "Vocabulary 262208 is not a multiple of 128.",
+          "hint": "Padding to 262272 adds 344.1K parameters and speeds up the output projection."
+        }
+      ]
+    }
+  ]
+}

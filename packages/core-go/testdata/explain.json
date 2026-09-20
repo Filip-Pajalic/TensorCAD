@@ -10450,6 +10450,1854 @@
       ]
     },
     {
+      "preset": "gemma-3-27b",
+      "blocks": [
+        {
+          "path": "layers",
+          "type": "repeat",
+          "kind": "container",
+          "docs": {
+            "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
+          },
+          "copies": {
+            "total": 1,
+            "active": 1
+          },
+          "params": [
+            [
+              "count",
+              "G",
+              10,
+              "How many times the subgraph is stacked"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "B T D"
+            },
+            "out": {
+              "x": "B T D"
+            }
+          },
+          "contributes": {
+            "params": 24773913600,
+            "activeParams": 24773913600,
+            "shareOfParams": 0.9172348460847815,
+            "flopsPerToken": 50635735040,
+            "shareOfFlops": 0.9185907507241879,
+            "activationBytes": 127905300480,
+            "cacheBytesPerToken": 81920,
+            "cacheBytesPerSequence": 419430400
+          },
+          "breakdown": [
+            {
+              "path": "layers/local0/mlp/gate",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local0/mlp/up",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local0/mlp/down",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local1/mlp/gate",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local1/mlp/up",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local1/mlp/down",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local2/mlp/gate",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local2/mlp/up",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local2/mlp/down",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local3/mlp/gate",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local3/mlp/up",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local3/mlp/down",
+              "type": "linear",
+              "params": 1156055040
+            }
+          ]
+        },
+        {
+          "path": "layers/local0",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 10,
+            "active": 10
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              5376,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              32,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "Hkv",
+              16,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              128,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              21504,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, or DeepSeek's latent attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "rmsnorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              true,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "gated",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              null,
+              0,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              null,
+              1,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              null,
+              0,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "gelu_tanh",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              false,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              false,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              true,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              "W",
+              1024,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              {
+                "theta": 10000
+              },
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 4128985600,
+            "activeParams": 4128985600,
+            "shareOfParams": 0.15287247434746357,
+            "flopsPerToken": 8341422080,
+            "shareOfFlops": 0.15132303628102953,
+            "activationBytes": 21317550080,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 83886080
+          },
+          "breakdown": [
+            {
+              "path": "layers/local0/mlp/gate",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local0/mlp/up",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local0/mlp/down",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local0/attn/q_proj",
+              "type": "linear",
+              "params": 220200960
+            },
+            {
+              "path": "layers/local0/attn/o_proj",
+              "type": "linear",
+              "params": 220200960
+            },
+            {
+              "path": "layers/local0/attn/k_proj",
+              "type": "linear",
+              "params": 110100480
+            },
+            {
+              "path": "layers/local0/attn/v_proj",
+              "type": "linear",
+              "params": 110100480
+            },
+            {
+              "path": "layers/local0/norm1",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local0/norm2",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local0/post_attn_norm",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local0/post_mlp_norm",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local0/attn/q_norm",
+              "type": "rmsnorm",
+              "params": 1280
+            }
+          ]
+        },
+        {
+          "path": "layers/local1",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 10,
+            "active": 10
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              5376,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              32,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "Hkv",
+              16,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              128,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              21504,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, or DeepSeek's latent attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "rmsnorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              true,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "gated",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              null,
+              0,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              null,
+              1,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              null,
+              0,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "gelu_tanh",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              false,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              false,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              true,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              "W",
+              1024,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              {
+                "theta": 10000
+              },
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 4128985600,
+            "activeParams": 4128985600,
+            "shareOfParams": 0.15287247434746357,
+            "flopsPerToken": 8341422080,
+            "shareOfFlops": 0.15132303628102953,
+            "activationBytes": 21317550080,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 83886080
+          },
+          "breakdown": [
+            {
+              "path": "layers/local1/mlp/gate",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local1/mlp/up",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local1/mlp/down",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local1/attn/q_proj",
+              "type": "linear",
+              "params": 220200960
+            },
+            {
+              "path": "layers/local1/attn/o_proj",
+              "type": "linear",
+              "params": 220200960
+            },
+            {
+              "path": "layers/local1/attn/k_proj",
+              "type": "linear",
+              "params": 110100480
+            },
+            {
+              "path": "layers/local1/attn/v_proj",
+              "type": "linear",
+              "params": 110100480
+            },
+            {
+              "path": "layers/local1/norm1",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local1/norm2",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local1/post_attn_norm",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local1/post_mlp_norm",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local1/attn/q_norm",
+              "type": "rmsnorm",
+              "params": 1280
+            }
+          ]
+        },
+        {
+          "path": "layers/local2",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 10,
+            "active": 10
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              5376,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              32,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "Hkv",
+              16,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              128,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              21504,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, or DeepSeek's latent attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "rmsnorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              true,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "gated",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              null,
+              0,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              null,
+              1,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              null,
+              0,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "gelu_tanh",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              false,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              false,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              true,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              "W",
+              1024,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              {
+                "theta": 10000
+              },
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 4128985600,
+            "activeParams": 4128985600,
+            "shareOfParams": 0.15287247434746357,
+            "flopsPerToken": 8341422080,
+            "shareOfFlops": 0.15132303628102953,
+            "activationBytes": 21317550080,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 83886080
+          },
+          "breakdown": [
+            {
+              "path": "layers/local2/mlp/gate",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local2/mlp/up",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local2/mlp/down",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local2/attn/q_proj",
+              "type": "linear",
+              "params": 220200960
+            },
+            {
+              "path": "layers/local2/attn/o_proj",
+              "type": "linear",
+              "params": 220200960
+            },
+            {
+              "path": "layers/local2/attn/k_proj",
+              "type": "linear",
+              "params": 110100480
+            },
+            {
+              "path": "layers/local2/attn/v_proj",
+              "type": "linear",
+              "params": 110100480
+            },
+            {
+              "path": "layers/local2/norm1",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local2/norm2",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local2/post_attn_norm",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local2/post_mlp_norm",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local2/attn/q_norm",
+              "type": "rmsnorm",
+              "params": 1280
+            }
+          ]
+        },
+        {
+          "path": "layers/local3",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 10,
+            "active": 10
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              5376,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              32,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "Hkv",
+              16,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              128,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              21504,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, or DeepSeek's latent attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "rmsnorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              true,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "gated",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              null,
+              0,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              null,
+              1,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              null,
+              0,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "gelu_tanh",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              false,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              false,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              true,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              "W",
+              1024,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              {
+                "theta": 10000
+              },
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 4128985600,
+            "activeParams": 4128985600,
+            "shareOfParams": 0.15287247434746357,
+            "flopsPerToken": 8341422080,
+            "shareOfFlops": 0.15132303628102953,
+            "activationBytes": 21317550080,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 83886080
+          },
+          "breakdown": [
+            {
+              "path": "layers/local3/mlp/gate",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local3/mlp/up",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local3/mlp/down",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local3/attn/q_proj",
+              "type": "linear",
+              "params": 220200960
+            },
+            {
+              "path": "layers/local3/attn/o_proj",
+              "type": "linear",
+              "params": 220200960
+            },
+            {
+              "path": "layers/local3/attn/k_proj",
+              "type": "linear",
+              "params": 110100480
+            },
+            {
+              "path": "layers/local3/attn/v_proj",
+              "type": "linear",
+              "params": 110100480
+            },
+            {
+              "path": "layers/local3/norm1",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local3/norm2",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local3/post_attn_norm",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local3/post_mlp_norm",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local3/attn/q_norm",
+              "type": "rmsnorm",
+              "params": 1280
+            }
+          ]
+        },
+        {
+          "path": "layers/local4",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 10,
+            "active": 10
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              5376,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              32,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "Hkv",
+              16,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              128,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              21504,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, or DeepSeek's latent attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "rmsnorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              true,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "gated",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              null,
+              0,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              null,
+              1,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              null,
+              0,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "gelu_tanh",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              false,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              false,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              true,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              "W",
+              1024,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              {
+                "theta": 10000
+              },
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 4128985600,
+            "activeParams": 4128985600,
+            "shareOfParams": 0.15287247434746357,
+            "flopsPerToken": 8341422080,
+            "shareOfFlops": 0.15132303628102953,
+            "activationBytes": 21317550080,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 83886080
+          },
+          "breakdown": [
+            {
+              "path": "layers/local4/mlp/gate",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local4/mlp/up",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local4/mlp/down",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local4/attn/q_proj",
+              "type": "linear",
+              "params": 220200960
+            },
+            {
+              "path": "layers/local4/attn/o_proj",
+              "type": "linear",
+              "params": 220200960
+            },
+            {
+              "path": "layers/local4/attn/k_proj",
+              "type": "linear",
+              "params": 110100480
+            },
+            {
+              "path": "layers/local4/attn/v_proj",
+              "type": "linear",
+              "params": 110100480
+            },
+            {
+              "path": "layers/local4/norm1",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local4/norm2",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local4/post_attn_norm",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local4/post_mlp_norm",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/local4/attn/q_norm",
+              "type": "rmsnorm",
+              "params": 1280
+            }
+          ]
+        },
+        {
+          "path": "layers/global",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 10,
+            "active": 10
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              5376,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              32,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "Hkv",
+              16,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              128,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              21504,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, or DeepSeek's latent attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "rmsnorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              true,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "gated",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              null,
+              0,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              null,
+              1,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              null,
+              0,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "gelu_tanh",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              false,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              false,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              true,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              null,
+              0,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              {
+                "scaling": {
+                  "factor": 8,
+                  "kind": "linear"
+                },
+                "theta": 1000000
+              },
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 4128985600,
+            "activeParams": 4128985600,
+            "shareOfParams": 0.15287247434746357,
+            "flopsPerToken": 8928624640,
+            "shareOfFlops": 0.1619755693190404,
+            "activationBytes": 21317550080,
+            "cacheBytesPerToken": 81920,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/global/mlp/gate",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/global/mlp/up",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/global/mlp/down",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/global/attn/q_proj",
+              "type": "linear",
+              "params": 220200960
+            },
+            {
+              "path": "layers/global/attn/o_proj",
+              "type": "linear",
+              "params": 220200960
+            },
+            {
+              "path": "layers/global/attn/k_proj",
+              "type": "linear",
+              "params": 110100480
+            },
+            {
+              "path": "layers/global/attn/v_proj",
+              "type": "linear",
+              "params": 110100480
+            },
+            {
+              "path": "layers/global/norm1",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/global/norm2",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/global/post_attn_norm",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/global/post_mlp_norm",
+              "type": "rmsnorm",
+              "params": 53760
+            },
+            {
+              "path": "layers/global/attn/q_norm",
+              "type": "rmsnorm",
+              "params": 1280
+            }
+          ]
+        },
+        {
+          "path": "layers/local0/mlp",
+          "type": "gated_mlp",
+          "kind": "composite",
+          "docs": {
+            "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
+            "formula": "params = 3 * d_model * hidden",
+            "refs": [
+              "https://arxiv.org/abs/2002.05202"
+            ]
+          },
+          "copies": {
+            "total": 10,
+            "active": 10
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              5376,
+              "Width of the residual stream"
+            ],
+            [
+              "hidden",
+              "F",
+              21504,
+              "Intermediate width"
+            ],
+            [
+              "act",
+              null,
+              "gelu_tanh",
+              "Which nonlinearity the gate passes through"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each projection"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 3468165120,
+            "activeParams": 3468165120,
+            "shareOfParams": 0.12840611101670296,
+            "flopsPerToken": 6936330240,
+            "shareOfFlops": 0.12583304651150348,
+            "activationBytes": 14973665280,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/local0/mlp/gate",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local0/mlp/up",
+              "type": "linear",
+              "params": 1156055040
+            },
+            {
+              "path": "layers/local0/mlp/down",
+              "type": "linear",
+              "params": 1156055040
+            }
+          ]
+        }
+      ]
+    },
+    {
       "preset": "mixtral-8x7b",
       "blocks": [
         {

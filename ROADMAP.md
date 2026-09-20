@@ -8,7 +8,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 
 | Milestone | State |
 |---|---|
-| M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 20 presets, exact parameter match on 17 of them. |
+| M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 21 presets, exact parameter match on 18 of them. |
 | M1 Check (design rules, full analysis) | **Done.** 18 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
 | M2 Manufacture (PyTorch codegen, verification) | **Done.** Every generated model's parameter count matches PyTorch exactly, and the FLOPs estimate matches a profiler once the causal mask is accounted for. |
 | M3 Agent (MCP server, CLI) | **Done**, minus the live-UI bridge. 13 MCP tools over stdio, 6 CLI commands, 67 tests. |
@@ -25,7 +25,7 @@ settings, the full analysis and the design-rule check at three operating points,
 and the generated PyTorch byte for byte. `go run ./cmd/golden` rewrites those
 files, deliberately and never as part of a test.
 
-20 presets, 17 matching their published parameter count exactly and 3 within a
+21 presets, 18 matching their published parameter count exactly and 3 within a
 stated tolerance, and every one of them confirmed against PyTorch 2.11 by
 instantiating the generated model. Not all are language models:
 `ijepa-vit-h14` is a vision transformer and `alexnet` a convolutional
@@ -127,6 +127,7 @@ Done:
 - `gated_deltanet_block` and a `gated_delta_scan` primitive: linear attention with DeltaNet's write rule and Mamba-2's decay gate, so a layer of it caches nothing that grows with context — a matrix per head, fixed for the sequence, plus what the depthwise convolution remembers. The generated file carries a readable sequential reference that runs unmodified; swap it for `fla`'s chunked kernel to train.
 - `mtp_head` and a `shift` primitive: multi-token prediction as DeepSeek-V3 describes it — normalize the hidden state, normalize the embedding of the token ahead, join, project 2D down to D — then a transformer block and the model's own output head, which is shared and so costs a second pass over the vocabulary and no weights. Depth is stacking rather than a parameter.
 - Logit softcapping, on the output logits and on the attention scores. The one on the scores rules out a fused kernel — it never builds the matrix there is anything to cap — so a capped layer is counted as eager attention, which for Gemma-2-9B at 8k is 199 GiB of activations rather than 73.
+- Gemma-3-27B, reproducing 27,009,346,304 exactly. Not from a figure on a card — the card says 27.4B, which includes a SigLIP vision tower this does not model — but from the model's own safetensors headers, read with a range request rather than a download. Checking the arithmetic against those headers group by group is how `qk_norm` is known to be on: the 15,872 it came up short is exactly sixty-two layers times two 128-wide norms. Five layers in six attend within a 1024-token window, so at 128k context the cache is 10.41 GiB where treating every layer as global would give 62.
 - The definition editor: a block the design defines is opened and edited directly, not through an instance, so a change reaches every instance at once. `graphAtPath` is the single door every operation goes through, so one prefix made every existing tool write into `defs` — add, wire, move, rename, delete, with undo. What a literal dropped into a parameterised template means is settled by a rule rather than a guess: inside a definition a bare identifier naming a declared parameter *is* that parameter, which is how the built-in composites are already written. The canvas gets a preview with `$D` bound to `D` over the block's own parameters at their defaults, and an edit naming a parameter is stored back as a reference to it. Tested as a round trip, because one direction proves nothing.
 - The design's own block library, in the editor: `Blocks > Blocks this design defines` lists what each one declares and where it is used, and renames or deletes it. A rename moves every instance with the definition, at any depth and inside other definitions; a delete is refused while anything uses it, counting the instances inside other definitions separately because nobody can navigate to those. Editing a template in place is deliberately not here — a literal dropped into a parameterised graph either means 4096 or means `$D`, and an editor that guessed would write a definition that silently stopped scaling.
 - Active against resident, on both of the axes where the two diverge. A sparse model at batch reads the union of what its tokens routed to rather than one token's share, so Mixtral at batch 32 reads 43.49 GiB of the 43.50 GiB it holds and decodes at 929 tok/s where the active count alone said 1314; the formula is per block and needs to know nothing about top_k. Latent attention's cache is 68.63 KiB per token only under a kernel that scores in the compressed space, and 3.82 MiB under one that does not, which reproduces DeepSeek-V2 Table 1's 57x. Both errors ran the same way: the number a person would have quoted was the flattering one.
@@ -135,7 +136,7 @@ Done:
 
 Remaining:
 - Presets for the linear-attention hybrids, once their configs settle.
-- Presets: Gemma-3, Jamba, and 2026 models as their configs stabilize.
+- Presets: Jamba, and 2026 models as their configs stabilize.
 
 ### M6 — Ship
 

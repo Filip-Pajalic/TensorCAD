@@ -1,0 +1,394 @@
+{
+  "version": 1,
+  "meta": {
+    "name": "gemma-3-27b",
+    "family": "gemma",
+    "notes": "Tied embeddings, GeGLU, a norm on both the input and the output of every sublayer, and RMSNorm on the query and key heads, which Gemma 2 did not have. Five layers in six attend within a 1024-token window, so all but ten of the sixty-two hold a cache bounded by W rather than one that grows with the sequence \u2014 at 128k context that is most of the difference. The repeating unit is the group of six, which is why the stack repeats ten times and the two layers left over are written out. The two kinds of layer also use different rotary bases: 10,000 for the windowed ones, and 1,000,000 scaled by 8 for the global ones, which is what reaches 128k. Unlike Gemma 2 there is no logit softcapping, so a fused attention kernel is usable again. The published figure is the language model; the 27.4B on the card includes a SigLIP vision tower this does not model.",
+    "published": {
+      "params": 27009346304,
+      "source": "https://huggingface.co/google/gemma-3-27b-it"
+    }
+  },
+  "symbols": {
+    "B": {
+      "kind": "runtime",
+      "default": 1,
+      "doc": "Batch size"
+    },
+    "T": {
+      "kind": "runtime",
+      "default": 8192,
+      "doc": "Sequence length in tokens"
+    },
+    "G": {
+      "kind": "design",
+      "value": 10,
+      "doc": "Groups of five windowed layers and one global"
+    },
+    "Ltail": {
+      "kind": "design",
+      "value": 2,
+      "doc": "Windowed layers past the last whole group, written out rather than repeated"
+    },
+    "L": {
+      "kind": "design",
+      "value": "6*G + Ltail",
+      "doc": "Transformer layers in total"
+    },
+    "W": {
+      "kind": "design",
+      "value": 1024,
+      "doc": "Sliding-window width on the local layers"
+    },
+    "D": {
+      "kind": "design",
+      "value": 5376,
+      "doc": "Residual stream width (d_model)"
+    },
+    "H": {
+      "kind": "design",
+      "value": 32,
+      "doc": "Query heads"
+    },
+    "Hkv": {
+      "kind": "design",
+      "value": 16,
+      "doc": "Key/value heads"
+    },
+    "dh": {
+      "kind": "design",
+      "value": 128,
+      "doc": "Head dimension"
+    },
+    "F": {
+      "kind": "design",
+      "value": 21504,
+      "doc": "Feed-forward hidden width"
+    },
+    "V": {
+      "kind": "design",
+      "value": 262208,
+      "doc": "Vocabulary size"
+    }
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "tokens",
+        "type": "input",
+        "params": {
+          "shape": "B T",
+          "dtype": "int64"
+        }
+      },
+      {
+        "id": "embed",
+        "type": "embedding",
+        "params": {
+          "vocab": "V",
+          "dim": "D"
+        }
+      },
+      {
+        "id": "layers",
+        "type": "repeat",
+        "label": "Windowed x5 + global, x10",
+        "params": {
+          "count": "G"
+        },
+        "graph": {
+          "nodes": [
+            {
+              "id": "_in",
+              "type": "boundary_in",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            },
+            {
+              "id": "local0",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "Hkv",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "rmsnorm",
+                "post_norm": true,
+                "mlp": "gated",
+                "act": "gelu_tanh",
+                "attn_bias": false,
+                "mlp_bias": false,
+                "qk_norm": true,
+                "causal": true,
+                "window": "W",
+                "rope": {
+                  "theta": 10000.0
+                }
+              }
+            },
+            {
+              "id": "local1",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "Hkv",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "rmsnorm",
+                "post_norm": true,
+                "mlp": "gated",
+                "act": "gelu_tanh",
+                "attn_bias": false,
+                "mlp_bias": false,
+                "qk_norm": true,
+                "causal": true,
+                "window": "W",
+                "rope": {
+                  "theta": 10000.0
+                }
+              }
+            },
+            {
+              "id": "local2",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "Hkv",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "rmsnorm",
+                "post_norm": true,
+                "mlp": "gated",
+                "act": "gelu_tanh",
+                "attn_bias": false,
+                "mlp_bias": false,
+                "qk_norm": true,
+                "causal": true,
+                "window": "W",
+                "rope": {
+                  "theta": 10000.0
+                }
+              }
+            },
+            {
+              "id": "local3",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "Hkv",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "rmsnorm",
+                "post_norm": true,
+                "mlp": "gated",
+                "act": "gelu_tanh",
+                "attn_bias": false,
+                "mlp_bias": false,
+                "qk_norm": true,
+                "causal": true,
+                "window": "W",
+                "rope": {
+                  "theta": 10000.0
+                }
+              }
+            },
+            {
+              "id": "local4",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "Hkv",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "rmsnorm",
+                "post_norm": true,
+                "mlp": "gated",
+                "act": "gelu_tanh",
+                "attn_bias": false,
+                "mlp_bias": false,
+                "qk_norm": true,
+                "causal": true,
+                "window": "W",
+                "rope": {
+                  "theta": 10000.0
+                }
+              }
+            },
+            {
+              "id": "global",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "Hkv",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "rmsnorm",
+                "post_norm": true,
+                "mlp": "gated",
+                "act": "gelu_tanh",
+                "attn_bias": false,
+                "mlp_bias": false,
+                "qk_norm": true,
+                "causal": true,
+                "window": 0,
+                "rope": {
+                  "theta": 1000000.0,
+                  "scaling": {
+                    "kind": "linear",
+                    "factor": 8.0
+                  }
+                }
+              }
+            },
+            {
+              "id": "_out",
+              "type": "boundary_out",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            }
+          ],
+          "edges": [
+            [
+              "_in:x",
+              "local0:x"
+            ],
+            [
+              "local0:y",
+              "local1:x"
+            ],
+            [
+              "local1:y",
+              "local2:x"
+            ],
+            [
+              "local2:y",
+              "local3:x"
+            ],
+            [
+              "local3:y",
+              "local4:x"
+            ],
+            [
+              "local4:y",
+              "global:x"
+            ],
+            [
+              "global:y",
+              "_out:x"
+            ]
+          ]
+        }
+      },
+      {
+        "id": "tail0",
+        "type": "transformer_block",
+        "label": "Windowed",
+        "params": {
+          "d_model": "D",
+          "heads": "H",
+          "kv_heads": "Hkv",
+          "head_dim": "dh",
+          "ffn_hidden": "F",
+          "norm": "rmsnorm",
+          "post_norm": true,
+          "mlp": "gated",
+          "act": "gelu_tanh",
+          "attn_bias": false,
+          "mlp_bias": false,
+          "qk_norm": true,
+          "causal": true,
+          "window": "W",
+          "rope": {
+            "theta": 10000.0
+          }
+        }
+      },
+      {
+        "id": "tail1",
+        "type": "transformer_block",
+        "label": "Windowed",
+        "params": {
+          "d_model": "D",
+          "heads": "H",
+          "kv_heads": "Hkv",
+          "head_dim": "dh",
+          "ffn_hidden": "F",
+          "norm": "rmsnorm",
+          "post_norm": true,
+          "mlp": "gated",
+          "act": "gelu_tanh",
+          "attn_bias": false,
+          "mlp_bias": false,
+          "qk_norm": true,
+          "causal": true,
+          "window": "W",
+          "rope": {
+            "theta": 10000.0
+          }
+        }
+      },
+      {
+        "id": "final_norm",
+        "type": "rmsnorm",
+        "params": {
+          "dim": "D"
+        }
+      },
+      {
+        "id": "head",
+        "type": "lm_head",
+        "params": {
+          "vocab": "V",
+          "dim": "D",
+          "tied": true
+        }
+      },
+      {
+        "id": "logits",
+        "type": "output"
+      }
+    ],
+    "edges": [
+      [
+        "tokens:x",
+        "embed:ids"
+      ],
+      [
+        "embed:y",
+        "layers:x"
+      ],
+      [
+        "layers:x",
+        "tail0:x"
+      ],
+      [
+        "tail0:y",
+        "tail1:x"
+      ],
+      [
+        "tail1:y",
+        "final_norm:x"
+      ],
+      [
+        "final_norm:y",
+        "head:x"
+      ],
+      [
+        "head:y",
+        "logits:x"
+      ]
+    ]
+  }
+}

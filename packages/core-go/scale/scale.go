@@ -71,7 +71,7 @@ var (
 	// which for a latent means a "compression" wider than the model it
 	// compresses.
 	defaultWidth = []string{"D", "F", "Fe", "Ql", "Kl", "Dp", "Fp"}
-	defaultDepth = []string{"L", "Lp"}
+	defaultDepth = []string{"L", "Lp", "G"}
 )
 
 // secondary are the streams that are not the residual one: a design can hold

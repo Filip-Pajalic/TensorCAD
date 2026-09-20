@@ -66,8 +66,8 @@ Two cross-checks worth knowing:
   analysis; `packages/engine` is that module plus the TypeScript client that loads it. The
   editor, the command line, the MCP server and the desktop shell are all clients of the same
   module, so an answer cannot depend on where it was asked.
-- **`packages/core-go/testdata` is the specification.** Eighty-nine files saying what the
-  engine answers for all twenty presets: symbol tables, inferred shapes at two expansion
+- **`packages/core-go/testdata` is the specification.** Ninety-five files saying what the
+  engine answers for all twenty-one presets: symbol tables, inferred shapes at two expansion
   settings, the full analysis and the design-rule check at three operating points, every byte
   of a generated `model.py`, the prose of every block. `go run ./cmd/golden` rewrites them and
   nothing else does — never a test, which would pass whatever the engine did. They began as
@@ -84,7 +84,7 @@ Two cross-checks worth knowing:
   report objecting to every `null` it was not told to expect. Add to that list rather than
   papering over it in a client.
 - **A preset is a document, not a builder.** `packages/core-go/presets/data` holds the
-  library as twenty JSON files, embedded into the binary. There is no builder any more and
+  library as twenty-one JSON files, embedded into the binary. There is no builder any more and
   nothing generates them: a new preset is a file, and `meta.published` is what the tests hold
   it to.
 - `packages/engine` — the compiled module and the TypeScript that loads it.

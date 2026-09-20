@@ -21,9 +21,6 @@ on:
 permissions:
   contents: write
 
-env:
-  GO_VERSION: "1.25"
-
 jobs:
   # The gate. A release that does not pass its own tests is not a release, and
   # the tag is already public by the time anyone notices.
@@ -37,15 +34,47 @@ jobs:
           bun-version: latest
       - uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GO_VERSION }}
+          # From the module rather than a number here, so a bump moves one file.
+          go-version-file: packages/core-go/go.mod
           # The engine has no dependencies outside the standard library, so
           # there is no go.sum and nothing to cache.
           cache: false
       - run: bun install --frozen-lockfile
       - run: bun run build:wasm
-      - run: go test ./...
+      # The same gate CI runs, because a release cut from a green main can
+      # still be cut from the wrong main: this is the last place to find out.
+      - name: Format
+        run: |
+          unformatted=$(gofmt -l packages/core-go desktop)
+          if [ -n "$unformatted" ]; then
+            echo "gofmt would change these files:"
+            echo "$unformatted"
+            exit 1
+          fi
+      - name: Vet
+        run: go vet ./...
         working-directory: packages/core-go
+      - name: Test the engine
+        run: go test ./...
+        working-directory: packages/core-go
+      - name: Type-check
+        run: |
+          bun run typecheck
+          bun x tsc -p packages/cli/tsconfig.json --noEmit
+          bun x tsc -p packages/mcp/tsconfig.json --noEmit
+          cd packages/ui && node scripts/typecheck.mjs
       - run: bun test packages
+      # A release whose goldens are stale is a release whose tests were
+      # comparing the engine against an answer nobody rewrote.
+      - name: Goldens are current
+        run: |
+          go run ./cmd/golden
+          if ! git diff --quiet -- testdata; then
+            echo "The golden files are out of date."
+            git diff --stat -- testdata
+            exit 1
+          fi
+        working-directory: packages/core-go
 
   engine:
     name: Engine
@@ -58,7 +87,8 @@ jobs:
           bun-version: latest
       - uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GO_VERSION }}
+          # From the module rather than a number here, so a bump moves one file.
+          go-version-file: packages/core-go/go.mod
           # The engine has no dependencies outside the standard library, so
           # there is no go.sum and nothing to cache.
           cache: false
@@ -71,6 +101,7 @@ jobs:
           mkdir -p dist/tensorcad-engine
           cp packages/engine/wasm/tensorcad.wasm dist/tensorcad-engine/
           cp packages/engine/vendor/wasm_exec.js dist/tensorcad-engine/
+          cp packages/engine/README.md dist/tensorcad-engine/
           cp LICENSE.md dist/tensorcad-engine/
           cd dist && tar -czf tensorcad-engine-wasm.tar.gz tensorcad-engine
       - uses: actions/upload-artifact@v4
@@ -102,7 +133,7 @@ jobs:
           bun-version: latest
       - uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version-file: desktop/go.mod
           cache-dependency-path: desktop/go.sum
 
       # Wails v3 links GTK 4 and WebKitGTK 6. Windows and macOS ship a webview.

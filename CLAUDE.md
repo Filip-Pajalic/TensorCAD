@@ -138,6 +138,15 @@ Two cross-checks worth knowing:
   startup, before the first command or the transport opens.
 - `python/tensorcad_runtime` — the only Python: instantiates generated models to verify them, and runs small training jobs.
 - `docs/` — documentation, organised by Diátaxis (tutorials, how-to, reference, explanation). `reference/analysis-math.md` is the sourced maths behind the analysis engine.
+- **Both sites are static.** `packages/ui/wrangler.jsonc` serves the Vite bundle at
+  `app.tensorcad.dev` and the apex; `wrangler.docs.jsonc` serves what MkDocs renders at
+  `doc.tensorcad.dev`. Neither has a Worker script — `assets` with no `main` is an
+  assets-only deployment, which is all this needs, because the engine is WebAssembly and
+  runs in the tab. `.github/workflows/deploy.yml` uploads both from `main` when
+  `CLOUDFLARE_API_TOKEN` is set and says so in the job summary when it is not, so a fork
+  still builds. The editor is loaded with `WebAssembly.instantiate` over bytes rather than
+  `instantiateStreaming`, so nothing depends on the `.wasm` arriving with the right content
+  type.
 
 ## Invariants
 

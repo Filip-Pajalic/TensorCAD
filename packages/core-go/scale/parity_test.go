@@ -12,15 +12,20 @@ import (
 	"github.com/tensorcad/core/scale"
 )
 
-// Scaling against the TypeScript, symbol for symbol.
+// Scaling, symbol for symbol.
 //
-// A search is where two engines drift most easily: the same binary search over
+// A search is where an engine drifts most easily: the same binary search over
 // the same rounding has to land on the same widths, not merely near them. Six
 // cases, chosen so each exercises a different corner — a dense model, one
 // scaled by its non-embedding count with a tied head, one at fixed depth, a
 // mixture of experts, latent attention, and a state-space model. The variants
 // must stay in step with ScaleCases in golden/cases.go. Regenerate with
 // `go run ./cmd/golden`.
+//
+// Five of the six are still the answers the TypeScript gave. The latent one is
+// not: it kept a compressed query width of 1536 on a 256-wide model, because
+// the width set left `Ql` and `Kl` out, and a compression wider than what it
+// compresses is not an answer worth being compatible with.
 
 func f(v float64) *float64 { return &v }
 func b(v bool) *bool       { return &v }
@@ -81,7 +86,7 @@ func TestScaledDesignsMatchTheGoldens(t *testing.T) {
 			}
 
 			if got.Achieved != c.Achieved {
-				t.Errorf("achieved %.0f parameters, the TypeScript reached %.0f", got.Achieved, c.Achieved)
+				t.Errorf("achieved %.0f parameters, the golden says %.0f", got.Achieved, c.Achieved)
 			}
 			if got.Target != c.Target {
 				t.Errorf("target: got %.0f, want %.0f", got.Target, c.Target)
@@ -98,7 +103,7 @@ func TestScaledDesignsMatchTheGoldens(t *testing.T) {
 				t.Error("the scaled design kept the original's published figure")
 			}
 			if string(c.Published) != "null" {
-				t.Errorf("the TypeScript kept a published figure: %s", c.Published)
+				t.Errorf("a scaled design kept a published figure: %s", c.Published)
 			}
 
 			if len(got.Notes) != len(c.Notes) {
@@ -125,7 +130,7 @@ func TestScaledDesignsMatchTheGoldens(t *testing.T) {
 			for name, w := range wantChanges {
 				g, ok := got.Changes[name]
 				if !ok {
-					t.Errorf("%s did not change; the TypeScript moved it %g -> %g", name, w[0], w[1])
+					t.Errorf("%s did not change; the golden moves it %g -> %g", name, w[0], w[1])
 					continue
 				}
 				if g.From != w[0] || g.To != w[1] {
@@ -134,7 +139,7 @@ func TestScaledDesignsMatchTheGoldens(t *testing.T) {
 			}
 			for name, g := range got.Changes {
 				if _, ok := wantChanges[name]; !ok {
-					t.Errorf("%s changed %g -> %g, which the TypeScript did not do", name, g.From, g.To)
+					t.Errorf("%s changed %g -> %g, which the golden does not", name, g.From, g.To)
 				}
 			}
 

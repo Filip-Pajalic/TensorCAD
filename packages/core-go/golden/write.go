@@ -16,6 +16,7 @@ import (
 	"github.com/tensorcad/core/infer"
 	"github.com/tensorcad/core/ir"
 	"github.com/tensorcad/core/jsonx"
+	"github.com/tensorcad/core/mup"
 	"github.com/tensorcad/core/plan"
 	"github.com/tensorcad/core/presets"
 	"github.com/tensorcad/core/rules"
@@ -52,6 +53,7 @@ func Write(dir string) (Summary, error) {
 	s.CodegenFiles = len(names) * len(CodegenVariants)
 	w.explain(names)
 	s.ScaleCases = w.scale()
+	s.MupCases = w.mup()
 	s.Plans = w.plans()
 	s.BrokenFindings, err = w.broken()
 	if err != nil {
@@ -69,6 +71,7 @@ type Summary struct {
 	OperatingPoints int
 	CodegenFiles    int
 	ScaleCases      int
+	MupCases        int
 	Plans           int
 	BrokenFindings  int
 }
@@ -1035,6 +1038,76 @@ func (w *writer) scale() int {
 		cases = append(cases, entry)
 	}
 	w.write("scale.json", struct {
+		Cases []oneCase `json:"cases"`
+	}{cases})
+	return len(cases)
+}
+
+// mup records the ladder: the widths, what each one costs, and what to multiply
+// the initialization and the learning rate by at each.
+//
+// The rungs' documents are left out and their symbols recorded instead. A
+// document per rung would be most of the file and none of the answer, and the
+// symbols are where a width that failed to follow would show.
+func (w *writer) mup() int {
+	type oneScaling struct {
+		Class   string   `json:"class"`
+		InitStd string   `json:"initStd"`
+		AdamLR  string   `json:"adamLr"`
+		Paths   []string `json:"paths"`
+	}
+	type oneRung struct {
+		Width      float64      `json:"width"`
+		Multiplier string       `json:"multiplier"`
+		Heads      float64      `json:"heads"`
+		Params     float64      `json:"params"`
+		Base       bool         `json:"base"`
+		Scaling    []oneScaling `json:"scaling"`
+		Notes      []string     `json:"notes"`
+		Symbols    []numPair    `json:"symbols"`
+	}
+	type oneCase struct {
+		Label       string      `json:"label"`
+		Preset      string      `json:"preset"`
+		Options     mup.Options `json:"options"`
+		WidthSymbol string      `json:"widthSymbol"`
+		BaseWidth   float64     `json:"baseWidth"`
+		HeadDim     float64     `json:"headDim"`
+		Rungs       []oneRung   `json:"rungs"`
+		Notes       []string    `json:"notes"`
+	}
+	cases := make([]oneCase, 0, len(MupCases))
+	for _, c := range MupCases {
+		ladder, err := mup.Build(presets.MustGet(c.Preset), c.Opts)
+		if err != nil {
+			w.err = fmt.Errorf("mup %s: %w", c.Label, err)
+			return 0
+		}
+		entry := oneCase{
+			Label: c.Label, Preset: c.Preset, Options: c.Opts,
+			WidthSymbol: ladder.WidthSymbol, BaseWidth: ladder.BaseWidth,
+			HeadDim: ladder.HeadDim, Notes: ladder.Notes, Rungs: []oneRung{},
+		}
+		for _, r := range ladder.Rungs {
+			rung := oneRung{
+				Width: r.Width, Multiplier: analysis.JSNumber(r.Multiplier), Heads: r.Heads,
+				Params: r.Params, Base: r.Base, Notes: r.Notes, Scaling: []oneScaling{},
+				Symbols: sortedNumbers(ir.ResolveSymbols(r.Doc).DesignValues),
+			}
+			for _, s := range r.Scaling {
+				// The multipliers are irrational as often as not, so they are
+				// recorded the way every other number that crosses the boundary
+				// is printed rather than as a raw double.
+				rung.Scaling = append(rung.Scaling, oneScaling{
+					Class: string(s.Class), InitStd: analysis.JSNumber(s.InitStd),
+					AdamLR: analysis.JSNumber(s.AdamLR), Paths: s.Paths,
+				})
+			}
+			entry.Rungs = append(entry.Rungs, rung)
+		}
+		cases = append(cases, entry)
+	}
+	w.write("mup.json", struct {
 		Cases []oneCase `json:"cases"`
 	}{cases})
 	return len(cases)

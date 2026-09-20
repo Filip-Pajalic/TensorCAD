@@ -29,6 +29,7 @@ import (
 	"github.com/tensorcad/core/hf"
 	"github.com/tensorcad/core/ir"
 	"github.com/tensorcad/core/jsonx"
+	"github.com/tensorcad/core/mup"
 	"github.com/tensorcad/core/plan"
 	"github.com/tensorcad/core/presets"
 	"github.com/tensorcad/core/report"
@@ -54,6 +55,9 @@ func main() {
 		"explainAll":    wrap(2, explainAll),
 		"generateTorch": wrap(2, generateTorch),
 		"scale":         wrap(2, scaleDesign),
+		// The same design at several widths, with what to multiply the
+		// initialization and the learning rate by at each one.
+		"mup": wrap(2, mupLadder),
 		// Every way of splitting the work across a cluster, and which of them
 		// fit. Three arguments rather than two: the design, the operating point
 		// it is measured at, and the cluster it is being fitted to.
@@ -365,6 +369,26 @@ func scaleDesign(args []string) (string, error) {
 		return "", err
 	}
 	return encode(result)
+}
+
+func mupLadder(args []string) (string, error) {
+	doc, err := decodeDoc(args[0])
+	if err != nil {
+		return "", err
+	}
+	// Straight into mup.Options, for the same reason scaling does: its json
+	// tags are the wire contract.
+	var o mup.Options
+	if args[1] != "" {
+		if err := json.Unmarshal([]byte(args[1]), &o); err != nil {
+			return "", fmt.Errorf("could not read the ladder settings: %w", err)
+		}
+	}
+	ladder, err := mup.Build(doc, o)
+	if err != nil {
+		return "", err
+	}
+	return encode(ladder)
 }
 
 func planCluster(args []string) (string, error) {

@@ -14,6 +14,7 @@ import { cmdAnalyze } from "./commands/analyze.js";
 import { cmdCodegen } from "./commands/codegen.js";
 import { cmdDiff } from "./commands/diff.js";
 import { cmdPlan } from "./commands/plan.js";
+import { cmdMup } from "./commands/mup.js";
 import { cmdShow } from "./commands/show.js";
 import { cmdImport } from "./commands/import.js";
 import { PRESET_NAMES, loadEngine } from "@tensorcad/engine/node";
@@ -45,6 +46,11 @@ const COMMANDS: Record<string, { run: (args: Args) => number; usage: string; blu
       "                    [--micro-batch 1,2,4] [--recompute none|selective|full]\n" +
       "                    [--hardware id] [--limit n] [--json]",
     blurb: "ways to split training across a cluster; exits 1 if none fit",
+  },
+  mup: {
+    run: cmdMup,
+    usage: "mup <file|preset> [--widths 256,512,1024] [--base-width n] [--json]",
+    blurb: "the same design at several widths, and what to scale by at each",
   },
   diff: { run: cmdDiff, usage: "diff <a> <b> [--json]", blurb: "structural and numeric difference" },
   show: { run: cmdShow, usage: "show <file|preset> [--json]", blurb: "block tree with inferred shapes" },

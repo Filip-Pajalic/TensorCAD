@@ -718,6 +718,48 @@ describe("scale", () => {
   });
 });
 
+describe("mup", () => {
+  test("saves every rung as a design of its own", async () => {
+    const llama = await newLlama();
+    const { data, text } = await callFull("tensorcad_mup", {
+      design_id: llama.id,
+      widths: [512, 1024, 2048],
+      base_width: 512,
+    });
+    expect(data.rungs.length).toBe(3);
+    expect(data.head_dim).toBeGreaterThan(0);
+    expect(data.rungs.filter((r: { base: boolean }) => r.base).length).toBe(1);
+
+    let last = 0;
+    for (const rung of data.rungs) {
+      // The rung is a design in this session, analysable like any other, and
+      // its parameter count is the one the ladder reported.
+      const check = await call("tensorcad_analyze", { design_id: rung.design_id });
+      expect(check.params.total, String(rung.width)).toBe(rung.params);
+      expect(rung.params, String(rung.width)).toBeGreaterThan(last);
+      last = rung.params;
+      // Every head is the same width at every rung: that is the premise.
+      expect(rung.heads * data.head_dim).toBe(rung.width);
+      // And the multipliers are the table's, against this rung's m.
+      const by = Object.fromEntries(
+        rung.scaling.map((s: { class: string; init_std: number; adam_lr: number }) => [s.class, s]),
+      );
+      expect(by.input.init_std).toBe(1);
+      expect(by.input.adam_lr).toBe(1);
+      expect(by.hidden.init_std).toBeCloseTo(1 / Math.sqrt(rung.multiplier), 12);
+      expect(by.hidden.adam_lr).toBeCloseTo(1 / rung.multiplier, 12);
+      expect(by.output.init_std).toBeCloseTo(1 / rung.multiplier, 12);
+    }
+    expect(text).toContain("laddered by D");
+  });
+
+  test("refuses a design with no width to move", async () => {
+    const conv = await call("tensorcad_new_design", { preset: "alexnet" });
+    const text = await callExpectingError("tensorcad_mup", { design_id: conv.design_id });
+    expect(text).toContain("D");
+  });
+});
+
 describe("plan", () => {
   test("returns splits that fit, each using the whole cluster", async () => {
     const llama = await newLlama();

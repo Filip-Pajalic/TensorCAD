@@ -82,6 +82,8 @@ import type {
   ImportResult,
   Inference,
   ParamsResult,
+  MupLadder,
+  MupOptions,
   ScaleOptions,
   ScaleResult,
   SymbolTable,
@@ -125,6 +127,10 @@ export function generateTorch(doc: Doc, options?: TorchOptions): GeneratedCode {
 
 export function scaleDesign(doc: Doc, options: ScaleOptions): ScaleResult {
   return engine().scale(doc, options);
+}
+
+export function mupLadder(doc: Doc, options?: MupOptions): MupLadder {
+  return engine().mup(doc, options);
 }
 
 export function planCluster(

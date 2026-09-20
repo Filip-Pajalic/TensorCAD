@@ -23,6 +23,8 @@ import type {
   HardwareProfile,
   ImportResult,
   Inference,
+  MupLadder,
+  MupOptions,
   ScaleOptions,
   ScaleResult,
   ClusterRequest,
@@ -74,6 +76,15 @@ export interface Engine {
   generateTorch(doc: Doc, options?: TorchOptions): GeneratedCode;
   scale(doc: Doc, options: ScaleOptions): ScaleResult;
   /**
+   * The same design at several widths, with what to multiply the
+   * initialization and the learning rate by at each one.
+   *
+   * It is what makes a sweep affordable: tune at a width that fits on one
+   * device, and carry the answer up the ladder. What it does not do is decide
+   * the base learning rate, which is what the sweep is for.
+   */
+  mup(doc: Doc, options?: MupOptions): MupLadder;
+  /**
    * Every way of splitting the work across a cluster, and which of them fit.
    *
    * Memory is the claim, and it is arithmetic. Which plan is fastest is not:
@@ -116,6 +127,7 @@ interface Exports {
   explainAll(doc: string, options: string): string;
   generateTorch(doc: string, options: string): string;
   scale(doc: string, options: string): string;
+  mup(doc: string, options: string): string;
   plan(doc: string, options: string, cluster: string): string;
   diff(a: string, b: string, options: string): string;
   presets(): string;
@@ -247,6 +259,8 @@ function wrap(api: Exports): Engine {
     generateTorch: (doc, options) =>
       unwrap(api.generateTorch(JSON.stringify(doc), options ? JSON.stringify(options) : "")) as GeneratedCode,
     scale: (doc, options) => unwrap(api.scale(JSON.stringify(doc), JSON.stringify(options))) as ScaleResult,
+    mup: (doc, options) =>
+      unwrap(api.mup(JSON.stringify(doc), options ? JSON.stringify(options) : "")) as MupLadder,
     plan: (doc, options, cluster) =>
       unwrap(
         api.plan(JSON.stringify(doc), JSON.stringify(options ?? {}), JSON.stringify(cluster)),

@@ -65,9 +65,22 @@ type Result struct {
 }
 
 var (
-	defaultWidth = []string{"D", "F", "Fe"}
-	defaultDepth = []string{"L"}
+	// Every width the library's designs measure against the residual stream: a
+	// feed-forward width, an expert's, a compressed attention latent, and a
+	// second transformer's. A symbol left out of this list stays where it was,
+	// which for a latent means a "compression" wider than the model it
+	// compresses.
+	defaultWidth = []string{"D", "F", "Fe", "Ql", "Kl", "Dp", "Fp"}
+	defaultDepth = []string{"L", "Lp"}
 )
+
+// secondary are the streams that are not the residual one: a design can hold
+// more than one transformer, and I-JEPA's predictor is a narrower one beside
+// its encoder. Such a stream keeps a head dimension of its own, so its width
+// rounds to a whole head of its own and its head count follows.
+var secondary = map[string]struct{ heads, headDim string }{
+	"Dp": {heads: "Hp", headDim: "dhp"},
+}
 
 // literal reads a symbol that is a plain number, which is what can be scaled.
 // An expression follows whatever it is written over.
@@ -198,8 +211,23 @@ func applyScale(base *ir.Doc, factor float64, opts Options) (*ir.Doc, []string, 
 		if name == "D" {
 			continue
 		}
-		if v, ok := literal(doc, name); ok {
+		v, ok := literal(doc, name)
+		if !ok {
+			continue
+		}
+		s, isStream := secondary[name]
+		if !isStream {
 			setLiteral(doc, name, roundTo(v*widthRatio, 64))
+			continue
+		}
+		multiple := 64.0
+		if hd, ok := literal(doc, s.headDim); ok && hd > 0 {
+			multiple = hd
+		}
+		w := roundTo(v*widthRatio, multiple)
+		setLiteral(doc, name, w)
+		if _, ok := literal(doc, s.heads); ok {
+			setLiteral(doc, s.heads, math.Max(1, jsRound(w/multiple)))
 		}
 	}
 
@@ -209,10 +237,20 @@ func applyScale(base *ir.Doc, factor float64, opts Options) (*ir.Doc, []string, 
 		}
 	}
 
-	// A design with leading dense layers keeps at least one of each kind.
+	// A design with leading dense layers keeps at least one of each kind. One
+	// layer cannot be both, so such a design has a floor of two: clamping the
+	// dense count to one instead would leave zero sparse layers, which is not a
+	// smaller design but an unbuildable one.
 	ld, hasLd := literal(doc, "Ld")
 	l, hasL := literal(doc, "L")
 	if hasLd && hasL && ld >= l {
+		if l < 2 {
+			l = 2
+			setLiteral(doc, "L", l)
+			notes = append(notes,
+				"Raised the depth to two layers, which is the fewest a design with leading dense "+
+					"layers can have.")
+		}
 		setLiteral(doc, "Ld", math.Max(1, l-1))
 		notes = append(notes, "Reduced the leading dense layers so at least one sparse layer remains.")
 	}
@@ -237,6 +275,34 @@ func applyScale(base *ir.Doc, factor float64, opts Options) (*ir.Doc, []string, 
 	}
 
 	return doc, notes, nil
+}
+
+// AtWidth is the design at a given residual width: everything that follows the
+// width moved with it, and the depth left alone.
+//
+// It is the same machinery `Design` searches with, addressed by the width
+// instead of by a parameter count, which is what a μP ladder needs — there the
+// width is the thing being chosen and the parameter count is a consequence.
+// The head dimension is held rather than narrowed, because a rung whose heads
+// changed shape is a different design rather than the same one measured wider.
+func AtWidth(base *ir.Doc, width float64, opts Options) (*ir.Doc, []string, error) {
+	d, ok := literal(base, "D")
+	if !ok || d <= 0 {
+		return nil, nil, errors.New("this design has no numeric D, so there is no width to set")
+	}
+	if !(width > 0) {
+		return nil, nil, fmt.Errorf(
+			"a width has to be a positive number, not %s", analysis.JSNumber(width))
+	}
+	opts.KeepDepth = true
+	if opts.WidthMultiple == nil {
+		if dh, ok := literal(base, "dh"); ok && dh > 0 {
+			opts.WidthMultiple = &dh
+		}
+	}
+	// KeepDepth takes the square root, so the factor is the width ratio squared.
+	ratio := width / d
+	return applyScale(base, ratio*ratio, opts)
 }
 
 // Design shrinks a design towards a parameter budget.

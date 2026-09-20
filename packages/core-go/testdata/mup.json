@@ -1,0 +1,2014 @@
+{
+  "cases": [
+    {
+      "label": "gpt2-tied",
+      "preset": "gpt2-small",
+      "options": {},
+      "widthSymbol": "D",
+      "baseWidth": 384,
+      "headDim": 64,
+      "rungs": [
+        {
+          "width": 384,
+          "multiplier": "1",
+          "heads": 6,
+          "params": 40986240,
+          "base": true,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "embed",
+                "final_norm",
+                "layers/block/norm1",
+                "layers/block/norm2",
+                "pos"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "layers/block/attn/k_proj",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_proj",
+                "layers/block/attn/v_proj",
+                "layers/block/mlp/down",
+                "layers/block/mlp/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "head"
+              ]
+            }
+          ],
+          "notes": [],
+          "symbols": [
+            [
+              "D",
+              384
+            ],
+            [
+              "F",
+              1536
+            ],
+            [
+              "H",
+              6
+            ],
+            [
+              "Hkv",
+              6
+            ],
+            [
+              "L",
+              12
+            ],
+            [
+              "Tmax",
+              1024
+            ],
+            [
+              "V",
+              50257
+            ],
+            [
+              "dh",
+              64
+            ]
+          ]
+        },
+        {
+          "width": 768,
+          "multiplier": "2",
+          "heads": 12,
+          "params": 124439808,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "embed",
+                "final_norm",
+                "layers/block/norm1",
+                "layers/block/norm2",
+                "pos"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "0.7071067811865475",
+              "adamLr": "0.5",
+              "paths": [
+                "layers/block/attn/k_proj",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_proj",
+                "layers/block/attn/v_proj",
+                "layers/block/mlp/down",
+                "layers/block/mlp/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "0.5",
+              "adamLr": "0.5",
+              "paths": [
+                "head"
+              ]
+            }
+          ],
+          "notes": [],
+          "symbols": [
+            [
+              "D",
+              768
+            ],
+            [
+              "F",
+              3072
+            ],
+            [
+              "H",
+              12
+            ],
+            [
+              "Hkv",
+              12
+            ],
+            [
+              "L",
+              12
+            ],
+            [
+              "Tmax",
+              1024
+            ],
+            [
+              "V",
+              50257
+            ],
+            [
+              "dh",
+              64
+            ]
+          ]
+        }
+      ],
+      "notes": [
+        "The readout is tied to the embedding, so one tensor is an input weight and an output weight at once. Its initialization is the embedding's and cannot be scaled twice; apply the output rule at the readout as a multiplier on its logits instead.",
+        "Sweep at the base rung, then carry the learning rate up the ladder multiplied per class.",
+        "Nothing here decides the base learning rate. That is what the sweep is for.",
+        "μP also asks attention to divide its logits by the head dimension rather than by its square root. That is a property of the design rather than of this ladder."
+      ]
+    },
+    {
+      "label": "llama-gqa",
+      "preset": "llama-3-8b",
+      "options": {},
+      "widthSymbol": "D",
+      "baseWidth": 512,
+      "headDim": 128,
+      "rungs": [
+        {
+          "width": 512,
+          "multiplier": "1",
+          "heads": 4,
+          "params": 253002240,
+          "base": true,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "embed",
+                "final_norm",
+                "layers/block/norm1",
+                "layers/block/norm2"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "layers/block/attn/k_proj",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_proj",
+                "layers/block/attn/v_proj",
+                "layers/block/mlp/down",
+                "layers/block/mlp/gate",
+                "layers/block/mlp/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "head"
+              ]
+            }
+          ],
+          "notes": [],
+          "symbols": [
+            [
+              "D",
+              512
+            ],
+            [
+              "F",
+              2048
+            ],
+            [
+              "H",
+              4
+            ],
+            [
+              "Hkv",
+              1
+            ],
+            [
+              "L",
+              32
+            ],
+            [
+              "V",
+              128256
+            ],
+            [
+              "dh",
+              128
+            ]
+          ]
+        },
+        {
+          "width": 1024,
+          "multiplier": "2",
+          "heads": 8,
+          "params": 749274112,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "embed",
+                "final_norm",
+                "layers/block/norm1",
+                "layers/block/norm2"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "0.7071067811865475",
+              "adamLr": "0.5",
+              "paths": [
+                "layers/block/attn/k_proj",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_proj",
+                "layers/block/attn/v_proj",
+                "layers/block/mlp/down",
+                "layers/block/mlp/gate",
+                "layers/block/mlp/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "0.5",
+              "adamLr": "0.5",
+              "paths": [
+                "head"
+              ]
+            }
+          ],
+          "notes": [],
+          "symbols": [
+            [
+              "D",
+              1024
+            ],
+            [
+              "F",
+              4096
+            ],
+            [
+              "H",
+              8
+            ],
+            [
+              "Hkv",
+              2
+            ],
+            [
+              "L",
+              32
+            ],
+            [
+              "V",
+              128256
+            ],
+            [
+              "dh",
+              128
+            ]
+          ]
+        },
+        {
+          "width": 2048,
+          "multiplier": "4",
+          "heads": 16,
+          "params": 2270300160,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "embed",
+                "final_norm",
+                "layers/block/norm1",
+                "layers/block/norm2"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "0.5",
+              "adamLr": "0.25",
+              "paths": [
+                "layers/block/attn/k_proj",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_proj",
+                "layers/block/attn/v_proj",
+                "layers/block/mlp/down",
+                "layers/block/mlp/gate",
+                "layers/block/mlp/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "0.25",
+              "adamLr": "0.25",
+              "paths": [
+                "head"
+              ]
+            }
+          ],
+          "notes": [],
+          "symbols": [
+            [
+              "D",
+              2048
+            ],
+            [
+              "F",
+              7168
+            ],
+            [
+              "H",
+              16
+            ],
+            [
+              "Hkv",
+              4
+            ],
+            [
+              "L",
+              32
+            ],
+            [
+              "V",
+              128256
+            ],
+            [
+              "dh",
+              128
+            ]
+          ]
+        },
+        {
+          "width": 4096,
+          "multiplier": "8",
+          "heads": 32,
+          "params": 8030261248,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "embed",
+                "final_norm",
+                "layers/block/norm1",
+                "layers/block/norm2"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "0.35355339059327373",
+              "adamLr": "0.125",
+              "paths": [
+                "layers/block/attn/k_proj",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_proj",
+                "layers/block/attn/v_proj",
+                "layers/block/mlp/down",
+                "layers/block/mlp/gate",
+                "layers/block/mlp/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "0.125",
+              "adamLr": "0.125",
+              "paths": [
+                "head"
+              ]
+            }
+          ],
+          "notes": [],
+          "symbols": [
+            [
+              "D",
+              4096
+            ],
+            [
+              "F",
+              14336
+            ],
+            [
+              "H",
+              32
+            ],
+            [
+              "Hkv",
+              8
+            ],
+            [
+              "L",
+              32
+            ],
+            [
+              "V",
+              128256
+            ],
+            [
+              "dh",
+              128
+            ]
+          ]
+        }
+      ],
+      "notes": [
+        "Sweep at the base rung, then carry the learning rate up the ladder multiplied per class.",
+        "Nothing here decides the base learning rate. That is what the sweep is for.",
+        "μP also asks attention to divide its logits by the head dimension rather than by its square root. That is a property of the design rather than of this ladder."
+      ]
+    },
+    {
+      "label": "moe-router",
+      "preset": "mixtral-8x7b",
+      "options": {},
+      "widthSymbol": "D",
+      "baseWidth": 512,
+      "headDim": 128,
+      "rungs": [
+        {
+          "width": 512,
+          "multiplier": "1",
+          "heads": 4,
+          "params": 758546944,
+          "base": true,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "embed",
+                "final_norm",
+                "layers/block/norm1",
+                "layers/block/norm2"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "layers/block/attn/k_proj",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_proj",
+                "layers/block/attn/v_proj",
+                "layers/block/mlp/experts/expert/down",
+                "layers/block/mlp/experts/expert/gate",
+                "layers/block/mlp/experts/expert/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "head",
+                "layers/block/mlp/router"
+              ]
+            }
+          ],
+          "notes": [],
+          "symbols": [
+            [
+              "D",
+              512
+            ],
+            [
+              "E",
+              8
+            ],
+            [
+              "F",
+              1792
+            ],
+            [
+              "Fe",
+              1792
+            ],
+            [
+              "H",
+              4
+            ],
+            [
+              "Hkv",
+              1
+            ],
+            [
+              "K",
+              2
+            ],
+            [
+              "L",
+              32
+            ],
+            [
+              "V",
+              32000
+            ],
+            [
+              "dh",
+              128
+            ]
+          ]
+        },
+        {
+          "width": 1024,
+          "multiplier": "2",
+          "heads": 8,
+          "params": 2968323072,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "embed",
+                "final_norm",
+                "layers/block/norm1",
+                "layers/block/norm2"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "0.7071067811865475",
+              "adamLr": "0.5",
+              "paths": [
+                "layers/block/attn/k_proj",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_proj",
+                "layers/block/attn/v_proj",
+                "layers/block/mlp/experts/expert/down",
+                "layers/block/mlp/experts/expert/gate",
+                "layers/block/mlp/experts/expert/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "0.5",
+              "adamLr": "0.5",
+              "paths": [
+                "head",
+                "layers/block/mlp/router"
+              ]
+            }
+          ],
+          "notes": [],
+          "symbols": [
+            [
+              "D",
+              1024
+            ],
+            [
+              "E",
+              8
+            ],
+            [
+              "F",
+              3584
+            ],
+            [
+              "Fe",
+              3584
+            ],
+            [
+              "H",
+              8
+            ],
+            [
+              "Hkv",
+              2
+            ],
+            [
+              "K",
+              2
+            ],
+            [
+              "L",
+              32
+            ],
+            [
+              "V",
+              32000
+            ],
+            [
+              "dh",
+              128
+            ]
+          ]
+        },
+        {
+          "width": 2048,
+          "multiplier": "4",
+          "heads": 16,
+          "params": 11741562880,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "embed",
+                "final_norm",
+                "layers/block/norm1",
+                "layers/block/norm2"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "0.5",
+              "adamLr": "0.25",
+              "paths": [
+                "layers/block/attn/k_proj",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_proj",
+                "layers/block/attn/v_proj",
+                "layers/block/mlp/experts/expert/down",
+                "layers/block/mlp/experts/expert/gate",
+                "layers/block/mlp/experts/expert/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "0.25",
+              "adamLr": "0.25",
+              "paths": [
+                "head",
+                "layers/block/mlp/router"
+              ]
+            }
+          ],
+          "notes": [],
+          "symbols": [
+            [
+              "D",
+              2048
+            ],
+            [
+              "E",
+              8
+            ],
+            [
+              "F",
+              7168
+            ],
+            [
+              "Fe",
+              7168
+            ],
+            [
+              "H",
+              16
+            ],
+            [
+              "Hkv",
+              4
+            ],
+            [
+              "K",
+              2
+            ],
+            [
+              "L",
+              32
+            ],
+            [
+              "V",
+              32000
+            ],
+            [
+              "dh",
+              128
+            ]
+          ]
+        },
+        {
+          "width": 4096,
+          "multiplier": "8",
+          "heads": 32,
+          "params": 46702792704,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "embed",
+                "final_norm",
+                "layers/block/norm1",
+                "layers/block/norm2"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "0.35355339059327373",
+              "adamLr": "0.125",
+              "paths": [
+                "layers/block/attn/k_proj",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_proj",
+                "layers/block/attn/v_proj",
+                "layers/block/mlp/experts/expert/down",
+                "layers/block/mlp/experts/expert/gate",
+                "layers/block/mlp/experts/expert/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "0.125",
+              "adamLr": "0.125",
+              "paths": [
+                "head",
+                "layers/block/mlp/router"
+              ]
+            }
+          ],
+          "notes": [],
+          "symbols": [
+            [
+              "D",
+              4096
+            ],
+            [
+              "E",
+              8
+            ],
+            [
+              "F",
+              14336
+            ],
+            [
+              "Fe",
+              14336
+            ],
+            [
+              "H",
+              32
+            ],
+            [
+              "Hkv",
+              8
+            ],
+            [
+              "K",
+              2
+            ],
+            [
+              "L",
+              32
+            ],
+            [
+              "V",
+              32000
+            ],
+            [
+              "dh",
+              128
+            ]
+          ]
+        }
+      ],
+      "notes": [
+        "Sweep at the base rung, then carry the learning rate up the ladder multiplied per class.",
+        "Nothing here decides the base learning rate. That is what the sweep is for.",
+        "μP also asks attention to divide its logits by the head dimension rather than by its square root. That is a property of the design rather than of this ladder."
+      ]
+    },
+    {
+      "label": "mla-latent",
+      "preset": "deepseek-v3",
+      "options": {},
+      "widthSymbol": "D",
+      "baseWidth": 960,
+      "headDim": 192,
+      "rungs": [
+        {
+          "width": 960,
+          "multiplier": "1",
+          "heads": 5,
+          "params": 11346539584,
+          "base": true,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "dense_layers/block/attn/kv_norm",
+                "dense_layers/block/attn/q_norm",
+                "dense_layers/block/norm1",
+                "dense_layers/block/norm2",
+                "embed",
+                "final_norm",
+                "layers/block/attn/kv_norm",
+                "layers/block/attn/q_norm",
+                "layers/block/norm1",
+                "layers/block/norm2"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "dense_layers/block/attn/k_up",
+                "dense_layers/block/attn/kv_down",
+                "dense_layers/block/attn/o_proj",
+                "dense_layers/block/attn/q_down",
+                "dense_layers/block/attn/q_up",
+                "dense_layers/block/attn/v_up",
+                "dense_layers/block/mlp/down",
+                "dense_layers/block/mlp/gate",
+                "dense_layers/block/mlp/up",
+                "layers/block/attn/k_up",
+                "layers/block/attn/kv_down",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_down",
+                "layers/block/attn/q_up",
+                "layers/block/attn/v_up",
+                "layers/block/mlp/experts/expert/down",
+                "layers/block/mlp/experts/expert/gate",
+                "layers/block/mlp/experts/expert/up",
+                "layers/block/mlp/shared/down",
+                "layers/block/mlp/shared/gate",
+                "layers/block/mlp/shared/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "head",
+                "layers/block/mlp/router"
+              ]
+            }
+          ],
+          "notes": [
+            "Asked for a width of 896; 960 is the nearest whole number of heads."
+          ],
+          "symbols": [
+            [
+              "D",
+              960
+            ],
+            [
+              "E",
+              256
+            ],
+            [
+              "F",
+              2496
+            ],
+            [
+              "Fe",
+              256
+            ],
+            [
+              "H",
+              5
+            ],
+            [
+              "Hkv",
+              5
+            ],
+            [
+              "K",
+              8
+            ],
+            [
+              "Kl",
+              64
+            ],
+            [
+              "L",
+              61
+            ],
+            [
+              "Ld",
+              3
+            ],
+            [
+              "Lm",
+              58
+            ],
+            [
+              "Ns",
+              1
+            ],
+            [
+              "Ql",
+              192
+            ],
+            [
+              "V",
+              129280
+            ],
+            [
+              "dh",
+              192
+            ],
+            [
+              "dnope",
+              128
+            ],
+            [
+              "drope",
+              64
+            ],
+            [
+              "dv",
+              128
+            ]
+          ]
+        },
+        {
+          "width": 1728,
+          "multiplier": "1.8",
+          "heads": 9,
+          "params": 40345621056,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "dense_layers/block/attn/kv_norm",
+                "dense_layers/block/attn/q_norm",
+                "dense_layers/block/norm1",
+                "dense_layers/block/norm2",
+                "embed",
+                "final_norm",
+                "layers/block/attn/kv_norm",
+                "layers/block/attn/q_norm",
+                "layers/block/norm1",
+                "layers/block/norm2"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "0.7453559924999299",
+              "adamLr": "0.5555555555555556",
+              "paths": [
+                "dense_layers/block/attn/k_up",
+                "dense_layers/block/attn/kv_down",
+                "dense_layers/block/attn/o_proj",
+                "dense_layers/block/attn/q_down",
+                "dense_layers/block/attn/q_up",
+                "dense_layers/block/attn/v_up",
+                "dense_layers/block/mlp/down",
+                "dense_layers/block/mlp/gate",
+                "dense_layers/block/mlp/up",
+                "layers/block/attn/k_up",
+                "layers/block/attn/kv_down",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_down",
+                "layers/block/attn/q_up",
+                "layers/block/attn/v_up",
+                "layers/block/mlp/experts/expert/down",
+                "layers/block/mlp/experts/expert/gate",
+                "layers/block/mlp/experts/expert/up",
+                "layers/block/mlp/shared/down",
+                "layers/block/mlp/shared/gate",
+                "layers/block/mlp/shared/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "0.5555555555555556",
+              "adamLr": "0.5555555555555556",
+              "paths": [
+                "head",
+                "layers/block/mlp/router"
+              ]
+            }
+          ],
+          "notes": [
+            "Asked for a width of 1792; 1728 is the nearest whole number of heads."
+          ],
+          "symbols": [
+            [
+              "D",
+              1728
+            ],
+            [
+              "E",
+              256
+            ],
+            [
+              "F",
+              4416
+            ],
+            [
+              "Fe",
+              512
+            ],
+            [
+              "H",
+              9
+            ],
+            [
+              "Hkv",
+              9
+            ],
+            [
+              "K",
+              8
+            ],
+            [
+              "Kl",
+              128
+            ],
+            [
+              "L",
+              61
+            ],
+            [
+              "Ld",
+              3
+            ],
+            [
+              "Lm",
+              58
+            ],
+            [
+              "Ns",
+              1
+            ],
+            [
+              "Ql",
+              384
+            ],
+            [
+              "V",
+              129280
+            ],
+            [
+              "dh",
+              192
+            ],
+            [
+              "dnope",
+              128
+            ],
+            [
+              "drope",
+              64
+            ],
+            [
+              "dv",
+              128
+            ]
+          ]
+        },
+        {
+          "width": 3648,
+          "multiplier": "3.8",
+          "heads": 19,
+          "params": 169383372480,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "dense_layers/block/attn/kv_norm",
+                "dense_layers/block/attn/q_norm",
+                "dense_layers/block/norm1",
+                "dense_layers/block/norm2",
+                "embed",
+                "final_norm",
+                "layers/block/attn/kv_norm",
+                "layers/block/attn/q_norm",
+                "layers/block/norm1",
+                "layers/block/norm2"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "0.5129891760425771",
+              "adamLr": "0.2631578947368421",
+              "paths": [
+                "dense_layers/block/attn/k_up",
+                "dense_layers/block/attn/kv_down",
+                "dense_layers/block/attn/o_proj",
+                "dense_layers/block/attn/q_down",
+                "dense_layers/block/attn/q_up",
+                "dense_layers/block/attn/v_up",
+                "dense_layers/block/mlp/down",
+                "dense_layers/block/mlp/gate",
+                "dense_layers/block/mlp/up",
+                "layers/block/attn/k_up",
+                "layers/block/attn/kv_down",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_down",
+                "layers/block/attn/q_up",
+                "layers/block/attn/v_up",
+                "layers/block/mlp/experts/expert/down",
+                "layers/block/mlp/experts/expert/gate",
+                "layers/block/mlp/experts/expert/up",
+                "layers/block/mlp/shared/down",
+                "layers/block/mlp/shared/gate",
+                "layers/block/mlp/shared/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "0.2631578947368421",
+              "adamLr": "0.2631578947368421",
+              "paths": [
+                "head",
+                "layers/block/mlp/router"
+              ]
+            }
+          ],
+          "notes": [
+            "Asked for a width of 3584; 3648 is the nearest whole number of heads."
+          ],
+          "symbols": [
+            [
+              "D",
+              3648
+            ],
+            [
+              "E",
+              256
+            ],
+            [
+              "F",
+              9408
+            ],
+            [
+              "Fe",
+              1024
+            ],
+            [
+              "H",
+              19
+            ],
+            [
+              "Hkv",
+              19
+            ],
+            [
+              "K",
+              8
+            ],
+            [
+              "Kl",
+              256
+            ],
+            [
+              "L",
+              61
+            ],
+            [
+              "Ld",
+              3
+            ],
+            [
+              "Lm",
+              58
+            ],
+            [
+              "Ns",
+              1
+            ],
+            [
+              "Ql",
+              768
+            ],
+            [
+              "V",
+              129280
+            ],
+            [
+              "dh",
+              192
+            ],
+            [
+              "dnope",
+              128
+            ],
+            [
+              "drope",
+              64
+            ],
+            [
+              "dv",
+              128
+            ]
+          ]
+        },
+        {
+          "width": 7104,
+          "multiplier": "7.4",
+          "heads": 37,
+          "params": 657640306496,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "dense_layers/block/attn/kv_norm",
+                "dense_layers/block/attn/q_norm",
+                "dense_layers/block/norm1",
+                "dense_layers/block/norm2",
+                "embed",
+                "final_norm",
+                "layers/block/attn/kv_norm",
+                "layers/block/attn/q_norm",
+                "layers/block/norm1",
+                "layers/block/norm2"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "0.3676073110469039",
+              "adamLr": "0.13513513513513511",
+              "paths": [
+                "dense_layers/block/attn/k_up",
+                "dense_layers/block/attn/kv_down",
+                "dense_layers/block/attn/o_proj",
+                "dense_layers/block/attn/q_down",
+                "dense_layers/block/attn/q_up",
+                "dense_layers/block/attn/v_up",
+                "dense_layers/block/mlp/down",
+                "dense_layers/block/mlp/gate",
+                "dense_layers/block/mlp/up",
+                "layers/block/attn/k_up",
+                "layers/block/attn/kv_down",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_down",
+                "layers/block/attn/q_up",
+                "layers/block/attn/v_up",
+                "layers/block/mlp/experts/expert/down",
+                "layers/block/mlp/experts/expert/gate",
+                "layers/block/mlp/experts/expert/up",
+                "layers/block/mlp/shared/down",
+                "layers/block/mlp/shared/gate",
+                "layers/block/mlp/shared/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "0.13513513513513511",
+              "adamLr": "0.13513513513513511",
+              "paths": [
+                "head",
+                "layers/block/mlp/router"
+              ]
+            }
+          ],
+          "notes": [
+            "Asked for a width of 7168; 7104 is the nearest whole number of heads."
+          ],
+          "symbols": [
+            [
+              "D",
+              7104
+            ],
+            [
+              "E",
+              256
+            ],
+            [
+              "F",
+              18240
+            ],
+            [
+              "Fe",
+              2048
+            ],
+            [
+              "H",
+              37
+            ],
+            [
+              "Hkv",
+              37
+            ],
+            [
+              "K",
+              8
+            ],
+            [
+              "Kl",
+              512
+            ],
+            [
+              "L",
+              61
+            ],
+            [
+              "Ld",
+              3
+            ],
+            [
+              "Lm",
+              58
+            ],
+            [
+              "Ns",
+              1
+            ],
+            [
+              "Ql",
+              1536
+            ],
+            [
+              "V",
+              129280
+            ],
+            [
+              "dh",
+              192
+            ],
+            [
+              "dnope",
+              128
+            ],
+            [
+              "drope",
+              64
+            ],
+            [
+              "dv",
+              128
+            ]
+          ]
+        }
+      ],
+      "notes": [
+        "Sweep at the base rung, then carry the learning rate up the ladder multiplied per class.",
+        "Nothing here decides the base learning rate. That is what the sweep is for.",
+        "μP also asks attention to divide its logits by the head dimension rather than by its square root. That is a property of the design rather than of this ladder."
+      ]
+    },
+    {
+      "label": "vision-novocab",
+      "preset": "ijepa-vit-h14",
+      "options": {},
+      "widthSymbol": "D",
+      "baseWidth": 320,
+      "headDim": 80,
+      "rungs": [
+        {
+          "width": 320,
+          "multiplier": "1",
+          "heads": 4,
+          "params": 80691904,
+          "base": true,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "context/block/norm1",
+                "context/block/norm2",
+                "context_norm",
+                "mask_token",
+                "patchify",
+                "pred_norm",
+                "predictor/block/norm1",
+                "predictor/block/norm2",
+                "target/block/norm1",
+                "target/block/norm2",
+                "target_norm",
+                "target_patchify"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "context/block/attn/k_proj",
+                "context/block/attn/o_proj",
+                "context/block/attn/q_proj",
+                "context/block/attn/v_proj",
+                "context/block/mlp/down",
+                "context/block/mlp/up",
+                "predictor/block/attn/k_proj",
+                "predictor/block/attn/o_proj",
+                "predictor/block/attn/q_proj",
+                "predictor/block/attn/v_proj",
+                "predictor/block/mlp/down",
+                "predictor/block/mlp/up",
+                "target/block/attn/k_proj",
+                "target/block/attn/o_proj",
+                "target/block/attn/q_proj",
+                "target/block/attn/v_proj",
+                "target/block/mlp/down",
+                "target/block/mlp/up",
+                "to_embed",
+                "to_pred"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": []
+            }
+          ],
+          "notes": [],
+          "symbols": [
+            [
+              "D",
+              320
+            ],
+            [
+              "Dp",
+              96
+            ],
+            [
+              "F",
+              1280
+            ],
+            [
+              "Fp",
+              384
+            ],
+            [
+              "H",
+              4
+            ],
+            [
+              "Hp",
+              4
+            ],
+            [
+              "L",
+              32
+            ],
+            [
+              "Lp",
+              12
+            ],
+            [
+              "P",
+              588
+            ],
+            [
+              "dh",
+              80
+            ],
+            [
+              "dhp",
+              24
+            ]
+          ]
+        },
+        {
+          "width": 640,
+          "multiplier": "2",
+          "heads": 8,
+          "params": 321447296,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "context/block/norm1",
+                "context/block/norm2",
+                "context_norm",
+                "mask_token",
+                "patchify",
+                "pred_norm",
+                "predictor/block/norm1",
+                "predictor/block/norm2",
+                "target/block/norm1",
+                "target/block/norm2",
+                "target_norm",
+                "target_patchify"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "0.7071067811865475",
+              "adamLr": "0.5",
+              "paths": [
+                "context/block/attn/k_proj",
+                "context/block/attn/o_proj",
+                "context/block/attn/q_proj",
+                "context/block/attn/v_proj",
+                "context/block/mlp/down",
+                "context/block/mlp/up",
+                "predictor/block/attn/k_proj",
+                "predictor/block/attn/o_proj",
+                "predictor/block/attn/q_proj",
+                "predictor/block/attn/v_proj",
+                "predictor/block/mlp/down",
+                "predictor/block/mlp/up",
+                "target/block/attn/k_proj",
+                "target/block/attn/o_proj",
+                "target/block/attn/q_proj",
+                "target/block/attn/v_proj",
+                "target/block/mlp/down",
+                "target/block/mlp/up",
+                "to_embed",
+                "to_pred"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "0.5",
+              "adamLr": "0.5",
+              "paths": []
+            }
+          ],
+          "notes": [],
+          "symbols": [
+            [
+              "D",
+              640
+            ],
+            [
+              "Dp",
+              192
+            ],
+            [
+              "F",
+              2560
+            ],
+            [
+              "Fp",
+              768
+            ],
+            [
+              "H",
+              8
+            ],
+            [
+              "Hp",
+              8
+            ],
+            [
+              "L",
+              32
+            ],
+            [
+              "Lp",
+              12
+            ],
+            [
+              "P",
+              588
+            ],
+            [
+              "dh",
+              80
+            ],
+            [
+              "dhp",
+              24
+            ]
+          ]
+        },
+        {
+          "width": 1280,
+          "multiplier": "4",
+          "heads": 16,
+          "params": 1283148544,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "context/block/norm1",
+                "context/block/norm2",
+                "context_norm",
+                "mask_token",
+                "patchify",
+                "pred_norm",
+                "predictor/block/norm1",
+                "predictor/block/norm2",
+                "target/block/norm1",
+                "target/block/norm2",
+                "target_norm",
+                "target_patchify"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "0.5",
+              "adamLr": "0.25",
+              "paths": [
+                "context/block/attn/k_proj",
+                "context/block/attn/o_proj",
+                "context/block/attn/q_proj",
+                "context/block/attn/v_proj",
+                "context/block/mlp/down",
+                "context/block/mlp/up",
+                "predictor/block/attn/k_proj",
+                "predictor/block/attn/o_proj",
+                "predictor/block/attn/q_proj",
+                "predictor/block/attn/v_proj",
+                "predictor/block/mlp/down",
+                "predictor/block/mlp/up",
+                "target/block/attn/k_proj",
+                "target/block/attn/o_proj",
+                "target/block/attn/q_proj",
+                "target/block/attn/v_proj",
+                "target/block/mlp/down",
+                "target/block/mlp/up",
+                "to_embed",
+                "to_pred"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "0.25",
+              "adamLr": "0.25",
+              "paths": []
+            }
+          ],
+          "notes": [],
+          "symbols": [
+            [
+              "D",
+              1280
+            ],
+            [
+              "Dp",
+              384
+            ],
+            [
+              "F",
+              5120
+            ],
+            [
+              "Fp",
+              1536
+            ],
+            [
+              "H",
+              16
+            ],
+            [
+              "Hp",
+              16
+            ],
+            [
+              "L",
+              32
+            ],
+            [
+              "Lp",
+              12
+            ],
+            [
+              "P",
+              588
+            ],
+            [
+              "dh",
+              80
+            ],
+            [
+              "dhp",
+              24
+            ]
+          ]
+        }
+      ],
+      "notes": [
+        "Sweep at the base rung, then carry the learning rate up the ladder multiplied per class.",
+        "Nothing here decides the base learning rate. That is what the sweep is for.",
+        "μP also asks attention to divide its logits by the head dimension rather than by its square root. That is a property of the design rather than of this ladder."
+      ]
+    },
+    {
+      "label": "asked-widths",
+      "preset": "gpt2-small",
+      "options": {
+        "widths": [
+          200,
+          400,
+          1000
+        ],
+        "baseWidth": 400
+      },
+      "widthSymbol": "D",
+      "baseWidth": 384,
+      "headDim": 64,
+      "rungs": [
+        {
+          "width": 192,
+          "multiplier": "0.5",
+          "heads": 3,
+          "params": 15184704,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "embed",
+                "final_norm",
+                "layers/block/norm1",
+                "layers/block/norm2",
+                "pos"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "1.414213562373095",
+              "adamLr": "2",
+              "paths": [
+                "layers/block/attn/k_proj",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_proj",
+                "layers/block/attn/v_proj",
+                "layers/block/mlp/down",
+                "layers/block/mlp/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "2",
+              "adamLr": "2",
+              "paths": [
+                "head"
+              ]
+            }
+          ],
+          "notes": [
+            "Asked for a width of 200; 192 is the nearest whole number of heads."
+          ],
+          "symbols": [
+            [
+              "D",
+              192
+            ],
+            [
+              "F",
+              768
+            ],
+            [
+              "H",
+              3
+            ],
+            [
+              "Hkv",
+              3
+            ],
+            [
+              "L",
+              12
+            ],
+            [
+              "Tmax",
+              1024
+            ],
+            [
+              "V",
+              50257
+            ],
+            [
+              "dh",
+              64
+            ]
+          ]
+        },
+        {
+          "width": 384,
+          "multiplier": "1",
+          "heads": 6,
+          "params": 40986240,
+          "base": true,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "embed",
+                "final_norm",
+                "layers/block/norm1",
+                "layers/block/norm2",
+                "pos"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "layers/block/attn/k_proj",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_proj",
+                "layers/block/attn/v_proj",
+                "layers/block/mlp/down",
+                "layers/block/mlp/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "head"
+              ]
+            }
+          ],
+          "notes": [
+            "Asked for a width of 400; 384 is the nearest whole number of heads."
+          ],
+          "symbols": [
+            [
+              "D",
+              384
+            ],
+            [
+              "F",
+              1536
+            ],
+            [
+              "H",
+              6
+            ],
+            [
+              "Hkv",
+              6
+            ],
+            [
+              "L",
+              12
+            ],
+            [
+              "Tmax",
+              1024
+            ],
+            [
+              "V",
+              50257
+            ],
+            [
+              "dh",
+              64
+            ]
+          ]
+        },
+        {
+          "width": 1024,
+          "multiplier": "2.6666666666666665",
+          "heads": 16,
+          "params": 203668480,
+          "base": false,
+          "scaling": [
+            {
+              "class": "input",
+              "initStd": "1",
+              "adamLr": "1",
+              "paths": [
+                "embed",
+                "final_norm",
+                "layers/block/norm1",
+                "layers/block/norm2",
+                "pos"
+              ]
+            },
+            {
+              "class": "hidden",
+              "initStd": "0.6123724356957945",
+              "adamLr": "0.375",
+              "paths": [
+                "layers/block/attn/k_proj",
+                "layers/block/attn/o_proj",
+                "layers/block/attn/q_proj",
+                "layers/block/attn/v_proj",
+                "layers/block/mlp/down",
+                "layers/block/mlp/up"
+              ]
+            },
+            {
+              "class": "output",
+              "initStd": "0.375",
+              "adamLr": "0.375",
+              "paths": [
+                "head"
+              ]
+            }
+          ],
+          "notes": [
+            "Asked for a width of 1000; 1024 is the nearest whole number of heads."
+          ],
+          "symbols": [
+            [
+              "D",
+              1024
+            ],
+            [
+              "F",
+              4096
+            ],
+            [
+              "H",
+              16
+            ],
+            [
+              "Hkv",
+              16
+            ],
+            [
+              "L",
+              12
+            ],
+            [
+              "Tmax",
+              1024
+            ],
+            [
+              "V",
+              50257
+            ],
+            [
+              "dh",
+              64
+            ]
+          ]
+        }
+      ],
+      "notes": [
+        "The readout is tied to the embedding, so one tensor is an input weight and an output weight at once. Its initialization is the embedding's and cannot be scaled twice; apply the output rule at the readout as a multiplier on its logits instead.",
+        "Sweep at the base rung, then carry the learning rate up the ladder multiplied per class.",
+        "Nothing here decides the base learning rate. That is what the sweep is for.",
+        "μP also asks attention to divide its logits by the head dimension rather than by its square root. That is a property of the design rather than of this ladder."
+      ]
+    }
+  ]
+}

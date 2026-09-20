@@ -661,6 +661,59 @@ export interface ScaleResult {
   notes: string[];
 }
 
+// ---------------------------------------------------------------------------
+// The maximal-update-parametrization ladder
+// ---------------------------------------------------------------------------
+
+/** Which row of Tensor Programs V's Table 3 a weight belongs to. */
+export type MupClass = "input" | "hidden" | "output";
+
+/** What to multiply one class's settings by, against the base rung. */
+export interface MupScaling {
+  class: MupClass;
+  /** Multiplies the base model's initialization standard deviation. */
+  initStd: number;
+  /** Multiplies the base model's learning rate. */
+  adamLr: number;
+  /** The blocks in this class, so the grouping can be checked against the design. */
+  paths: string[];
+  why: string;
+}
+
+/** One model in the ladder. */
+export interface MupRung {
+  /** What the width came out as: a width is held to a whole number of heads. */
+  width: number;
+  /** `width` over the base width: the m every rule is written in. */
+  multiplier: number;
+  heads: number;
+  params: number;
+  doc: Doc;
+  /** The rung the hyperparameters are tuned at, where the multiplier is 1. */
+  base: boolean;
+  scaling: MupScaling[];
+  notes: string[];
+}
+
+export interface MupLadder {
+  /** What the ladder moved, normally D. */
+  widthSymbol: string;
+  baseWidth: number;
+  /** What was held fixed while the width moved. */
+  headDim: number;
+  rungs: MupRung[];
+  notes: string[];
+}
+
+export interface MupOptions {
+  /** The rungs. Empty halves the design's own width down to a width worth sweeping at. */
+  widths?: number[];
+  /** The width the sweep happens at. Omitted takes the narrowest rung. */
+  baseWidth?: number;
+  /** Symbols that move with the width beyond D. Omitted takes the same set scaling uses. */
+  widthSymbols?: string[];
+}
+
 export interface ImportResult {
   doc: Doc;
   /** What the import could not represent faithfully. */

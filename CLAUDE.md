@@ -14,6 +14,7 @@ bun run scripts/report.ts            # parameter regression table vs published c
 bun run scripts/analyze-demo.ts      # full analysis + design rules for one preset
 bun run scripts/codegen-demo.ts <preset>   # writes out/<preset>/model.py
 bun run scripts/scale-demo.ts        # shrink a design to a bench budget
+bun run packages/cli/src/index.ts mup <preset>   # the width ladder for a sweep
 ```
 
 A stale `.wasm` is the one way to see an answer the source does not give. If you
@@ -35,6 +36,10 @@ every handle the pointer passes over. `generateTorch(doc)` emits PyTorch.
 `explain(doc, path)` describes one block: its parameters as written and as
 evaluated, its shapes, its share of the model, and its documentation.
 `scale(doc, {targetParams})` shrinks a design while keeping its proportions.
+`mup(doc, options)` is the same design at several widths, with what to multiply
+the initialization and the learning rate by at each: it holds the head dimension
+and grows the head count, and it classifies a weight by measuring which of its
+sides moved rather than by its block type.
 `plan(doc, options, {gpus})` prices every way of splitting the training across a
 cluster and returns the ones that fit, least demanding first — memory is the
 claim, which is arithmetic; which is *fastest* is not claimed, because that turns

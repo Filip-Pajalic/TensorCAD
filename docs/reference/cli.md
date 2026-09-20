@@ -107,6 +107,53 @@ sparse layer — so the choice among the plans that fit stays with you.
 Expert parallelism is offered only to designs that have experts, and the result
 says so when it is absent.
 
+## `mup`
+
+```bash
+bun packages/cli/src/index.ts mup <file|preset>
+```
+
+The same design at several widths, and what to multiply the initialization and
+the learning rate by at each. A learning rate tuned on a narrow model is the
+right one for a wide model too, provided both are scaled by width the way
+[Tensor Programs V](https://arxiv.org/abs/2203.03466) Table 3 says — so the
+sweep can happen at a width that fits on one device.
+
+```
+llama-3-8b laddered by D
+  4 rungs, tuned at 512, heads of 128 throughout.
+
+  base  512 wide    4 heads      253.0M  m = 1
+       1024 wide    8 heads      749.3M  m = 2
+       2048 wide   16 heads       2.27B  m = 4
+       4096 wide   32 heads       8.03B  m = 8
+
+Multiply the base model's settings by
+                   512          1024          2048          4096
+  hidden
+    init     unchanged       x0.7071          x0.5       x0.3536
+    rate     unchanged          x0.5         x0.25        x0.125
+```
+
+| flag | meaning |
+| --- | --- |
+| `--widths 256,512,1024` | the rungs to build. Default: halve the design's own width down to four rungs, stopping at four heads. |
+| `--base-width n` | the width the sweep happens at. Default: the narrowest rung. |
+
+The head *dimension* is held and the head *count* grows, which is the
+convention μP is stated in for transformers and the one that leaves every head
+the same shape it had at the base. A width that is not a whole number of heads
+is rounded to one, and the rung says so.
+
+The classification is measured rather than asserted: each rung is compared
+against the same design at twice the width, and a weight that widened on both
+sides is a hidden one. That is how a mixture-of-experts router lands in the
+output row — its fan_out is the expert count, which does not move — and how an
+expert's own matrices land in the hidden row.
+
+What it does not print is a learning rate. That is what the sweep at the base
+rung is for.
+
 ## `import`
 
 ```bash

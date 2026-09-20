@@ -25,6 +25,8 @@ import {
   type ClusterRequest,
   type Doc,
   type Engine,
+  type MupOptions,
+  type MupRung,
   type Severity,
   type ScaleOptions,
   type TorchOptions,
@@ -36,6 +38,19 @@ const testdata = join(import.meta.dir, "..", "..", "core-go", "testdata");
 
 function golden<T>(...parts: string[]): T {
   return JSON.parse(readFileSync(join(testdata, ...parts), "utf8")) as T;
+}
+
+/** A rung with its numbers printed the way the golden holds them. */
+function shapeOfRung(r: MupRung) {
+  return {
+    width: r.width,
+    multiplier: String(r.multiplier),
+    heads: r.heads,
+    params: r.params,
+    base: r.base,
+    notes: r.notes,
+    scaling: r.scaling.map((s) => [s.class, String(s.initStd), String(s.adamLr), s.paths]),
+  };
 }
 
 /** The presets, taken from the files rather than from the engine under test. */
@@ -170,6 +185,75 @@ describe("the compiled engine", () => {
         label: one.label,
         changes: one.changes.map((c) => [...c]).sort(),
       });
+    }
+  });
+
+  // The ladder's multipliers are irrational as often as not — 1/sqrt(2) is the
+  // usual one — so this is where Go's %g and ECMAScript's Number::toString have
+  // to agree digit for digit. The golden holds them as the strings the engine
+  // printed, and a double that crossed differently shows up immediately.
+  it("builds the same width ladder", () => {
+    const file = golden<{
+      cases: {
+        label: string;
+        preset: string;
+        options: MupOptions;
+        widthSymbol: string;
+        baseWidth: number;
+        headDim: number;
+        rungs: {
+          width: number;
+          multiplier: string;
+          heads: number;
+          params: number;
+          base: boolean;
+          scaling: { class: string; initStd: string; adamLr: string; paths: string[] }[];
+          notes: string[];
+        }[];
+        notes: string[];
+      }[];
+    }>("mup.json");
+    expect(file.cases.length).toBe(6);
+    for (const one of file.cases) {
+      const got = engine.mup(engine.preset(one.preset), one.options);
+      expect({
+        label: one.label,
+        widthSymbol: got.widthSymbol,
+        baseWidth: got.baseWidth,
+        headDim: got.headDim,
+        notes: got.notes,
+      }).toEqual({
+        label: one.label,
+        widthSymbol: one.widthSymbol,
+        baseWidth: one.baseWidth,
+        headDim: one.headDim,
+        notes: one.notes,
+      });
+      expect({ label: one.label, rungs: got.rungs.length }).toEqual({
+        label: one.label,
+        rungs: one.rungs.length,
+      });
+      for (const [i, want] of one.rungs.entries()) {
+        const rung = got.rungs[i]!;
+        expect({ label: one.label, i, rung: shapeOfRung(rung) }).toEqual({
+          label: one.label,
+          i,
+          rung: {
+            width: want.width,
+            multiplier: want.multiplier,
+            heads: want.heads,
+            params: want.params,
+            base: want.base,
+            notes: want.notes,
+            scaling: want.scaling.map((s) => [s.class, s.initStd, s.adamLr, s.paths]),
+          },
+        });
+        // A rung is a design, not a report about one: it has to come back as
+        // something the rest of the engine will accept.
+        expect(engine.analyze(rung.doc).params.total).toBe(want.params);
+        // And a class with nothing in it is an empty list, not a null.
+        for (const s of rung.scaling) expect(Array.isArray(s.paths)).toBe(true);
+      }
     }
   });
 

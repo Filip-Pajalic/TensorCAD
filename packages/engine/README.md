@@ -47,6 +47,7 @@ module. The two travel together or neither works.
 | `explain(doc, path)` | one block: its parameters as written and as evaluated, its shapes, its share |
 | `generateTorch(doc, options)` | a `model.py` and the design that produced it |
 | `scale(doc, {targetParams})` | the design shrunk to a budget, proportions kept |
+| `mup(doc, options)` | the same design at several widths, and what to scale by at each |
 | `plan(doc, options, {gpus})` | every way to split the training across a cluster, and which fit |
 | `importHuggingFace(text)` | a `config.json` read into a design |
 | `preset(name)`, `presets()` | the twenty designs it ships with |

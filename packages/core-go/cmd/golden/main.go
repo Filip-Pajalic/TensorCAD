@@ -26,9 +26,9 @@ func main() {
 	fmt.Printf(
 		"wrote %d presets: symbol tables and inferred shapes, %d analyses and rule checks,\n"+
 			"  %d generated PyTorch files, %d primitive cases, %d composite expansions,\n"+
-			"  the prose of %d blocks, %d scaled designs, %d clusters planned\n"+
-			"  and %d findings on designs that are wrong\n",
+			"  the prose of %d blocks, %d scaled designs, %d width ladders,\n"+
+			"  %d clusters planned and %d findings on designs that are wrong\n",
 		summary.Presets, summary.OperatingPoints, summary.CodegenFiles,
 		summary.Primitives, summary.Composites, summary.Blocks,
-		summary.ScaleCases, summary.Plans, summary.BrokenFindings)
+		summary.ScaleCases, summary.MupCases, summary.Plans, summary.BrokenFindings)
 }

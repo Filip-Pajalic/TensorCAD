@@ -17,6 +17,7 @@ import (
 	"github.com/tensorcad/core/catalog"
 	"github.com/tensorcad/core/codegen"
 	"github.com/tensorcad/core/ir"
+	"github.com/tensorcad/core/mup"
 	"github.com/tensorcad/core/plan"
 	"github.com/tensorcad/core/scale"
 )
@@ -283,6 +284,28 @@ var ScaleCases = []ScaleCase{
 	{"50m-moe", "mixtral-8x7b", scale.Options{TargetParams: 50e6, Vocab: f(4096)}},
 	{"20m-mla", "deepseek-v3", scale.Options{TargetParams: 20e6, Vocab: f(4096)}},
 	{"10m-mamba", "nemotron-h-8b", scale.Options{TargetParams: 10e6, Vocab: f(4096)}},
+}
+
+// MupCase is one design laddered by width.
+type MupCase struct {
+	Label  string
+	Preset string
+	Opts   mup.Options
+}
+
+// MupCases cover what changes the classification: a tied readout, grouped-query
+// attention whose key heads have to stay divisible, a router that is an output
+// weight because its fan_out is the expert count, a compressed attention latent
+// that moves with the width, and a design with no vocabulary at all. The last
+// asks for widths the design cannot hold exactly, which is what the rounding
+// notes are for.
+var MupCases = []MupCase{
+	{"gpt2-tied", "gpt2-small", mup.Options{}},
+	{"llama-gqa", "llama-3-8b", mup.Options{}},
+	{"moe-router", "mixtral-8x7b", mup.Options{}},
+	{"mla-latent", "deepseek-v3", mup.Options{}},
+	{"vision-novocab", "ijepa-vit-h14", mup.Options{}},
+	{"asked-widths", "gpt2-small", mup.Options{Widths: []float64{200, 400, 1000}, BaseWidth: 400}},
 }
 
 // PlanCase is one design fitted to one cluster.

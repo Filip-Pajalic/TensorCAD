@@ -48,6 +48,7 @@ import {
   generateTorch,
   getPreset,
   importHfConfig,
+  mupLadder,
   planCluster,
   scaleDesign,
   validate,
@@ -921,7 +922,100 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       }),
   );
 
-  // -- 16. plan ------------------------------------------------------------
+  // -- 16. mup -------------------------------------------------------------
+  server.registerTool(
+    "tensorcad_mup",
+    {
+      title: "Build a width ladder",
+      description:
+        "The same design at several widths, with what to multiply the initialization and the learning rate by at " +
+        "each, following Tensor Programs V. Sweep hyperparameters at the narrow end and carry the answer up: a " +
+        "learning rate tuned at the base rung is the right one at every rung, scaled per class. Every rung is " +
+        "saved as a design of its own, ready to analyze or generate. It does not choose a learning rate; that is " +
+        "what the sweep is for.",
+      inputSchema: z.object({
+        design_id: DESIGN_ID,
+        widths: z
+          .array(z.number().positive())
+          .optional()
+          .describe("The widths to build. Omit to halve the design's own width down to a width worth sweeping at."),
+        base_width: z.number().positive().optional().describe("The width the sweep happens at. Omit for the narrowest."),
+      }),
+      outputSchema: z.object({
+        width_symbol: z.string(),
+        base_width: z.number(),
+        head_dim: z.number().describe("Held fixed while the width moves: the heads get more numerous, not wider."),
+        rungs: z.array(
+          z.object({
+            design_id: z.string().describe("The rung, saved in this session."),
+            width: z.number(),
+            multiplier: z.number().describe("Width over the base width: the m every rule is written in."),
+            heads: z.number(),
+            params: z.number(),
+            base: z.boolean(),
+            scaling: z.array(
+              z.object({
+                class: z.enum(["input", "hidden", "output"]),
+                init_std: z.number().describe("Multiplies the base model's initialization standard deviation."),
+                adam_lr: z.number().describe("Multiplies the base model's learning rate."),
+                paths: z.array(z.string()),
+                why: z.string(),
+              }),
+            ),
+            notes: z.array(z.string()),
+          }),
+        ),
+        notes: z.array(z.string()),
+      }),
+      annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false, title: "Build a width ladder" },
+    },
+    async ({ design_id, widths, base_width }) =>
+      guard(() => {
+        const record = store.get(design_id);
+        const ladder = mupLadder(record.doc, {
+          ...(widths ? { widths } : {}),
+          ...(base_width !== undefined ? { baseWidth: base_width } : {}),
+        });
+        const rungs = ladder.rungs.map((rung) => ({
+          design_id: store.adopt(rung.doc).design_id,
+          width: rung.width,
+          multiplier: rung.multiplier,
+          heads: rung.heads,
+          params: rung.params,
+          base: rung.base,
+          scaling: rung.scaling.map((s) => ({
+            class: s.class,
+            init_std: s.initStd,
+            adam_lr: s.adamLr,
+            paths: s.paths,
+            why: s.why,
+          })),
+          notes: rung.notes,
+        }));
+        const text = [
+          `${record.doc.meta.name} laddered by ${ladder.widthSymbol}, tuned at ${ladder.baseWidth}, ` +
+            `heads of ${ladder.headDim} throughout`,
+          ...rungs.map(
+            (r) =>
+              `  ${r.base ? "base " : "     "}${r.width} wide, ${r.heads} heads, ${formatCount(r.params)}` +
+              `  ${r.scaling
+                .filter((s) => s.class !== "input")
+                .map((s) => `${s.class} init x${s.init_std.toPrecision(4)} rate x${s.adam_lr.toPrecision(4)}`)
+                .join(", ")}`,
+          ),
+          ...ladder.notes.map((n) => `  note: ${n}`),
+        ].join("\n");
+        return ok(text, {
+          width_symbol: ladder.widthSymbol,
+          base_width: ladder.baseWidth,
+          head_dim: ladder.headDim,
+          rungs,
+          notes: ladder.notes,
+        });
+      }),
+  );
+
+  // -- 17. plan ------------------------------------------------------------
   server.registerTool(
     "tensorcad_plan",
     {
@@ -1020,7 +1114,7 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       }),
   );
 
-  // -- 17. diff ------------------------------------------------------------
+  // -- 18. diff ------------------------------------------------------------
   server.registerTool(
     "tensorcad_diff",
     {
@@ -1125,7 +1219,7 @@ export function registerTools(server: McpServer, store: DocumentStore): void {
       }),
   );
 
-  // -- 18. import_hf -------------------------------------------------------
+  // -- 19. import_hf -------------------------------------------------------
   server.registerTool(
     "tensorcad_import_hf",
     {
@@ -1182,6 +1276,7 @@ export const TOOL_NAMES = [
   "tensorcad_restore",
   "tensorcad_explain",
   "tensorcad_scale",
+  "tensorcad_mup",
   "tensorcad_plan",
   "tensorcad_diff",
   "tensorcad_import_hf",

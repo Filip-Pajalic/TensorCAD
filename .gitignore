@@ -45,3 +45,7 @@ packages/engine/wasm/
 
 # The MkDocs render. `mkdocs build` writes it; the deploy uploads it.
 site/
+
+# The publishable form of each package, written by scripts/build-dist.ts.
+# Deliberately not `dist`, which the editor uses for the site bundle.
+packages/*/npm/

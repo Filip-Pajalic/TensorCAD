@@ -187,7 +187,7 @@ jobs:
         run: |
           tag="${{ inputs.tag || github.ref_name }}"
           want="${tag#v}"
-          for pkg in packages/engine/dist packages/mcp/dist packages/ui/dist; do
+          for pkg in packages/engine/npm packages/mcp/npm packages/ui/npm; do
             got=$(node -p "require('./$pkg/package.json').version")
             if [ "$got" != "$want" ]; then
               echo "$pkg is $got but the tag says $want"
@@ -211,7 +211,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
         run: |
           for pkg in engine mcp ui; do
-            cd "$GITHUB_WORKSPACE/packages/$pkg/dist"
+            cd "$GITHUB_WORKSPACE/packages/$pkg/npm"
             npm publish --provenance --access public --ignore-scripts
           done
 

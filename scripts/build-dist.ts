@@ -10,10 +10,10 @@
  * and then fail on the first import.
  *
  * So this emits what a consumer actually needs — JavaScript, type declarations
- * and a manifest with real version ranges — into each package's `dist`, and
+ * and a manifest with real version ranges — into each package's `npm/`, and
  * leaves the source alone. `package.json` keeps pointing at `src` for this
- * repository's own use; the published manifest is written here and points at
- * `dist`, so there is one place where the difference lives.
+ * repository's own use; the published manifest is written here, so there is one
+ * place where the difference lives.
  *
  *   bun run scripts/build-dist.ts            # build
  *   bun run scripts/build-dist.ts --check    # build, then import it under Node
@@ -89,9 +89,20 @@ const PACKAGES: Pkg[] = [
   },
 ];
 
+/**
+ * Where a package's publishable form is written.
+ *
+ * `npm/` rather than `dist/`, because `dist/` is already taken: the editor
+ * builds the *site* there, which is the directory `wrangler.jsonc` uploads to
+ * app.tensorcad.dev. Writing the package over it means a build of one silently
+ * destroys the other, and the way that ends is deploying a directory of
+ * `.d.ts` files with no index.html in it.
+ */
+const OUT = "npm";
+
 async function build(pkg: Pkg): Promise<void> {
   const dir = join(ROOT, pkg.dir);
-  const dist = join(dir, "dist");
+  const dist = join(dir, OUT);
   await rm(dist, { recursive: true, force: true });
   await mkdir(dist, { recursive: true });
 
@@ -137,7 +148,7 @@ async function build(pkg: Pkg): Promise<void> {
           noEmit: false,
           declaration: true,
           emitDeclarationOnly: true,
-          outDir: "dist",
+          outDir: OUT,
           rootDir: "src",
         },
         include: pkg.declarations ?? ["src/**/*.ts"],
@@ -296,7 +307,7 @@ await mkdir(tmp, { recursive: true });
 console.log("\npacking:");
 const tarballs: string[] = [];
 for (const pkg of PACKAGES) {
-  const out = await $`npm pack --pack-destination ${tmp}`.cwd(join(ROOT, pkg.dir, "dist")).text();
+  const out = await $`npm pack --pack-destination ${tmp}`.cwd(join(ROOT, pkg.dir, OUT)).text();
   const name = out.trim().split("\n").pop()!.trim();
   tarballs.push(join(tmp, name));
   console.log(`  ${name}`);

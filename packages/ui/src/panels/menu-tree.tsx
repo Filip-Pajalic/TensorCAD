@@ -94,6 +94,8 @@ export const PANELS_MENU: MenuNode[] = [
   item("panel.inspector"),
   item("panel.symbols"),
   item("panel.rules"),
+  item("panel.cluster"),
+  item("panel.ladder"),
   sep(),
   item("view.dock.left"),
   item("view.dock.right"),

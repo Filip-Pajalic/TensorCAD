@@ -169,8 +169,11 @@ a diagram editor because that is all it was exposing.
   as invisible defaults is how a readout becomes untrustworthy. Folded, the
   header still states them: `B1 · T8,192 · bf16 · H100 SXM · 8×`.
 - **The right column splits instead of tabbing.** The readout is permanently on
-  screen above a draggable divider; Inspector, Symbols and Rules share the pane
-  below it. Tabs now cover only the three things you edit one at a time.
+  screen above a draggable divider; Inspector, Symbols, Rules, Cluster and
+  Ladder share the pane below it. The readout answers "what does this design
+  cost under the operating point I set"; the tabs are the things you change one
+  at a time, including the two that answer the questions which come before it —
+  what operating point to set, and what width to sweep at.
 - **The readout says everything.** Parameters against the published figure, then
   compute against the 2N and 6N rules of thumb and against what a profiler would
   report, then a training memory budget drawn as a stacked bar with the device's

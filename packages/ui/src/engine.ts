@@ -27,6 +27,8 @@ import {
   type HardwareProfile,
   type GeneratedCode,
   type Inference,
+  type MupLadder,
+  type MupOptions,
   type ParamSpec,
   type RuleInfo,
   type SymbolTable,
@@ -119,6 +121,17 @@ export function planCluster(
   cluster: ClusterRequest,
 ): ClusterResult {
   return engine().plan(doc, options, cluster);
+}
+
+/**
+ * The same design at several widths, with what to scale by at each.
+ *
+ * Not part of `derive` for the same reason the planner is not: it is an
+ * analysis per rung, and nothing about it moves between keystrokes that do not
+ * change the design.
+ */
+export function mupLadder(doc: Doc, options?: MupOptions): MupLadder {
+  return engine().mup(doc, options);
 }
 
 /** What changed between two designs, structurally and numerically. */

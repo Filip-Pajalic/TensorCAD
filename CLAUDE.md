@@ -100,9 +100,12 @@ Two cross-checks worth knowing:
   its own numbers. `src/engine.ts` is the editor's handle on the engine: it loads the module
   before the first frame, which is why `main.tsx` imports the app *after* the load rather
   than beside it — the store builds a starting design the moment its module runs. The right column splits: the readout (`Operating` + `Analysis`) is always
-  on screen above the tabbed editing pane (Inspector, Symbols, Rules, Cluster). `Cluster` is
-  the one panel that does not read `derive()`: it calls `plan()` itself, because that is a few
-  hundred analyses and the answer only moves when the cluster or the design does. Pressing a
+  on screen above the tabbed editing pane (Inspector, Symbols, Rules, Cluster, Ladder).
+  `Cluster` and `Ladder` are the two panels that do not read `derive()`: they call `plan()` and
+  `mup()` themselves, because those are a few hundred analyses and one per rung, and neither
+  answer moves between keystrokes that do not change the design. Pressing a cluster plan
+  changes the operating point; pressing a rung opens a different *design*, through `setDoc`,
+  so it lands on the undo stack. Pressing a
   plan writes it into the operating point, which is why the parallelism has to be expressible
   there — a plan the operating point cannot hold is a plan whose promised memory the readout
   would then contradict. Colours live only in

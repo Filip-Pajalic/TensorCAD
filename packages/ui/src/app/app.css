@@ -2728,6 +2728,108 @@ select.field {
   padding-left: 6px;
 }
 
+/* One rung of the width ladder. Pressing it opens that design. */
+.rung {
+  display: grid;
+  grid-template-columns: 3.5rem auto 1fr 4rem;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: 0;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-elev);
+  color: var(--text);
+  font-size: 12px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rung:hover {
+  border-color: var(--accent);
+}
+
+/* The rung the hyperparameters are tuned at. */
+.rung--base {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.rung__heads,
+.rung__params {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.rung__params {
+  text-align: right;
+}
+
+.rung__bar {
+  display: block;
+  height: 6px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-input);
+}
+
+.rung__fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.mup__class {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 8px;
+}
+
+.mup__class + .mup__class {
+  border-top: 1px solid var(--border-soft);
+  padding-top: 8px;
+}
+
+.mup__className {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+.mup__grid {
+  display: grid;
+  gap: 1px 6px;
+  align-items: center;
+}
+
+.mup__rowLabel {
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.mup__head {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: right;
+}
+
+.mup__cell {
+  font-size: 11px;
+  text-align: right;
+}
+
+.mup__why,
+.mup__paths {
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.mup__paths {
+  overflow-wrap: anywhere;
+}
+
 /* The block whose marker was pressed on the drawing. */
 .issues__focus {
   display: flex;

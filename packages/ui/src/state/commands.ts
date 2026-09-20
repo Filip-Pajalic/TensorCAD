@@ -14,6 +14,7 @@ import { derive } from "./derive.js";
 import { useEditor } from "./store.js";
 import { downloadDoc, downloadText } from "./serialize.js";
 import { resolvedTheme, setThemePreference } from "./theme.js";
+import { sheetToSvg } from "../canvas/svg.js";
 import { generateTorch, resolveSymbols } from "../engine.js";
 
 export type CommandGroup = "file" | "edit" | "view" | "panel" | "blocks" | "help";
@@ -131,6 +132,26 @@ export const COMMANDS: Command[] = [
     shortcut: `${MOD}+e`,
     hint: "Generate model.py for this design",
     run: exportTorch,
+  },
+  {
+    id: "file.exportSvg",
+    label: "Export the sheet as SVG",
+    group: "file",
+    shortcut: `${MOD}+Shift+e`,
+    hint: "The drawing as a vector, for a paper or a slide",
+    run: () => {
+      // The sheet as it is drawn, so what is exported is what is on screen:
+      // the level you have open, at the detail you have it open to.
+      const root = document.querySelector<HTMLElement>(".react-flow");
+      const { doc } = editor();
+      const svg = root ? sheetToSvg(root, doc.meta.name) : undefined;
+      if (!svg) {
+        editor().setStatus("There is nothing on the sheet to export.");
+        return;
+      }
+      downloadText(svg, `${doc.meta.name}.svg`, "image/svg+xml");
+      editor().setStatus(`Exported ${doc.meta.name}.svg`);
+    },
   },
 
   // --- edit ---------------------------------------------------------------

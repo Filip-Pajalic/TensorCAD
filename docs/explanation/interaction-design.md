@@ -1380,3 +1380,39 @@ expressible as operations, but what arrives over the wire is the result. So it
 is a `replaceDoc` step — a real row in the timeline, labelled, jumpable, and
 suppressible. An agent's edit can be taken back out of the middle of your work
 like any other.
+
+## Nineteenth pass: handing over the drawing
+
+A schematic tool that cannot give you the drawing is missing something obvious.
+A figure goes in a paper, a slide, a pull request, and a screenshot is a picture
+of the drawing at one zoom on one screen.
+
+`File > Export the sheet as SVG` writes the sheet as a vector. It reads what is
+rendered rather than re-deriving it, and the wires are why: `wiring.ts` has
+already chosen which of a port's four sides each one leaves by and routed it
+around what is in the way, as `<path d="…">`. A second router here would be a
+second opinion, and the two would disagree. Only the blocks are drawn again,
+because they are HTML and an SVG cannot hold an HTML div without
+`foreignObject`, which is a screenshot with extra steps and does not open in
+Illustrator.
+
+### Two things it got wrong first
+
+Every text run was centred on its block. A row of three inline runs — *vocab
+128256 · D 4096 · 525.3M* — collapsed into one illegible pile. Each run now
+goes where the browser put it.
+
+And every block came out with no fill, because "the block" is not one element:
+the fill and border are on `.part__body`, the pins are their own marks, and a
+container is a `.frame`. Reading the node gave a transparent background, and
+nothing *looked* wrong until a block with dark text on a light fill turned up —
+attention, invisible against the sheet. It now looks for anything with a
+background or a visible border rather than naming classes, which would go stale
+the first time the canvas is restyled.
+
+### Somewhere to check it
+
+`bun run scripts/export-svg.ts` drives the same exporter from the same headless
+Chrome the screenshots use, and refuses to write a file with no wires in it. A
+schematic with no nets is not a schematic, and writing one quietly would be
+worse than not writing it.

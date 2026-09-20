@@ -143,7 +143,13 @@ Two cross-checks worth knowing:
   project's; every radius is zero. `state/commands.ts` is the single list behind the keyboard,
   the menu, the shortcut sheet and the Wails native menu, so a key can never be documented
   wrong; `panels/menu-tree.tsx` declares how those commands are grouped into submenus and is
-  rendered by both the menu bar in the toolbar and the right-click menu. `canvas/wiring.ts` decides which of a port's four sides a wire leaves by and what
+  rendered by both the menu bar in the toolbar and the right-click menu. `canvas/svg.ts` writes the sheet out as a vector by
+  reading what was rendered: the wires are taken as the `<path d>` the router already
+  produced, and the blocks are found by looking for anything with a background or a visible
+  border rather than by naming classes — the fill is on `.part__body`, not on the node, which
+  is invisible until a block with dark text on a light fill turns up. `scripts/export-svg.ts`
+  drives it headless and refuses to write a file with no wires in it.
+  `canvas/wiring.ts` decides which of a port's four sides a wire leaves by and what
   kind of line it is. What is *drawn* at a connection point is eeschema's vocabulary and
   nothing else: a connected pin draws nothing at all, a net that branches gets a filled
   junction dot, an unwired pin gets a hollow circle, and every one of those sizes is a

@@ -23,12 +23,12 @@ import { join } from "node:path";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
 const OUT = join(ROOT, "docs", "images");
-const URL_BASE = process.env.TENSORCAD_URL ?? "http://localhost:5173";
+export const URL_BASE = process.env.TENSORCAD_URL ?? "http://localhost:5173";
 const WIDTH = 1440;
 const HEIGHT = 900;
-const PORT = 9333;
+export const PORT = 9333;
 
-const CHROME = [
+export const CHROME = [
   "C:/Program Files/Google/Chrome/Application/chrome.exe",
   "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
   "/usr/bin/google-chrome",
@@ -37,7 +37,7 @@ const CHROME = [
 ];
 
 /** A small DevTools protocol client: send a method, await its reply. */
-class Devtools {
+export class Devtools {
   private next = 1;
   private pending = new Map<number, { ok: (v: unknown) => void; no: (e: Error) => void }>();
 
@@ -96,7 +96,7 @@ class Devtools {
   }
 }
 
-const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+export const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /**
  * What the page does before each shot, written as things a person clicks.
@@ -350,4 +350,4 @@ async function main(): Promise<void> {
   }
 }
 
-await main();
+if (import.meta.main) await main();

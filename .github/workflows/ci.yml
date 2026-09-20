@@ -71,11 +71,20 @@ jobs:
           bun x tsc -p packages/cli/tsconfig.json --noEmit
           bun x tsc -p packages/mcp/tsconfig.json --noEmit
           cd packages/ui && node scripts/typecheck.mjs
+      # Before the tests, because it is instant and because the thing it
+      # guards against is a commit, not a behaviour: accounts, sessions and
+      # the hosted service live in a separate private repository, and a
+      # credential or a vendor's schema that reaches a public history is in
+      # that history for good.
+      - name: The public boundary holds
+        run: bun run boundary
+
       - name: Test
-        # Thirty seconds rather than bun's five: every test in `packages/cli`
-        # spawns the command line, and each of those loads a 7.6 MB
-        # WebAssembly module before it can answer. On a busy runner that has
-        # been measured past five, and a test that fails for having been slow
+        # Ninety seconds rather than bun's five: every test in `packages/cli`
+        # spawns the command line, and each of those loads a 7.7 MB
+        # WebAssembly module before it can answer. Under full-suite contention
+        # that has crossed thirty seconds three times, always a different case
+        # and always passing alone — a test that fails for having been slow
         # teaches people to re-run CI instead of reading it.
         run: bun test --timeout 90000 packages
 

@@ -60,7 +60,7 @@ function loadDetail(): number {
   }
 }
 
-export type RightTab = "inspector" | "symbols" | "cluster" | "ladder" | "runs" | "history";
+export type RightTab = "inspector" | "symbols" | "cluster" | "ladder" | "runs" | "history" | "designs";
 export type DialogId = "settings" | "shortcuts" | "compare" | "palette" | "definitions" | null;
 
 /**

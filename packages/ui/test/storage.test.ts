@@ -19,7 +19,7 @@ const { getPreset } = await import("../src/engine.js");
 const { useEditor } = await import("../src/state/store.js");
 const { serializeDoc, parseDoc } = await import("../src/state/serialize.js");
 const { registerStorage, storage, subscribeStorage } = await import("../src/state/storage.js");
-const { captureView, applyView } = await import("../src/state/session.js");
+const { captureView, applyView, openFromLocation } = await import("../src/state/session.js");
 import type { StorageProvider, StoredDesign, ViewState } from "../src/state/storage.js";
 
 /** The smallest thing that satisfies the interface. */
@@ -148,5 +148,57 @@ describe("when the view and the document have drifted", () => {
 
   test("no view at all is not an error", () => {
     expect(() => applyView(undefined, state().doc)).not.toThrow();
+  });
+});
+
+describe("a link to a shared design", () => {
+  /** Bun's test runtime has no `location`; the code reads it defensively. */
+  function at(pathname: string): void {
+    (globalThis as { location?: unknown }).location = { pathname } as Location;
+  }
+
+  beforeEach(() => {
+    registerStorage(null);
+    state().setDoc(getPreset("llama-3-8b"), "test");
+  });
+
+  test("an ordinary URL opens nothing, which is every plain checkout", async () => {
+    at("/");
+    expect(await openFromLocation()).toBe(false);
+  });
+
+  test("a share URL with nothing offering opens nothing, and does not throw", async () => {
+    at("/d/abc123");
+    expect(await openFromLocation()).toBe(false);
+  });
+
+  test("a share URL opens the design and puts you where the sharer was", async () => {
+    const shared = getPreset("gpt2-small");
+    registerStorage({
+      ...fakeStore(),
+      async loadShared() {
+        return { body: serializeDoc(shared), name: "shared", view: { detail: 3 } };
+      },
+    });
+    at("/d/abc123");
+
+    expect(await openFromLocation()).toBe(true);
+    expect(state().doc.meta.name).toBe("gpt2-small");
+    expect(state().detail).toBe(3);
+  });
+
+  test("a link that will not open says so rather than showing the default design", async () => {
+    registerStorage({
+      ...fakeStore(),
+      async loadShared() {
+        throw new Error("no such share");
+      },
+    });
+    at("/d/gone");
+
+    expect(await openFromLocation()).toBe(false);
+    // Silently showing llama-3-8b to somebody who followed a link is how a
+    // person concludes the tool is broken.
+    expect(state().status).toContain("did not open");
   });
 });

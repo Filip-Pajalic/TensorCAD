@@ -30,11 +30,12 @@ import Ladder from "../panels/Ladder.js";
 import Runs from "../panels/Runs.js";
 import Tensor from "../panels/Tensor.js";
 import History from "../panels/History.js";
+import Designs from "../panels/Designs.js";
 import CanvasMenu from "../panels/CanvasMenu.js";
 import FindingsDock from "../panels/FindingsDock.js";
 import DockRail from "../panels/DockRail.js";
 import { useEditor, type RightTab } from "../state/store.js";
-import { useDerived } from "../state/hooks.js";
+import { useDerived, useStorage } from "../state/hooks.js";
 import { handleKey } from "../state/commands.js";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs.js";
 import { TooltipProvider } from "../ui/tooltip.js";
@@ -48,6 +49,16 @@ const TABS: { id: RightTab; label: string }[] = [
   { id: "runs", label: "Runs" },
   { id: "history", label: "History" },
 ];
+
+/**
+ * The tab row, which gains one when something is offering to keep designs.
+ *
+ * Not a tab that is always there and says "nothing configured" — a plain
+ * checkout should look exactly like it did before any of this existed.
+ */
+function tabsFor(hasStorage: boolean): { id: RightTab; label: string }[] {
+  return hasStorage ? [{ id: "designs", label: "Designs" }, ...TABS] : TABS;
+}
 
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
@@ -102,6 +113,7 @@ function Resizer({
 export default function App(): React.ReactElement {
   const rightTab = useEditor((s) => s.rightTab);
   const net = useEditor((s) => s.selectedNet);
+  const hasStorage = useStorage() !== null;
   const path = useEditor((s) => s.path);
   const paletteOpen = useEditor((s) => s.paletteOpen);
   const viewMode = useEditor((s) => s.viewMode);
@@ -155,6 +167,8 @@ export default function App(): React.ReactElement {
         return <Runs />;
       case "history":
         return <History />;
+      case "designs":
+        return <Designs />;
       default:
         // The inspector tab shows whichever of the two is selected. They are
         // never both, and a separate tab for nets would mean clicking a wire
@@ -278,7 +292,7 @@ export default function App(): React.ReactElement {
                   className="flex min-h-0 flex-1 flex-col"
                 >
                   <TabsList>
-                    {TABS.map((tab) => (
+                    {tabsFor(hasStorage).map((tab) => (
                       <TabsTrigger key={tab.id} value={tab.id}>
                         {tab.label}
                       </TabsTrigger>

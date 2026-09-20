@@ -28,6 +28,11 @@ loadEngine()
     const { default: App } = await import("./app/App.js");
     root.render(<App />);
 
+    // A link to a shared design, if this is one. Nothing happens in a plain
+    // checkout: no provider is registered, so there is nothing to ask.
+    const { openFromLocation } = await import("./state/session.js");
+    void openFromLocation();
+
     // After the first frame, not before it. Looking for an agent means four
     // fetches that will usually find nothing, and nothing about the editor
     // waits on the answer — the status bar says "none" until it says

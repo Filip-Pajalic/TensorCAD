@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import { useEditor } from "./store.js";
 import { derive, prefixDerived, type Derived } from "./derive.js";
 import { resolveLevel, type Level } from "./level.js";
 import { DEF_PREFIX, previewDoc } from "./definition.js";
+import { storage, subscribeStorage, type StorageProvider } from "./storage.js";
 
 /**
  * The design's own numbers.
@@ -44,4 +45,15 @@ export function useLevel(): { level: Level; derived: Derived } {
 
   const level = useMemo(() => resolveLevel(doc, path, derived), [doc, path, derived]);
   return { level, derived };
+}
+
+/**
+ * The place designs are kept, or null when nothing is offering.
+ *
+ * A plain checkout has no provider and every caller of this renders nothing,
+ * which is how the editor stays exactly what it was when nobody has plugged a
+ * store in.
+ */
+export function useStorage(): StorageProvider | null {
+  return useSyncExternalStore(subscribeStorage, storage, storage);
 }

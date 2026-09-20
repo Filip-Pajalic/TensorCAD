@@ -15,7 +15,8 @@
 
 import { useEditor } from "./store.js";
 import * as ops from "./ops.js";
-import type { ViewState } from "./storage.js";
+import { parseDoc } from "./serialize.js";
+import { storage, type ViewState } from "./storage.js";
 import type { Doc } from "@tensorcad/engine";
 
 /** What the editor would need to put you back. */
@@ -65,5 +66,44 @@ export function applyView(view: ViewState | undefined, doc: Doc): void {
     if (producer && ops.nodeAtPath(doc, ops.segmentsOf(producer))) {
       useEditor.getState().selectNet(view.selectedNet);
     }
+  }
+}
+
+/** A path that names a shared design: `/d/<id>`. */
+const SHARED = /^\/d\/([A-Za-z0-9_-]{1,128})\/?$/;
+
+/**
+ * Open the design this URL names, if it names one.
+ *
+ * Called by whatever assembled the editor, after it has registered a provider
+ * and after the engine has loaded — the store builds a design the moment its
+ * module runs, so there is nothing to put a document into before then.
+ *
+ * Returns false when the URL is an ordinary one, when nothing is offering to
+ * keep designs, or when the provider does not do sharing. Every one of those
+ * is the normal case for a plain checkout, and none of them is an error: the
+ * editor opens as it always does.
+ *
+ * A link that cannot be opened *is* worth saying out loud, though. Silently
+ * showing the default design to somebody who followed a link is how a person
+ * concludes the tool is broken.
+ */
+export async function openFromLocation(): Promise<boolean> {
+  if (typeof location === "undefined") return false;
+  const match = SHARED.exec(location.pathname);
+  if (!match) return false;
+
+  const provider = storage();
+  if (!provider?.loadShared) return false;
+
+  try {
+    const got = await provider.loadShared(match[1]!);
+    const doc = parseDoc(got.body);
+    useEditor.getState().setDoc(doc, `Opened ${got.name}`);
+    applyView(got.view, doc);
+    return true;
+  } catch (e) {
+    useEditor.getState().setStatus(`That link did not open: ${(e as Error).message}`);
+    return false;
   }
 }

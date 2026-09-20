@@ -61,6 +61,18 @@ jobs:
       - run: bun run build:wasm
       - run: bun run --cwd packages/ui build
 
+      # Before the upload, because "No access to the specified resource" from
+      # the API is the same message whether the token cannot reach the account
+      # or the account id is not the one the token is for. This says which,
+      # without printing either: the id is masked, its *length* is not, and a
+      # 32 that is not 32 is a paste that brought a newline with it.
+      - name: Who the token is
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        run: |
+          echo "account id length: ${#CLOUDFLARE_ACCOUNT_ID} (should be 32)"
+          echo "token length: ${#CLOUDFLARE_API_TOKEN} (should be 40)"
+          bunx wrangler whoami || true
+
       - name: Deploy
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
         run: bunx wrangler deploy

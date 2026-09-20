@@ -28,6 +28,7 @@ import ToolStrip from "../panels/ToolStrip.js";
 import Dialogs from "../panels/Dialogs.js";
 import Ladder from "../panels/Ladder.js";
 import Runs from "../panels/Runs.js";
+import Tensor from "../panels/Tensor.js";
 import CanvasMenu from "../panels/CanvasMenu.js";
 import FindingsDock from "../panels/FindingsDock.js";
 import DockRail from "../panels/DockRail.js";
@@ -98,6 +99,7 @@ function Resizer({
 
 export default function App(): React.ReactElement {
   const rightTab = useEditor((s) => s.rightTab);
+  const net = useEditor((s) => s.selectedNet);
   const path = useEditor((s) => s.path);
   const paletteOpen = useEditor((s) => s.paletteOpen);
   const viewMode = useEditor((s) => s.viewMode);
@@ -150,9 +152,12 @@ export default function App(): React.ReactElement {
       case "runs":
         return <Runs />;
       default:
-        return <Inspector />;
+        // The inspector tab shows whichever of the two is selected. They are
+        // never both, and a separate tab for nets would mean clicking a wire
+        // put the answer somewhere you were not looking.
+        return net ? <Tensor /> : <Inspector />;
     }
-  }, [rightTab]);
+  }, [rightTab, net]);
 
   const dragDock = useCallback((delta: number) => {
     if (!useEditor.getState().dockOpen) return;

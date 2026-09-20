@@ -102,6 +102,23 @@ export interface EditorState {
    * there are several.
    */
   also: string[];
+  /**
+   * The selected net, as the producing pin `"path:port"`, or null.
+   *
+   * A tensor is a thing in this design, not a line between two things: it has
+   * a shape, a dtype, one producer, however many consumers, and a share of the
+   * activation memory that the analysis has always attributed to it rather
+   * than to a block. Until now the drawing was the one place it was not
+   * selectable, so the only way to ask what a wire cost was to guess which
+   * block to click.
+   *
+   * Kept beside `selection` rather than folded into it: everything that acts
+   * on a block takes a node path, and teaching all of it that a path might be
+   * a wire would make every one of those worse. A net and a block are never
+   * selected at once.
+   */
+  selectedNet: string | null;
+  selectNet: (net: string | null) => void;
   past: Doc[];
   future: Doc[];
   rightTab: RightTab;
@@ -298,6 +315,7 @@ export const useEditor = create<EditorState>((set, get) => {
     path: [],
     selection: null,
     also: [],
+    selectedNet: null,
     past: [],
     future: [],
     rightTab: "inspector",
@@ -372,6 +390,7 @@ export const useEditor = create<EditorState>((set, get) => {
         future: [],
         path: [],
         selection: null,
+        selectedNet: null,
         status: status ?? null,
       })),
     applyRemote: (doc, status) =>
@@ -383,24 +402,32 @@ export const useEditor = create<EditorState>((set, get) => {
           s.selection && path === s.path && ops.nodeAtPath(doc, ops.segmentsOf(s.selection))
             ? s.selection
             : null;
+        // A net whose producer the agent deleted describes a tensor that is
+        // not there any more, which is worse than describing nothing.
+        const net = s.selectedNet;
+        const producer = net ? net.slice(0, net.lastIndexOf(":")) : "";
+        const selectedNet =
+          net && producer && ops.nodeAtPath(doc, ops.segmentsOf(producer)) ? net : null;
         return {
           doc,
           past: [...s.past.slice(-(UNDO_LIMIT - 1)), s.doc],
           future: [],
           path,
           selection,
+          selectedNet,
           also: [],
           status: status ?? null,
         };
       }),
     markOpened: () => set((s) => ({ opened: s.doc, status: "Comparing against this design" })),
-    setPath: (path) => set({ path, selection: null, also: [], findingFocus: null }),
+    setPath: (path) => set({ path, selection: null, also: [], findingFocus: null, selectedNet: null }),
     enter: (path) =>
-      set({ path: ops.segmentsOf(path), selection: null, also: [], findingFocus: null }),
+      set({ path: ops.segmentsOf(path), selection: null, also: [], findingFocus: null, selectedNet: null }),
     // Selecting something else puts the rules list back to showing
     // everything: a highlight that outlives what it pointed at is worse
     // than no highlight.
-    select: (selection) => set({ selection, also: [], findingFocus: null }),
+    select: (selection) => set({ selection, also: [], findingFocus: null, selectedNet: null }),
+    selectNet: (selectedNet) => set({ selectedNet, selection: null, also: [], findingFocus: null }),
     selectPaths: (paths) => {
       const unique = [...new Set(paths)];
       // The last one is the primary, which is what clicking one more makes it.
@@ -408,6 +435,7 @@ export const useEditor = create<EditorState>((set, get) => {
         selection: unique[unique.length - 1] ?? null,
         also: unique.slice(0, -1),
         findingFocus: null,
+        selectedNet: null,
       });
     },
     selected: () => {

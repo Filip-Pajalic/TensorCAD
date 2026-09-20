@@ -257,6 +257,64 @@
               "layers/block/resid1",
               18874368
             ]
+          ],
+          "activationsByTensor": [
+            [
+              "final_norm:y",
+              1572864
+            ],
+            [
+              "head",
+              308779008
+            ],
+            [
+              "layers/block/_in:x",
+              18874368
+            ],
+            [
+              "layers/block/attn/_in:x",
+              18874368
+            ],
+            [
+              "layers/block/attn/attn",
+              19464192
+            ],
+            [
+              "layers/block/attn/k_heads:y",
+              18874368
+            ],
+            [
+              "layers/block/attn/o_merge:y",
+              18874368
+            ],
+            [
+              "layers/block/attn/q_heads:y",
+              18874368
+            ],
+            [
+              "layers/block/attn/v_heads:y",
+              18874368
+            ],
+            [
+              "layers/block/mlp/_in:x",
+              18874368
+            ],
+            [
+              "layers/block/mlp/act:y",
+              75497472
+            ],
+            [
+              "layers/block/mlp/up:y",
+              75497472
+            ],
+            [
+              "layers/block/resid1:y",
+              18874368
+            ],
+            [
+              "layers:x",
+              1572864
+            ]
           ]
         },
         "infer": {
@@ -533,6 +591,24 @@
             [
               "layers",
               9437184
+            ]
+          ],
+          "activationsByTensor": [
+            [
+              "final_norm:y",
+              786432
+            ],
+            [
+              "head",
+              257315840
+            ],
+            [
+              "layers",
+              9437184
+            ],
+            [
+              "layers:x",
+              786432
             ]
           ]
         },
@@ -857,6 +933,64 @@
             [
               "layers/block/resid1",
               603979776
+            ]
+          ],
+          "activationsByTensor": [
+            [
+              "final_norm:y",
+              50331648
+            ],
+            [
+              "head",
+              9880928256
+            ],
+            [
+              "layers/block/_in:x",
+              603979776
+            ],
+            [
+              "layers/block/attn/_in:x",
+              603979776
+            ],
+            [
+              "layers/block/attn/attn",
+              622854144
+            ],
+            [
+              "layers/block/attn/k_heads:y",
+              603979776
+            ],
+            [
+              "layers/block/attn/o_merge:y",
+              603979776
+            ],
+            [
+              "layers/block/attn/q_heads:y",
+              603979776
+            ],
+            [
+              "layers/block/attn/v_heads:y",
+              603979776
+            ],
+            [
+              "layers/block/mlp/_in:x",
+              603979776
+            ],
+            [
+              "layers/block/mlp/act:y",
+              2415919104
+            ],
+            [
+              "layers/block/mlp/up:y",
+              2415919104
+            ],
+            [
+              "layers/block/resid1:y",
+              603979776
+            ],
+            [
+              "layers:x",
+              50331648
             ]
           ]
         },

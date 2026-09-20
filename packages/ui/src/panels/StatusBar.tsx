@@ -86,11 +86,14 @@ export default function StatusBar(): React.ReactElement {
   const isLocked = useEditor((s) => s.isLocked);
   const path = useEditor((s) => s.path);
   const status = useEditor((s) => s.canvasStatus);
+  const net = useEditor((s) => s.selectedNet);
 
   const errors = derived.issues.filter((i) => i.severity === "error").length;
   const warnings = derived.issues.filter((i) => i.severity === "warning").length;
 
-  const selectionLabel = !selection
+  const selectionLabel = net
+    ? `net ${net}`
+    : !selection
     ? `${status.nodeCount} blocks, ${status.edgeCount} nets`
     : also.length > 0
       ? // Naming the primary as well as counting keeps the cell useful: it is

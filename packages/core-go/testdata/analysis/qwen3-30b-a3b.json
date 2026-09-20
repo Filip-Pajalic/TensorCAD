@@ -317,6 +317,84 @@
               "layers/block/resid1",
               6442450944
             ]
+          ],
+          "activationsByTensor": [
+            [
+              "final_norm:y",
+              134217728
+            ],
+            [
+              "head",
+              29871833088
+            ],
+            [
+              "layers/block/_in:x",
+              6442450944
+            ],
+            [
+              "layers/block/attn/_in:x",
+              6442450944
+            ],
+            [
+              "layers/block/attn/attn",
+              13086228480
+            ],
+            [
+              "layers/block/attn/k_heads:y",
+              1610612736
+            ],
+            [
+              "layers/block/attn/o_merge:y",
+              12884901888
+            ],
+            [
+              "layers/block/attn/q_heads:y",
+              12884901888
+            ],
+            [
+              "layers/block/attn/rope_k:y",
+              1610612736
+            ],
+            [
+              "layers/block/attn/rope_q:y",
+              12884901888
+            ],
+            [
+              "layers/block/attn/v_heads:y",
+              1610612736
+            ],
+            [
+              "layers/block/mlp/_in:x",
+              6442450944
+            ],
+            [
+              "layers/block/mlp/experts/expert/_in:x",
+              51539607552
+            ],
+            [
+              "layers/block/mlp/experts/expert/act:y",
+              19327352832
+            ],
+            [
+              "layers/block/mlp/experts/expert/gate:y",
+              19327352832
+            ],
+            [
+              "layers/block/mlp/experts/expert/gated:y",
+              19327352832
+            ],
+            [
+              "layers/block/mlp/experts/expert/up:y",
+              19327352832
+            ],
+            [
+              "layers/block/resid1:y",
+              6442450944
+            ],
+            [
+              "layers:x",
+              134217728
+            ]
           ]
         },
         "infer": {
@@ -640,6 +718,24 @@
             [
               "layers",
               3221225472
+            ]
+          ],
+          "activationsByTensor": [
+            [
+              "final_norm:y",
+              67108864
+            ],
+            [
+              "head",
+              24893194240
+            ],
+            [
+              "layers",
+              3221225472
+            ],
+            [
+              "layers:x",
+              67108864
             ]
           ]
         },
@@ -1031,6 +1127,84 @@
             [
               "layers/block/resid1",
               6442450944
+            ]
+          ],
+          "activationsByTensor": [
+            [
+              "final_norm:y",
+              134217728
+            ],
+            [
+              "head",
+              29871833088
+            ],
+            [
+              "layers/block/_in:x",
+              6442450944
+            ],
+            [
+              "layers/block/attn/_in:x",
+              6442450944
+            ],
+            [
+              "layers/block/attn/attn",
+              13086228480
+            ],
+            [
+              "layers/block/attn/k_heads:y",
+              1610612736
+            ],
+            [
+              "layers/block/attn/o_merge:y",
+              12884901888
+            ],
+            [
+              "layers/block/attn/q_heads:y",
+              12884901888
+            ],
+            [
+              "layers/block/attn/rope_k:y",
+              1610612736
+            ],
+            [
+              "layers/block/attn/rope_q:y",
+              12884901888
+            ],
+            [
+              "layers/block/attn/v_heads:y",
+              1610612736
+            ],
+            [
+              "layers/block/mlp/_in:x",
+              6442450944
+            ],
+            [
+              "layers/block/mlp/experts/expert/_in:x",
+              51539607552
+            ],
+            [
+              "layers/block/mlp/experts/expert/act:y",
+              19327352832
+            ],
+            [
+              "layers/block/mlp/experts/expert/gate:y",
+              19327352832
+            ],
+            [
+              "layers/block/mlp/experts/expert/gated:y",
+              19327352832
+            ],
+            [
+              "layers/block/mlp/experts/expert/up:y",
+              19327352832
+            ],
+            [
+              "layers/block/resid1:y",
+              6442450944
+            ],
+            [
+              "layers:x",
+              134217728
             ]
           ]
         },

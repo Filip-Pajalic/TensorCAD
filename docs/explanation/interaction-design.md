@@ -1310,4 +1310,39 @@ being edited does not change what the design weighs.
 
 ### Still outstanding
 
-E7: operations, configurations and tensors as first-class objects.
+E7: operations as first-class objects.
+
+## Seventeenth pass: the wire is a thing
+
+Clicking a wire used to write its endpoints into the status bar and stop there.
+A tensor was the one part of the design you could see and not select — which
+meant the only way to ask what a wire cost was to work out which block to click
+and then read a number that was about something else.
+
+Now selecting a net opens an inspector for the tensor: shape, dtype, the block
+that produced it, every block that reads it, and its share of the activation
+memory. Every other segment of the same net lights with it, because they are
+one tensor and not several — the net is keyed by the producing pin, which is
+exactly the set the analysis already treated as one.
+
+### The number that could not be had before
+
+Activation memory has always been attributed to tensors rather than to blocks —
+that is an invariant, and it is what stops a tensor two blocks both read being
+counted twice. It was only ever *reported* per block. For a plain transformer
+that is the same rows under a coarser key: every block that holds an activation
+holds exactly one.
+
+It stops being the same the moment a block fans out. `split` is how a selective
+scan gets its Δ, B and C out of one projection, and Nemotron-H's holds 290 MiB
+across three output pins: 128, 160 and 2. One number for the block answers
+neither which of them is the big one nor what dropping one would save. So the
+analysis now reports both keys, and the drawing can ask the finer question
+because there is somewhere to ask it from.
+
+### What it deliberately does not do
+
+A net has no name of its own. Naming one is a document change — a label that
+has to round-trip, be unique, and mean something to the generated code — and
+the thing that was missing was not a name but an answer. The inspector is
+read-only, and selecting a net is a selection, not an edit.

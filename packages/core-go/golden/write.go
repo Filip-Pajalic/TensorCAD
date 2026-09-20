@@ -697,14 +697,15 @@ func (w *writer) analysis(name string) {
 		Memory struct {
 			WeightsBytes float64 `json:"weightsBytes"`
 			Train        struct {
-				Weights           float64              `json:"weights"`
-				Grads             float64              `json:"grads"`
-				Optimizer         float64              `json:"optimizer"`
-				Activations       float64              `json:"activations"`
-				Logits            float64              `json:"logits"`
-				Total             float64              `json:"total"`
-				PerGpu            analysis.TrainPerGpu `json:"perGpu"`
-				ActivationsByPath []numPair            `json:"activationsByPath"`
+				Weights             float64              `json:"weights"`
+				Grads               float64              `json:"grads"`
+				Optimizer           float64              `json:"optimizer"`
+				Activations         float64              `json:"activations"`
+				Logits              float64              `json:"logits"`
+				Total               float64              `json:"total"`
+				PerGpu              analysis.TrainPerGpu `json:"perGpu"`
+				ActivationsByPath   []numPair            `json:"activationsByPath"`
+				ActivationsByTensor []numPair            `json:"activationsByTensor"`
 			} `json:"train"`
 			Infer          analysis.InferMemory `json:"infer"`
 			OptimizerLabel string               `json:"optimizerLabel"`
@@ -774,6 +775,7 @@ func (w *writer) analysis(name string) {
 		c.Memory.Train.Logits, c.Memory.Train.Total = a.Memory.Train.Logits, a.Memory.Train.Total
 		c.Memory.Train.PerGpu = a.Memory.Train.PerGpu
 		c.Memory.Train.ActivationsByPath = sortedNumbers(a.Memory.Train.ActivationsByPath)
+		c.Memory.Train.ActivationsByTensor = sortedNumbers(a.Memory.Train.ActivationsByTensor)
 		c.Memory.Infer = a.Memory.Infer
 		c.Memory.OptimizerLabel, c.Memory.Notes = a.Memory.OptimizerLabel, a.Memory.Notes
 

@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/license-MIT-111111?style=flat-square" alt="MIT licensed" />
   <img src="https://img.shields.io/badge/engine-Go%20%E2%86%92%20WebAssembly-2f6fb0?style=flat-square" alt="Go engine compiled to WebAssembly" />
   <img src="https://img.shields.io/badge/presets-23%20verified-1b6834?style=flat-square" alt="23 verified presets" />
-  <img src="https://img.shields.io/badge/tests-307%20passing-1b6834?style=flat-square" alt="307 tests passing" />
+  <img src="https://img.shields.io/badge/tests-315%20passing-1b6834?style=flat-square" alt="315 tests passing" />
   <img src="https://img.shields.io/badge/MCP-server%20included-8a5b9c?style=flat-square" alt="MCP server included" />
 </p>
 
@@ -137,6 +137,14 @@ the point: the numbers cannot depend on where you asked for them.
 pin anchors, junction dots on branching nets, hollow circles on unconnected
 pins. Containers unfold in place so a 32-layer stack reads as one frame with a
 `32×` bracket, the way published architecture figures draw it.
+
+**Tensors you can point at.** A wire is a tensor, and clicking one says what it
+carries: its shape, its dtype, the block that made it, every block that reads
+it, and its share of the activation memory. Every segment of the same net
+lights with it. A block that fans out — Nemotron-H's `split` holds 290 MiB
+across three output pins, 128, 160 and 2 — is where that matters: its own
+number answers neither which of them is the big one nor what dropping one would
+save.
 
 **A real shape algebra.** Every tensor dimension is a multivariate polynomial
 with exact rational coefficients over named symbols. `B` and `T` stay

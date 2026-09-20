@@ -177,7 +177,12 @@ Two cross-checks worth knowing:
    into `(((H)))`. It counts the same and reads like line noise everywhere it is shown.
 3. **Formulas live on primitives.** Composites (`gqa_attention`, `gated_mlp`, `moe_layer`, `transformer_block`) are subgraphs of primitives, expanded by the analysis. Adding an architecture block needs no new math.
 4. **Containers carry two multipliers.** `total` drives the parameter count, `active` drives FLOPs and activation memory. That single mechanism is what makes mixture-of-experts work.
-5. **Activation memory is attributed to tensors, not blocks.** A block lists the input ports it must keep alive (`retains`); each producing tensor is counted once even when several blocks read it.
+5. **Activation memory is attributed to tensors, not blocks.** A block lists the input ports it
+   must keep alive (`retains`); each producing tensor is counted once even when several blocks
+   read it. It is *reported* both ways: `activationsByPath` per block and `activationsByTensor`
+   per producing pin. The two agree row for row in a plain transformer and diverge wherever a
+   block fans out — Nemotron-H's `split` holds 290 MiB across three pins, 128, 160 and 2 — which
+   is why clicking a wire in the editor can answer a question clicking a block cannot.
 6. **`B` and `T` are reserved runtime symbols.** They stay indeterminate through shape checking, so a mismatch is a real polynomial difference.
 7. **A configuration is a view of the design; the operating point is a view of the measurement.**
    `doc.configurations` are named sets of symbol values and `doc.active` says which is in

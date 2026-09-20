@@ -74,6 +74,15 @@ type TrainMemory struct {
 	Total             float64            `json:"total"`
 	PerGpu            TrainPerGpu        `json:"perGpu"`
 	ActivationsByPath map[string]float64 `json:"activationsByPath"`
+	// ActivationsByTensor is the same bytes charged to the tensor rather than
+	// to the block that produced it, keyed "path:port".
+	//
+	// The two are not a reformatting of each other. A block with several
+	// outputs is one row in ActivationsByPath and several here, which is the
+	// difference between "this block costs 4 MiB" and "*this* wire is the
+	// expensive one" — and the second is the question somebody pointing at a
+	// net is asking.
+	ActivationsByTensor map[string]float64 `json:"activationsByTensor"`
 }
 
 // InferMemory is the serving footprint.
@@ -132,6 +141,7 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 	// blocks read (the residual stream feeding the query, key and value
 	// projections) is kept alive once, not once per reader.
 	activationsByPath := map[string]float64{}
+	activationsByTensor := map[string]float64{}
 	activations := 0.0
 	logits := 0.0
 
@@ -145,12 +155,16 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 	}
 
 	counted := map[string]bool{}
-	add := func(path string, bytes float64) {
+	// `tensor` is the producing "path:port" when there is one; the extras that
+	// belong to a block rather than to a wire pass their own path, which is
+	// what they are.
+	add := func(path, tensor string, bytes float64) {
 		if bytes == 0 {
 			return
 		}
 		activations += bytes
 		activationsByPath[path] += bytes
+		activationsByTensor[tensor] += bytes
 	}
 
 	for i := range flat.Nodes {
@@ -191,13 +205,13 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 			if at := strings.LastIndex(producer, ":"); at > 0 {
 				owner = producer[:at]
 			}
-			add(owner, elements*ctx.Bytes*node.ActiveMultiplier*tokens)
+			add(owner, producer, elements*ctx.Bytes*node.ActiveMultiplier*tokens)
 		}
 
 		if node.Def.ExtraActivationBytes != nil {
 			extra := node.Def.ExtraActivationBytes(node.Resolved, ctx)
 			total := extra * node.ActiveMultiplier * tokens
-			add(node.Path, total)
+			add(node.Path, node.Path, total)
 			if node.Type == "lm_head" {
 				logits += total
 			}
@@ -218,6 +232,7 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 			total := width * ctx.Bytes * rep.Count * tokens
 			activations += total
 			activationsByPath[rep.Path] = total
+			activationsByTensor[rep.Path] = total
 		}
 		notes = append(notes,
 			"Full recomputation keeps only each layer's input, at the cost of one extra forward pass (8N instead of 6N).")
@@ -321,7 +336,8 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 				Weights: wGpu, Grads: gGpu, Optimizer: oGpu, Activations: actGpu,
 				Total: wGpu + gGpu + oGpu + actGpu,
 			},
-			ActivationsByPath: activationsByPath,
+			ActivationsByPath:   activationsByPath,
+			ActivationsByTensor: activationsByTensor,
 		},
 		Infer: InferMemory{
 			Weights: inferWeights, Kv: inferKv, Overhead: overhead,

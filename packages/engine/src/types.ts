@@ -365,6 +365,18 @@ export interface MemoryResult {
     total: number;
     perGpu: TrainPerGpu;
     activationsByPath: Record<string, number>;
+    /**
+     * The same bytes charged to the tensor rather than to the block that
+     * produced it, keyed `"path:port"`.
+     *
+     * Not a reformatting of the line above. They agree row for row in a plain
+     * transformer, where every block that holds an activation holds exactly
+     * one; they diverge wherever a block fans out. Nemotron-H's `split` holds
+     * three tensors from 2 MiB to 167 MiB, and one number for the block
+     * answers neither which of them is the big one nor what dropping one would
+     * save.
+     */
+    activationsByTensor: Record<string, number>;
   };
   infer: { weights: number; kv: number; overhead: number; total: number };
   optimizerLabel: string;

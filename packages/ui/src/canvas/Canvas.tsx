@@ -597,6 +597,7 @@ export default function Canvas(): React.ReactElement {
    * output pin, which is exactly the set the analysis treats as one tensor.
    */
   const [litNet, setLitNet] = useState<string | null>(null);
+  const selectedNet = useEditor((s) => s.selectedNet);
 
   /**
    * The drawn wires, with the net under the cursor marked.
@@ -605,9 +606,13 @@ export default function Canvas(): React.ReactElement {
    * wire does not re-derive every node on the sheet.
    */
   const edges = useMemo<FlowEdge[]>(() => {
-    if (!litNet) return built.edges;
+    // The selected net stays lit; the cursor lights one on top of that. Hover
+    // wins, so running along a second wire shows you *that* one rather than
+    // leaving the old highlight to answer for it.
+    const marked = litNet ?? selectedNet;
+    if (!marked) return built.edges;
     return built.edges.map((e) => {
-      const lit = (e.data as { net?: string } | undefined)?.net === litNet;
+      const lit = (e.data as { net?: string } | undefined)?.net === marked;
       if (!lit) return e;
       return {
         ...e,
@@ -618,7 +623,7 @@ export default function Canvas(): React.ReactElement {
         zIndex: 1,
       };
     });
-  }, [built.edges, litNet]);
+  }, [built.edges, litNet, selectedNet]);
 
   const callouts = useMemo<Callout[]>(() => {
     if (!showCallouts) return [];
@@ -1121,11 +1126,12 @@ export default function Canvas(): React.ReactElement {
         onReconnectEnd={onReconnectEnd}
         onEdgeMouseEnter={(_, e) => setLitNet((e.data as { net?: string } | undefined)?.net ?? null)}
         onEdgeMouseLeave={() => setLitNet(null)}
+        // A wire is a tensor, and a tensor is selectable. It goes to the
+        // inspector like a block does, and every other segment of the same net
+        // lights with it, because they are one tensor and not several.
         onEdgeClick={(_, e) => {
-          const data = e.data as { from?: string; to?: string } | undefined;
-          if (data?.from && data?.to) {
-            useEditor.getState().setStatus(`${data.from} → ${data.to}`);
-          }
+          const net = (e.data as { net?: string } | undefined)?.net;
+          if (net) useEditor.getState().selectNet(net);
         }}
         onEdgesDelete={onEdgesDelete}
         onNodesDelete={onNodesDelete}

@@ -739,6 +739,40 @@ var Primitives = []*BlockDef{
 		},
 	},
 	{
+		Kind: "primitive", Type: "shift", Category: "shape",
+		Params: ParamList{
+			{"dim", pInt(1, "Width of the stream, for the memory estimate")},
+			{"by", ParamSpec{Type: ParamInt, Default: 1.0, HasDefault: true,
+				Doc: "How many positions to move by; positive brings later tokens earlier, and the end is zero-filled"}},
+		},
+		// Shape-preserving, which is why nothing needed this until multi-token
+		// prediction: a module that predicts the token after next reads the
+		// embedding of the token after next, and over a whole training sequence
+		// that is the same tensor moved along.
+		Ports: Ports{
+			In:  map[string]PortSpec{"x": Port("... dim")},
+			Out: map[string]PortSpec{"y": Port("... dim")},
+		},
+		ParamCount: noParams,
+		Flops:      noFlops,
+		// A copy, so the backward pass needs nothing kept: the gradient of a
+		// shift is the opposite shift.
+		Retains: noRetains,
+		Constraints: func(r *Resolved) []BlockFinding {
+			if r.Num("by") < 0 {
+				return []BlockFinding{{
+					ID: "SHIFT-01", Severity: "error", Param: "by",
+					Message: "shifting backwards would let a token see its own future; use a positive amount",
+				}}
+			}
+			return nil
+		},
+		Docs: BlockDocs{
+			Summary: "Moves a sequence along by a fixed number of positions, zero-filling the end.",
+			Formula: "y[t] = x[t + by], and zero where t + by runs past the end",
+		},
+	},
+	{
 		Kind: "primitive", Type: "concat", Category: "shape",
 		Params: ParamList{
 			{"to", pPattern("B T D", "Shape of the combined tensor")},

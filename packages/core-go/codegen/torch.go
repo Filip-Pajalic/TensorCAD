@@ -151,6 +151,19 @@ const helperCausal = "def causal_mask(seq: int, device, dtype) -> torch.Tensor:\
 	"    mask = torch.zeros(seq, seq, device=device, dtype=dtype)\n" +
 	"    return mask.masked_fill(i[:, None] < i[None, :], float(\"-inf\"))\n"
 
+const helperShift = "def shift_sequence(x: torch.Tensor, by: int) -> torch.Tensor:\n" +
+	"    \"\"\"Move a sequence `by` positions earlier, zero-filling the end.\n" +
+	"\n" +
+	"    What a multi-token predictor reads: at depth k it wants the embedding of\n" +
+	"    the token k ahead, which over a whole training sequence is this. A slice\n" +
+	"    and a concatenation rather than a roll, so nothing wraps around from the\n" +
+	"    end of the sequence to the start of it.\n" +
+	"    \"\"\"\n" +
+	"    if by <= 0:\n" +
+	"        return x\n" +
+	"    pad = torch.zeros_like(x[..., :by, :])\n" +
+	"    return torch.cat([x[..., by:, :], pad], dim=-2)\n"
+
 const helperSsd = "class SSDScan(nn.Module):\n" +
 	"    \"\"\"Mamba-2 state-space scan.\n" +
 	"\n" +
@@ -236,6 +249,7 @@ type ctx struct {
 	needsRope    bool
 	needsWindow  bool
 	needsSoftcap bool
+	needsShift   bool
 	needsCausal  bool
 	needsSsd     bool
 	moeDispatch  string
@@ -310,6 +324,9 @@ type graphEmit struct {
 	init    []string
 	forward []string
 	outputs map[string]string
+	// outputOrder is the top-level output nodes in the order the graph lists
+	// them, which is the order a model returns them in.
+	outputOrder []string
 }
 
 type classInfo struct {
@@ -386,7 +403,13 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 			set("x", "ids")
 
 		case "output":
-			out.outputs["x"] = inputVar(node.ID, "x")
+			// Keyed by the node, not by the port: a design may have several
+			// output nodes and they all call their port "x". Multi-token
+			// prediction is the first thing that does — the model's own logits
+			// and one more set per prediction depth — and keying by port meant
+			// the last one silently won.
+			out.outputs[node.ID] = inputVar(node.ID, "x")
+			out.outputOrder = append(out.outputOrder, node.ID)
 
 		case "boundary_in":
 			for _, port := range orderedKeys(node.Params["ports"]) {
@@ -439,6 +462,17 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 				attr, pyValue(p["kernel"]), pyValue(p["stride"]), pyValue(p["padding"])))
 			out.forward = append(out.forward, fmt.Sprintf("%s = self.%s(%s)",
 				outName("y"), attr, inputVar(node.ID, "x")))
+			set("y", outName("y"))
+
+		case "shift":
+			by := r.Num("by")
+			if by == 0 {
+				set("y", inputVar(node.ID, "x"))
+				break
+			}
+			c.needsShift = true
+			out.forward = append(out.forward, fmt.Sprintf("%s = shift_sequence(%s, %s)",
+				outName("y"), inputVar(node.ID, "x"), pyNum(by)))
 			set("y", outName("y"))
 
 		case "flatten2d":
@@ -960,24 +994,30 @@ func GenerateTorch(doc *ir.Doc, options Options) *Generated {
 	body := emitGraph(&doc.Graph, "", map[string]string{}, c)
 
 	// Weight tying, which the graph expresses as a flag rather than an edge.
+	//
+	// Every tied head, not the first one: a design with multi-token prediction
+	// has one output head per prediction depth and they all share the
+	// embedding. Counting them as shared and then emitting them untied is a
+	// model that does not have the parameters the analysis said it does, which
+	// is exactly what `verify` is for and exactly what it caught.
 	var tie []string
-	var head, embed *ir.NodeDef
+	var embed *ir.NodeDef
 	for i := range doc.Graph.Nodes {
-		switch doc.Graph.Nodes[i].Type {
-		case "lm_head":
-			if head == nil {
-				head = &doc.Graph.Nodes[i]
-			}
-		case "embedding":
-			if embed == nil {
-				embed = &doc.Graph.Nodes[i]
-			}
+		if doc.Graph.Nodes[i].Type == "embedding" && embed == nil {
+			embed = &doc.Graph.Nodes[i]
 		}
 	}
-	if head != nil && embed != nil {
-		r := catalog.ResolveNodeParams(c.cat[head.Type], head.Params, symbols)
-		if r.P["tied"] == true {
-			tie = append(tie, fmt.Sprintf("self.%s.weight = self.%s.weight", pyName(head.ID), pyName(embed.ID)))
+	if embed != nil {
+		for i := range doc.Graph.Nodes {
+			head := &doc.Graph.Nodes[i]
+			if head.Type != "lm_head" {
+				continue
+			}
+			r := catalog.ResolveNodeParams(c.cat[head.Type], head.Params, symbols)
+			if r.P["tied"] == true {
+				tie = append(tie, fmt.Sprintf("self.%s.weight = self.%s.weight",
+					pyName(head.ID), pyName(embed.ID)))
+			}
 		}
 	}
 
@@ -1020,6 +1060,9 @@ func GenerateTorch(doc *ir.Doc, options Options) *Generated {
 	}
 	if c.needsSoftcap {
 		helpers = append(helpers, helperSoftcap, "")
+	}
+	if c.needsShift {
+		helpers = append(helpers, helperShift, "")
 	}
 	if c.needsSsd {
 		helpers = append(helpers, helperSsd, "")
@@ -1084,9 +1127,19 @@ func GenerateTorch(doc *ir.Doc, options Options) *Generated {
 	for _, l := range body.forward {
 		modelLines = append(modelLines, "        "+l)
 	}
+	// One output returns a tensor; several return a tuple, in the order the
+	// graph lists them.
 	returned := "None"
-	if v, ok := body.outputs["x"]; ok {
-		returned = v
+	switch len(body.outputOrder) {
+	case 0:
+	case 1:
+		returned = body.outputs[body.outputOrder[0]]
+	default:
+		parts := make([]string, len(body.outputOrder))
+		for i, id := range body.outputOrder {
+			parts[i] = body.outputs[id]
+		}
+		returned = strings.Join(parts, ", ")
 	}
 	modelLines = append(modelLines, "        return "+returned, "")
 

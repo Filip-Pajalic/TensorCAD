@@ -1464,6 +1464,106 @@
       "constraints": []
     },
     {
+      "type": "shift",
+      "params": {
+        "dim": 4096
+      },
+      "resolved": {
+        "by": 1,
+        "dim": 4096
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
+      },
+      "retains": [],
+      "extraActivationBytes": null,
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "shift",
+      "params": {
+        "by": 3,
+        "dim": 4096
+      },
+      "resolved": {
+        "by": 3,
+        "dim": 4096
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
+      },
+      "retains": [],
+      "extraActivationBytes": null,
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "shift",
+      "params": {
+        "by": -1,
+        "dim": 4096
+      },
+      "resolved": {
+        "by": -1,
+        "dim": 4096
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
+      },
+      "retains": [],
+      "extraActivationBytes": null,
+      "stateBytes": null,
+      "constraints": [
+        "SHIFT-01: shifting backwards would let a token see its own future; use a positive amount"
+      ]
+    },
+    {
       "type": "expand_heads",
       "params": {
         "dim": 64,

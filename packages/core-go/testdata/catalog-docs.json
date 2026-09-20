@@ -902,6 +902,51 @@
       ]
     },
     {
+      "type": "mtp_head",
+      "kind": "composite",
+      "category": "head",
+      "summary": "One multi-token prediction module's projection: normalizes the hidden state and the embedding of the token `by` ahead, joins them, and projects 2*d_model back down to d_model. A whole module is this, then a transformer block, then the model's own output head, which is shared and so costs FLOPs and no parameters; wire a tied lm_head after the block to count them. Depth is how many modules are stacked, each reading the one below.",
+      "formula": "h' = W [ norm(h) ; norm(Emb(t+by)) ], W in R^(d x 2d)",
+      "refs": [
+        "https://arxiv.org/abs/2412.19437"
+      ],
+      "params": [
+        [
+          "d_model",
+          "int",
+          "Residual stream width",
+          null
+        ],
+        [
+          "by",
+          "int",
+          "How far ahead this module predicts: 1 is the token after next",
+          null
+        ],
+        [
+          "norm",
+          "enum",
+          "",
+          [
+            "rmsnorm",
+            "layernorm"
+          ]
+        ],
+        [
+          "norm_bias",
+          "bool",
+          "Bias on layernorm; ignored for rmsnorm",
+          null
+        ],
+        [
+          "bias",
+          "bool",
+          "Bias on the projection",
+          null
+        ]
+      ]
+    },
+    {
       "type": "mul",
       "kind": "primitive",
       "category": "elementwise",
@@ -1113,6 +1158,28 @@
           "logit_softcap",
           "num",
           "Bound the attention scores to this magnitude with tanh; 0 leaves them alone. A fused kernel cannot do this, so a layer that caps runs eager.",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "shift",
+      "kind": "primitive",
+      "category": "shape",
+      "summary": "Moves a sequence along by a fixed number of positions, zero-filling the end.",
+      "formula": "y[t] = x[t + by], and zero where t + by runs past the end",
+      "refs": [],
+      "params": [
+        [
+          "dim",
+          "int",
+          "Width of the stream, for the memory estimate",
+          null
+        ],
+        [
+          "by",
+          "int",
+          "How many positions to move by; positive brings later tokens earlier, and the end is zero-filled",
           null
         ]
       ]

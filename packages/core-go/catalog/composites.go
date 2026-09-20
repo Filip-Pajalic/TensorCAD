@@ -126,7 +126,7 @@ func scalingOf(rope map[string]any) any {
 }
 
 // Composites is every block that is an arrangement rather than a formula.
-var Composites = []*BlockDef{gqaAttention, gatedMlp, denseMlp, mlaAttention, moeLayer, mamba2Block, transformerBlock}
+var Composites = []*BlockDef{gqaAttention, gatedMlp, denseMlp, mlaAttention, moeLayer, mamba2Block, transformerBlock, mtpHeadComposite}
 
 // Containers carry the multipliers that make sparsity and stacking work.
 var Containers = []*BlockDef{moeExperts, repeatContainer}
@@ -763,6 +763,37 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 	return Expansion{Nodes: nodes, Edges: edges}
 }
 
+var mtpHeadComposite = &BlockDef{
+	Kind: "composite", Type: "mtp_head", Category: "head",
+	Params: ParamList{
+		{"d_model", pInt(1, "Residual stream width")},
+		{"by", ParamSpec{Type: ParamInt, Default: 1.0, HasDefault: true,
+			Doc: "How far ahead this module predicts: 1 is the token after next"}},
+		{"norm", pEnum([]string{"rmsnorm", "layernorm"}, "rmsnorm", "")},
+		{"norm_bias", pBool(true, "Bias on layernorm; ignored for rmsnorm")},
+		{"bias", pBool(false, "Bias on the projection")},
+	},
+	Ports: Ports{
+		In: map[string]PortSpec{
+			// The hidden state from the stack below, and the token embeddings
+			// this module shifts for itself.
+			"x": Port("... d_model"),
+			"e": {Shape: "... d_model", Anchor: "side"},
+		},
+		Out: map[string]PortSpec{"y": Port("... d_model")},
+	},
+	Docs: BlockDocs{
+		Summary: "One multi-token prediction module's projection: normalizes the hidden state " +
+			"and the embedding of the token `by` ahead, joins them, and projects 2*d_model back " +
+			"down to d_model. A whole module is this, then a transformer block, then the " +
+			"model's own output head, which is shared and so costs FLOPs and no parameters; " +
+			"wire a tied lm_head after the block to count them. Depth is how many modules are " +
+			"stacked, each reading the one below.",
+		Formula: "h' = W [ norm(h) ; norm(Emb(t+by)) ], W in R^(d x 2d)",
+		Refs:    []string{"https://arxiv.org/abs/2412.19437"},
+	},
+}
+
 // --- containers -------------------------------------------------------------
 
 var repeatContainer = &BlockDef{
@@ -818,9 +849,56 @@ func Expand(def *BlockDef, raw map[string]any, r *Resolved) (Expansion, bool) {
 		return expandMamba2(full, r), true
 	case "transformer_block":
 		return expandTransformerBlock(full, r), true
+	case "mtp_head":
+		return expandMtpHead(full, r), true
 	}
 	// A block the document defined for itself expands from its template.
 	return ExpandUser(def, full)
+}
+
+// expandMtpHead is the four steps of an MTP module's projection.
+func expandMtpHead(raw map[string]any, r *Resolved) Expansion {
+	D := Ex(raw["d_model"], "0")
+	normType := r.Str("norm")
+	normParams := func() map[string]any {
+		if normType == "layernorm" {
+			return map[string]any{"dim": D, "bias": r.Bool("norm_bias")}
+		}
+		return map[string]any{"dim": D}
+	}
+
+	inNode, outNode := boundary(
+		map[string]any{"x": "... " + D, "e": "... " + D},
+		map[string]any{"y": "... " + D},
+	)
+
+	nodes := []ir.NodeDef{
+		inNode,
+		node("norm_h", normType, normParams()),
+		// The module reads the embedding of the token it is predicting, which
+		// over a whole training sequence is the embedding stream moved along.
+		node("ahead", "shift", map[string]any{"dim": D, "by": Ex(raw["by"], "1")}),
+		node("norm_e", normType, normParams()),
+		node("join", "concat", map[string]any{
+			"to":    "... (2*" + D + ")",
+			"sizes": []any{D, D},
+			"axis":  -1.0,
+		}),
+		node("proj", "linear", map[string]any{
+			"in_features": "2*" + D, "out_features": D, "bias": r.Bool("bias"),
+		}),
+		outNode,
+	}
+	edges := []ir.Edge{
+		edge("_in:x", "norm_h:x"),
+		edge("_in:e", "ahead:x"),
+		edge("ahead:y", "norm_e:x"),
+		edge("norm_h:y", "join:y0"),
+		edge("norm_e:y", "join:y1"),
+		edge("join:y", "proj:x"),
+		edge("proj:y", "_out:y"),
+	}
+	return Expansion{Nodes: nodes, Edges: edges}
 }
 
 func isFalse(v any) bool {

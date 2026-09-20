@@ -122,12 +122,13 @@ Done:
 - Hugging Face `config.json` import for nine families, asserted against the hand-written presets on both the parameter count and the cache.
 - Parallelism planner, in the editor as well: a `Cluster` tab beside Inspector, Symbols and Rules lists the plans that fit with a bar for how much of the device each fills, and pressing one applies it to the operating point so the whole readout follows. `plan(doc, options, {gpus})` and `tensorcad plan --gpus n` price every split the cluster admits — DP, TP, PP, EP, the four ZeRO stages, sequence parallelism and the three recompute settings — and return the ones that fit, least demanding first. Llama-3-70B on 64 H100s is a thousand-plan search that takes 20ms.
 - Expert parallelism, which the options carried and nothing read: a sparse model's experts are a separate pool that shards by EP where everything else shards by TP and PP. Mixtral is 45.10B expert weights of 46.70B, so the distinction is most of the model.
+- `mtp_head` and a `shift` primitive: multi-token prediction as DeepSeek-V3 describes it — normalize the hidden state, normalize the embedding of the token ahead, join, project 2D down to D — then a transformer block and the model's own output head, which is shared and so costs a second pass over the vocabulary and no weights. Depth is stacking rather than a parameter.
 - Logit softcapping, on the output logits and on the attention scores. The one on the scores rules out a fused kernel — it never builds the matrix there is anything to cap — so a capped layer is counted as eager attention, which for Gemma-2-9B at 8k is 199 GiB of activations rather than 73.
 - Alternating local and global attention, as Gemma 2 and 3 use it: a repeat of the group rather than of the layer, so half of Gemma-2-9B's cache is bounded by the window. At 128k context that is 21.66 GiB where treating every layer as global said 42.00 GiB. The importer builds it rather than warning about it.
 
 Remaining:
 - `gated_deltanet_block` via `fla`, and the 2026 linear-attention hybrids that use it.
-- `mtp_head`, value embeddings and U-net skips.
+- Value embeddings and U-net skips.
 - Presets: Gemma-3, Jamba, and 2026 models as their configs stabilize.
 - Analysis extensions: MoE active vs resident, MLA absorbed vs decompressed KV.
 - μP scale ladder: tune on tiny track, transfer widths.

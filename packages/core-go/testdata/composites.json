@@ -1700,6 +1700,213 @@
       "constraints": []
     },
     {
+      "type": "mtp_head",
+      "params": {
+        "d_model": "D"
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "e": "... D",
+              "x": "... D"
+            }
+          }
+        },
+        {
+          "id": "norm_h",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "D"
+          }
+        },
+        {
+          "id": "ahead",
+          "type": "shift",
+          "params": {
+            "by": "1",
+            "dim": "D"
+          }
+        },
+        {
+          "id": "norm_e",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "D"
+          }
+        },
+        {
+          "id": "join",
+          "type": "concat",
+          "params": {
+            "axis": -1,
+            "sizes": [
+              "D",
+              "D"
+            ],
+            "to": "... (2*D)"
+          }
+        },
+        {
+          "id": "proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "2*D",
+            "out_features": "D"
+          }
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          }
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "norm_h:x"
+        ],
+        [
+          "_in:e",
+          "ahead:x"
+        ],
+        [
+          "ahead:y",
+          "norm_e:x"
+        ],
+        [
+          "norm_h:y",
+          "join:y0"
+        ],
+        [
+          "norm_e:y",
+          "join:y1"
+        ],
+        [
+          "join:y",
+          "proj:x"
+        ],
+        [
+          "proj:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "mtp_head",
+      "params": {
+        "bias": true,
+        "by": 2,
+        "d_model": "D",
+        "norm": "layernorm"
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "e": "... D",
+              "x": "... D"
+            }
+          }
+        },
+        {
+          "id": "norm_h",
+          "type": "layernorm",
+          "params": {
+            "bias": true,
+            "dim": "D"
+          }
+        },
+        {
+          "id": "ahead",
+          "type": "shift",
+          "params": {
+            "by": "2",
+            "dim": "D"
+          }
+        },
+        {
+          "id": "norm_e",
+          "type": "layernorm",
+          "params": {
+            "bias": true,
+            "dim": "D"
+          }
+        },
+        {
+          "id": "join",
+          "type": "concat",
+          "params": {
+            "axis": -1,
+            "sizes": [
+              "D",
+              "D"
+            ],
+            "to": "... (2*D)"
+          }
+        },
+        {
+          "id": "proj",
+          "type": "linear",
+          "params": {
+            "bias": true,
+            "in_features": "2*D",
+            "out_features": "D"
+          }
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          }
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "norm_h:x"
+        ],
+        [
+          "_in:e",
+          "ahead:x"
+        ],
+        [
+          "ahead:y",
+          "norm_e:x"
+        ],
+        [
+          "norm_h:y",
+          "join:y0"
+        ],
+        [
+          "norm_e:y",
+          "join:y1"
+        ],
+        [
+          "join:y",
+          "proj:x"
+        ],
+        [
+          "proj:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
       "type": "transformer_block",
       "params": {
         "d_model": "D",

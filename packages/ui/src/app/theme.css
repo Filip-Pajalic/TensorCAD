@@ -81,6 +81,17 @@ input[type="number"] {
   --locked-halo: rgba(192, 28, 158, 0.42);
   --shadow: rgba(0, 0, 0, 0.12);
 
+  /* One series apiece, for a chart with several lines on it. Six because a
+     seventh run on one pair of axes is a chart nobody reads; ordered so the
+     first two are the furthest apart, which is the comparison that is
+     actually made. Darkened against paper. */
+  --series-1: #1a66b3;
+  --series-2: #b3521a;
+  --series-3: #1b6834;
+  --series-4: #7a3ba8;
+  --series-5: #a8103c;
+  --series-6: #5c6470;
+
   /* Borders that go with the soft fills above, and the glows and rings that
      are the one place a colour has to be a literal rgba rather than a hue. */
   --ok-edge: #a8d9bd;
@@ -210,6 +221,15 @@ input[type="number"] {
   --locked: #ff5ed4;
   --locked-halo: rgba(255, 94, 212, 0.38);
   --shadow: rgba(0, 0, 0, 0.55);
+
+  /* The same six, brightened for a dark ground: same hue, swapped lightness,
+     so a run keeps its colour when the theme changes. */
+  --series-1: #58a6ff;
+  --series-2: #ff9d5c;
+  --series-3: #56d394;
+  --series-4: #c79bff;
+  --series-5: #ff7b9c;
+  --series-6: #9aa5b2;
 
   --ok-edge: #2c6a48;
   --warn-edge: #6b5526;

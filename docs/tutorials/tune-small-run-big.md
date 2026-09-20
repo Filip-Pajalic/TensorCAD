@@ -122,6 +122,37 @@ because a two-head model is a poor proxy whatever else it gets right — so the
 rungs go up. Same question, other direction: this is what you swept at, here is
 what it carries to.
 
+## 3b. Look at what the runs actually did
+
+A ladder tells you what to scale by. It does not tell you whether the design was
+worth scaling. For that you have to train it, and then look at two runs together:
+
+```bash
+python -m tensorcad_runtime smoke-train out/gpt2-small-30m/model.py --steps 500
+python -m tensorcad_runtime smoke-train out/llama-48m/model.py --steps 500
+```
+
+Each writes two files into `runs/`: a `.jsonl` appended to as it goes, so an
+interrupted run still leaves something, and a `.json` record of the whole thing.
+Open both in the editor's **Runs** tab — the button, or drop the files on the
+panel — and the loss curves go on one chart.
+
+The chart plots against **tokens, not steps**. A step is not a fixed amount of
+work: two designs at the same batch size and different sequence lengths see
+different amounts of text per step, and plotting against steps quietly gives the
+longer one credit for the extra reading. Tokens is the axis the scaling laws are
+written in.
+
+And it will tell you when the comparison is not a comparison:
+
+> Not a like-for-like comparison — sequence length differs: 256, 512; batch size
+> differs: 8, 16. The curves are drawn anyway, but the difference between them is
+> not only the architecture.
+
+Which is worth more than the chart. Two runs at 256 and 512 tokens differ by
+thirty-three times the text seen, and the one that looks better is the one that
+read more.
+
 ## 4. Price the real run
 
 You have a learning rate. Now find out how to fit the model you meant to train:

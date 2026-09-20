@@ -3394,3 +3394,113 @@ select.field {
   text-transform: none;
   letter-spacing: 0;
 }
+
+/* Runs ------------------------------------------------------------------- */
+
+.runs__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.runs__table th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 9px;
+  padding: 2px 4px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.runs__table td {
+  padding: 3px 4px;
+  border-bottom: 1px solid var(--border-soft);
+  white-space: nowrap;
+}
+
+.runs__table .num {
+  text-align: right;
+  font-family: var(--mono);
+}
+
+/* A hidden run stays in the list rather than disappearing: the checkbox is
+   what you press to bring it back, and you cannot press a row that is gone. */
+.runs__row--hidden {
+  opacity: 0.45;
+}
+
+.runs__swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  vertical-align: baseline;
+}
+
+.runs__drop {
+  color: var(--text-dim);
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+.runs__drop:hover {
+  color: var(--error);
+}
+
+.runs__actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.runs__actions button {
+  font-size: 11px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  cursor: pointer;
+}
+
+.runs__actions button:hover {
+  border-color: var(--accent);
+}
+
+.runs__problem {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--error);
+}
+
+/* Said before the chart rather than after it, because somebody who reads the
+   chart and then the caveat has already drawn the conclusion. */
+.runs__caveat {
+  font-size: 11px;
+  color: var(--warn);
+  margin-bottom: 8px;
+}
+
+.runs__chart {
+  margin: 0;
+}
+
+.runs__chart svg {
+  width: 100%;
+  height: auto;
+}
+
+.runs__tick {
+  font-family: var(--mono);
+  font-size: 7px;
+  fill: var(--text-dim);
+}
+
+.runs__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}

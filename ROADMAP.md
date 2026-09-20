@@ -12,7 +12,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M1 Check (design rules, full analysis) | **Done.** 18 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
 | M2 Manufacture (PyTorch codegen, verification) | **Done.** Every generated model's parameter count matches PyTorch exactly, and the FLOPs estimate matches a profiler once the causal mask is accounted for. |
 | M3 Agent (MCP server, CLI) | **Done.** 13 MCP tools over stdio, 6 CLI commands, and the live editor bridge: an agent's edits land on the canvas as it makes them and the human's come back. |
-| M4 Test bench | **Partly done.** `tensorcad-runtime smoke-train` trains a scaled design on the local GPU and logs a loss curve; `scaleDesign` shrinks a design to a budget. No run registry or comparison view in the editor yet. |
+| M4 Test bench | **Done.** `tensorcad-runtime smoke-train` trains a scaled design on the local GPU and writes a run record; the editor's `Runs` tab opens several and draws their loss curves on one chart, naming anything that makes the comparison unfair. |
 | M5 Advanced parts | **Mixture of experts, latent attention and state-space blocks all done.** DeepSeek-V3 and Nemotron-H-8B reproduce exactly. |
 | Go engine | **Done.** The whole analysis is Go, compiled to WebAssembly, and the editor, the command line, the MCP server and the desktop shell all load the same module. The TypeScript it was ported from has been deleted; the golden files it wrote are the specification the engine is held to. |
 | Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, and named refusals. Remaining items in `docs/explanation/interaction-design.md`. |
@@ -114,7 +114,13 @@ Actually train designs, small.
 
 **Done when**: two designs (GPT-2-style vs Llama-style at equal params) can be trained back to back from the UI and compared on one chart, reproducibly.
 
-**Progress**: the training half works. A 30.1M-parameter GPT-2 shrunk by `scaleDesign` trains 500 steps on the RTX 5080 in 27 seconds at 151,213 tokens per second, loss 10.85 down to 3.23, 6.5 GiB peak. A Llama-shaped design of 48.2M reaches 3.53 in 200 steps. What is missing is the registry and the comparison view, so the runs are reproducible but not yet side by side.
+**Result**: a 30.1M-parameter GPT-2 shrunk by `scaleDesign` trains 500 steps on the RTX 5080 in 27 seconds at 151,213 tokens per second, loss 10.85 down to 3.23, 6.5 GiB peak. A Llama-shaped design of 48.2M reaches 3.53 in 200 steps.
+
+The runs are now side by side. `smoke-train` writes a record beside the step log it was already writing, and the editor's `Runs` tab opens either — the record when there is one, the `.jsonl` when the run stopped early, which is often the run you most want to look at. The curves go on one chart.
+
+Two decisions in that chart are the whole point of it. It plots against **tokens**, not steps: a step is not a fixed amount of work, and two designs at the same batch size and different sequence lengths see different amounts of text per step, so plotting against steps quietly credits the longer one. And it **names what makes the comparison unfair** before drawing it — sequence length, batch, corpus, seed, learning rate, dtype. Pointed at the two runs actually on this machine it says "sequence length differs: 256, 512; batch size differs: 8, 16", which is the difference between an architecture result and a run that saw thirty-three times the tokens.
+
+A field only one run reports is not a difference. A step log carries no seed and the record beside it does; one value and one silence is not two values, and a warning nobody can act on is how people learn to stop reading warnings.
 
 ### M5 — Advanced parts (ongoing after M2)
 

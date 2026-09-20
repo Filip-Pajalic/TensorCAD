@@ -27,6 +27,7 @@ import ModelTree from "../panels/ModelTree.js";
 import ToolStrip from "../panels/ToolStrip.js";
 import Dialogs from "../panels/Dialogs.js";
 import Ladder from "../panels/Ladder.js";
+import Runs from "../panels/Runs.js";
 import CanvasMenu from "../panels/CanvasMenu.js";
 import FindingsDock from "../panels/FindingsDock.js";
 import DockRail from "../panels/DockRail.js";
@@ -42,6 +43,7 @@ const TABS: { id: RightTab; label: string }[] = [
   { id: "symbols", label: "Symbols" },
   { id: "cluster", label: "Cluster" },
   { id: "ladder", label: "Ladder" },
+  { id: "runs", label: "Runs" },
 ];
 
 const clamp = (value: number, min: number, max: number): number =>
@@ -145,6 +147,8 @@ export default function App(): React.ReactElement {
         return <Cluster />;
       case "ladder":
         return <Ladder />;
+      case "runs":
+        return <Runs />;
       default:
         return <Inspector />;
     }

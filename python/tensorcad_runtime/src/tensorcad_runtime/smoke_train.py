@@ -368,8 +368,20 @@ def smoke_train(
         "data_source": manifest.get("source"),
         "data_tokens": manifest.get("tokens"),
         "run_file": str(out_path),
+        "finished_at": datetime.now(timezone.utc).isoformat(),
         "log": records,
         "warnings": warnings,
         "torch_version": torch.__version__,
     }
+
+    # The run record, beside the step log it summarizes.
+    #
+    # The `.jsonl` is written as the run goes, so it survives an interrupted
+    # one; this is the whole thing in one object, which is what the editor's
+    # Runs panel opens and what makes a run comparable with another. Writing it
+    # here rather than leaving it on stdout is the difference between a run you
+    # can look at later and a run you had to be watching.
+    record_path = out_path.with_suffix(".json")
+    record_path.write_text(json.dumps(summary, indent=2, default=str) + "\n", encoding="utf-8")
+    summary["record_file"] = str(record_path)
     return summary

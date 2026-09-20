@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/license-MIT-111111?style=flat-square" alt="MIT licensed" />
   <img src="https://img.shields.io/badge/engine-Go%20%E2%86%92%20WebAssembly-2f6fb0?style=flat-square" alt="Go engine compiled to WebAssembly" />
   <img src="https://img.shields.io/badge/presets-23%20verified-1b6834?style=flat-square" alt="23 verified presets" />
-  <img src="https://img.shields.io/badge/tests-295%20passing-1b6834?style=flat-square" alt="295 tests passing" />
+  <img src="https://img.shields.io/badge/tests-307%20passing-1b6834?style=flat-square" alt="307 tests passing" />
   <img src="https://img.shields.io/badge/MCP-server%20included-8a5b9c?style=flat-square" alt="MCP server included" />
 </p>
 

@@ -104,7 +104,12 @@ Two cross-checks worth knowing:
   design-rule findings are a dock along the bottom rather than a tab — `panels/FindingsDock.tsx`
   wraps `Rules` in a strip that carries the counts even when collapsed, because the checks are
   about the drawing and belong under it.
-  `Cluster` and `Ladder` are the two panels that do not read `derive()`: they call `plan()` and
+  `Cluster`, `Ladder` and `Runs` are the panels that do not read `derive()`. `Runs` reads
+  nothing from the engine at all — it is the one panel about what a design *did* rather than
+  what it would cost, reading the records `tensorcad-runtime smoke-train` writes and drawing
+  their loss curves against tokens, not steps, because a step is not a fixed amount of work.
+  `state/runs.ts` also decides when two runs are not comparable, and the chart says so before
+  it is read rather than after. The other two call `plan()` and
   `mup()` themselves, because those are a few hundred analyses and one per rung, and neither
   answer moves between keystrokes that do not change the design. Pressing a cluster plan
   changes the operating point; pressing a rung opens a different *design*, through `setDoc`,

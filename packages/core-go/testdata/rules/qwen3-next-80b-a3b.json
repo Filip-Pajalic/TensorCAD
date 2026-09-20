@@ -1,0 +1,119 @@
+{
+  "preset": "qwen3-next-80b-a3b",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 2,
+        "warning": 2
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 178.33 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 148.41 GiB and the cache is 211.69 MiB at 8192 tokens across 1 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 3 devices."
+        },
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 1.24 TiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 148.41 GiB, gradients 148.41 GiB, optimizer 890.43 GiB, activations 77.84 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        },
+        {
+          "rule": "unused-symbol",
+          "severity": "info",
+          "message": "Symbol \"L\" is not referenced by any block.",
+          "hint": "Remove it, or wire it into the parameter that should follow it."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "layers/l0_mlp/shared_gate",
+          "message": "Projection width 1 is not a multiple of 64.",
+          "hint": "Rounding up to 64 usually costs little memory and speeds up the matmul."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 4,
+        "warning": 1
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 93.01 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 74.20 GiB and the cache is 3.31 GiB at 8192 tokens across 32 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 2 devices."
+        },
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 5.80 GiB, which is 96% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 210.5x the compute-optimal budget of 71B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        },
+        {
+          "rule": "unused-symbol",
+          "severity": "info",
+          "message": "Symbol \"L\" is not referenced by any block.",
+          "hint": "Remove it, or wire it into the parameter that should follow it."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "layers/l0_mlp/shared_gate",
+          "message": "Projection width 1 is not a multiple of 64.",
+          "hint": "Rounding up to 64 usually costs little memory and speeds up the matmul."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 2,
+        "warning": 2
+      },
+      "findings": [
+        {
+          "rule": "inference-fits",
+          "severity": "warning",
+          "message": "Serving needs about 178.21 GiB but H100 SXM (80 GB) has 80.00 GiB. Weights are 148.41 GiB and the cache is 105.84 MiB at 8192 tokens across 1 sequence(s).",
+          "hint": "Quantize the weights, or split the model across 3 devices."
+        },
+        {
+          "rule": "training-fits",
+          "severity": "warning",
+          "message": "Training needs about 1.46 TiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 148.41 GiB, gradients 148.41 GiB, optimizer 890.43 GiB, activations 311.37 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
+        },
+        {
+          "rule": "unused-symbol",
+          "severity": "info",
+          "message": "Symbol \"L\" is not referenced by any block.",
+          "hint": "Remove it, or wire it into the parameter that should follow it."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "layers/l0_mlp/shared_gate",
+          "message": "Projection width 1 is not a multiple of 64.",
+          "hint": "Rounding up to 64 usually costs little memory and speeds up the matmul."
+        }
+      ]
+    }
+  ]
+}

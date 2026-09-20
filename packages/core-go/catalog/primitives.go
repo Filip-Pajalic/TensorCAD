@@ -478,6 +478,34 @@ var Primitives = []*BlockDef{
 		Docs:    BlockDocs{Summary: "Elementwise sum, the residual connection."},
 	},
 	{
+		Kind: "primitive", Type: "gate", Category: "elementwise",
+		Params: ParamList{
+			{"dim", pInt(1, "Width of the stream being scaled")},
+		},
+		Ports: Ports{
+			In: map[string]PortSpec{
+				"x": Port("... dim"),
+				// One value per token, broadcast across the width. This is why
+				// it is not `mul`: that one is elementwise and says both sides
+				// are the same width, which here they are not.
+				"g": {Shape: "... 1", Anchor: "side",
+					Doc: "One value per token, scaling the whole stream"},
+			},
+			Out: map[string]PortSpec{"y": Port("... dim")},
+		},
+		ParamCount: noParams,
+		Flops: func(r *Resolved, _ AnalysisCtx) FlopsPerToken {
+			return FlopsPerToken{Elementwise: r.Num("dim")}
+		},
+		// Each side is needed to differentiate the other.
+		Retains: func(*Resolved) []string { return []string{"x", "g"} },
+		Docs: BlockDocs{
+			Summary: "Scale a stream by one value per token. What a shared expert's gate does, " +
+				"where the gate is a single learned direction rather than a matrix.",
+			Formula: "y = g * x, g broadcast across the width",
+		},
+	},
+	{
 		Kind: "primitive", Type: "mix", Category: "elementwise",
 		Params: ParamList{
 			{"dim", pInt(1, "Width of both streams")},
@@ -920,33 +948,44 @@ var Primitives = []*BlockDef{
 	{
 		Kind: "primitive", Type: "gated_delta_scan", Category: "ssm",
 		Params: ParamList{
-			{"heads", pInt(1, "Linear-attention heads")},
+			{"heads", pInt(1, "Linear-attention heads, which is the number of key heads")},
 			{"head_dim", pInt(1, "Width of a query/key head")},
 			{"v_head_dim", pIntD(0, 0, "Width of a value head; 0 means the same as head_dim")},
+			{"value_heads", pIntD(0, 0,
+				"Value heads, when there are more of them than key heads; 0 means the same number")},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			v := "head_dim"
 			if r.Num("v_head_dim") != 0 {
 				v = "v_head_dim"
 			}
+			// The value side counts value heads, which need not be the key
+			// heads: the recurrence carries one state per value head, and
+			// Qwen3-Next has twice as many of those as it has keys.
+			hv := "heads"
+			if r.Num("value_heads") != 0 {
+				hv = "value_heads"
+			}
 			return Ports{
 				In: map[string]PortSpec{
 					"q": Port("B heads T head_dim"),
 					"k": Port("B heads T head_dim"),
-					"v": Port("B heads T " + v),
-					// The decay and the write strength, one scalar each per head.
-					// Written out rather than with an ellipsis, because the
-					// other three ports name their batch and a pattern that
-					// binds `...` to `B T` would disagree with a pattern that
-					// binds nothing.
-					"gates": {Shape: "B T (2*heads)", Anchor: "side"},
+					"v": Port("B " + hv + " T " + v),
+					// The decay and the write strength, one scalar each per
+					// value head. Written out rather than with an ellipsis,
+					// because the other three ports name their batch and a
+					// pattern that binds `...` to `B T` would disagree with a
+					// pattern that binds nothing.
+					"gates": {Shape: "B T (2*" + hv + ")", Anchor: "side"},
 				},
-				Out: map[string]PortSpec{"y": Port("B heads T " + v)},
+				Out: map[string]PortSpec{"y": Port("B " + hv + " T " + v)},
 			}
 		},
 		// A decay bias and a log-decay scale per head, the way Mamba-2 carries
 		// its dt_bias and A_log.
-		ParamCount: func(r *Resolved) float64 { return 2 * r.Num("heads") },
+		// Two scalars per *value* head: the recurrence runs one state per value
+		// head, so a design with twice as many of those has twice as many.
+		ParamCount: func(r *Resolved) float64 { return 2 * scanHeads(r) },
 		Flops: func(r *Resolved, _ AnalysisCtx) FlopsPerToken {
 			// Per head per token: S k (2 dk dv), the outer product that removes
 			// it (dk dv), the scale and subtract (2 dk dv), the write (dk dv),
@@ -1089,4 +1128,13 @@ func joinAtoms(atoms []string) string {
 		out += a
 	}
 	return out
+}
+
+// scanHeads is how many states a gated delta scan carries: one per value head,
+// which is not always the number of key heads.
+func scanHeads(r *Resolved) float64 {
+	if n := r.Num("value_heads"); n > 0 {
+		return n
+	}
+	return r.Num("heads")
 }

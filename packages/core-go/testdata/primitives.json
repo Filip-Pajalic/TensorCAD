@@ -1501,6 +1501,43 @@
       "constraints": []
     },
     {
+      "type": "gate",
+      "params": {
+        "dim": 4096
+      },
+      "resolved": {
+        "dim": 4096
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "g": "... 1",
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {
+          "g": "side/inherit"
+        }
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "elementwise": 4096,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
+      },
+      "retains": [
+        "x",
+        "g"
+      ],
+      "extraActivationBytes": null,
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
       "type": "shift",
       "params": {
         "dim": 4096
@@ -1717,7 +1754,8 @@
       "resolved": {
         "head_dim": 128,
         "heads": 16,
-        "v_head_dim": 0
+        "v_head_dim": 0,
+        "value_heads": 0
       },
       "errors": [],
       "ports": {
@@ -1765,7 +1803,8 @@
       "resolved": {
         "head_dim": 128,
         "heads": 32,
-        "v_head_dim": 64
+        "v_head_dim": 64,
+        "value_heads": 0
       },
       "errors": [],
       "ports": {

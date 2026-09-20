@@ -1,0 +1,498 @@
+{
+  "version": 1,
+  "meta": {
+    "name": "qwen3-next-80b-a3b",
+    "family": "qwen",
+    "notes": "Three layers in four are gated DeltaNet and the fourth is ordinary attention, so only twelve of the forty-eight hold a cache that grows with the sequence; the other thirty-six carry a fixed state per sequence. The linear layers have twice as many value heads as key heads, which is most of why their input projection is 12,288 wide. The attention layers gate their own output with a projection as wide as the queries, which is why `q_proj` is [8192, 2048] rather than [4096, 2048]. Every layer is a mixture of 512 experts with ten routed and one shared, so 3.0B of the 79.7B is active per token. The checkpoint also ships a multi-token-prediction head of 1.65B, which is not modelled here because it is not part of the model you serve.",
+    "published": {
+      "params": 79674391296,
+      "source": "https://huggingface.co/Qwen/Qwen3-Next-80B-A3B-Instruct"
+    }
+  },
+  "symbols": {
+    "B": {
+      "kind": "runtime",
+      "default": 1,
+      "doc": "Batch size"
+    },
+    "T": {
+      "kind": "runtime",
+      "default": 8192,
+      "doc": "Sequence length in tokens"
+    },
+    "G": {
+      "kind": "design",
+      "value": 12,
+      "doc": "Groups of three DeltaNet layers and one attention layer"
+    },
+    "L": {
+      "kind": "design",
+      "value": "4*G",
+      "doc": "Transformer layers in total"
+    },
+    "D": {
+      "kind": "design",
+      "value": 2048,
+      "doc": "Residual stream width (d_model)"
+    },
+    "H": {
+      "kind": "design",
+      "value": 16,
+      "doc": "Query heads on the attention layers"
+    },
+    "Hkv": {
+      "kind": "design",
+      "value": 2,
+      "doc": "Key/value heads on the attention layers"
+    },
+    "dh": {
+      "kind": "design",
+      "value": 256,
+      "doc": "Head dimension on the attention layers"
+    },
+    "Hl": {
+      "kind": "design",
+      "value": 16,
+      "doc": "Key heads on the linear-attention layers"
+    },
+    "Hlv": {
+      "kind": "design",
+      "value": 32,
+      "doc": "Value heads on the linear-attention layers"
+    },
+    "dl": {
+      "kind": "design",
+      "value": 128,
+      "doc": "Head dimension on the linear-attention layers"
+    },
+    "E": {
+      "kind": "design",
+      "value": 512,
+      "doc": "Routed experts per layer"
+    },
+    "K": {
+      "kind": "design",
+      "value": 10,
+      "doc": "Experts each token is routed to"
+    },
+    "Fe": {
+      "kind": "design",
+      "value": 512,
+      "doc": "Hidden width of one expert"
+    },
+    "F": {
+      "kind": "design",
+      "value": 5120,
+      "doc": "Dense feed-forward width the config declares; unused, because every layer is a mixture"
+    },
+    "V": {
+      "kind": "design",
+      "value": 151936,
+      "doc": "Vocabulary size"
+    }
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "tokens",
+        "type": "input",
+        "params": {
+          "shape": "B T",
+          "dtype": "int64"
+        }
+      },
+      {
+        "id": "embed",
+        "type": "embedding",
+        "params": {
+          "vocab": "V",
+          "dim": "D"
+        }
+      },
+      {
+        "id": "layers",
+        "type": "repeat",
+        "label": "DeltaNet x3 + attention, x12",
+        "params": {
+          "count": "G"
+        },
+        "graph": {
+          "nodes": [
+            {
+              "id": "_in",
+              "type": "boundary_in",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            },
+            {
+              "id": "l0_norm1",
+              "type": "rmsnorm",
+              "params": {
+                "dim": "D"
+              }
+            },
+            {
+              "id": "l0_attn",
+              "type": "gated_deltanet_block",
+              "label": "Gated DeltaNet",
+              "params": {
+                "d_model": "D",
+                "heads": "Hl",
+                "head_dim": "dl",
+                "v_head_dim": "dl",
+                "value_heads": "Hlv",
+                "conv_kernel": 4,
+                "bias": false,
+                "conv_bias": false
+              }
+            },
+            {
+              "id": "l0_resid1",
+              "type": "add",
+              "params": {
+                "dim": "D"
+              }
+            },
+            {
+              "id": "l0_norm2",
+              "type": "rmsnorm",
+              "params": {
+                "dim": "D"
+              }
+            },
+            {
+              "id": "l0_mlp",
+              "type": "moe_layer",
+              "params": {
+                "d_model": "D",
+                "experts": "E",
+                "top_k": "K",
+                "expert_hidden": "Fe",
+                "shared_experts": 1,
+                "shared_expert_gate": true,
+                "act": "silu",
+                "bias": false,
+                "router_bias": false,
+                "normalize": true
+              }
+            },
+            {
+              "id": "l0_resid2",
+              "type": "add",
+              "params": {
+                "dim": "D"
+              }
+            },
+            {
+              "id": "l1_norm1",
+              "type": "rmsnorm",
+              "params": {
+                "dim": "D"
+              }
+            },
+            {
+              "id": "l1_attn",
+              "type": "gated_deltanet_block",
+              "label": "Gated DeltaNet",
+              "params": {
+                "d_model": "D",
+                "heads": "Hl",
+                "head_dim": "dl",
+                "v_head_dim": "dl",
+                "value_heads": "Hlv",
+                "conv_kernel": 4,
+                "bias": false,
+                "conv_bias": false
+              }
+            },
+            {
+              "id": "l1_resid1",
+              "type": "add",
+              "params": {
+                "dim": "D"
+              }
+            },
+            {
+              "id": "l1_norm2",
+              "type": "rmsnorm",
+              "params": {
+                "dim": "D"
+              }
+            },
+            {
+              "id": "l1_mlp",
+              "type": "moe_layer",
+              "params": {
+                "d_model": "D",
+                "experts": "E",
+                "top_k": "K",
+                "expert_hidden": "Fe",
+                "shared_experts": 1,
+                "shared_expert_gate": true,
+                "act": "silu",
+                "bias": false,
+                "router_bias": false,
+                "normalize": true
+              }
+            },
+            {
+              "id": "l1_resid2",
+              "type": "add",
+              "params": {
+                "dim": "D"
+              }
+            },
+            {
+              "id": "l2_norm1",
+              "type": "rmsnorm",
+              "params": {
+                "dim": "D"
+              }
+            },
+            {
+              "id": "l2_attn",
+              "type": "gated_deltanet_block",
+              "label": "Gated DeltaNet",
+              "params": {
+                "d_model": "D",
+                "heads": "Hl",
+                "head_dim": "dl",
+                "v_head_dim": "dl",
+                "value_heads": "Hlv",
+                "conv_kernel": 4,
+                "bias": false,
+                "conv_bias": false
+              }
+            },
+            {
+              "id": "l2_resid1",
+              "type": "add",
+              "params": {
+                "dim": "D"
+              }
+            },
+            {
+              "id": "l2_norm2",
+              "type": "rmsnorm",
+              "params": {
+                "dim": "D"
+              }
+            },
+            {
+              "id": "l2_mlp",
+              "type": "moe_layer",
+              "params": {
+                "d_model": "D",
+                "experts": "E",
+                "top_k": "K",
+                "expert_hidden": "Fe",
+                "shared_experts": 1,
+                "shared_expert_gate": true,
+                "act": "silu",
+                "bias": false,
+                "router_bias": false,
+                "normalize": true
+              }
+            },
+            {
+              "id": "l2_resid2",
+              "type": "add",
+              "params": {
+                "dim": "D"
+              }
+            },
+            {
+              "id": "l3_attn",
+              "type": "transformer_block",
+              "label": "Gated attention",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "Hkv",
+                "head_dim": "dh",
+                "norm": "rmsnorm",
+                "ffn_hidden": "F",
+                "mlp": "moe",
+                "experts": "E",
+                "top_k": "K",
+                "expert_hidden": "Fe",
+                "shared_experts": 1,
+                "shared_expert_gate": true,
+                "act": "silu",
+                "attn_bias": false,
+                "mlp_bias": false,
+                "router_bias": false,
+                "qk_norm": true,
+                "output_gate": true,
+                "causal": true,
+                "rope": {
+                  "theta": 10000000.0
+                }
+              }
+            },
+            {
+              "id": "_out",
+              "type": "boundary_out",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            }
+          ],
+          "edges": [
+            [
+              "_in:x",
+              "l0_norm1:x"
+            ],
+            [
+              "l0_norm1:y",
+              "l0_attn:x"
+            ],
+            [
+              "l0_attn:y",
+              "l0_resid1:a"
+            ],
+            [
+              "_in:x",
+              "l0_resid1:b"
+            ],
+            [
+              "l0_resid1:y",
+              "l0_norm2:x"
+            ],
+            [
+              "l0_norm2:y",
+              "l0_mlp:x"
+            ],
+            [
+              "l0_mlp:y",
+              "l0_resid2:a"
+            ],
+            [
+              "l0_resid1:y",
+              "l0_resid2:b"
+            ],
+            [
+              "l0_resid2:y",
+              "l1_norm1:x"
+            ],
+            [
+              "l1_norm1:y",
+              "l1_attn:x"
+            ],
+            [
+              "l1_attn:y",
+              "l1_resid1:a"
+            ],
+            [
+              "l0_resid2:y",
+              "l1_resid1:b"
+            ],
+            [
+              "l1_resid1:y",
+              "l1_norm2:x"
+            ],
+            [
+              "l1_norm2:y",
+              "l1_mlp:x"
+            ],
+            [
+              "l1_mlp:y",
+              "l1_resid2:a"
+            ],
+            [
+              "l1_resid1:y",
+              "l1_resid2:b"
+            ],
+            [
+              "l1_resid2:y",
+              "l2_norm1:x"
+            ],
+            [
+              "l2_norm1:y",
+              "l2_attn:x"
+            ],
+            [
+              "l2_attn:y",
+              "l2_resid1:a"
+            ],
+            [
+              "l1_resid2:y",
+              "l2_resid1:b"
+            ],
+            [
+              "l2_resid1:y",
+              "l2_norm2:x"
+            ],
+            [
+              "l2_norm2:y",
+              "l2_mlp:x"
+            ],
+            [
+              "l2_mlp:y",
+              "l2_resid2:a"
+            ],
+            [
+              "l2_resid1:y",
+              "l2_resid2:b"
+            ],
+            [
+              "l2_resid2:y",
+              "l3_attn:x"
+            ],
+            [
+              "l3_attn:y",
+              "_out:x"
+            ]
+          ]
+        }
+      },
+      {
+        "id": "final_norm",
+        "type": "rmsnorm",
+        "params": {
+          "dim": "D"
+        }
+      },
+      {
+        "id": "head",
+        "type": "lm_head",
+        "params": {
+          "vocab": "V",
+          "dim": "D",
+          "tied": false
+        }
+      },
+      {
+        "id": "logits",
+        "type": "output"
+      }
+    ],
+    "edges": [
+      [
+        "tokens:x",
+        "embed:ids"
+      ],
+      [
+        "embed:y",
+        "layers:x"
+      ],
+      [
+        "layers:x",
+        "final_norm:x"
+      ],
+      [
+        "final_norm:y",
+        "head:x"
+      ],
+      [
+        "head:y",
+        "logits:x"
+      ]
+    ]
+  }
+}

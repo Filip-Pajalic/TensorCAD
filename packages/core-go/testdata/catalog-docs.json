@@ -329,6 +329,22 @@
       ]
     },
     {
+      "type": "gate",
+      "kind": "primitive",
+      "category": "elementwise",
+      "summary": "Scale a stream by one value per token. What a shared expert's gate does, where the gate is a single learned direction rather than a matrix.",
+      "formula": "y = g * x, g broadcast across the width",
+      "refs": [],
+      "params": [
+        [
+          "dim",
+          "int",
+          "Width of the stream being scaled",
+          null
+        ]
+      ]
+    },
+    {
       "type": "gated_delta_scan",
       "kind": "primitive",
       "category": "ssm",
@@ -341,7 +357,7 @@
         [
           "heads",
           "int",
-          "Linear-attention heads",
+          "Linear-attention heads, which is the number of key heads",
           null
         ],
         [
@@ -355,6 +371,12 @@
           "int",
           "Width of a value head; 0 means the same as head_dim",
           null
+        ],
+        [
+          "value_heads",
+          "int",
+          "Value heads, when there are more of them than key heads; 0 means the same number",
+          null
         ]
       ]
     },
@@ -363,7 +385,7 @@
       "kind": "composite",
       "category": "ssm",
       "summary": "Gated DeltaNet: linear attention in place of softmax attention, with a delta rule writing the state and a gate decaying it. Its state is a matrix per head, fixed per sequence, so a layer of these caches nothing that grows with context.",
-      "formula": "params = d_model*(2*heads*head_dim + 2*heads*v_head_dim + 2*heads) + heads*v_head_dim*d_model + conv + 2*heads + v_head_dim",
+      "formula": "params = d_model*(2*heads*head_dim + 2*value_heads*v_head_dim + 2*value_heads) + value_heads*v_head_dim*d_model + conv + 2*value_heads + v_head_dim",
       "refs": [
         "https://arxiv.org/abs/2412.06464"
       ],
@@ -377,7 +399,7 @@
         [
           "heads",
           "int",
-          "Linear-attention heads",
+          "Linear-attention heads, which is the number of key heads",
           null
         ],
         [
@@ -390,6 +412,12 @@
           "v_head_dim",
           "int",
           "Width of a value head; 0 means the same as head_dim",
+          null
+        ],
+        [
+          "value_heads",
+          "int",
+          "Value heads, when there are more of them than key heads; 0 means the same number",
           null
         ],
         [
@@ -540,6 +568,12 @@
           "value_embeddings",
           "bool",
           "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)",
+          null
+        ],
+        [
+          "output_gate",
+          "bool",
+          "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)",
           null
         ]
       ]
@@ -947,7 +981,7 @@
       "kind": "composite",
       "category": "moe",
       "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
-      "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden; active swaps experts for top_k",
+      "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
       "refs": [
         "https://arxiv.org/abs/2401.06066",
         "https://arxiv.org/abs/2412.19437"
@@ -981,6 +1015,12 @@
           "shared_experts",
           "int",
           "Experts every token always passes through",
+          null
+        ],
+        [
+          "shared_expert_gate",
+          "bool",
+          "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)",
           null
         ],
         [
@@ -1555,6 +1595,12 @@
           null
         ],
         [
+          "shared_expert_gate",
+          "bool",
+          "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)",
+          null
+        ],
+        [
           "router_bias",
           "bool",
           "A learned bias on the router's scores",
@@ -1624,6 +1670,12 @@
           "value_embeddings",
           "bool",
           "Take a second embedding of the same tokens on `ve` and mix it into the values",
+          null
+        ],
+        [
+          "output_gate",
+          "bool",
+          "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)",
           null
         ]
       ]

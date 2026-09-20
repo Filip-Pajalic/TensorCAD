@@ -155,6 +155,7 @@ var Primitives = []BlockCase{
 	{"concat", map[string]any{"to": "B T D", "sizes": []any{512.0, 64.0}}},
 	{"concat", map[string]any{"to": "B T Dp", "sizes": []any{"Tc", "T-Tc"}, "axis": 1.0}},
 	{"mix", map[string]any{"dim": 4096.0}},
+	{"gate", map[string]any{"dim": 4096.0}},
 	{"shift", map[string]any{"dim": 4096.0}},
 	{"shift", map[string]any{"dim": 4096.0, "by": 3.0}},
 	{"shift", map[string]any{"dim": 4096.0, "by": -1.0}},

@@ -211,6 +211,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -275,6 +281,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -552,6 +564,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -982,6 +1000,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -1046,6 +1070,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -1271,6 +1301,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -1753,6 +1789,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -1817,6 +1859,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -2042,6 +2090,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -2524,6 +2578,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -2588,6 +2648,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -2813,6 +2879,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -3301,6 +3373,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -3365,6 +3443,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -3642,6 +3726,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -4077,6 +4167,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -4143,6 +4239,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -4383,6 +4485,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -4876,6 +4984,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -4942,6 +5056,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -5356,6 +5476,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -5675,6 +5801,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -5741,6 +5873,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -6155,6 +6293,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -6474,6 +6618,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -6540,6 +6690,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -6954,6 +7110,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -7273,6 +7435,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -7339,6 +7507,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -7753,6 +7927,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -8072,6 +8252,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -8138,6 +8324,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -8552,6 +8744,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -8875,6 +9073,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -8941,6 +9145,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -9365,6 +9575,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -9703,6 +9919,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -9769,6 +9991,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -9975,6 +10203,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -10041,6 +10275,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -10680,6 +10920,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -10746,6 +10992,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -10957,6 +11209,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -11023,6 +11281,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -11234,6 +11498,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -11300,6 +11570,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -11511,6 +11787,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -11577,6 +11859,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -11788,6 +12076,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -11854,6 +12148,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -12065,6 +12365,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -12135,6 +12441,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -12518,6 +12830,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -12584,6 +12902,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -12663,7 +12987,7 @@
           "kind": "composite",
           "docs": {
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
-            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden; active swaps experts for top_k",
+            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
               "https://arxiv.org/abs/2401.06066",
               "https://arxiv.org/abs/2412.19437"
@@ -12703,6 +13027,12 @@
               "0",
               0,
               "Experts every token always passes through"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
             ],
             [
               "act",
@@ -13316,6 +13646,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -13382,6 +13718,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -13471,7 +13813,7 @@
           "kind": "composite",
           "docs": {
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
-            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden; active swaps experts for top_k",
+            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
               "https://arxiv.org/abs/2401.06066",
               "https://arxiv.org/abs/2412.19437"
@@ -13511,6 +13853,12 @@
               "0",
               0,
               "Experts every token always passes through"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
             ],
             [
               "act",
@@ -14124,6 +14472,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -14190,6 +14544,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -14279,7 +14639,7 @@
           "kind": "composite",
           "docs": {
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
-            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden; active swaps experts for top_k",
+            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
               "https://arxiv.org/abs/2401.06066",
               "https://arxiv.org/abs/2412.19437"
@@ -14319,6 +14679,12 @@
               "0",
               0,
               "Experts every token always passes through"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
             ],
             [
               "act",
@@ -14702,6 +15068,1095 @@
       ]
     },
     {
+      "preset": "qwen3-next-80b-a3b",
+      "blocks": [
+        {
+          "path": "layers",
+          "type": "repeat",
+          "kind": "container",
+          "docs": {
+            "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
+          },
+          "copies": {
+            "total": 1,
+            "active": 1
+          },
+          "params": [
+            [
+              "count",
+              "G",
+              12,
+              "How many times the subgraph is stacked"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "B T D"
+            },
+            "out": {
+              "x": "B T D"
+            }
+          },
+          "contributes": {
+            "params": 79052059392,
+            "activeParams": 3252597504,
+            "shareOfParams": 0.992189059823652,
+            "flopsPerToken": 7385579520,
+            "shareOfFlops": 0.9222856020492508,
+            "activationBytes": 74435788800,
+            "cacheBytesPerToken": 24576,
+            "cacheBytesPerSequence": 20643840
+          },
+          "breakdown": [
+            {
+              "path": "layers/l0_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l0_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l0_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l1_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l1_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l1_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l2_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l2_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l2_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l3_attn/mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l3_attn/mlp/experts/expert/up",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l3_attn/mlp/experts/expert/down",
+              "type": "linear",
+              "params": 6442450944
+            }
+          ]
+        },
+        {
+          "path": "layers/l3_attn",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              2048,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              16,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "Hkv",
+              2,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              256,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              5120,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, or DeepSeek's latent attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "rmsnorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              false,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "moe",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              "E",
+              512,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              "K",
+              10,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              "Fe",
+              512,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              1,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              true,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              false,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              false,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              true,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              null,
+              0,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              {
+                "theta": 10000000
+              },
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              true,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 19704920064,
+            "activeParams": 755054592,
+            "shareOfParams": 0.24731811242578358,
+            "flopsPerToken": 2315304960,
+            "shareOfFlops": 0.2891272679657258,
+            "activationBytes": 16414801920,
+            "cacheBytesPerToken": 24576,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/l3_attn/mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l3_attn/mlp/experts/expert/up",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l3_attn/mlp/experts/expert/down",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l3_attn/attn/q_proj",
+              "type": "linear",
+              "params": 100663296
+            },
+            {
+              "path": "layers/l3_attn/attn/o_proj",
+              "type": "linear",
+              "params": 100663296
+            },
+            {
+              "path": "layers/l3_attn/attn/gate_proj",
+              "type": "linear",
+              "params": 100663296
+            },
+            {
+              "path": "layers/l3_attn/attn/k_proj",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l3_attn/attn/v_proj",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l3_attn/mlp/router",
+              "type": "topk_router",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l3_attn/mlp/shared/gate",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l3_attn/mlp/shared/up",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l3_attn/mlp/shared/down",
+              "type": "linear",
+              "params": 12582912
+            }
+          ]
+        },
+        {
+          "path": "layers/l0_mlp",
+          "type": "moe_layer",
+          "kind": "composite",
+          "docs": {
+            "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
+            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
+            "refs": [
+              "https://arxiv.org/abs/2401.06066",
+              "https://arxiv.org/abs/2412.19437"
+            ]
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              2048,
+              "Width of the residual stream"
+            ],
+            [
+              "experts",
+              "E",
+              512,
+              "Routed experts"
+            ],
+            [
+              "top_k",
+              "K",
+              10,
+              "Experts each token is sent to"
+            ],
+            [
+              "expert_hidden",
+              "Fe",
+              512,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              1,
+              "Experts every token always passes through"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              true,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity inside an expert"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each expert's projections"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "Give the router a per-expert bias, which is how DeepSeek balances load"
+            ],
+            [
+              "normalize",
+              null,
+              true,
+              "Renormalize the chosen weights to sum to one"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 19377709056,
+            "activeParams": 427843584,
+            "shareOfParams": 0.24321125948749917,
+            "flopsPerToken": 855687168,
+            "shareOfFlops": 0.10685525120508058,
+            "activationBytes": 9261416448,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/l0_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l0_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l0_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l0_mlp/router",
+              "type": "topk_router",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l0_mlp/shared/gate",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l0_mlp/shared/up",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l0_mlp/shared/down",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l0_mlp/shared_gate",
+              "type": "linear",
+              "params": 24576
+            }
+          ]
+        },
+        {
+          "path": "layers/l1_mlp",
+          "type": "moe_layer",
+          "kind": "composite",
+          "docs": {
+            "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
+            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
+            "refs": [
+              "https://arxiv.org/abs/2401.06066",
+              "https://arxiv.org/abs/2412.19437"
+            ]
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              2048,
+              "Width of the residual stream"
+            ],
+            [
+              "experts",
+              "E",
+              512,
+              "Routed experts"
+            ],
+            [
+              "top_k",
+              "K",
+              10,
+              "Experts each token is sent to"
+            ],
+            [
+              "expert_hidden",
+              "Fe",
+              512,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              1,
+              "Experts every token always passes through"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              true,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity inside an expert"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each expert's projections"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "Give the router a per-expert bias, which is how DeepSeek balances load"
+            ],
+            [
+              "normalize",
+              null,
+              true,
+              "Renormalize the chosen weights to sum to one"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 19377709056,
+            "activeParams": 427843584,
+            "shareOfParams": 0.24321125948749917,
+            "flopsPerToken": 855687168,
+            "shareOfFlops": 0.10685525120508058,
+            "activationBytes": 9261416448,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/l1_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l1_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l1_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l1_mlp/router",
+              "type": "topk_router",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l1_mlp/shared/gate",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l1_mlp/shared/up",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l1_mlp/shared/down",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l1_mlp/shared_gate",
+              "type": "linear",
+              "params": 24576
+            }
+          ]
+        },
+        {
+          "path": "layers/l2_mlp",
+          "type": "moe_layer",
+          "kind": "composite",
+          "docs": {
+            "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
+            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
+            "refs": [
+              "https://arxiv.org/abs/2401.06066",
+              "https://arxiv.org/abs/2412.19437"
+            ]
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              2048,
+              "Width of the residual stream"
+            ],
+            [
+              "experts",
+              "E",
+              512,
+              "Routed experts"
+            ],
+            [
+              "top_k",
+              "K",
+              10,
+              "Experts each token is sent to"
+            ],
+            [
+              "expert_hidden",
+              "Fe",
+              512,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              1,
+              "Experts every token always passes through"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              true,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity inside an expert"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each expert's projections"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "Give the router a per-expert bias, which is how DeepSeek balances load"
+            ],
+            [
+              "normalize",
+              null,
+              true,
+              "Renormalize the chosen weights to sum to one"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 19377709056,
+            "activeParams": 427843584,
+            "shareOfParams": 0.24321125948749917,
+            "flopsPerToken": 855687168,
+            "shareOfFlops": 0.10685525120508058,
+            "activationBytes": 9261416448,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/l2_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l2_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l2_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l2_mlp/router",
+              "type": "topk_router",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l2_mlp/shared/gate",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l2_mlp/shared/up",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l2_mlp/shared/down",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l2_mlp/shared_gate",
+              "type": "linear",
+              "params": 24576
+            }
+          ]
+        },
+        {
+          "path": "layers/l3_attn/mlp",
+          "type": "moe_layer",
+          "kind": "composite",
+          "docs": {
+            "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
+            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
+            "refs": [
+              "https://arxiv.org/abs/2401.06066",
+              "https://arxiv.org/abs/2412.19437"
+            ]
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              2048,
+              "Width of the residual stream"
+            ],
+            [
+              "experts",
+              "E",
+              512,
+              "Routed experts"
+            ],
+            [
+              "top_k",
+              "K",
+              10,
+              "Experts each token is sent to"
+            ],
+            [
+              "expert_hidden",
+              "Fe",
+              512,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              "1",
+              1,
+              "Experts every token always passes through"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              true,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity inside an expert"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each expert's projections"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "Give the router a per-expert bias, which is how DeepSeek balances load"
+            ],
+            [
+              "normalize",
+              null,
+              true,
+              "Renormalize the chosen weights to sum to one"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 19377709056,
+            "activeParams": 427843584,
+            "shareOfParams": 0.24321125948749917,
+            "flopsPerToken": 855687168,
+            "shareOfFlops": 0.10685525120508058,
+            "activationBytes": 9261416448,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/l3_attn/mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l3_attn/mlp/experts/expert/up",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l3_attn/mlp/experts/expert/down",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l3_attn/mlp/router",
+              "type": "topk_router",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l3_attn/mlp/shared/gate",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l3_attn/mlp/shared/up",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l3_attn/mlp/shared/down",
+              "type": "linear",
+              "params": 12582912
+            },
+            {
+              "path": "layers/l3_attn/mlp/shared_gate",
+              "type": "linear",
+              "params": 24576
+            }
+          ]
+        },
+        {
+          "path": "layers/l0_mlp/experts",
+          "type": "moe_experts",
+          "kind": "container",
+          "docs": {
+            "summary": "A bank of experts. Its subgraph describes one expert.",
+            "formula": "total params scale with experts; FLOPs and activations scale with top_k"
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "experts",
+              "E",
+              512,
+              "How many expert copies exist"
+            ],
+            [
+              "top_k",
+              "K",
+              10,
+              "How many a single token passes through"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... D"
+            },
+            "out": {
+              "y": "... D"
+            }
+          },
+          "contributes": {
+            "params": 19327352832,
+            "activeParams": 377487360,
+            "shareOfParams": 0.24257923427612452,
+            "flopsPerToken": 754974720,
+            "shareOfFlops": 0.09427862935895442,
+            "activationBytes": 8053063680,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/l0_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l0_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l0_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 6442450944
+            }
+          ]
+        },
+        {
+          "path": "layers/l0_mlp/experts/expert",
+          "type": "gated_mlp",
+          "kind": "composite",
+          "docs": {
+            "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
+            "formula": "params = 3 * d_model * hidden",
+            "refs": [
+              "https://arxiv.org/abs/2002.05202"
+            ]
+          },
+          "copies": {
+            "total": 6144,
+            "active": 120
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              2048,
+              "Width of the residual stream"
+            ],
+            [
+              "hidden",
+              "Fe",
+              512,
+              "Intermediate width"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity the gate passes through"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each projection"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 19327352832,
+            "activeParams": 377487360,
+            "shareOfParams": 0.24257923427612452,
+            "flopsPerToken": 754974720,
+            "shareOfFlops": 0.09427862935895442,
+            "activationBytes": 8053063680,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/l0_mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l0_mlp/experts/expert/up",
+              "type": "linear",
+              "params": 6442450944
+            },
+            {
+              "path": "layers/l0_mlp/experts/expert/down",
+              "type": "linear",
+              "params": 6442450944
+            }
+          ]
+        }
+      ]
+    },
+    {
       "preset": "deepseek-v3",
       "blocks": [
         {
@@ -14932,6 +16387,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               true,
@@ -14998,6 +16459,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -15087,7 +16554,7 @@
           "kind": "composite",
           "docs": {
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
-            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden; active swaps experts for top_k",
+            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
               "https://arxiv.org/abs/2401.06066",
               "https://arxiv.org/abs/2412.19437"
@@ -15127,6 +16594,12 @@
               "Ns",
               1,
               "Experts every token always passes through"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
             ],
             [
               "act",
@@ -16310,6 +17783,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -16374,6 +17853,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -16645,6 +18130,12 @@
               "Always-on experts, beside the routed ones"
             ],
             [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
               "router_bias",
               null,
               false,
@@ -16709,6 +18200,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
             ]
           ],
           "shapes": {
@@ -17003,6 +18500,12 @@
               null,
               false,
               "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
             ]
           ],
           "shapes": {

@@ -176,15 +176,25 @@ const helperGatedDelta = "class GatedDeltaScan(nn.Module):\n" +
 	"    same thing without a Python loop over the sequence.\n" +
 	"    \"\"\"\n" +
 	"\n" +
-	"    def __init__(self, heads: int, head_dim: int, v_head_dim: int):\n" +
+	"    def __init__(self, heads: int, head_dim: int, v_head_dim: int, value_heads: int):\n" +
 	"        super().__init__()\n" +
 	"        self.heads, self.head_dim, self.v_head_dim = heads, head_dim, v_head_dim\n" +
-	"        self.A_log = nn.Parameter(torch.zeros(heads))\n" +
-	"        self.dt_bias = nn.Parameter(torch.zeros(heads))\n" +
+	"        # One state per value head, which is not always the number of key\n" +
+	"        # heads: Qwen3-Next has twice as many.\n" +
+	"        self.value_heads = value_heads\n" +
+	"        self.A_log = nn.Parameter(torch.zeros(value_heads))\n" +
+	"        self.dt_bias = nn.Parameter(torch.zeros(value_heads))\n" +
 	"\n" +
 	"    def forward(self, q, k, v, gates):\n" +
-	"        b, h, t, _ = q.shape\n" +
-	"        beta_raw, alpha_raw = torch.split(gates, [self.heads, self.heads], dim=-1)\n" +
+	"        b, h, t, _ = v.shape\n" +
+	"        # One key head can serve several value heads, the way grouped-query\n" +
+	"        # attention shares a key across a group. The recurrence runs per\n" +
+	"        # value head, so the queries and keys are repeated up to it.\n" +
+	"        if self.heads != self.value_heads:\n" +
+	"            share = self.value_heads // self.heads\n" +
+	"            q = q.repeat_interleave(share, dim=1)\n" +
+	"            k = k.repeat_interleave(share, dim=1)\n" +
+	"        beta_raw, alpha_raw = torch.split(gates, [self.value_heads, self.value_heads], dim=-1)\n" +
 	"        # The write strength is a fraction; the decay is Mamba-2's, so that a\n" +
 	"        # large timestep forgets more.\n" +
 	"        beta = torch.sigmoid(beta_raw).transpose(1, 2)\n" +
@@ -519,6 +529,13 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 				outName("y"), inputVar(node.ID, "x"), pyNum(by)))
 			set("y", outName("y"))
 
+		case "gate":
+			// Broadcast, not elementwise: the gate is one value per token and
+			// PyTorch spreads it across the width on its own.
+			out.forward = append(out.forward, fmt.Sprintf("%s = %s * %s",
+				outName("y"), inputVar(node.ID, "g"), inputVar(node.ID, "x")))
+			set("y", outName("y"))
+
 		case "mix":
 			// Two scalars in one parameter, so a checkpoint carries them as one
 			// tensor and the count is unambiguous.
@@ -642,8 +659,12 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 			if vd == 0 {
 				vd = r.Num("head_dim")
 			}
-			out.init = append(out.init, fmt.Sprintf("self.%s = GatedDeltaScan(%s, %s, %s)",
-				attr, pyValue(p["heads"]), pyValue(p["head_dim"]), pyNum(vd)))
+			hv := r.Num("value_heads")
+			if hv == 0 {
+				hv = r.Num("heads")
+			}
+			out.init = append(out.init, fmt.Sprintf("self.%s = GatedDeltaScan(%s, %s, %s, %s)",
+				attr, pyValue(p["heads"]), pyValue(p["head_dim"]), pyNum(vd), pyNum(hv)))
 			out.forward = append(out.forward, fmt.Sprintf("%s = self.%s(%s, %s, %s, %s)",
 				outName("y"), attr,
 				inputVar(node.ID, "q"), inputVar(node.ID, "k"),
@@ -972,6 +993,12 @@ func emitMoeClass(r *catalog.Resolved, path string, c *ctx) classInfo {
 	}
 	if sharedClass != "" {
 		lines = append(lines, fmt.Sprintf("        self.shared = %s()", sharedClass))
+		if r.Bool("shared_expert_gate") {
+			// One learned direction, not a matrix: Qwen's is [1, d_model], and
+			// it weighs 2048 where the expert beside it weighs three million.
+			lines = append(lines, fmt.Sprintf(
+				"        self.shared_gate = nn.Linear(%s, 1, bias=False)", pyValue(r.P["d_model"])))
+		}
 	}
 	lines = append(lines,
 		"",
@@ -1006,7 +1033,11 @@ func emitMoeClass(r *catalog.Resolved, path string, c *ctx) classInfo {
 			"        y = out.reshape(shape)")
 	}
 	if sharedClass != "" {
-		lines = append(lines, "        y = y + self.shared(x)")
+		if r.Bool("shared_expert_gate") {
+			lines = append(lines, "        y = y + torch.sigmoid(self.shared_gate(x)) * self.shared(x)")
+		} else {
+			lines = append(lines, "        y = y + self.shared(x)")
+		}
 	}
 	lines = append(lines, "        return y", "")
 

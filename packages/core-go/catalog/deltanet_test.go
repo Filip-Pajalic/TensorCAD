@@ -76,8 +76,10 @@ func TestGatedDeltanetCountsItsWeights(t *testing.T) {
 		// Depthwise over q, k and v; the gate does not go through it.
 		"blk/conv": (2*q + v) * gdnK,
 		// The decay bias and log-decay scale the recurrence carries.
-		"blk/scan":     2 * gdnH,
-		"blk/norm":     v,
+		"blk/scan": 2 * gdnH,
+		// Per head. Qwen3-Next's `linear_attn.norm.weight` is [128] for a
+		// 128-wide value head, not [4096] for thirty-two of them.
+		"blk/norm":     gdnDv,
 		"blk/out_proj": v * gdnD,
 	}
 	total := 0.0
@@ -196,5 +198,56 @@ func TestGatedDeltanetTakesANarrowerValueHead(t *testing.T) {
 	if plain.Params.Total != full.Params.Total {
 		t.Errorf("an absent v_head_dim gave %s, spelling it out gave %s",
 			analysis.FormatCount(plain.Params.Total), analysis.FormatCount(full.Params.Total))
+	}
+}
+
+// The block against Qwen3-Next's own weights.
+//
+// Its `linear_attn` is the case the block did not have a parameter for: sixteen
+// key heads and thirty-two value heads, so the input projection is wider than
+// twice the key width and the recurrence carries twice as many states. Every
+// shape below was read from the model's safetensors headers rather than from a
+// description of them.
+func TestGatedDeltanetMatchesQwen3Next(t *testing.T) {
+	const (
+		d      = 2048.0
+		keyH   = 16.0
+		valH   = 32.0
+		dk     = 128.0
+		dv     = 128.0
+		kernel = 4.0
+	)
+	doc := gdnDoc(t, map[string]any{
+		"d_model": "D", "heads": keyH, "head_dim": dk,
+		"v_head_dim": dv, "value_heads": valH, "conv_kernel": kernel,
+	})
+	res, err := analysis.Analyze(doc, analysis.Options{}, analysis.Inputs{})
+	if err != nil {
+		t.Fatalf("analyze: %v", err)
+	}
+	for _, e := range res.Params.Errors {
+		t.Errorf("error: %s", e)
+	}
+
+	// in_proj_qkvz [12288, 2048]: q and k at sixteen heads, v and the gate at
+	// thirty-two.
+	want := map[string]float64{
+		"blk/in_proj":  12288 * d,
+		"blk/ba_proj":  64 * d,        // in_proj_ba [64, 2048]
+		"blk/conv":     8192 * kernel, // conv1d [8192, 1, 4]
+		"blk/scan":     64,            // A_log [32] and dt_bias [32]
+		"blk/norm":     dv,            // norm.weight [128]
+		"blk/out_proj": 4096 * d,      // out_proj [2048, 4096]
+	}
+	total := 0.0
+	for path, n := range want {
+		total += n
+		if got := res.Params.ByPath[path]; got != n {
+			t.Errorf("%s is %v, want %v", path, got, n)
+		}
+	}
+	if got := res.Params.Total; got != total {
+		t.Errorf("the block is %v parameters, want %v: something is counted that should not be",
+			got, total)
 	}
 }

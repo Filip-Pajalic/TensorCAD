@@ -5,6 +5,12 @@
  * breadcrumb path says which one. A `repeat` container hands over its stored
  * subgraph, which stays editable. A composite has no stored subgraph, so the
  * level is produced by the catalog's own expansion and is read-only.
+ *
+ * A block the *document* defines behaves as a composite here: it expands the
+ * same way and is read-only for the same reason. Its template is stored, so it
+ * could in principle be edited in place, but the template is parameterised and
+ * what a literal dropped into it should mean is a question the editor does not
+ * yet answer. `Definitions` navigates to an instance instead.
  */
 
 import type { Derived } from "./derive.js";

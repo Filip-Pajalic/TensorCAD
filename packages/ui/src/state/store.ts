@@ -56,7 +56,7 @@ function loadDetail(): number {
 }
 
 export type RightTab = "inspector" | "symbols" | "rules" | "cluster" | "ladder";
-export type DialogId = "settings" | "shortcuts" | "compare" | "palette" | null;
+export type DialogId = "settings" | "shortcuts" | "compare" | "palette" | "definitions" | null;
 
 /**
  * The active tool, the way any drawing program has one. Select edits, pan moves

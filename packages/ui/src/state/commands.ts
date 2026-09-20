@@ -369,6 +369,13 @@ export const COMMANDS: Command[] = [
     },
   },
   {
+    id: "blocks.library",
+    label: "Blocks this design defines…",
+    group: "blocks",
+    hint: "List them, open one for editing, rename or delete",
+    run: () => editor().openDialog("definitions"),
+  },
+  {
     id: "blocks.import",
     label: "Import blocks\u2026",
     group: "blocks",

@@ -86,6 +86,7 @@ export const VIEW_MENU: MenuNode[] = [
 export const BLOCKS_MENU: MenuNode[] = [
   item("blocks.fromLevel"),
   sep(),
+  item("blocks.library"),
   item("blocks.import"),
   item("blocks.export"),
 ];

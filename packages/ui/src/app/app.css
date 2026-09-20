@@ -2728,6 +2728,92 @@ select.field {
   padding-left: 6px;
 }
 
+/* The design's own block library. */
+.defs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.def {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-elev);
+}
+
+.def__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.def__name {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.def__used {
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.def__actions {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+
+.def__btn {
+  border-radius: 0;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-input);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.def__btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.def__btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.def__summary {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.def__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.def__facts b {
+  font-weight: normal;
+  color: var(--text-dim);
+}
+
+.def__problem {
+  font-size: 11px;
+  color: var(--error);
+  border-left: 2px solid var(--error);
+  padding-left: 6px;
+}
+
 /* One rung of the width ladder. Pressing it opens that design. */
 .rung {
   display: grid;

@@ -18,7 +18,19 @@ export interface BlockLibrary {
   blocks: Record<string, UserBlockDef>;
 }
 
-const BUILT_IN = new Set(Object.keys(CATALOG));
+/**
+ * The type names the engine already uses.
+ *
+ * Asked for each time rather than captured once, because `CATALOG` is filled
+ * when the engine loads and this module is imported as part of the graph that
+ * does the loading. It happens to be filled first in the app, since `main.tsx`
+ * imports the app only after the load — but that is an ordering rule nothing
+ * enforces, and getting it wrong here would silently let a design define a
+ * block called `linear`.
+ */
+function builtIn(): Set<string> {
+  return new Set(Object.keys(CATALOG));
+}
 
 export function defsOf(doc: Doc): Record<string, UserBlockDef> {
   return (doc.defs as Record<string, UserBlockDef> | undefined) ?? {};
@@ -33,7 +45,7 @@ export function freeTypeName(doc: Doc, wanted: string): string {
       .replace(/[^a-z0-9_]+/g, "_")
       .replace(/^_+|_+$/g, "")
       .replace(/^([0-9])/, "b$1") || "block";
-  const taken = new Set([...BUILT_IN, ...Object.keys(defsOf(doc))]);
+  const taken = new Set([...builtIn(), ...Object.keys(defsOf(doc))]);
   if (!taken.has(base)) return base;
   let n = 2;
   while (taken.has(`${base}_${n}`)) n++;
@@ -133,6 +145,73 @@ export function withoutBlock(doc: Doc, type: string): Doc {
   const next = { ...defsOf(doc) };
   delete next[type];
   return { ...doc, defs: next };
+}
+
+/**
+ * Where a block is used: every instance's path in the design, and how many more
+ * are inside some other definition.
+ *
+ * The second number is what makes deleting safe to refuse. An instance inside
+ * another definition is not on the canvas and cannot be navigated to, and
+ * removing the block it depends on breaks that definition as surely as it
+ * would break the design.
+ */
+export function usageOf(doc: Doc, type: string): { paths: string[]; inDefs: number } {
+  const paths: string[] = [];
+  const walk = (graph: Graph | undefined, prefix: string[]): void => {
+    for (const node of graph?.nodes ?? []) {
+      const here = [...prefix, node.id];
+      if (node.type === type) paths.push(here.join("/"));
+      walk(node.graph, here);
+    }
+  };
+  walk(doc.graph, []);
+
+  let inDefs = 0;
+  for (const [name, def] of Object.entries(defsOf(doc))) {
+    // A definition does not count as a use of itself: a recursive block would
+    // not expand, and the validator says so where this would only confuse.
+    if (name === type) continue;
+    const before = paths.length;
+    walk(def.graph, []);
+    inDefs += paths.length - before;
+    paths.length = before;
+  }
+  return { paths, inDefs };
+}
+
+/**
+ * Rename a definition, and every instance of it.
+ *
+ * A rename that moved the definition alone would leave the design holding a
+ * block type nothing defines, which is the one failure the catalog cannot
+ * explain: "unknown block type" with no clue that it used to be known.
+ */
+export function renameBlock(doc: Doc, from: string, wanted: string): { doc: Doc; to: string } {
+  const def = defsOf(doc)[from];
+  if (!def || wanted === from) return { doc, to: from };
+  const to = freeTypeName(doc, wanted);
+
+  const retype = (graph: Graph): Graph => ({
+    nodes: graph.nodes.map((node) => ({
+      ...node,
+      type: node.type === from ? to : node.type,
+      ...(node.graph ? { graph: retype(node.graph) } : {}),
+    })),
+    edges: graph.edges,
+  });
+
+  const defs: Record<string, UserBlockDef> = {};
+  for (const [name, other] of Object.entries(defsOf(doc))) {
+    if (name !== from) defs[name] = { ...other, graph: retype(other.graph) };
+  }
+  return {
+    doc: withBlock(
+      { ...doc, defs, graph: retype(doc.graph) },
+      { ...def, type: to, graph: retype(def.graph) },
+    ),
+    to,
+  };
 }
 
 export function toLibrary(doc: Doc): BlockLibrary {

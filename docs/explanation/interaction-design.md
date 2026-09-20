@@ -1172,7 +1172,47 @@ documents its parameters in, and reordering it to suit one panel would have
 rewritten sixty `model.py` docstrings for a layout decision; the grouping is the
 panel's job.
 
+## Thirteenth pass: the library, and what a definition cannot yet be
+
+A design carries its own composites in `doc.defs`, and you could already make
+one out of a level, import a file of them and export one — but not look at what
+you had. `Blocks > Blocks this design defines` is the list: what each one
+declares, where it is used, and rename and delete.
+
+Delete is refused while a block is in use, and the count that matters is not
+just the instances on the canvas. An instance inside *another* definition is a
+use too, and it is one nobody can navigate to, so it is counted separately and
+said separately. Rename moves every instance with the definition, at any depth
+and inside other definitions, because a rename that moved the definition alone
+would leave the design reporting "unknown block type" with no clue that it used
+to be known.
+
+### What "show" does, and what it does not
+
+It goes to an instance, not to the definition. That is not a shortcut: a
+template is written in terms of its parameters — `$D`, not 4096 — and only an
+instance says what those are. There is nothing to draw until something binds
+them, and once something does, the composite machinery already draws it.
+
+Editing the template in place is the piece that is not here. It could be:
+`graphAtPath` is the single door every operation goes through, so teaching it
+one prefix would make every tool write into `defs` instead of the graph. What
+stops it is not plumbing but a question with no obvious answer — a `linear`
+dragged into a parameterised template with `in_features` of 4096 either means
+4096 or means `$D`, and the editor would have to decide which without being
+told. Guessing wrong writes a definition that silently stops scaling, which is
+exactly the failure the parameterisation exists to prevent. The prototype that
+reached this point was reverted rather than shipped half-answered.
+
+This is also where the first test of the editor's own logic went. `state/`
+is pure — a document in, a document out — and which type a rename left behind is
+the sort of thing that type-checking cannot see. Writing those tests immediately
+found that `freeTypeName` captured the catalog at module-load time, so it knew
+nothing was taken. It works in the app only because `main.tsx` loads the engine
+before it imports anything, which is an ordering rule nothing enforces; it is
+looked up on demand now.
+
 ### Still outstanding
 
-E5 through E7: the definition editor and library, multi-selection and the bottom
-dock, and then operations, configurations and tensors as first-class objects.
+The definition editor proper, per above; then E6 and E7: multi-selection and the
+bottom dock, and operations, configurations and tensors as first-class objects.

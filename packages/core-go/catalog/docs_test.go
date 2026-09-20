@@ -137,6 +137,42 @@ func TestEveryBlockSaysWhatItIs(t *testing.T) {
 	}
 }
 
+// TestEveryParameterSaysWhatItMeans: a parameter's documentation is what the
+// inspector shows on hover, what the palette lists and what an assistant gets
+// back from `get_block`. An undocumented one is a field a person has to guess
+// at, and the ones that go undocumented are exactly the ones whose names read
+// plainly to whoever wrote them — `stride` is not plain to a reader who came
+// here from a transformer.
+func TestEveryParameterSaysWhatItMeans(t *testing.T) {
+	for name, def := range catalog.Builtin {
+		for _, entry := range def.Params {
+			if entry.Spec.Doc == "" {
+				t.Errorf("%s.%s says nothing about what it means", name, entry.Name)
+			}
+		}
+	}
+}
+
+// And the same for a port, which is the other half of what a block declares.
+func TestEveryPortSaysWhatItCarries(t *testing.T) {
+	for name, def := range catalog.Builtin {
+		if def.PortsFn != nil {
+			// Computed ports depend on the parameters, so there is nothing
+			// static here to check; the block's own test covers them.
+			continue
+		}
+		for side, ports := range map[string]map[string]catalog.PortSpec{
+			"in": def.Ports.In, "out": def.Ports.Out,
+		} {
+			for port, spec := range ports {
+				if spec.Shape == "" {
+					t.Errorf("%s %s port %q declares no shape", name, side, port)
+				}
+			}
+		}
+	}
+}
+
 func names(l catalog.ParamList) []string {
 	out := make([]string, len(l))
 	for i, e := range l {

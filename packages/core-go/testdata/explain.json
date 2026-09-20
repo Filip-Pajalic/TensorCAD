@@ -100,37 +100,37 @@
               "d_model",
               "D",
               768,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               12,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               12,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               64,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               3072,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -166,7 +166,7 @@
               "norm",
               null,
               "layernorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -184,7 +184,7 @@
               "mlp",
               null,
               "dense",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -220,7 +220,7 @@
               "act",
               null,
               "gelu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -355,25 +355,25 @@
               "d_model",
               "D",
               768,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
               "F",
               3072,
-              null
+              "Width in the middle, where the nonlinearity is"
             ],
             [
               "act",
               null,
               "gelu",
-              null
+              "Which nonlinearity"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -497,7 +497,7 @@
               "head_dim",
               "dh",
               64,
-              null
+              "Width of one head; query and key heads share it"
             ],
             [
               "bias",
@@ -515,7 +515,7 @@
               "causal",
               null,
               true,
-              null
+              "Mask out every position after the current one"
             ],
             [
               "window",
@@ -539,7 +539,7 @@
               "flash",
               null,
               true,
-              null
+              "Assume a memory-efficient kernel, which never builds the score matrix"
             ],
             [
               "logit_softcap",
@@ -612,19 +612,19 @@
               "in_features",
               "D",
               768,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               3072,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -670,19 +670,19 @@
               "in_features",
               "F",
               3072,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               768,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -728,19 +728,19 @@
               "in_features",
               "D",
               768,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "H*dh",
               768,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -871,37 +871,37 @@
               "d_model",
               "D",
               1024,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               16,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               16,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               64,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               4096,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -937,7 +937,7 @@
               "norm",
               null,
               "layernorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -955,7 +955,7 @@
               "mlp",
               null,
               "dense",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -991,7 +991,7 @@
               "act",
               null,
               "gelu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -1126,25 +1126,25 @@
               "d_model",
               "D",
               1024,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
               "F",
               4096,
-              null
+              "Width in the middle, where the nonlinearity is"
             ],
             [
               "act",
               null,
               "gelu",
-              null
+              "Which nonlinearity"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -1216,7 +1216,7 @@
               "head_dim",
               "dh",
               64,
-              null
+              "Width of one head; query and key heads share it"
             ],
             [
               "bias",
@@ -1234,7 +1234,7 @@
               "causal",
               null,
               true,
-              null
+              "Mask out every position after the current one"
             ],
             [
               "window",
@@ -1258,7 +1258,7 @@
               "flash",
               null,
               true,
-              null
+              "Assume a memory-efficient kernel, which never builds the score matrix"
             ],
             [
               "logit_softcap",
@@ -1331,19 +1331,19 @@
               "in_features",
               "D",
               1024,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               4096,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -1389,19 +1389,19 @@
               "in_features",
               "F",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               1024,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -1499,19 +1499,19 @@
               "in_features",
               "D",
               1024,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "H*dh",
               1024,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -1642,37 +1642,37 @@
               "d_model",
               "D",
               1280,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               20,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               20,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               64,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               5120,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -1708,7 +1708,7 @@
               "norm",
               null,
               "layernorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -1726,7 +1726,7 @@
               "mlp",
               null,
               "dense",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -1762,7 +1762,7 @@
               "act",
               null,
               "gelu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -1897,25 +1897,25 @@
               "d_model",
               "D",
               1280,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
               "F",
               5120,
-              null
+              "Width in the middle, where the nonlinearity is"
             ],
             [
               "act",
               null,
               "gelu",
-              null
+              "Which nonlinearity"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -1987,7 +1987,7 @@
               "head_dim",
               "dh",
               64,
-              null
+              "Width of one head; query and key heads share it"
             ],
             [
               "bias",
@@ -2005,7 +2005,7 @@
               "causal",
               null,
               true,
-              null
+              "Mask out every position after the current one"
             ],
             [
               "window",
@@ -2029,7 +2029,7 @@
               "flash",
               null,
               true,
-              null
+              "Assume a memory-efficient kernel, which never builds the score matrix"
             ],
             [
               "logit_softcap",
@@ -2102,19 +2102,19 @@
               "in_features",
               "D",
               1280,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               5120,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -2160,19 +2160,19 @@
               "in_features",
               "F",
               5120,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               1280,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -2270,19 +2270,19 @@
               "in_features",
               "D",
               1280,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "H*dh",
               1280,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -2413,37 +2413,37 @@
               "d_model",
               "D",
               1600,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               25,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               25,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               64,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               6400,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -2479,7 +2479,7 @@
               "norm",
               null,
               "layernorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -2497,7 +2497,7 @@
               "mlp",
               null,
               "dense",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -2533,7 +2533,7 @@
               "act",
               null,
               "gelu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -2668,25 +2668,25 @@
               "d_model",
               "D",
               1600,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
               "F",
               6400,
-              null
+              "Width in the middle, where the nonlinearity is"
             ],
             [
               "act",
               null,
               "gelu",
-              null
+              "Which nonlinearity"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -2758,7 +2758,7 @@
               "head_dim",
               "dh",
               64,
-              null
+              "Width of one head; query and key heads share it"
             ],
             [
               "bias",
@@ -2776,7 +2776,7 @@
               "causal",
               null,
               true,
-              null
+              "Mask out every position after the current one"
             ],
             [
               "window",
@@ -2800,7 +2800,7 @@
               "flash",
               null,
               true,
-              null
+              "Assume a memory-efficient kernel, which never builds the score matrix"
             ],
             [
               "logit_softcap",
@@ -2873,19 +2873,19 @@
               "in_features",
               "D",
               1600,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               6400,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -2931,19 +2931,19 @@
               "in_features",
               "F",
               6400,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               1600,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -2989,19 +2989,19 @@
               "in_features",
               "D",
               1600,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "H*dh",
               1600,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -3047,19 +3047,19 @@
               "in_features",
               "D",
               1600,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "Hkv*dh",
               1600,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -3190,37 +3190,37 @@
               "d_model",
               "D",
               768,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               12,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               12,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               64,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               3072,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -3256,7 +3256,7 @@
               "norm",
               null,
               "layernorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -3274,7 +3274,7 @@
               "mlp",
               null,
               "dense",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -3310,7 +3310,7 @@
               "act",
               null,
               "gelu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -3445,25 +3445,25 @@
               "d_model",
               "D",
               768,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
               "F",
               3072,
-              null
+              "Width in the middle, where the nonlinearity is"
             ],
             [
               "act",
               null,
               "gelu",
-              null
+              "Which nonlinearity"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -3587,7 +3587,7 @@
               "head_dim",
               "dh",
               64,
-              null
+              "Width of one head; query and key heads share it"
             ],
             [
               "bias",
@@ -3605,7 +3605,7 @@
               "causal",
               null,
               true,
-              null
+              "Mask out every position after the current one"
             ],
             [
               "window",
@@ -3629,7 +3629,7 @@
               "flash",
               null,
               true,
-              null
+              "Assume a memory-efficient kernel, which never builds the score matrix"
             ],
             [
               "logit_softcap",
@@ -3702,19 +3702,19 @@
               "in_features",
               "D",
               768,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               3072,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -3760,19 +3760,19 @@
               "in_features",
               "F",
               3072,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               768,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -3818,19 +3818,19 @@
               "in_features",
               "D",
               768,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "H*dh",
               768,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -3966,37 +3966,37 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               32,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               32,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               11008,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -4032,7 +4032,7 @@
               "norm",
               null,
               "rmsnorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -4050,7 +4050,7 @@
               "mlp",
               null,
               "gated",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -4086,7 +4086,7 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -4231,7 +4231,7 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
@@ -4243,13 +4243,13 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity the gate passes through"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -4326,7 +4326,7 @@
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head; query and key heads share it"
             ],
             [
               "bias",
@@ -4344,7 +4344,7 @@
               "causal",
               null,
               true,
-              null
+              "Mask out every position after the current one"
             ],
             [
               "window",
@@ -4370,7 +4370,7 @@
               "flash",
               null,
               true,
-              null
+              "Assume a memory-efficient kernel, which never builds the score matrix"
             ],
             [
               "logit_softcap",
@@ -4443,19 +4443,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               11008,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -4501,19 +4501,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               11008,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -4559,19 +4559,19 @@
               "in_features",
               "F",
               11008,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               4096,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -4617,19 +4617,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "H*dh",
               4096,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -4765,37 +4765,37 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               32,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               8,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               14336,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -4831,7 +4831,7 @@
               "norm",
               null,
               "rmsnorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -4849,7 +4849,7 @@
               "mlp",
               null,
               "gated",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -4885,7 +4885,7 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -5030,7 +5030,7 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
@@ -5042,13 +5042,13 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity the gate passes through"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -5104,19 +5104,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               14336,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -5162,19 +5162,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               14336,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -5220,19 +5220,19 @@
               "in_features",
               "F",
               14336,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               4096,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -5299,7 +5299,7 @@
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head; query and key heads share it"
             ],
             [
               "bias",
@@ -5317,7 +5317,7 @@
               "causal",
               null,
               true,
-              null
+              "Mask out every position after the current one"
             ],
             [
               "window",
@@ -5343,7 +5343,7 @@
               "flash",
               null,
               true,
-              null
+              "Assume a memory-efficient kernel, which never builds the score matrix"
             ],
             [
               "logit_softcap",
@@ -5416,19 +5416,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "H*dh",
               4096,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -5564,37 +5564,37 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               32,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               8,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               14336,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -5630,7 +5630,7 @@
               "norm",
               null,
               "rmsnorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -5648,7 +5648,7 @@
               "mlp",
               null,
               "gated",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -5684,7 +5684,7 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -5829,7 +5829,7 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
@@ -5841,13 +5841,13 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity the gate passes through"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -5903,19 +5903,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               14336,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -5961,19 +5961,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               14336,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -6019,19 +6019,19 @@
               "in_features",
               "F",
               14336,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               4096,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -6098,7 +6098,7 @@
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head; query and key heads share it"
             ],
             [
               "bias",
@@ -6116,7 +6116,7 @@
               "causal",
               null,
               true,
-              null
+              "Mask out every position after the current one"
             ],
             [
               "window",
@@ -6142,7 +6142,7 @@
               "flash",
               null,
               true,
-              null
+              "Assume a memory-efficient kernel, which never builds the score matrix"
             ],
             [
               "logit_softcap",
@@ -6215,19 +6215,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "H*dh",
               4096,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -6363,37 +6363,37 @@
               "d_model",
               "D",
               8192,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               64,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               8,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               28672,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -6429,7 +6429,7 @@
               "norm",
               null,
               "rmsnorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -6447,7 +6447,7 @@
               "mlp",
               null,
               "gated",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -6483,7 +6483,7 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -6628,7 +6628,7 @@
               "d_model",
               "D",
               8192,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
@@ -6640,13 +6640,13 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity the gate passes through"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -6702,19 +6702,19 @@
               "in_features",
               "D",
               8192,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               28672,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -6760,19 +6760,19 @@
               "in_features",
               "D",
               8192,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               28672,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -6818,19 +6818,19 @@
               "in_features",
               "F",
               28672,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               8192,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -6897,7 +6897,7 @@
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head; query and key heads share it"
             ],
             [
               "bias",
@@ -6915,7 +6915,7 @@
               "causal",
               null,
               true,
-              null
+              "Mask out every position after the current one"
             ],
             [
               "window",
@@ -6941,7 +6941,7 @@
               "flash",
               null,
               true,
-              null
+              "Assume a memory-efficient kernel, which never builds the score matrix"
             ],
             [
               "logit_softcap",
@@ -7014,19 +7014,19 @@
               "in_features",
               "D",
               8192,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "H*dh",
               8192,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -7162,37 +7162,37 @@
               "d_model",
               "D",
               16384,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               128,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               8,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               53248,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -7228,7 +7228,7 @@
               "norm",
               null,
               "rmsnorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -7246,7 +7246,7 @@
               "mlp",
               null,
               "gated",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -7282,7 +7282,7 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -7427,7 +7427,7 @@
               "d_model",
               "D",
               16384,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
@@ -7439,13 +7439,13 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity the gate passes through"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -7501,19 +7501,19 @@
               "in_features",
               "D",
               16384,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               53248,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -7559,19 +7559,19 @@
               "in_features",
               "D",
               16384,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               53248,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -7617,19 +7617,19 @@
               "in_features",
               "F",
               53248,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               16384,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -7696,7 +7696,7 @@
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head; query and key heads share it"
             ],
             [
               "bias",
@@ -7714,7 +7714,7 @@
               "causal",
               null,
               true,
-              null
+              "Mask out every position after the current one"
             ],
             [
               "window",
@@ -7740,7 +7740,7 @@
               "flash",
               null,
               true,
-              null
+              "Assume a memory-efficient kernel, which never builds the score matrix"
             ],
             [
               "logit_softcap",
@@ -7813,19 +7813,19 @@
               "in_features",
               "D",
               16384,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "H*dh",
               16384,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -7961,37 +7961,37 @@
               "d_model",
               "D",
               3584,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               28,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               4,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               18944,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -8027,7 +8027,7 @@
               "norm",
               null,
               "rmsnorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -8045,7 +8045,7 @@
               "mlp",
               null,
               "gated",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -8081,7 +8081,7 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -8226,7 +8226,7 @@
               "d_model",
               "D",
               3584,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
@@ -8238,13 +8238,13 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity the gate passes through"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -8300,19 +8300,19 @@
               "in_features",
               "D",
               3584,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               18944,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -8358,19 +8358,19 @@
               "in_features",
               "D",
               3584,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               18944,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -8416,19 +8416,19 @@
               "in_features",
               "F",
               18944,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               3584,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -8495,7 +8495,7 @@
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head; query and key heads share it"
             ],
             [
               "bias",
@@ -8513,7 +8513,7 @@
               "causal",
               null,
               true,
-              null
+              "Mask out every position after the current one"
             ],
             [
               "window",
@@ -8539,7 +8539,7 @@
               "flash",
               null,
               true,
-              null
+              "Assume a memory-efficient kernel, which never builds the score matrix"
             ],
             [
               "logit_softcap",
@@ -8764,37 +8764,37 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               32,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               8,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               12288,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -8830,7 +8830,7 @@
               "norm",
               null,
               "rmsnorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -8848,7 +8848,7 @@
               "mlp",
               null,
               "gated",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -8884,7 +8884,7 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -9039,7 +9039,7 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
@@ -9051,13 +9051,13 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity the gate passes through"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -9113,19 +9113,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               12288,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -9171,19 +9171,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               12288,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -9229,19 +9229,19 @@
               "in_features",
               "F",
               12288,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               4096,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -9308,7 +9308,7 @@
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head; query and key heads share it"
             ],
             [
               "bias",
@@ -9326,7 +9326,7 @@
               "causal",
               null,
               true,
-              null
+              "Mask out every position after the current one"
             ],
             [
               "window",
@@ -9352,7 +9352,7 @@
               "flash",
               null,
               true,
-              null
+              "Assume a memory-efficient kernel, which never builds the score matrix"
             ],
             [
               "logit_softcap",
@@ -9592,37 +9592,37 @@
               "d_model",
               "D",
               3584,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               16,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               8,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               256,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               14336,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -9658,7 +9658,7 @@
               "norm",
               null,
               "rmsnorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -9676,7 +9676,7 @@
               "mlp",
               null,
               "gated",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -9712,7 +9712,7 @@
               "act",
               null,
               "gelu_tanh",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -9864,37 +9864,37 @@
               "d_model",
               "D",
               3584,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               16,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               8,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               256,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               14336,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -9930,7 +9930,7 @@
               "norm",
               null,
               "rmsnorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -9948,7 +9948,7 @@
               "mlp",
               null,
               "gated",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -9984,7 +9984,7 @@
               "act",
               null,
               "gelu_tanh",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -10139,7 +10139,7 @@
               "d_model",
               "D",
               3584,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
@@ -10151,13 +10151,13 @@
               "act",
               null,
               "gelu_tanh",
-              null
+              "Which nonlinearity the gate passes through"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -10216,7 +10216,7 @@
               "d_model",
               "D",
               3584,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
@@ -10228,13 +10228,13 @@
               "act",
               null,
               "gelu_tanh",
-              null
+              "Which nonlinearity the gate passes through"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -10290,19 +10290,19 @@
               "in_features",
               "D",
               3584,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               14336,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -10348,19 +10348,19 @@
               "in_features",
               "D",
               3584,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               14336,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -10406,19 +10406,19 @@
               "in_features",
               "F",
               14336,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               3584,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -10559,37 +10559,37 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               32,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               8,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               14336,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -10625,7 +10625,7 @@
               "norm",
               null,
               "rmsnorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -10643,7 +10643,7 @@
               "mlp",
               null,
               "moe",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -10679,7 +10679,7 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -10830,7 +10830,7 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "experts",
@@ -10842,7 +10842,7 @@
               "top_k",
               "K",
               2,
-              null
+              "Experts each token is sent to"
             ],
             [
               "expert_hidden",
@@ -10860,25 +10860,25 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity inside an expert"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each expert's projections"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "Give the router a per-expert bias, which is how DeepSeek balances load"
             ],
             [
               "normalize",
               null,
               true,
-              null
+              "Renormalize the chosen weights to sum to one"
             ]
           ],
           "shapes": {
@@ -11004,7 +11004,7 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
@@ -11016,13 +11016,13 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity the gate passes through"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -11078,19 +11078,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "Fe",
               14336,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -11136,19 +11136,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "Fe",
               14336,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -11194,19 +11194,19 @@
               "in_features",
               "Fe",
               14336,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               4096,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -11357,37 +11357,37 @@
               "d_model",
               "D",
               2048,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               32,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               4,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               6144,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -11423,7 +11423,7 @@
               "norm",
               null,
               "rmsnorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -11441,7 +11441,7 @@
               "mlp",
               null,
               "moe",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -11477,7 +11477,7 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -11638,7 +11638,7 @@
               "d_model",
               "D",
               2048,
-              null
+              "Width of the residual stream"
             ],
             [
               "experts",
@@ -11650,7 +11650,7 @@
               "top_k",
               "K",
               8,
-              null
+              "Experts each token is sent to"
             ],
             [
               "expert_hidden",
@@ -11668,25 +11668,25 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity inside an expert"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each expert's projections"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "Give the router a per-expert bias, which is how DeepSeek balances load"
             ],
             [
               "normalize",
               null,
               true,
-              null
+              "Renormalize the chosen weights to sum to one"
             ]
           ],
           "shapes": {
@@ -11812,7 +11812,7 @@
               "d_model",
               "D",
               2048,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
@@ -11824,13 +11824,13 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity the gate passes through"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -11886,19 +11886,19 @@
               "in_features",
               "D",
               2048,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "Fe",
               768,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -11944,19 +11944,19 @@
               "in_features",
               "D",
               2048,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "Fe",
               768,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -12002,19 +12002,19 @@
               "in_features",
               "Fe",
               768,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               2048,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -12165,37 +12165,37 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               64,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               4,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               128,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               12288,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -12231,7 +12231,7 @@
               "norm",
               null,
               "rmsnorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -12249,7 +12249,7 @@
               "mlp",
               null,
               "moe",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -12285,7 +12285,7 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -12446,7 +12446,7 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "experts",
@@ -12458,7 +12458,7 @@
               "top_k",
               "K",
               8,
-              null
+              "Experts each token is sent to"
             ],
             [
               "expert_hidden",
@@ -12476,25 +12476,25 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity inside an expert"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each expert's projections"
             ],
             [
               "router_bias",
               null,
               false,
-              null
+              "Give the router a per-expert bias, which is how DeepSeek balances load"
             ],
             [
               "normalize",
               null,
               true,
-              null
+              "Renormalize the chosen weights to sum to one"
             ]
           ],
           "shapes": {
@@ -12620,7 +12620,7 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
@@ -12632,13 +12632,13 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity the gate passes through"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -12694,19 +12694,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "Fe",
               1536,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -12752,19 +12752,19 @@
               "in_features",
               "D",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "Fe",
               1536,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -12810,19 +12810,19 @@
               "in_features",
               "Fe",
               1536,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               4096,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -12973,37 +12973,37 @@
               "d_model",
               "D",
               7168,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               128,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "Hkv",
               128,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               192,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               18432,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "mla",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -13039,7 +13039,7 @@
               "norm",
               null,
               "rmsnorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -13057,7 +13057,7 @@
               "mlp",
               null,
               "moe",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -13093,7 +13093,7 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -13254,7 +13254,7 @@
               "d_model",
               "D",
               7168,
-              null
+              "Width of the residual stream"
             ],
             [
               "experts",
@@ -13266,7 +13266,7 @@
               "top_k",
               "K",
               8,
-              null
+              "Experts each token is sent to"
             ],
             [
               "expert_hidden",
@@ -13284,25 +13284,25 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity inside an expert"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each expert's projections"
             ],
             [
               "router_bias",
               null,
               true,
-              null
+              "Give the router a per-expert bias, which is how DeepSeek balances load"
             ],
             [
               "normalize",
               null,
               true,
-              null
+              "Renormalize the chosen weights to sum to one"
             ]
           ],
           "shapes": {
@@ -13443,7 +13443,7 @@
               "d_model",
               "D",
               7168,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
@@ -13455,13 +13455,13 @@
               "act",
               null,
               "silu",
-              null
+              "Which nonlinearity the gate passes through"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -13517,19 +13517,19 @@
               "in_features",
               "D",
               7168,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "Fe",
               2048,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -13575,19 +13575,19 @@
               "in_features",
               "D",
               7168,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "Fe",
               2048,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -13633,19 +13633,19 @@
               "in_features",
               "Fe",
               2048,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "D",
               7168,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -13851,13 +13851,13 @@
               "vocab",
               "V",
               131072,
-              null
+              "How many tokens it scores"
             ],
             [
               "dim",
               "D",
               4096,
-              null
+              "Width of the stream it reads"
             ],
             [
               "tied",
@@ -13869,7 +13869,7 @@
               "bias",
               null,
               false,
-              null
+              "Learn a per-token constant as well as the matrix"
             ],
             [
               "softcap",
@@ -13921,25 +13921,25 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
               "F",
               21504,
-              null
+              "Width in the middle, where the nonlinearity is"
             ],
             [
               "act",
               null,
               "relu2",
-              null
+              "Which nonlinearity"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -13990,25 +13990,25 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
               "F",
               21504,
-              null
+              "Width in the middle, where the nonlinearity is"
             ],
             [
               "act",
               null,
               "relu2",
-              null
+              "Which nonlinearity"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -14059,25 +14059,25 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
               "F",
               21504,
-              null
+              "Width in the middle, where the nonlinearity is"
             ],
             [
               "act",
               null,
               "relu2",
-              null
+              "Which nonlinearity"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -14128,25 +14128,25 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
               "F",
               21504,
-              null
+              "Width in the middle, where the nonlinearity is"
             ],
             [
               "act",
               null,
               "relu2",
-              null
+              "Which nonlinearity"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -14197,25 +14197,25 @@
               "d_model",
               "D",
               4096,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
               "F",
               21504,
-              null
+              "Width in the middle, where the nonlinearity is"
             ],
             [
               "act",
               null,
               "relu2",
-              null
+              "Which nonlinearity"
             ],
             [
               "bias",
               null,
               false,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -14351,37 +14351,37 @@
               "d_model",
               "D",
               1280,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               16,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "H",
               16,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               80,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               5120,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -14417,7 +14417,7 @@
               "norm",
               null,
               "layernorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -14435,7 +14435,7 @@
               "mlp",
               null,
               "dense",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -14471,7 +14471,7 @@
               "act",
               null,
               "gelu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -14686,37 +14686,37 @@
               "d_model",
               "D",
               1280,
-              null
+              "Width of the residual stream"
             ],
             [
               "heads",
               "H",
               16,
-              null
+              "Query heads"
             ],
             [
               "kv_heads",
               "H",
               16,
-              null
+              "Key/value heads; fewer than the query heads is grouped-query attention"
             ],
             [
               "head_dim",
               "dh",
               80,
-              null
+              "Width of one head"
             ],
             [
               "ffn_hidden",
               "F",
               5120,
-              null
+              "Width in the middle of the feed-forward"
             ],
             [
               "attention",
               null,
               "gqa",
-              null
+              "Grouped-query attention, or DeepSeek's latent attention"
             ],
             [
               "q_lora",
@@ -14752,7 +14752,7 @@
               "norm",
               null,
               "layernorm",
-              null
+              "Which normalization"
             ],
             [
               "norm_bias",
@@ -14770,7 +14770,7 @@
               "mlp",
               null,
               "dense",
-              null
+              "Gated, plain, or a mixture of experts"
             ],
             [
               "experts",
@@ -14806,7 +14806,7 @@
               "act",
               null,
               "gelu",
-              null
+              "Which nonlinearity in the feed-forward"
             ],
             [
               "attn_bias",
@@ -14941,25 +14941,25 @@
               "d_model",
               "D",
               1280,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
               "F",
               5120,
-              null
+              "Width in the middle, where the nonlinearity is"
             ],
             [
               "act",
               null,
               "gelu",
-              null
+              "Which nonlinearity"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -15010,25 +15010,25 @@
               "d_model",
               "D",
               1280,
-              null
+              "Width of the residual stream"
             ],
             [
               "hidden",
               "F",
               5120,
-              null
+              "Width in the middle, where the nonlinearity is"
             ],
             [
               "act",
               null,
               "gelu",
-              null
+              "Which nonlinearity"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a constant on each projection"
             ]
           ],
           "shapes": {
@@ -15100,7 +15100,7 @@
               "head_dim",
               "dh",
               80,
-              null
+              "Width of one head; query and key heads share it"
             ],
             [
               "bias",
@@ -15118,7 +15118,7 @@
               "causal",
               null,
               false,
-              null
+              "Mask out every position after the current one"
             ],
             [
               "window",
@@ -15142,7 +15142,7 @@
               "flash",
               null,
               true,
-              null
+              "Assume a memory-efficient kernel, which never builds the score matrix"
             ],
             [
               "logit_softcap",
@@ -15215,19 +15215,19 @@
               "in_features",
               "D",
               1280,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "F",
               5120,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -15278,19 +15278,19 @@
               "in_features",
               null,
               9216,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "Fc",
               4096,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -15336,19 +15336,19 @@
               "in_features",
               "Fc",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "Fc",
               4096,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -15394,19 +15394,19 @@
               "in_features",
               "Fc",
               4096,
-              null
+              "Width in"
             ],
             [
               "out_features",
               "Ccls",
               1000,
-              null
+              "Width out"
             ],
             [
               "bias",
               null,
               true,
-              null
+              "Learn a per-output constant as well as the matrix"
             ]
           ],
           "shapes": {
@@ -15455,31 +15455,31 @@
               "in_channels",
               null,
               384,
-              null
+              "Channels arriving"
             ],
             [
               "out_channels",
               null,
               256,
-              null
+              "Channels produced, one per filter"
             ],
             [
               "kernel",
               null,
               3,
-              null
+              "Side of the square filter"
             ],
             [
               "stride",
               null,
               1,
-              null
+              "How far the filter moves between positions; 2 halves the feature map"
             ],
             [
               "padding",
               null,
               1,
-              null
+              "Zeros added around each edge before convolving"
             ],
             [
               "groups",
@@ -15491,7 +15491,7 @@
               "bias",
               null,
               true,
-              null
+              "Learn a per-output-channel constant as well as the filters"
             ],
             [
               "in_h",
@@ -15558,31 +15558,31 @@
               "in_channels",
               null,
               192,
-              null
+              "Channels arriving"
             ],
             [
               "out_channels",
               null,
               384,
-              null
+              "Channels produced, one per filter"
             ],
             [
               "kernel",
               null,
               3,
-              null
+              "Side of the square filter"
             ],
             [
               "stride",
               null,
               1,
-              null
+              "How far the filter moves between positions; 2 halves the feature map"
             ],
             [
               "padding",
               null,
               1,
-              null
+              "Zeros added around each edge before convolving"
             ],
             [
               "groups",
@@ -15594,7 +15594,7 @@
               "bias",
               null,
               true,
-              null
+              "Learn a per-output-channel constant as well as the filters"
             ],
             [
               "in_h",
@@ -15661,31 +15661,31 @@
               "in_channels",
               null,
               256,
-              null
+              "Channels arriving"
             ],
             [
               "out_channels",
               null,
               256,
-              null
+              "Channels produced, one per filter"
             ],
             [
               "kernel",
               null,
               3,
-              null
+              "Side of the square filter"
             ],
             [
               "stride",
               null,
               1,
-              null
+              "How far the filter moves between positions; 2 halves the feature map"
             ],
             [
               "padding",
               null,
               1,
-              null
+              "Zeros added around each edge before convolving"
             ],
             [
               "groups",
@@ -15697,7 +15697,7 @@
               "bias",
               null,
               true,
-              null
+              "Learn a per-output-channel constant as well as the filters"
             ],
             [
               "in_h",
@@ -15764,31 +15764,31 @@
               "in_channels",
               null,
               64,
-              null
+              "Channels arriving"
             ],
             [
               "out_channels",
               null,
               192,
-              null
+              "Channels produced, one per filter"
             ],
             [
               "kernel",
               null,
               5,
-              null
+              "Side of the square filter"
             ],
             [
               "stride",
               null,
               1,
-              null
+              "How far the filter moves between positions; 2 halves the feature map"
             ],
             [
               "padding",
               null,
               2,
-              null
+              "Zeros added around each edge before convolving"
             ],
             [
               "groups",
@@ -15800,7 +15800,7 @@
               "bias",
               null,
               true,
-              null
+              "Learn a per-output-channel constant as well as the filters"
             ],
             [
               "in_h",
@@ -15867,31 +15867,31 @@
               "in_channels",
               null,
               3,
-              null
+              "Channels arriving"
             ],
             [
               "out_channels",
               null,
               64,
-              null
+              "Channels produced, one per filter"
             ],
             [
               "kernel",
               null,
               11,
-              null
+              "Side of the square filter"
             ],
             [
               "stride",
               null,
               4,
-              null
+              "How far the filter moves between positions; 2 halves the feature map"
             ],
             [
               "padding",
               null,
               2,
-              null
+              "Zeros added around each edge before convolving"
             ],
             [
               "groups",
@@ -15903,7 +15903,7 @@
               "bias",
               null,
               true,
-              null
+              "Learn a per-output-channel constant as well as the filters"
             ],
             [
               "in_h",

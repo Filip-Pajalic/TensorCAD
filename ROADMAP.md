@@ -139,7 +139,7 @@ Remaining:
 
 ### M6 — Ship
 
-- Docs site with the guided tours; explain tab content for every block.
+- Docs site with the guided tours. **Block documentation done:** every block has a summary, every primitive that counts parameters gives the formula it counts them by, every parameter says what it means and every port declares what it carries — seventy-seven parameters said nothing, which is what the inspector showed on hover and what `get_block` answered with. Tests hold all four, because the ones that go undocumented are the ones whose names read plainly to whoever wrote them.
 - **Done.** `server.json` for the MCP registry, checked against the registry's own schema and pinned against `package.json` by a test. An MCPB bundle for Claude Desktop, built for Node with the engine beside it and started under Node before it is attached to a release.
 - Publish `@tensorcad/engine` and `@tensorcad/mcp` to npm, and `server.json` to the registry. Both are one command and a decision about version numbers.
 - Optional: MCP Apps canvas preview for Claude Desktop/Cursor; hosted read-only viewer for sharing designs.

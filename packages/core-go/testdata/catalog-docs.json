@@ -11,7 +11,7 @@
         [
           "kind",
           "enum",
-          "",
+          "Which nonlinearity",
           [
             "silu",
             "gelu",
@@ -42,7 +42,7 @@
         [
           "dim",
           "int",
-          "",
+          "Width of both operands, for the elementwise cost",
           null
         ]
       ]
@@ -132,7 +132,7 @@
         [
           "bias",
           "bool",
-          "",
+          "Learn a per-channel constant as well as the kernel",
           null
         ]
       ]
@@ -150,31 +150,31 @@
         [
           "in_channels",
           "int",
-          "",
+          "Channels arriving",
           null
         ],
         [
           "out_channels",
           "int",
-          "",
+          "Channels produced, one per filter",
           null
         ],
         [
           "kernel",
           "int",
-          "",
+          "Side of the square filter",
           null
         ],
         [
           "stride",
           "int",
-          "",
+          "How far the filter moves between positions; 2 halves the feature map",
           null
         ],
         [
           "padding",
           "int",
-          "",
+          "Zeros added around each edge before convolving",
           null
         ],
         [
@@ -186,7 +186,7 @@
         [
           "bias",
           "bool",
-          "",
+          "Learn a per-output-channel constant as well as the filters",
           null
         ],
         [
@@ -227,19 +227,19 @@
         [
           "d_model",
           "int",
-          "",
+          "Width of the residual stream",
           null
         ],
         [
           "hidden",
           "int",
-          "",
+          "Width in the middle, where the nonlinearity is",
           null
         ],
         [
           "act",
           "enum",
-          "",
+          "Which nonlinearity",
           [
             "gelu",
             "gelu_tanh",
@@ -251,7 +251,7 @@
         [
           "bias",
           "bool",
-          "",
+          "Learn a constant on each projection",
           null
         ]
       ]
@@ -289,13 +289,13 @@
         [
           "heads",
           "int",
-          "",
+          "How many copies of each key/value head to make",
           null
         ],
         [
           "dim",
           "int",
-          "",
+          "Width of one head",
           null
         ]
       ]
@@ -311,19 +311,19 @@
         [
           "channels",
           "int",
-          "",
+          "Channels arriving from the convolution stack",
           null
         ],
         [
           "in_h",
           "int",
-          "",
+          "Height of the incoming feature map",
           null
         ],
         [
           "in_w",
           "int",
-          "",
+          "Width of the incoming feature map",
           null
         ]
       ]
@@ -425,7 +425,7 @@
         [
           "d_model",
           "int",
-          "",
+          "Width of the residual stream",
           null
         ],
         [
@@ -437,7 +437,7 @@
         [
           "act",
           "enum",
-          "",
+          "Which nonlinearity the gate passes through",
           [
             "silu",
             "gelu",
@@ -449,7 +449,7 @@
         [
           "bias",
           "bool",
-          "",
+          "Learn a constant on each projection",
           null
         ]
       ]
@@ -485,7 +485,7 @@
         [
           "head_dim",
           "int",
-          "",
+          "Width of one head; query and key heads share it",
           null
         ],
         [
@@ -503,7 +503,7 @@
         [
           "causal",
           "bool",
-          "",
+          "Mask out every position after the current one",
           null
         ],
         [
@@ -527,7 +527,7 @@
         [
           "flash",
           "bool",
-          "",
+          "Assume a memory-efficient kernel, which never builds the score matrix",
           null
         ],
         [
@@ -561,7 +561,7 @@
         [
           "dtype",
           "enum",
-          "",
+          "What the tensor holds; token ids are integers, everything else is not",
           [
             "int64",
             "int32",
@@ -606,19 +606,19 @@
         [
           "dim",
           "int",
-          "",
+          "Width normalized over",
           null
         ],
         [
           "eps",
           "num",
-          "",
+          "Added to the variance before the square root, against dividing by zero",
           null
         ],
         [
           "bias",
           "bool",
-          "",
+          "Learn a shift as well as a gain",
           null
         ]
       ]
@@ -642,7 +642,7 @@
         [
           "dim",
           "int",
-          "",
+          "Width of each learned vector, matching the stream it joins",
           null
         ],
         [
@@ -664,19 +664,19 @@
         [
           "in_features",
           "int",
-          "",
+          "Width in",
           null
         ],
         [
           "out_features",
           "int",
-          "",
+          "Width out",
           null
         ],
         [
           "bias",
           "bool",
-          "",
+          "Learn a per-output constant as well as the matrix",
           null
         ]
       ]
@@ -694,13 +694,13 @@
         [
           "vocab",
           "int",
-          "",
+          "How many tokens it scores",
           null
         ],
         [
           "dim",
           "int",
-          "",
+          "Width of the stream it reads",
           null
         ],
         [
@@ -712,7 +712,7 @@
         [
           "bias",
           "bool",
-          "",
+          "Learn a per-token constant as well as the matrix",
           null
         ],
         [
@@ -736,7 +736,7 @@
         [
           "d_model",
           "int",
-          "",
+          "Width of the residual stream",
           null
         ],
         [
@@ -766,13 +766,13 @@
         [
           "conv_kernel",
           "int",
-          "",
+          "Width of the short depthwise convolution before the scan",
           null
         ],
         [
           "conv_bias",
           "bool",
-          "",
+          "Learn a per-channel constant on that convolution",
           null
         ],
         [
@@ -794,37 +794,37 @@
         [
           "channels",
           "int",
-          "",
+          "Channels passing through; pooling does not change them",
           null
         ],
         [
           "kernel",
           "int",
-          "",
+          "Side of the square window",
           null
         ],
         [
           "stride",
           "int",
-          "",
+          "How far the window moves between positions",
           null
         ],
         [
           "padding",
           "int",
-          "",
+          "Cells added around each edge before pooling",
           null
         ],
         [
           "in_h",
           "int",
-          "",
+          "Height of the incoming feature map",
           null
         ],
         [
           "in_w",
           "int",
-          "",
+          "Width of the incoming feature map",
           null
         ]
       ]
@@ -861,13 +861,13 @@
         [
           "d_model",
           "int",
-          "",
+          "Width of the residual stream",
           null
         ],
         [
           "heads",
           "int",
-          "",
+          "Query heads; latent attention has no separate key/value count",
           null
         ],
         [
@@ -903,7 +903,7 @@
         [
           "causal",
           "bool",
-          "",
+          "Mask out every position after the current one",
           null
         ],
         [
@@ -915,7 +915,7 @@
         [
           "bias",
           "bool",
-          "",
+          "Learn a constant on each projection",
           null
         ]
       ]
@@ -956,7 +956,7 @@
         [
           "d_model",
           "int",
-          "",
+          "Width of the residual stream",
           null
         ],
         [
@@ -968,7 +968,7 @@
         [
           "top_k",
           "int",
-          "",
+          "Experts each token is sent to",
           null
         ],
         [
@@ -986,7 +986,7 @@
         [
           "act",
           "enum",
-          "",
+          "Which nonlinearity inside an expert",
           [
             "silu",
             "gelu",
@@ -998,19 +998,19 @@
         [
           "bias",
           "bool",
-          "",
+          "Learn a constant on each expert's projections",
           null
         ],
         [
           "router_bias",
           "bool",
-          "",
+          "Give the router a per-expert bias, which is how DeepSeek balances load",
           null
         ],
         [
           "normalize",
           "bool",
-          "",
+          "Renormalize the chosen weights to sum to one",
           null
         ]
       ]
@@ -1040,7 +1040,7 @@
         [
           "norm",
           "enum",
-          "",
+          "Which normalization before the join",
           [
             "rmsnorm",
             "layernorm"
@@ -1071,7 +1071,7 @@
         [
           "dim",
           "int",
-          "",
+          "Width of both operands, for the elementwise cost",
           null
         ]
       ]
@@ -1102,7 +1102,7 @@
         [
           "dim",
           "int",
-          "",
+          "Width of each position's vector, matching the stream it is added to",
           null
         ]
       ]
@@ -1118,13 +1118,13 @@
         [
           "from",
           "pattern",
-          "",
+          "The shape arriving, named",
           null
         ],
         [
           "to",
           "pattern",
-          "",
+          "The same axes, regrouped",
           null
         ]
       ]
@@ -1156,13 +1156,13 @@
         [
           "dim",
           "int",
-          "",
+          "Width normalized over",
           null
         ],
         [
           "eps",
           "num",
-          "",
+          "Added to the mean square before the square root, against dividing by zero",
           null
         ],
         [
@@ -1186,19 +1186,19 @@
         [
           "heads",
           "int",
-          "",
+          "Heads the rotation is applied across",
           null
         ],
         [
           "head_dim",
           "int",
-          "",
+          "Width of one head; the rotation pairs its dimensions",
           null
         ],
         [
           "theta",
           "num",
-          "",
+          "Base of the frequency ladder; a larger one reaches further before wrapping",
           null
         ],
         [
@@ -1247,7 +1247,7 @@
         [
           "causal",
           "bool",
-          "",
+          "Mask out every position after the current one",
           null
         ],
         [
@@ -1345,7 +1345,7 @@
         [
           "heads",
           "int",
-          "",
+          "State-space heads, each with a recurrent state of its own",
           null
         ],
         [
@@ -1393,7 +1393,7 @@
         [
           "d_model",
           "int",
-          "",
+          "Width of the stream it scores from",
           null
         ],
         [
@@ -1433,37 +1433,37 @@
         [
           "d_model",
           "int",
-          "",
+          "Width of the residual stream",
           null
         ],
         [
           "heads",
           "int",
-          "",
+          "Query heads",
           null
         ],
         [
           "kv_heads",
           "int",
-          "",
+          "Key/value heads; fewer than the query heads is grouped-query attention",
           null
         ],
         [
           "head_dim",
           "int",
-          "",
+          "Width of one head",
           null
         ],
         [
           "ffn_hidden",
           "int",
-          "",
+          "Width in the middle of the feed-forward",
           null
         ],
         [
           "attention",
           "enum",
-          "",
+          "Grouped-query attention, or DeepSeek's latent attention",
           [
             "gqa",
             "mla"
@@ -1502,7 +1502,7 @@
         [
           "norm",
           "enum",
-          "",
+          "Which normalization",
           [
             "rmsnorm",
             "layernorm"
@@ -1523,7 +1523,7 @@
         [
           "mlp",
           "enum",
-          "",
+          "Gated, plain, or a mixture of experts",
           [
             "gated",
             "dense",
@@ -1563,7 +1563,7 @@
         [
           "act",
           "enum",
-          "",
+          "Which nonlinearity in the feed-forward",
           [
             "silu",
             "gelu",
@@ -1639,7 +1639,7 @@
         [
           "dim",
           "int",
-          "",
+          "Width of each expert's output",
           null
         ],
         [

@@ -1,0 +1,31 @@
+// The documentation site, served from Cloudflare's edge.
+//
+// A second static-asset Worker rather than a path on the first, because the two
+// are built by different tools and change at different times: the editor is
+// Vite output, the docs are what MkDocs renders from `docs/`.
+//
+// Named `wrangler.docs.jsonc` rather than `wrangler.jsonc` so it does not
+// become the repository's default configuration — it is deployed explicitly:
+//
+//   mkdocs build && bunx wrangler deploy -c wrangler.docs.jsonc
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tensorcad-docs",
+  "compatibility_date": "2026-09-20",
+  "assets": {
+    "directory": "./site",
+    // MkDocs writes real directories with an `index.html` in each, so a request
+    // for a page that does not exist should get the 404 page rather than the
+    // home page pretending to be it.
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    {
+      "pattern": "doc.tensorcad.dev",
+      "custom_domain": true
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

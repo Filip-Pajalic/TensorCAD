@@ -1,0 +1,102 @@
+# The two sites on tensorcad.dev.
+#
+#   app.tensorcad.dev  — the editor, which is the Vite bundle plus the engine
+#   tensorcad.dev      — the same Worker, because the editor is the front page
+#   doc.tensorcad.dev  — the documentation MkDocs renders from `docs/`
+#
+# Both are static-asset Workers: nothing is computed on a server, because the
+# engine is WebAssembly and runs in the browser. Deployed only from `main`, and
+# only when the secrets are set, so a fork does not fail for want of a token it
+# was never going to have.
+#
+# Needs two repository secrets:
+#
+#   CLOUDFLARE_API_TOKEN   Account > Workers Scripts: Edit
+#                          Account > Account Settings: Read
+#                          Zone    > Workers Routes: Edit   (for the subdomains)
+#                          Zone    > DNS: Edit              (wrangler adds the records)
+#                          Zone resources: include tensorcad.dev
+#   CLOUDFLARE_ACCOUNT_ID  the account the zone is in
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  # The newest commit is the one worth serving; an older deploy still running
+  # would otherwise overwrite it.
+  cancel-in-progress: true
+
+jobs:
+  app:
+    name: app.tensorcad.dev
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: packages/core-go/go.mod
+          cache: false
+      - run: bun install --frozen-lockfile
+      # The engine first: the bundle imports the `.wasm` by URL, and Vite will
+      # not find one that has not been built.
+      - run: bun run build:wasm
+      - run: bun run --cwd packages/ui build
+
+      - name: Deploy
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        run: bunx wrangler deploy
+        working-directory: packages/ui
+
+      - name: Say why it did not deploy
+        if: ${{ env.CLOUDFLARE_API_TOKEN == '' }}
+        run: |
+          echo "CLOUDFLARE_API_TOKEN is not set, so nothing was deployed." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "The editor was built and type-checked; only the upload was skipped." >> "$GITHUB_STEP_SUMMARY"
+
+  docs:
+    name: doc.tensorcad.dev
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install mkdocs-material
+      # For wrangler, which is pinned in the lockfile so both jobs deploy with
+      # the same version rather than whatever the registry calls latest.
+      - run: bun install --frozen-lockfile
+      # Strict, so a cross-reference to a page that does not exist fails here
+      # rather than being served.
+      - run: mkdocs build --strict
+
+      - name: Deploy
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        run: bunx wrangler deploy -c wrangler.docs.jsonc
+
+      - name: Say why it did not deploy
+        if: ${{ env.CLOUDFLARE_API_TOKEN == '' }}
+        run: |
+          echo "CLOUDFLARE_API_TOKEN is not set, so nothing was deployed." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "The site was built and its links checked; only the upload was skipped." >> "$GITHUB_STEP_SUMMARY"

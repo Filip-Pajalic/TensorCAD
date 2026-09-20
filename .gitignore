@@ -42,3 +42,6 @@ runs/
 # Task runner checksum cache
 .task/
 packages/engine/wasm/
+
+# The MkDocs render. `mkdocs build` writes it; the deploy uploads it.
+site/

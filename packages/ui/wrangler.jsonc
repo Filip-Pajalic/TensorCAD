@@ -1,0 +1,38 @@
+// The editor, served as static files from Cloudflare's edge.
+//
+// There is no Worker script: `assets` with no `main` is a static-asset-only
+// deployment, which is what this is. The whole application is the bundle Vite
+// produces plus the engine, and the engine is a 7.7 MB WebAssembly module that
+// runs in the browser — nothing is computed on a server, so there is no server
+// to write.
+//
+// `single-page-application` so a deep link lands on the app rather than on a
+// 404: the editor has no routes of its own yet, but a refresh on any path
+// should still open it.
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "tensorcad-app",
+  "compatibility_date": "2026-09-20",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  },
+  // The apex too, because there is nothing else to put there: the editor is the
+  // project's front page. If `tensorcad.dev` ever wants a landing page of its
+  // own, drop this entry and the record it made, and the deploy stops claiming
+  // it. A first deploy will refuse the apex if the zone already has a record on
+  // it — Cloudflare's parking page counts — so delete that record first.
+  "routes": [
+    {
+      "pattern": "tensorcad.dev",
+      "custom_domain": true
+    },
+    {
+      "pattern": "app.tensorcad.dev",
+      "custom_domain": true
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

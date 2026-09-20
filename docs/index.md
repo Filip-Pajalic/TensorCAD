@@ -1,5 +1,12 @@
 # TensorCAD documentation
 
+!!! tip "Nothing to install"
+
+    The editor runs in a browser at
+    **[app.tensorcad.dev](https://app.tensorcad.dev/)**. The engine is
+    WebAssembly, so the analysis happens in your tab — open a preset and the
+    numbers on this site are the numbers you will see.
+
 Organised by [Diátaxis](https://diataxis.fr/): four kinds of document for four
 different needs. Knowing which one you are in saves everybody time — a tutorial
 that stops to explain itself is a bad tutorial, and a reference that tries to
@@ -60,10 +67,13 @@ is, or why it is not something else.
 
 ---
 
-These pages are published at
-[filip-pajalic.github.io/TensorCAD](https://filip-pajalic.github.io/TensorCAD/),
-and read the same in the repository. `pip install mkdocs-material && mkdocs
-serve` brings the site up locally, with search.
+These pages are published at [doc.tensorcad.dev](https://doc.tensorcad.dev/),
+and read the same in the repository. The editor itself runs in a browser at
+[app.tensorcad.dev](https://app.tensorcad.dev/) — the engine is WebAssembly, so
+nothing is computed on a server and no design leaves the tab.
+
+`pip install mkdocs-material && mkdocs serve` brings this site up locally, with
+search.
 
 Contributor-facing material lives at the repository root, not here:
 [`CONTRIBUTING.md`](https://github.com/Filip-Pajalic/TensorCAD/blob/main/CONTRIBUTING.md) for the workflow,

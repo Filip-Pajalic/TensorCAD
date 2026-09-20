@@ -25,8 +25,9 @@
     "desktop:build": "cd desktop && wails3 build"
   },
   "devDependencies": {
+    "@types/bun": "latest",
     "typescript": "^5.6.0",
-    "@types/bun": "latest"
+    "wrangler": "^4.135.0"
   },
   "engines": {
     "node": ">=20"

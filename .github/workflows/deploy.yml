@@ -29,11 +29,11 @@
 #
 #   CLOUDFLARE_ACCOUNT_ID  32 hex characters, from `wrangler whoami`.
 #
-# Set both from the GitHub web UI. A terminal paste silently mangled the token
-# once, and the symptom was four minutes of building followed by "No access to
-# the specified resource" on the asset upload — which reads like a permissions
-# problem and is not one. The first step of both jobs now asks the API whether
-# the token is a token, and says so in two seconds.
+# The first step of both jobs asks the API whether it knows the token, before
+# anything is built. That exists because the failure it replaces was four
+# minutes of building followed by "No access to the specified resource" on the
+# asset upload — which reads like a permissions problem, is not one, and cost
+# two trips round the dashboard granting permissions the token already had.
 name: Deploy
 
 on:
@@ -60,11 +60,11 @@ jobs:
     steps:
       # Two seconds, before four minutes of building.
       #
-      # A token that was pasted wrong does not say so: wrangler fails on the
+      # A token the API will not accept does not say why: wrangler fails on the
       # asset upload with "No access to the specified resource", which reads
       # like a permissions problem and sent us round the dashboard twice
-      # granting permissions the token already had. `/user/tokens/verify`
-      # answers the actual question — is this token a token — and the response
+      # granting permissions the token already had. Asking the API whether it
+      # knows the token at all is a better first question, and the response
       # body carries no secret.
       - name: Check the token is a token
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
@@ -139,11 +139,11 @@ jobs:
     steps:
       # Two seconds, before four minutes of building.
       #
-      # A token that was pasted wrong does not say so: wrangler fails on the
+      # A token the API will not accept does not say why: wrangler fails on the
       # asset upload with "No access to the specified resource", which reads
       # like a permissions problem and sent us round the dashboard twice
-      # granting permissions the token already had. `/user/tokens/verify`
-      # answers the actual question — is this token a token — and the response
+      # granting permissions the token already had. Asking the API whether it
+      # knows the token at all is a better first question, and the response
       # body carries no secret.
       - name: Check the token is a token
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}

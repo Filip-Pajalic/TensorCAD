@@ -58,16 +58,35 @@ export function serializeDoc(doc: Doc): string {
   return JSON.stringify(orderDoc(doc), null, 2) + "\n";
 }
 
+/**
+ * Read a `.tensorcad.json` back.
+ *
+ * It keeps everything it was given. That sounds obvious and was not true: this
+ * used to build a five-field object out of a nine-field type, so saving a
+ * design and opening it again silently discarded `defs` — every block the
+ * design defines for itself — along with `configurations`, `active` and the
+ * rule severities. `serializeDoc` wrote all four faithfully; only the read
+ * threw them away, which is the worst shape for a bug of this kind, because
+ * the file on disk looks right.
+ *
+ * So the defaults are applied *over* the document rather than the document
+ * being rebuilt from a list of fields. Anything this module has never heard of
+ * survives too, which is the same promise `pick` makes on the way out.
+ */
 export function parseDoc(text: string): Doc {
   const raw = JSON.parse(text) as Partial<Doc>;
   if (typeof raw !== "object" || raw === null) throw new Error("Not a JSON object");
   if (raw.version !== DOC_VERSION) {
+    // No migration path yet, because there has only ever been one version.
+    // The first bump has to add one here, and until then failing loudly beats
+    // opening a document this build does not understand.
     throw new Error(`Unsupported document version ${String(raw.version)}, expected ${DOC_VERSION}`);
   }
   if (!raw.graph || !Array.isArray(raw.graph.nodes) || !Array.isArray(raw.graph.edges)) {
     throw new Error("Document has no graph");
   }
   return {
+    ...raw,
     version: DOC_VERSION,
     meta: raw.meta ?? { name: "untitled" },
     symbols: raw.symbols ?? {},

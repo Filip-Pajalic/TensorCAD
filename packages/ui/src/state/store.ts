@@ -9,6 +9,8 @@
 import { create } from "zustand";
 import type { ShapeMode } from "../canvas/shapes.js";
 import * as ops from "./ops.js";
+import { applyEdit, labelAt, reasonFor, type Edit, type Failure, type Step } from "./edits.js";
+export type { Edit, Failure, Step } from "./edits.js";
 import type { Segments } from "./ops.js";
 import { DEFAULT_OPERATING, loadOperating, saveOperating, type OperatingPoint } from "./operating.js";
 import type { Doc, NodeDef, ParamValue, RuleSeverity, SymbolDef } from "@tensorcad/engine";
@@ -56,12 +58,6 @@ function loadDetail(): number {
   } catch {
     return DEFAULT_DETAIL;
   }
-}
-
-/** One state in the history, and what was done to reach it. */
-export interface Step {
-  doc: Doc;
-  label: string;
 }
 
 export type RightTab = "inspector" | "symbols" | "cluster" | "ladder" | "runs" | "history";
@@ -129,31 +125,51 @@ export interface EditorState {
   selectedNet: string | null;
   selectNet: (net: string | null) => void;
   /**
-   * The history, as states rather than as a stack of documents alone.
+   * The history, as operations rather than as documents.
    *
-   * Each step carries the document *and* what was done to get it, because an
-   * undo stack you cannot read is one you have to step through blindly: three
-   * presses of Ctrl+Z to find out whether the thing you regret was four edits
-   * ago. The label is the same sentence the toolbar shows when the edit
-   * happens, so what you read then is what you read later.
+   * `base` is where the design started — opened, loaded or empty — and `steps`
+   * is everything done to it since. The document on screen is what you get by
+   * folding the first `at` of them over the base, skipping the ones switched
+   * off. That is what makes this a timeline rather than an undo stack: a stack
+   * can say what it looked like before, and only a list of operations can say
+   * what it would look like *without* the third one.
    *
-   * Still a pair of arrays and not a list with an index, because `past.length`
-   * and `future.length` are what the toolbar and the command list ask, and a
-   * refactor that made those two subtractions would be a refactor for its own
-   * sake.
+   * `cache[i]` is the document after `i` steps, so the ordinary edit — append
+   * at the end — is one operation and not a replay of a hundred. It is
+   * truncated from the first index whose meaning changed, which is the only
+   * thing that has to be right for the cache to be invisible.
    */
-  past: Step[];
-  future: Step[];
+  base: Doc;
+  /** How the base arrived, which is the first row of the list. */
+  baseLabel: string;
+  steps: Step[];
+  /** How many steps are in force. The mark in the list; undo moves it back. */
+  at: number;
+  /** Materialised documents, `cache[i]` after `i` steps. Never read by a panel. */
+  cache: Doc[];
+  /** Steps that could not replay, and what they could not find. */
+  failures: Failure[];
   /** What produced the document on screen. The current step's label. */
   docLabel: string;
   /**
    * Go to a point in the history directly.
    *
-   * The index is into `past.concat(current, future)`, which is the list the
-   * panel shows. Several undos in one gesture and the drawing lands where the
-   * row said it would — the property a list is worth having for.
+   * The index is how many steps are in force, so 0 is the design as opened.
+   * Several undos in one gesture and the drawing lands where the row said it
+   * would — the property a list is worth having for.
    */
   jumpTo: (index: number) => void;
+  /**
+   * Switch a step off, or back on, and replay everything after it.
+   *
+   * The thing a stack of documents cannot do. A suppressed step stays in the
+   * list — it is a step you have taken out, not one you never made — and
+   * whatever depended on it fails and says so rather than being silently
+   * dropped.
+   */
+  setSuppressed: (index: number, suppressed: boolean) => void;
+  /** Take a step out of the history for good. */
+  removeStep: (index: number) => void;
   rightTab: RightTab;
   /**
    * Whether the findings dock along the bottom is open.
@@ -336,23 +352,65 @@ const initialDoc = getPreset("llama-3-8b");
 
 export const useEditor = create<EditorState>((set, get) => {
   /**
-   * Apply a pure document operation and record it for undo.
+   * Record an edit and perform it.
    *
-   * `label` is not optional any more. It is what the history list shows and
-   * what the toolbar says while the edit is fresh, and an unlabelled row in a
-   * list of edits is a row you have to reconstruct from the drawing.
+   * It takes a value rather than a function now, because the whole of E7's
+   * third part turns on an edit being something you can keep: a closure can be
+   * called and a value can be replayed, suppressed, and read back out of the
+   * list a week later.
+   *
+   * An edit that changes nothing is not recorded. Dragging a block one pixel
+   * and back is not two rows in a timeline.
    */
-  const commit = (fn: (doc: Doc) => Doc, label: string): void => {
-    const { doc, past, docLabel } = get();
-    const next = fn(doc);
+  const commit = (edit: Edit, label: string): void => {
+    const { doc, steps, at, cache } = get();
+    const next = applyEdit(doc, edit);
     if (next === doc) return;
+
+    // Everything ahead of the mark goes. Editing after an undo has always
+    // discarded the redo; what is new is that the *steps* go rather than the
+    // documents, which is the same thing said about a list instead of a stack.
+    const kept = steps.slice(0, at).slice(-(UNDO_LIMIT - 1));
+    const dropped = Math.max(0, Math.min(at, steps.length) - kept.length);
     set({
       doc: next,
-      past: [...past.slice(-(UNDO_LIMIT - 1)), { doc, label: docLabel }],
-      future: [],
+      base: dropped > 0 ? cache[dropped]! : get().base,
+      steps: [...kept, { edit, label }],
+      at: kept.length + 1,
+      cache: [...cache.slice(dropped, dropped + kept.length + 1), next],
+      failures: get().failures.filter((f) => f.at < kept.length),
       docLabel: label,
       status: label,
     });
+  };
+
+  /**
+   * Replay from the first step whose meaning changed.
+   *
+   * Nothing before `from` can have moved, so the cache up to there stands. A
+   * suppressed step in the middle is the case this exists for: the fold has to
+   * run again from there, and the steps after it are being applied to a
+   * document they have not seen before, which is where a failure comes from.
+   */
+  const rebuild = (from: number): void => {
+    const { base, steps, at, cache } = get();
+    const start = Math.max(0, Math.min(from, at));
+    const head = cache.slice(0, start + 1);
+    let doc = head[start] ?? base;
+    const failures = get().failures.filter((f) => f.at < start);
+
+    for (let i = start; i < at; i++) {
+      const step = steps[i]!;
+      if (step.suppressed) {
+        head.push(doc);
+        continue;
+      }
+      const next = applyEdit(doc, step.edit);
+      if (next === doc) failures.push({ at: i, reason: reasonFor(step.edit) });
+      doc = next;
+      head.push(doc);
+    }
+    set({ doc, cache: head, failures, docLabel: labelAt(steps, at, get().baseLabel) });
   };
 
   return {
@@ -362,9 +420,13 @@ export const useEditor = create<EditorState>((set, get) => {
     selection: null,
     also: [],
     selectedNet: null,
-    past: [],
-    future: [],
-    docLabel: "Opened Llama 3 8B",
+    base: initialDoc,
+    baseLabel: "Opened llama-3-8b",
+    steps: [],
+    at: 0,
+    cache: [initialDoc],
+    failures: [],
+    docLabel: "Opened llama-3-8b",
     rightTab: "inspector",
     dockOpen: false,
     shapeMode: "symbolic",
@@ -427,20 +489,27 @@ export const useEditor = create<EditorState>((set, get) => {
       set({ detail, selection: null });
     },
 
+    // Opening a different design starts a different timeline. Keeping the old
+    // steps would offer to replay edits made to another document, which is
+    // either meaningless or, worse, occasionally works.
     setDoc: (doc, status) =>
-      set((s) => ({
+      set({
         doc,
+        base: doc,
+        baseLabel: status ?? "Opened a design",
         docLabel: status ?? "Opened a design",
+        steps: [],
+        at: 0,
+        cache: [doc],
+        failures: [],
         // Replacing the whole document is opening a different design, so it
         // becomes its own baseline. An edit does not: that is the point.
         opened: doc,
-        past: [...s.past.slice(-(UNDO_LIMIT - 1)), { doc: s.doc, label: s.docLabel }],
-        future: [],
         path: [],
         selection: null,
         selectedNet: null,
         status: status ?? null,
-      })),
+      }),
     applyRemote: (doc, status) =>
       set((s) => {
         // The level survives unless the agent removed it from under us, and
@@ -456,11 +525,21 @@ export const useEditor = create<EditorState>((set, get) => {
         const producer = net ? net.slice(0, net.lastIndexOf(":")) : "";
         const selectedNet =
           net && producer && ops.nodeAtPath(doc, ops.segmentsOf(producer)) ? net : null;
+        // A step like any other, so an agent's edit is in the timeline: it
+        // can be jumped past, suppressed, and read a week later. It carries
+        // the document because that is what arrived — what the agent did is
+        // expressible as operations, but what comes over the wire is a result.
+        const label = status ?? "An edit from elsewhere";
+        const kept = s.steps.slice(0, s.at).slice(-(UNDO_LIMIT - 1));
+        const dropped = Math.max(0, Math.min(s.at, s.steps.length) - kept.length);
         return {
           doc,
-          docLabel: status ?? "An edit from elsewhere",
-          past: [...s.past.slice(-(UNDO_LIMIT - 1)), { doc: s.doc, label: s.docLabel }],
-          future: [],
+          base: dropped > 0 ? s.cache[dropped]! : s.base,
+          steps: [...kept, { edit: { kind: "replaceDoc", doc } as Edit, label }],
+          at: kept.length + 1,
+          cache: [...s.cache.slice(dropped, dropped + kept.length + 1), doc],
+          failures: s.failures.filter((f) => f.at < kept.length),
+          docLabel: label,
           path,
           selection,
           selectedNet,
@@ -556,93 +635,116 @@ export const useEditor = create<EditorState>((set, get) => {
     setStatus: (status) => set({ status }),
     requestLayout: () => set((s) => ({ layoutNonce: s.layoutNonce + 1 })),
 
+    // Moving the mark, not unwinding a stack. Every document between here and
+    // the base is already in the cache, so an undo is a lookup.
     undo: () =>
       set((s) => {
-        const previous = s.past[s.past.length - 1];
-        if (!previous) return s;
+        if (s.at === 0) return s;
+        const at = s.at - 1;
         return {
-          doc: previous.doc,
-          docLabel: previous.label,
-          past: s.past.slice(0, -1),
-          future: [{ doc: s.doc, label: s.docLabel }, ...s.future].slice(0, UNDO_LIMIT),
-          status: `Undid ${s.docLabel.toLowerCase()}`,
+          at,
+          doc: s.cache[at]!,
+          docLabel: labelAt(s.steps, at, s.baseLabel),
+          status: `Undid ${s.steps[at]!.label.toLowerCase()}`,
         };
       }),
     redo: () =>
       set((s) => {
-        const next = s.future[0];
-        if (!next) return s;
+        if (s.at >= s.steps.length) return s;
+        const at = s.at + 1;
         return {
-          doc: next.doc,
-          docLabel: next.label,
-          past: [...s.past.slice(-(UNDO_LIMIT - 1)), { doc: s.doc, label: s.docLabel }],
-          future: s.future.slice(1),
-          status: next.label,
+          at,
+          doc: s.cache[at]!,
+          docLabel: labelAt(s.steps, at, s.baseLabel),
+          status: s.steps[s.at]!.label,
         };
       }),
     jumpTo: (index) =>
       set((s) => {
-        const steps = [...s.past, { doc: s.doc, label: s.docLabel }, ...s.future];
-        const target = steps[index];
-        if (!target || index === s.past.length) return s;
+        if (index < 0 || index > s.steps.length || index === s.at) return s;
         return {
-          doc: target.doc,
-          docLabel: target.label,
-          past: steps.slice(0, index),
-          future: steps.slice(index + 1),
+          at: index,
+          doc: s.cache[index]!,
+          docLabel: labelAt(s.steps, index, s.baseLabel),
           // Not "undid five edits": which five is the question, and the row
           // you pressed is the answer.
-          status: `Back to: ${target.label}`,
+          status: `Back to: ${labelAt(s.steps, index, s.baseLabel)}`,
           selection: null,
           also: [],
           selectedNet: null,
         };
       }),
 
-    addNode: (parent, node, xy) => commit((d) => ops.addNode(d, parent, node, xy), `Added ${node.type}`),
+    setSuppressed: (index, suppressed) => {
+      const { steps } = get();
+      const step = steps[index];
+      if (!step || Boolean(step.suppressed) === suppressed) return;
+      set({
+        steps: steps.map((st, i) => (i === index ? { ...st, suppressed } : st)),
+        selection: null,
+        also: [],
+        selectedNet: null,
+        status: `${suppressed ? "Suppressed" : "Restored"}: ${step.label}`,
+      });
+      rebuild(index);
+    },
+
+    removeStep: (index) => {
+      const { steps, at } = get();
+      const step = steps[index];
+      if (!step) return;
+      set({
+        steps: steps.filter((_, i) => i !== index),
+        at: index < at ? at - 1 : at,
+        selection: null,
+        also: [],
+        selectedNet: null,
+        status: `Removed: ${step.label}`,
+      });
+      rebuild(index);
+    },
+
+    addNode: (parent, node, xy) => commit({ kind: "addNode", parent, node, xy }, `Added ${node.type}`),
     removeNode: (path) => {
-      commit((d) => ops.removeNode(d, ops.segmentsOf(path)), `Deleted ${lastOf(path)}`);
+      commit({ kind: "removeNode", path }, `Deleted ${lastOf(path)}`);
       const { selection, also } = get();
       if (selection === path) set({ selection: null });
       if (also.includes(path)) set({ also: also.filter((p) => p !== path) });
     },
-    setParam: (path, key, value) => commit((d) => ops.setParam(d, ops.segmentsOf(path), key, value), `Set ${lastOf(path)}.${key}`),
-    connect: (parent, from, to) => commit((d) => ops.connect(d, parent, from, to), `Wired ${from} to ${to}`),
+    setParam: (path, key, value) => commit({ kind: "setParam", path, key, value }, `Set ${lastOf(path)}.${key}`),
+    connect: (parent, from, to) => commit({ kind: "connect", parent, from, to }, `Wired ${from} to ${to}`),
     disconnect: (parent, from, to) =>
-      commit((d) => ops.disconnect(d, parent, from, to), `Unwired ${from} from ${to}`),
+      commit({ kind: "disconnect", parent, from, to }, `Unwired ${from} from ${to}`),
     reconnect: (parent, from, to, next) =>
-      commit(
-        (d) => ops.connect(ops.disconnect(d, parent, from, to), parent, next.from, next.to),
-        `Moved a wire to ${next.to}`,
-      ),
-    setRuleSeverity: (rule, severity) => commit((d) => ops.setRuleSeverity(d, rule, severity), `Set the rule "${rule}" to ${severity}`),
+      commit({ kind: "reconnect", parent, from, to, next }, `Moved a wire to ${next.to}`),
+    setRuleSeverity: (rule, severity) => commit({ kind: "setRuleSeverity", rule, severity }, `Set the rule "${rule}" to ${severity}`),
     // Through the configuration in force, so an edit made while one is selected
     // lands in it rather than in the design underneath.
-    setSymbol: (name, def) => commit((d) => ops.setSymbolInConfiguration(d, name, def), `Set ${name}`),
+    setSymbol: (name, def) => commit({ kind: "setSymbol", name, def }, `Set ${name}`),
     setActiveConfiguration: (name) =>
       commit(
-        (d) => ops.setActiveConfiguration(d, name),
+        { kind: "setActiveConfiguration", name },
         name === null ? "Building the design as written" : `Building at "${name}"`,
       ),
     captureConfiguration: (name, doc) =>
-      commit((d) => ops.captureConfiguration(d, name, doc), `Saved the configuration "${name}"`),
+      commit({ kind: "captureConfiguration", name, doc }, `Saved the configuration "${name}"`),
     removeConfiguration: (name) =>
-      commit((d) => ops.removeConfiguration(d, name), `Removed the configuration "${name}"`),
-    renameSymbol: (from, to) => commit((d) => ops.renameSymbol(d, from, to), `Renamed ${from} to ${to}`),
-    moveNode: (path, xy) => commit((d) => ops.moveNode(d, ops.segmentsOf(path), xy), `Moved ${lastOf(path)}`),
+      commit({ kind: "removeConfiguration", name }, `Removed the configuration "${name}"`),
+    renameSymbol: (from, to) => commit({ kind: "renameSymbol", from, to }, `Renamed ${from} to ${to}`),
+    moveNode: (path, xy) => commit({ kind: "moveNode", path, xy }, `Moved ${lastOf(path)}`),
     moveNodes: (moves, label) =>
       commit(
-        (d) => ops.moveNodes(d, moves),
+        { kind: "moveNodes", moves },
         label ?? (moves.length === 1 ? `Moved ${lastOf(moves[0]!.path)}` : `Moved ${moves.length} blocks`),
       ),
-    renameNode: (path, label) => commit((d) => ops.renameNode(d, ops.segmentsOf(path), label), `Labelled ${lastOf(path)}`),
+    renameNode: (path, label) => commit({ kind: "renameNode", path, label }, `Labelled ${lastOf(path)}`),
     setNodeId: (path, id) => {
       const segs = ops.segmentsOf(path);
-      commit((d) => ops.setNodeId(d, segs, id), `Renamed ${lastOf(path)} to ${id.trim()}`);
+      commit({ kind: "setNodeId", path, id }, `Renamed ${lastOf(path)} to ${id.trim()}`);
       const renamed = [...segs.slice(0, -1), id.trim()].join("/");
       if (get().selection === path) set({ selection: renamed });
     },
-    setMetaName: (name) => commit((d) => ops.setMetaName(d, name), `Named the design "${name}"`),
+    setMetaName: (name) => commit({ kind: "setMetaName", name }, `Named the design "${name}"`),
     loadPreset: (name) => {
       const doc = getPreset(name);
       get().setDoc(doc, `Loaded preset ${name}`);

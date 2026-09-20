@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/license-MIT-111111?style=flat-square" alt="MIT licensed" />
   <img src="https://img.shields.io/badge/engine-Go%20%E2%86%92%20WebAssembly-2f6fb0?style=flat-square" alt="Go engine compiled to WebAssembly" />
   <img src="https://img.shields.io/badge/presets-23%20verified-1b6834?style=flat-square" alt="23 verified presets" />
-  <img src="https://img.shields.io/badge/tests-324%20passing-1b6834?style=flat-square" alt="324 tests passing" />
+  <img src="https://img.shields.io/badge/tests-339%20passing-1b6834?style=flat-square" alt="339 tests passing" />
   <img src="https://img.shields.io/badge/MCP-server%20included-8a5b9c?style=flat-square" alt="MCP server included" />
 </p>
 
@@ -137,6 +137,13 @@ the point: the numbers cannot depend on where you asked for them.
 pin anchors, junction dots on branching nets, hollow circles on unconnected
 pins. Containers unfold in place so a 32-layer stack reads as one frame with a
 `32×` bracket, the way published architecture figures draw it.
+
+**A feature timeline.** Every edit is kept as an operation with its arguments,
+not as a snapshot, so a step can be taken out of the middle and everything
+after it replays on top of what is left. Suppress the step that widened the
+model and the rename you did afterwards survives. A step that cannot replay —
+because you suppressed the one that added the block it wired — says what it
+could not find rather than being dropped in silence.
 
 **Tensors you can point at.** A wire is a tensor, and clicking one says what it
 carries: its shape, its dtype, the block that made it, every block that reads

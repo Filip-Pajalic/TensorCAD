@@ -1312,66 +1312,71 @@ being edited does not change what the design weighs.
 
 E7: operations as first-class objects.
 
-## Eighteenth pass: a history you can read
+## Eighteenth pass: the timeline
 
-The store has kept a hundred states since the first pass. Undo walked them one
-press at a time, which meant that finding out whether the thing you regret was
-four edits ago or six was done by pressing Ctrl+Z and watching.
+The store had kept a hundred states since the first pass, and undo walked them
+one press at a time. Making that list *readable* was the obvious half: give
+every state the sentence the toolbar showed when it was made and let a row be
+pressed. That took an afternoon and is genuinely useful.
 
-Each state now carries the sentence the toolbar showed when it was made — the
-same words, not a second description of the same event — and the `History` tab
-lists them. Pressing a row goes there: undo several times at once, and the
-drawing lands where the row said it would.
+It is also not what E7 asked for, and the gap is the interesting part. A list
+of states can say what the design looked like before. It cannot say what the
+design would look like **without the third edit**, because by the time an edit
+is a document the operation that made it is gone.
 
-Two labels turned out to be worth distinguishing. Auto-layout and a person
-dragging blocks both go through `moveNodes`, and a history that called both
-"Moved 6 blocks" credits the machine's work to the person, who then looks for
-the drag they do not remember making. Auto-layout says "Laid out the sheet".
+### An edit as a value
 
-### What it is not
+`commit` was always the single door every document change went through. It took
+a closure — `(d) => ops.setParam(d, path, key, value)` — and a closure can be
+called and nothing else. It now takes a value:
 
-Not a feature timeline. A CAD timeline holds *operations*, and its point is
-that you can suppress one in the middle and everything after it replays without
-it. This holds states: jumping back and then editing discards what was ahead,
-exactly as undo-then-edit always has.
+```
+{ kind: "setParam", path, key, value }
+```
 
-The difference matters because the two look identical in a screenshot. Making
-it the other thing means every edit becoming a serialisable, replayable
-descriptor rather than a closure over its arguments — `commit` is the single
-door they would all go through, which is the encouraging part — and that is a
-change to the model everything else is built on, not a panel.
+and `applyEdit` is the only thing that knows how to perform one. The history is
+a base document and a list of these, and the drawing is the fold of the list
+over the base. Seventeen call sites, one dispatcher, and every argument a value
+rather than a reference into the document as it was — an edit that read state
+outside itself would replay differently depending on what came before it, which
+is exactly the property a timeline cannot have.
 
-## Seventeenth pass: the wire is a thing
+Three gestures, and they are now different things rather than three names for
+undo. Pressing a row moves the mark. Suppressing takes a step out of the middle
+and leaves it in the list, struck through. Removing takes it out for good.
 
-Clicking a wire used to write its endpoints into the status bar and stop there.
-A tensor was the one part of the design you could see and not select — which
-meant the only way to ask what a wire cost was to work out which block to click
-and then read a number that was about something else.
+### The fold has to be cheap
 
-Now selecting a net opens an inspector for the tensor: shape, dtype, the block
-that produced it, every block that reads it, and its share of the activation
-memory. Every other segment of the same net lights with it, because they are
-one tensor and not several — the net is keyed by the producing pin, which is
-exactly the set the analysis already treated as one.
+Replaying from the base on every keystroke is a hundred document clones. So
+`cache[i]` is the document after `i` steps and the replay starts at the first
+step whose meaning changed — which for the ordinary edit, appended at the end,
+is one apply. Suppressing a step in the middle is the case that actually
+replays, and it replays only the tail.
 
-### The number that could not be had before
+### When a step cannot replay
 
-Activation memory has always been attributed to tensors rather than to blocks —
-that is an invariant, and it is what stops a tensor two blocks both read being
-counted twice. It was only ever *reported* per block. For a plain transformer
-that is the same rows under a coarser key: every block that holds an activation
-holds exactly one.
+Suppress the edit that added a block and the edit that wired it has nothing to
+wire. That is not a bug to prevent; it is what taking a step out of the middle
+means, and every parametric CAD tool has the condition. The step is marked, the
+fold carries on past it, and it says what it could not find — *"there is no
+extra"* — because that is what tells you which earlier row to put back.
 
-It stops being the same the moment a block fans out. `split` is how a selective
-scan gets its Δ, B and C out of one projection, and Nemotron-H's holds 290 MiB
-across three output pins: 128, 160 and 2. One number for the block answers
-neither which of them is the big one nor what dropping one would save. So the
-analysis now reports both keys, and the drawing can ask the finer question
-because there is somewhere to ask it from.
+The alternative, refusing to suppress anything another step might depend on,
+would refuse almost everything.
 
-### What it deliberately does not do
+### What this found in `ops.ts`
 
-A net has no name of its own. Naming one is a document change — a label that
-has to round-trip, be unique, and mean something to the generated code — and
-the thing that was missing was not a name but an answer. The inspector is
-read-only, and selecting a net is a selection, not an edit.
+Failure is detected by an edit returning the document it was given, and the
+module was documented as working that way. Three functions did not. `removeNode`
+filtered a node that was not there and returned a clone; so did `disconnect` for
+an absent edge, and `moveNodes` wrote positions for paths that had gone. Each
+reported success for work it had not done — invisible while the result was only
+ever thrown away, and wrong the moment something read it.
+
+### Where the agent's edits go
+
+The live bridge hands over documents, not operations: what the agent did is
+expressible as operations, but what arrives over the wire is the result. So it
+is a `replaceDoc` step — a real row in the timeline, labelled, jumpable, and
+suppressible. An agent's edit can be taken back out of the middle of your work
+like any other.

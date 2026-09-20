@@ -118,8 +118,8 @@ function Cell({
 
 export default function Toolbar(): React.ReactElement {
   const doc = useEditor((s) => s.doc);
-  const past = useEditor((s) => s.past.length);
-  const future = useEditor((s) => s.future.length);
+  const past = useEditor((s) => s.at);
+  const future = useEditor((s) => s.steps.length - s.at);
   const status = useEditor((s) => s.status);
   const detail = useEditor((s) => s.detail);
   const viewMode = useEditor((s) => s.viewMode);

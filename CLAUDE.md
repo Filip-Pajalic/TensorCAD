@@ -105,11 +105,16 @@ Two cross-checks worth knowing:
   wraps `Rules` in a strip that carries the counts even when collapsed, because the checks are
   about the drawing and belong under it.
   `state/commands.ts` is the single list behind the keyboard, the menu and the shortcut sheet;
-  `commit(fn, label)` in `state/store.ts` is the single door every document edit goes through,
-  and its label is both what the toolbar says at the time and what the `History` tab shows
-  later — one sentence, not two descriptions of the same event. That history is a stack of
-  *states*, not of operations: jumping back and editing discards what was ahead, which is what
-  distinguishes it from the feature timeline E7 asks for.
+  `commit(edit, label)` in `state/store.ts` is the single door every document edit goes through,
+  and it takes a **value** rather than a closure — `{ kind: "setParam", path, key, value }` —
+  because that is what makes the history a feature timeline rather than an undo stack. The
+  state is `base` plus `steps` plus `at`, and the document is the fold; `state/edits.ts` owns
+  the union and `applyEdit`. A step can be suppressed, and everything after it replays on top
+  of what is left. Failure is an edit returning the document it was given, so an `ops` function
+  that clones unconditionally when it has nothing to do reports success for work it did not
+  do — three of them did, and it was invisible until something read the answer. The label is
+  both what the toolbar says at the time and what the timeline shows later: one sentence, not
+  two descriptions of the same event.
   `Cluster`, `Ladder` and `Runs` are the panels that do not read `derive()`. `Runs` reads
   nothing from the engine at all — it is the one panel about what a design *did* rather than
   what it would cost, reading the records `tensorcad-runtime smoke-train` writes and drawing

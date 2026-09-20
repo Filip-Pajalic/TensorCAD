@@ -113,6 +113,10 @@ export function removeNode(doc: Doc, segments: Segments): Doc {
   const id = segments[segments.length - 1];
   const graph = graphAtPath(next, parent);
   if (!graph) return doc;
+  // Nothing to remove is not the same as removing nothing. The timeline reads
+  // an unchanged document as "this step could not replay", and a filter that
+  // matched nothing would have said it succeeded.
+  if (!graph.nodes.some((n) => n.id === id)) return doc;
   graph.nodes = graph.nodes.filter((n) => n.id !== id);
   graph.edges = graph.edges.filter(
     ([from, to]) => splitEndpoint(from).node !== id && splitEndpoint(to).node !== id,
@@ -167,6 +171,7 @@ export function disconnect(doc: Doc, parent: Segments, from: string, to: string)
   const next = cloneDoc(doc);
   const graph = graphAtPath(next, parent);
   if (!graph) return doc;
+  if (!hasEdge(graph, from, to)) return doc;
   graph.edges = graph.edges.filter(([f, t]) => !(f === from && t === to));
   return next;
 }
@@ -208,10 +213,13 @@ export function moveNode(doc: Doc, segments: Segments, xy: [number, number]): Do
 }
 
 export function moveNodes(doc: Doc, moves: { path: string; xy: [number, number] }[]): Doc {
-  if (moves.length === 0) return doc;
+  // A position for a block that is not there is a stale key in the ui map and,
+  // on a replay, a step reporting success for work it did not do.
+  const real = moves.filter((m) => nodeAtPath(doc, segmentsOf(m.path)));
+  if (real.length === 0) return doc;
   const next = cloneDoc(doc);
   const pos = positions(next);
-  for (const m of moves) pos[m.path] = [Math.round(m.xy[0]), Math.round(m.xy[1])];
+  for (const m of real) pos[m.path] = [Math.round(m.xy[0]), Math.round(m.xy[1])];
   return next;
 }
 
@@ -324,6 +332,7 @@ export function setSymbolInConfiguration(
 }
 
 export function setMetaName(doc: Doc, name: string): Doc {
+  if (doc.meta.name === name) return doc;
   const next = cloneDoc(doc);
   next.meta = { ...next.meta, name };
   return next;

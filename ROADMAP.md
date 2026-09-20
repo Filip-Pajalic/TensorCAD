@@ -155,21 +155,24 @@ Done:
   save. A test pins both halves of that: where the finer key earns itself, and where it
   deliberately says nothing new.
 - Configurations, the part of E7 that had a shape: `doc.configurations` are named sets of symbol values and `doc.active` says which the design is built at, so one architecture can carry four sizes rather than four files carrying one each. A configuration overrides symbols and nothing else, says only what differs — so `F` written as `4*D` follows an override of `D` rather than freezing — and never touches the document's own symbols, which is what makes switching twice end where it started. A test builds one design at all four GPT-2 sizes and reproduces every preset exactly.
-- A readable history, which is as far towards E7's third part as a stack of documents goes.
-  Every state now carries the sentence the toolbar showed when it was made, and the `History`
-  tab lists them with a way back to any one — undo several times at once, and the drawing
-  lands where the row said it would. It is **not** a feature timeline, and the panel says so:
-  a CAD timeline holds *operations* and its point is that you can suppress one in the middle
-  and everything after replays without it. This holds states, so editing after a jump discards
-  what was ahead, exactly as undo-then-edit always has. Making it the other thing means every
-  edit becoming a serialisable, replayable descriptor rather than a closure — `commit` is the
-  single door it would go through — and that is a change to the model everything else is built
-  on rather than a panel.
-- The definition editor: a block the design defines is opened and edited directly, not through an instance, so a change reaches every instance at once. `graphAtPath` is the single door every operation goes through, so one prefix made every existing tool write into `defs` — add, wire, move, rename, delete, with undo. What a literal dropped into a parameterised template means is settled by a rule rather than a guess: inside a definition a bare identifier naming a declared parameter *is* that parameter, which is how the built-in composites are already written. The canvas gets a preview with `$D` bound to `D` over the block's own parameters at their defaults, and an edit naming a parameter is stored back as a reference to it. Tested as a round trip, because one direction proves nothing.
-- The design's own block library, in the editor: `Blocks > Blocks this design defines` lists what each one declares and where it is used, and renames or deletes it. A rename moves every instance with the definition, at any depth and inside other definitions; a delete is refused while anything uses it, counting the instances inside other definitions separately because nobody can navigate to those. Editing a template in place is deliberately not here — a literal dropped into a parameterised graph either means 4096 or means `$D`, and an editor that guessed would write a definition that silently stopped scaling.
-- Active against resident, on both of the axes where the two diverge. A sparse model at batch reads the union of what its tokens routed to rather than one token's share, so Mixtral at batch 32 reads 43.49 GiB of the 43.50 GiB it holds and decodes at 929 tok/s where the active count alone said 1314; the formula is per block and needs to know nothing about top_k. Latent attention's cache is 68.63 KiB per token only under a kernel that scores in the compressed space, and 3.82 MiB under one that does not, which reproduces DeepSeek-V2 Table 1's 57x. Both errors ran the same way: the number a person would have quoted was the flattering one.
-- The μP width ladder, in the editor as well: a `Ladder` tab beside Cluster lists the rungs with a bar for how wide each is, and pressing one opens that design — a rung is a different design rather than a different operating point, which is what distinguishes it from the panel beside it. `mup(doc, options)`, `tensorcad mup` and `tensorcad_mup` build the same design at several widths, with what to multiply the initialization and the learning rate by at each. It holds the head dimension and grows the head count, which is the convention the paper is stated in and the one that leaves every head the shape it had at the base. A weight is classified by measuring which of its sides moved between a rung and the same design twice as wide, rather than by its block type: that is how a router lands in the output row, its fan_out being the expert count, and how an expert's own matrices land in the hidden row. Building it surfaced two designs the scaler had been shrinking wrongly — a "compressed" attention latent eight times wider than the model it compressed, and a predictor wider and deeper than the encoder it predicts for.
-- Alternating local and global attention, as Gemma 2 and 3 use it: a repeat of the group rather than of the layer, so half of Gemma-2-9B's cache is bounded by the window. At 128k context that is 21.66 GiB where treating every layer as global said 42.00 GiB. The importer builds it rather than warning about it.
+- Operations as first-class objects, the last third of E7 — and with it E7 entire. `commit` was
+  always the single door every document change went through; it took a closure, and a closure
+  can be called and nothing else. It now takes a value: `{ kind: "setParam", path, key, value }`,
+  with `applyEdit` the only thing that knows how to perform one. The history is a base document
+  and a list of these, and the drawing is the fold. So a step can be **suppressed** — taken out
+  of the middle while everything after it replays on top of what is left — which is the thing a
+  stack of documents could never do, because by the time an edit is a document the operation
+  that made it is gone. Seventeen call sites and one dispatcher; `cache[i]` is the document
+  after `i` steps, so the ordinary edit is one apply and only a suppression replays a tail.
+  Suppressing the step that added a block leaves the step that wired it with nothing to wire,
+  which is not a bug to prevent but what taking a step out of the middle means: the step is
+  marked, skipped, and says what it could not find. Writing that found three functions in
+  `ops.ts` reporting success for work they had not done — `removeNode` filtering a node that was
+  not there, `disconnect` an edge that was not there, `moveNodes` writing positions for paths
+  that had gone — invisible while the result was only ever thrown away, and wrong the moment
+  something read it. An agent's edit is a `replaceDoc` step, so what arrives over the live
+  bridge is a row in the timeline like any other: labelled, jumpable, and able to be taken back
+  out of the middle.
 
 Remaining:
 - Presets for 2026 models as their configs stabilize.

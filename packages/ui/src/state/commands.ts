@@ -140,7 +140,7 @@ export const COMMANDS: Command[] = [
     group: "edit",
     shortcut: `${MOD}+z`,
     run: () => editor().undo(),
-    enabled: () => editor().past.length > 0,
+    enabled: () => editor().at > 0,
   },
   {
     id: "edit.redo",
@@ -148,7 +148,7 @@ export const COMMANDS: Command[] = [
     group: "edit",
     shortcut: `${MOD}+Shift+z`,
     run: () => editor().redo(),
-    enabled: () => editor().future.length > 0,
+    enabled: () => editor().at < editor().steps.length,
   },
   {
     id: "edit.redo.alt",
@@ -156,7 +156,7 @@ export const COMMANDS: Command[] = [
     group: "edit",
     shortcut: `${MOD}+y`,
     run: () => editor().redo(),
-    enabled: () => editor().future.length > 0,
+    enabled: () => editor().at < editor().steps.length,
   },
   {
     id: "edit.delete",

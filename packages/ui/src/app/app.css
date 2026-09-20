@@ -3632,3 +3632,49 @@ select.field {
   font-size: 10.5px;
   color: var(--text-dim);
 }
+
+/* A timeline row carries its controls beside it. They stay dim until the row
+   is under the pointer: a column of on/off buttons reads as a form. */
+.history__row {
+  display: flex;
+  align-items: center;
+}
+
+.history__row .history__step {
+  flex: 1;
+  min-width: 0;
+}
+
+.history__toggle,
+.history__drop {
+  opacity: 0;
+  font-size: 9px;
+  color: var(--text-dim);
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+.history__row:hover .history__toggle,
+.history__row:hover .history__drop,
+.history__toggle[aria-pressed="true"] {
+  opacity: 1;
+}
+
+.history__toggle[aria-pressed="true"] {
+  color: var(--warn);
+}
+
+.history__drop:hover {
+  color: var(--error);
+}
+
+/* A suppressed step is struck through rather than hidden: it is a step you
+   took out, not one you never made. */
+.history__step--off .history__label {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.history__step--failed .history__label {
+  color: var(--error);
+}

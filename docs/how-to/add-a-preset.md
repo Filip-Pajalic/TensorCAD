@@ -3,34 +3,46 @@
 A preset is an assertion about a real model, so it has to be checkable. The
 twenty of them are the regression suite.
 
-## Write the spec
+A preset is a *document*: `packages/core-go/presets/data/<name>.json`, named in
+`index.json` beside it, embedded into the engine by `go:embed`. Adding one is
+writing that document and then proving it.
 
-Most models are decoder-only and go in `SPECS` in
-`packages/core/src/presets/index.ts`:
+## Import the config
 
-```ts
-{
-  name: "my-model-7b",
-  family: "my-family",
-  notes: "What distinguishes it, in a sentence or two.",
-  layers: 32, dModel: 4096, heads: 32, kvHeads: 8,
-  ffnHidden: 14336, vocab: 128256,
-  norm: "rmsnorm", mlp: "gated", act: "silu",
-  rope: { theta: 500000 }, tied: false,
-  published: { params: 8_030_261_248, source: "https://…" },
-}
+The fastest honest way to get the document is to let the importer read the
+model's own `config.json`:
+
+```bash
+bun packages/cli/src/index.ts import config.json \
+  --name my-model-7b \
+  --out packages/core-go/presets/data/my-model-7b.json
 ```
 
-Vision transformers use `JEPA_SPECS` and `presets/jepa.ts`; anything whose shape
-does not fit a spec at all is written out block by block, as `presets/convnet.ts`
-does for AlexNet.
+It prints two things and you want both. The parameter count is what the
+analysis makes of the document, ready to be held against the model card. The
+warnings are the importer saying where the document is not the model — Gemma 2's
+alternating attention, a multi-token-prediction head it left out — and each one
+either gets fixed by hand or written into `notes`.
 
-The builders are TypeScript, and the library the engine ships is the JSON they
-write: `bun run scripts/golden.ts` puts it in `packages/core-go/presets/data`,
-where `go:embed` picks it up. So a new preset is one spec here and one
-regenerate, not two definitions. When the TypeScript goes the JSON stays.
+The importer knows `gpt2`, `llama`, `mistral`, `mixtral`, `qwen2`, `qwen3`,
+`qwen3_moe`, `gemma`, `gemma2` and `deepseek_v3`. It refuses anything else by
+name rather than guessing, and a refusal is the case for copying the nearest
+preset's JSON and editing it. Something that is no kind of decoder at all is
+written block by block, as `ijepa-vit-h14` and `alexnet` are.
 
 ## `published` is the point
+
+An import gives you `meta.name` and `meta.family`. The claim is the rest, and
+you write it:
+
+```json
+"meta": {
+  "name": "my-model-7b",
+  "family": "my-family",
+  "notes": "What distinguishes it, in a sentence or two.",
+  "published": { "params": 8030261248, "source": "https://…" }
+}
+```
 
 - `params` — what the authors report, with a `source` link to the config or paper.
 - `tolerance` — **only** where the published figure is itself rounded ("22B
@@ -41,29 +53,38 @@ down. I-JEPA's ViT-H is 630.4M, not the 632M everyone cites, because its
 positions are frozen sincos and it has no class token. That sentence is worth
 more than the number.
 
+Then add the name to `packages/core-go/presets/data/index.json`, which is both
+the library's membership and the order it presents.
+
 ## Check it
 
+From `packages/core-go`, the assertion itself — every preset against its
+published count:
+
 ```bash
-bun run scripts/report.ts
+go test ./presets
 ```
 
-Your preset should say `exact`. Every other row must be unchanged.
-
-Then against real PyTorch:
+The golden files are per preset, so a new preset needs new ones. Regenerate
+them deliberately and read the diff: it should be your preset and nothing else.
 
 ```bash
-bun run scripts/codegen-demo.ts my-model-7b
+go run ./cmd/golden
+go test ./...
+```
+
+Then the compiled engine against those same answers:
+
+```bash
+bun run build:wasm
+bun test packages
+```
+
+Finally against real PyTorch:
+
+```bash
+bun packages/cli/src/index.ts codegen my-model-7b --out out/my-model-7b
 python -m tensorcad_runtime verify out/my-model-7b/model.py
 ```
 
 See [Verify a design against PyTorch](verify-against-pytorch.md).
-
-## Regenerate the Go golden files
-
-The Go port is proven against the TypeScript, so a new preset needs a new golden
-file:
-
-```bash
-bun run scripts/golden.ts
-go test ./...      # from packages/core-go
-```

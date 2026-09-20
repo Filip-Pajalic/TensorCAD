@@ -1212,7 +1212,39 @@ nothing was taken. It works in the app only because `main.tsx` loads the engine
 before it imports anything, which is an ordering rule nothing enforces; it is
 looked up on demand now.
 
+## Fourteenth pass: selecting more than one
+
+React Flow has always drawn a rubber band and reported what it enclosed. The
+canvas threw the report away — `onNodesChange` filtered `select` out on the
+grounds that selection is driven by the document — so the gesture did nothing
+and ctrl-clicking replaced rather than added.
+
+Selection is still driven by the document. What changed is that the document
+can now hold more than one: `selection` stays the *primary* and `also` carries
+the rest. Keeping them apart rather than making `selection` an array is what
+let the change be additive — the inspector, the volume view and a finding's
+highlight each answer exactly one block, and asking them to mean "one of
+several" would have made every one of them worse. Only what can act on several
+— delete, duplicate, lock — had to learn there are several.
+
+Which one is primary follows the gesture. A modified click names one block, so
+that block becomes primary and the inspector follows it. A rubber band names no
+one block, so whatever was primary stays, and the inspector does not jump to an
+arbitrary corner of the box. Delete works deepest-path-first, or removing one
+would shift the path of the next.
+
+### The key that was not there
+
+Writing the first test of the command list found that `Ctrl+D` was claimed by
+both Duplicate and Compare. `handleKey` looks a chord up in a Map, so the last
+one written won and **Duplicate's shortcut had silently stopped working** while
+the menu went on printing it. The single list was supposed to make exactly this
+impossible; what it prevents is a key *documented* wrong, not two commands
+claiming one. A test now says no two may, with the deliberate aliases — the
+second key for Redo, Delete and Zoom In — named rather than excused. Compare
+moved to `Ctrl+Shift+C`.
+
 ### Still outstanding
 
-The definition editor proper, per above; then E6 and E7: multi-selection and the
-bottom dock, and operations, configurations and tensors as first-class objects.
+The definition editor proper; the bottom dock; and E7, operations,
+configurations and tensors as first-class objects.

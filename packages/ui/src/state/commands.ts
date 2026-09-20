@@ -164,17 +164,32 @@ export const COMMANDS: Command[] = [
     group: "edit",
     shortcut: "Delete",
     run: () => {
-      const { selection, detail } = editor();
-      if (!selection) return;
-      if (detail > 0) {
-        editor().setStatus("The drawing is unfolded. Set detail to flat to edit it.");
+      const state = editor();
+      const chosen = state.selected();
+      if (chosen.length === 0) return;
+      if (state.detail > 0) {
+        state.setStatus("The drawing is unfolded. Set detail to flat to edit it.");
         return;
       }
-      if (editor().isLocked(selection)) {
-        editor().setStatus("That block is locked. Unlock it first.");
+      const locked = chosen.filter((path) => state.isLocked(path));
+      const free = chosen.filter((path) => !state.isLocked(path));
+      if (free.length === 0) {
+        state.setStatus(
+          chosen.length === 1
+            ? "That block is locked. Unlock it first."
+            : "Every one of those is locked. Unlock them first.",
+        );
         return;
       }
-      editor().removeNode(selection);
+      // Deepest first, so removing one does not shift the path of the next.
+      for (const path of [...free].sort((a, b) => b.split("/").length - a.split("/").length)) {
+        editor().removeNode(path);
+      }
+      if (locked.length > 0) {
+        editor().setStatus(
+          `Deleted ${free.length}; left ${locked.length} locked block${locked.length === 1 ? "" : "s"} alone.`,
+        );
+      }
     },
     enabled: () => editor().selection !== null,
   },
@@ -201,8 +216,15 @@ export const COMMANDS: Command[] = [
     shortcut: `${MOD}+l`,
     hint: "A locked block cannot be dragged and auto-layout leaves it alone",
     run: () => {
-      const { selection } = editor();
-      if (selection) editor().toggleLock(selection);
+      const state = editor();
+      const chosen = state.selected();
+      if (chosen.length === 0) return;
+      // What the primary is about to become is what they all become, so a
+      // mixed selection ends up in one state rather than inverted piecemeal.
+      const locking = !state.isLocked(chosen[chosen.length - 1]!);
+      for (const path of chosen) {
+        if (editor().isLocked(path) !== locking) editor().toggleLock(path);
+      }
     },
     enabled: () => editor().selection !== null,
   },
@@ -408,7 +430,10 @@ export const COMMANDS: Command[] = [
     id: "view.compare",
     label: "Compare…",
     group: "view",
-    shortcut: `${MOD}+d`,
+    // Not Mod+D, which is Duplicate and was here first. They both had it for a
+    // while, and since the chord map keeps the last one written, Duplicate's
+    // key quietly stopped working while the menu went on advertising it.
+    shortcut: `${MOD}+Shift+c`,
     run: () => editor().openDialog("compare"),
   },
   {

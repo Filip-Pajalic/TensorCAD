@@ -35,6 +35,7 @@ function Cell({
 export default function StatusBar(): React.ReactElement {
   const derived = useDerived();
   const selection = useEditor((s) => s.selection);
+  const also = useEditor((s) => s.also);
   const isLocked = useEditor((s) => s.isLocked);
   const path = useEditor((s) => s.path);
   const status = useEditor((s) => s.canvasStatus);
@@ -42,9 +43,13 @@ export default function StatusBar(): React.ReactElement {
   const errors = derived.issues.filter((i) => i.severity === "error").length;
   const warnings = derived.issues.filter((i) => i.severity === "warning").length;
 
-  const selectionLabel = selection
-    ? `${selection}${isLocked(selection) ? " (locked)" : ""}`
-    : `${status.nodeCount} blocks, ${status.edgeCount} nets`;
+  const selectionLabel = !selection
+    ? `${status.nodeCount} blocks, ${status.edgeCount} nets`
+    : also.length > 0
+      ? // Naming the primary as well as counting keeps the cell useful: it is
+        // the one the inspector is showing.
+        `${also.length + 1} selected, ${selection} last`
+      : `${selection}${isLocked(selection) ? " (locked)" : ""}`;
 
   const checkTone = errors > 0 ? "error" : warnings > 0 ? "warning" : "ok";
   const checkText =

@@ -2728,6 +2728,16 @@ select.field {
   padding-left: 6px;
 }
 
+/* Said when several blocks are selected but only one can be edited. */
+.inspector__multiple {
+  font-size: 11px;
+  color: var(--text-dim);
+  border-left: 2px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 6px 8px;
+  margin: 0 0 8px;
+}
+
 /* The design's own block library. */
 .defs {
   display: flex;

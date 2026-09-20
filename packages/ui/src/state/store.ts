@@ -85,8 +85,23 @@ export interface EditorState {
   markOpened: () => void;
   /** Breadcrumb path of the graph level on screen. */
   path: string[];
-  /** Full path of the selected node, or null. */
+  /**
+   * Full path of the selected node, or null.
+   *
+   * The *primary* selection: the one the inspector edits, the one the volume
+   * view highlights, the one a finding points at. It stays a single path
+   * because each of those answers exactly one block, and asking them to mean
+   * "one of several" would make every one of them worse.
+   */
   selection: string | null;
+  /**
+   * The rest of a multiple selection, primary excluded.
+   *
+   * Kept beside `selection` rather than replacing it, so everything that wants
+   * one block still gets one and only what can act on several has to know
+   * there are several.
+   */
+  also: string[];
   past: Doc[];
   future: Doc[];
   rightTab: RightTab;
@@ -150,6 +165,10 @@ export interface EditorState {
   setPath: (path: string[]) => void;
   enter: (path: string) => void;
   select: (path: string | null) => void;
+  /** Select several at once. The last is the primary. */
+  selectPaths: (paths: string[]) => void;
+  /** Everything selected, primary last. Empty when nothing is. */
+  selected: () => string[];
   /** What the canvas is showing, for the status bar. */
   canvasStatus: CanvasStatus;
   setCanvasStatus: (patch: Partial<CanvasStatus>) => void;
@@ -247,6 +266,7 @@ export const useEditor = create<EditorState>((set, get) => {
     opened: initialDoc,
     path: [],
     selection: null,
+    also: [],
     past: [],
     future: [],
     rightTab: "inspector",
@@ -323,12 +343,26 @@ export const useEditor = create<EditorState>((set, get) => {
         status: status ?? null,
       })),
     markOpened: () => set((s) => ({ opened: s.doc, status: "Comparing against this design" })),
-    setPath: (path) => set({ path, selection: null, findingFocus: null }),
-    enter: (path) => set({ path: ops.segmentsOf(path), selection: null, findingFocus: null }),
+    setPath: (path) => set({ path, selection: null, also: [], findingFocus: null }),
+    enter: (path) =>
+      set({ path: ops.segmentsOf(path), selection: null, also: [], findingFocus: null }),
     // Selecting something else puts the rules list back to showing
     // everything: a highlight that outlives what it pointed at is worse
     // than no highlight.
-    select: (selection) => set({ selection, findingFocus: null }),
+    select: (selection) => set({ selection, also: [], findingFocus: null }),
+    selectPaths: (paths) => {
+      const unique = [...new Set(paths)];
+      // The last one is the primary, which is what clicking one more makes it.
+      set({
+        selection: unique[unique.length - 1] ?? null,
+        also: unique.slice(0, -1),
+        findingFocus: null,
+      });
+    },
+    selected: () => {
+      const { selection, also } = get();
+      return selection === null ? [] : [...also, selection];
+    },
 
     showCallouts: true,
     toggleCallouts: () => set((state) => ({ showCallouts: !state.showCallouts })),
@@ -415,7 +449,9 @@ export const useEditor = create<EditorState>((set, get) => {
     addNode: (parent, node, xy) => commit((d) => ops.addNode(d, parent, node, xy)),
     removeNode: (path) => {
       commit((d) => ops.removeNode(d, ops.segmentsOf(path)));
-      if (get().selection === path) set({ selection: null });
+      const { selection, also } = get();
+      if (selection === path) set({ selection: null });
+      if (also.includes(path)) set({ also: also.filter((p) => p !== path) });
     },
     setParam: (path, key, value) => commit((d) => ops.setParam(d, ops.segmentsOf(path), key, value)),
     connect: (parent, from, to) => commit((d) => ops.connect(d, parent, from, to)),

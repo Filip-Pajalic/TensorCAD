@@ -324,6 +324,7 @@ function Parameters({
 
 export default function Inspector(): React.ReactElement {
   const selection = useEditor((s) => s.selection);
+  const also = useEditor((s) => s.also);
   const shapeMode = useEditor((s) => s.shapeMode);
   const { level, derived } = useLevel();
 
@@ -353,6 +354,10 @@ export default function Inspector(): React.ReactElement {
   }
 
   const def: BlockDef | undefined = CATALOG[node.type];
+  // The inspector edits one block, because a parameter belongs to one block.
+  // Saying which one is being edited, when several are selected, is the least
+  // it can do — the alternative is a panel that silently ignores the rest.
+  const multiple = also.length > 0;
   const resolved = derived.infer.resolved.get(selection);
   const ports = derived.infer.ports.get(selection);
   const params = derived.paramsByPath.get(selection) ?? 0;
@@ -374,6 +379,13 @@ export default function Inspector(): React.ReactElement {
           )}
         </div>
       </div>
+
+      {multiple && (
+        <p className="inspector__multiple">
+          {also.length + 1} blocks are selected. Parameters belong to one block, so this edits the
+          last one you picked; Delete, Duplicate and Lock act on all of them.
+        </p>
+      )}
 
       {def?.docs.summary && <p className="inspector__summary">{def.docs.summary}</p>}
       {def?.docs.formula && <pre className="inspector__formula mono">{def.docs.formula}</pre>}

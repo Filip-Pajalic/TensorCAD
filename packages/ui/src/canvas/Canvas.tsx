@@ -304,6 +304,8 @@ interface BuildOptions {
   specs: EdgeSpec[];
   derived: Derived;
   selection: string | null;
+  /** The rest of a multiple selection, primary excluded. */
+  alsoSelected: ReadonlySet<string>;
   boxes: Record<string, Box>;
   shapeMode: ShapeMode;
   lockedPaths: ReadonlySet<string>;
@@ -311,12 +313,18 @@ interface BuildOptions {
   editable: boolean;
 }
 
+/** The last segment of a path: the node's own id within its level. */
+function idOf(path: string): string {
+  return path.slice(path.lastIndexOf("/") + 1);
+}
+
 /**
  * Both views, built the same way: wire first so every part knows which pins
  * carry a line, then draw the parts.
  */
 function buildView(opts: BuildOptions): { nodes: CanvasNode[]; edges: FlowEdge[] } {
-  const { items, specs, derived, selection, boxes, shapeMode, lockedPaths, editable } = opts;
+  const { items, specs, derived, selection, alsoSelected, boxes, shapeMode, lockedPaths, editable } =
+    opts;
   const byPath = new Map(items.map((i) => [i.path, i]));
   const parentOf = new Map(items.map((i) => [i.path, i.parent]));
 
@@ -335,7 +343,7 @@ function buildView(opts: BuildOptions): { nodes: CanvasNode[]; edges: FlowEdge[]
       id: path,
       position: { x: box?.x ?? 0, y: box?.y ?? 0 },
       parentId: item.parent ?? undefined,
-      selected: selection === path,
+      selected: selection === path || alsoSelected.has(path),
       draggable: editable && !lockedPaths.has(path),
       connectable: editable,
       deletable: editable && !lockedPaths.has(path),
@@ -477,6 +485,10 @@ export default function Canvas(): React.ReactElement {
   const doc = useEditor((s) => s.doc);
   const path = useEditor((s) => s.path);
   const selection = useEditor((s) => s.selection);
+  const also = useEditor((s) => s.also);
+  // A Set once per change rather than per node: `buildView` asks for every
+  // node it draws, and a design can hold a few hundred.
+  const alsoSelected = useMemo(() => new Set(also), [also]);
   const layoutNonce = useEditor((s) => s.layoutNonce);
   const focusNonce = useEditor((s) => s.focusNonce);
   const shapeMode = useEditor((s) => s.shapeMode);
@@ -564,12 +576,13 @@ export default function Canvas(): React.ReactElement {
       specs,
       derived,
       selection,
+      alsoSelected,
       boxes: view ? boxes : flatBoxes,
       shapeMode,
       lockedPaths,
       editable: !view && level.editable,
     });
-  }, [view, boxes, level, derived, selection, positions, shapeMode, lockedPaths]);
+  }, [view, boxes, level, derived, selection, alsoSelected, positions, shapeMode, lockedPaths]);
 
   const builtNodes = built.nodes;
 
@@ -653,10 +666,42 @@ export default function Canvas(): React.ReactElement {
   nodesRef.current = nodes;
 
   const onNodesChange = useCallback((changes: NodeChange<CanvasNode>[]) => {
-    // Selection and removal are driven by the document, not by React Flow.
+    // Removal is driven by the document, not by React Flow: a node goes when
+    // the graph says it has, not when a key was pressed over it.
+    //
+    // Selection used to be dropped here for the same reason, which cost the
+    // box-drag: React Flow reports a rubber-band selection as one `select`
+    // change per node and nothing was listening. They are applied to the local
+    // nodes and then reported up, so the store holds the set and the store is
+    // still the one that says which nodes are drawn selected.
+    const selects = changes.filter((c) => c.type === "select");
     const local = changes.filter((c) => c.type !== "select" && c.type !== "remove");
-    if (local.length === 0) return;
-    setNodes((current) => applyNodeChanges(local, current));
+    if (local.length > 0) setNodes((current) => applyNodeChanges(local, current));
+    if (selects.length === 0) return;
+
+    const after = new Set(nodesRef.current.filter((n) => n.selected).map((n) => n.id));
+    for (const change of selects) {
+      if (change.type !== "select") continue;
+      if (change.selected) after.add(change.id);
+      else after.delete(change.id);
+    }
+    const state = useEditor.getState();
+    const ordered = [...after];
+    // Adding one block makes that one primary: a modified click is a click,
+    // and the inspector should follow it. Adding several is a box drag, where
+    // there is no one block the gesture named, so whatever was primary stays
+    // primary rather than the inspector jumping to an arbitrary corner.
+    const added = selects.filter((c) => c.type === "select" && c.selected);
+    const primary =
+      added.length === 1 ? added[0]!.id : state.selection !== null && after.has(state.selection) ? state.selection : null;
+    if (primary !== null && after.has(primary)) {
+      ordered.splice(ordered.indexOf(primary), 1);
+      ordered.push(primary);
+    }
+    if (ordered.length === state.selected().length && ordered.every((id, i) => id === state.selected()[i])) {
+      return;
+    }
+    state.selectPaths(ordered);
   }, []);
 
   // --- auto layout ---------------------------------------------------------
@@ -804,19 +849,32 @@ export default function Canvas(): React.ReactElement {
       zoomReset: () => void zoomTo(1, { duration: 140 }),
       duplicateSelection: () => {
         const state = useEditor.getState();
-        const path = state.selection;
-        if (!path || state.detail > 0 || !level.editable) return;
-        const id = path.slice(path.lastIndexOf("/") + 1);
-        const source = level.graph.nodes.find((n) => n.id === id);
-        if (!source) return;
-        const copy = structuredClone(source);
-        let n = 2;
+        if (state.detail > 0 || !level.editable) return;
+        // Only what is on this level: a selection can outlive a level change,
+        // and copying a block into a graph it does not belong to is worse than
+        // copying nothing.
+        const here = state.selected().filter((p) => level.graph.nodes.some((n) => n.id === idOf(p)));
+        if (here.length === 0) return;
+
+        // The names have to be chosen against each other as well as against
+        // the level, or two copies of the same block both take `_2`.
         const taken = new Set(level.graph.nodes.map((x) => x.id));
-        while (taken.has(`${source.id}_${n}`)) n++;
-        copy.id = `${source.id}_${n}`;
-        const at = nodesRef.current.find((x) => x.id === path)?.position;
-        state.addNode(level.segments, copy, [(at?.x ?? 0) + 48, (at?.y ?? 0) + 48]);
-        state.select(joinPath(level.prefix, copy.id));
+        const made: string[] = [];
+        for (const path of here) {
+          const source = level.graph.nodes.find((n) => n.id === idOf(path));
+          if (!source) continue;
+          const copy = structuredClone(source);
+          let n = 2;
+          while (taken.has(`${source.id}_${n}`)) n++;
+          copy.id = `${source.id}_${n}`;
+          taken.add(copy.id);
+          const at = nodesRef.current.find((x) => x.id === path)?.position;
+          useEditor
+            .getState()
+            .addNode(level.segments, copy, [(at?.x ?? 0) + 48, (at?.y ?? 0) + 48]);
+          made.push(joinPath(level.prefix, copy.id));
+        }
+        useEditor.getState().selectPaths(made);
       },
     });
     return () => setViewportApi(null);
@@ -1070,7 +1128,14 @@ export default function Canvas(): React.ReactElement {
         onEdgesDelete={onEdgesDelete}
         onNodesDelete={onNodesDelete}
         onNodeDragStop={onNodeDragStop}
-        onNodeClick={(_, n) => useEditor.getState().select(n.id)}
+        // A plain click replaces the selection. A modified one adds to it, and
+        // that is React Flow's own gesture: it reports the whole set through
+        // `onNodesChange`, so claiming the selection here as well would undo
+        // what it just said.
+        onNodeClick={(e, n) => {
+          if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+          useEditor.getState().select(n.id);
+        }}
         onNodeDoubleClick={(_, n) => {
           // In an unfolded drawing, opening a block means showing one more
           // level of it in place rather than replacing the view.

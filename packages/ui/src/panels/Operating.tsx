@@ -237,6 +237,13 @@ export default function Operating(): React.ReactElement {
           onChange={(pp) => set({ pp })}
           title="Pipeline stages."
         />
+        <Pick
+          label="EP"
+          value={o.ep}
+          options={POWERS.map((n) => ({ id: n, label: `${n}×` }))}
+          onChange={(ep) => set({ ep })}
+          title="Expert-parallel degree. A design with no experts has nothing to divide."
+        />
         <Num
           label="streams"
           value={o.concurrency}
@@ -253,6 +260,22 @@ export default function Operating(): React.ReactElement {
             onChange={(e) => set({ flash: e.target.checked })}
           />
           fused attention
+        </label>
+        <label
+          className="op__check"
+          title={
+            o.tp > 1
+              ? "Shard the activations along the sequence across the tensor-parallel group."
+              : "Needs tensor parallelism: there is no group to shard the sequence across."
+          }
+        >
+          <input
+            type="checkbox"
+            checked={o.tp > 1 && o.sequenceParallel}
+            disabled={o.tp <= 1}
+            onChange={(e) => set({ sequenceParallel: e.target.checked })}
+          />
+          sequence parallel
         </label>
         <span
           className="op__derived mono"

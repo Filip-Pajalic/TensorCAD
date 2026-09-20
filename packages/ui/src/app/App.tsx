@@ -22,6 +22,7 @@ import Symbols from "../panels/Symbols.js";
 import Analysis from "../panels/Analysis.js";
 import Operating from "../panels/Operating.js";
 import Rules from "../panels/Rules.js";
+import Cluster from "../panels/Cluster.js";
 import StatusBar from "../panels/StatusBar.js";
 import ModelTree from "../panels/ModelTree.js";
 import ToolStrip from "../panels/ToolStrip.js";
@@ -39,6 +40,7 @@ const TABS: { id: RightTab; label: string }[] = [
   { id: "inspector", label: "Inspector" },
   { id: "symbols", label: "Symbols" },
   { id: "rules", label: "Rules" },
+  { id: "cluster", label: "Cluster" },
 ];
 
 const clamp = (value: number, min: number, max: number): number =>
@@ -138,6 +140,8 @@ export default function App(): React.ReactElement {
         return <Symbols />;
       case "rules":
         return <Rules />;
+      case "cluster":
+        return <Cluster />;
       default:
         return <Inspector />;
     }

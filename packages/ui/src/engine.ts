@@ -13,6 +13,9 @@
  */
 
 import {
+  type AnalysisOptions,
+  type ClusterRequest,
+  type ClusterResult,
   createEngine,
   isComposite,
   isContainer,
@@ -100,6 +103,21 @@ export function generateTorch(doc: Doc, options?: TorchOptions): GeneratedCode {
 /** The symbol table alone, without the rest of the analysis. */
 export function resolveSymbols(doc: Doc): SymbolTable {
   return engine().analyze(doc).symbols;
+}
+
+/**
+ * Every way of splitting the training across the cluster, and which of them fit.
+ *
+ * Not part of `derive`: this is a few hundred analyses and the answer only
+ * changes when the cluster or the design does, where `derive` runs on every
+ * keystroke.
+ */
+export function planCluster(
+  doc: Doc,
+  options: AnalysisOptions,
+  cluster: ClusterRequest,
+): ClusterResult {
+  return engine().plan(doc, options, cluster);
 }
 
 /** Shape inference alone, for the wire the pointer is over. */

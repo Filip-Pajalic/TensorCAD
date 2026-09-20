@@ -55,7 +55,7 @@ function loadDetail(): number {
   }
 }
 
-export type RightTab = "inspector" | "symbols" | "rules";
+export type RightTab = "inspector" | "symbols" | "rules" | "cluster";
 export type DialogId = "settings" | "shortcuts" | null;
 
 /**

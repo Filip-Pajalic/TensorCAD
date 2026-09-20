@@ -2607,3 +2607,123 @@ select.field {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* --- the cluster panel -----------------------------------------------------
+   A plan is a row you can press. The bar is the fraction of the device it
+   fills, which is the number that decides whether it is a plan at all, so it
+   is drawn rather than only written. */
+
+.cluster__head {
+  padding: 6px 8px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-elev);
+  margin-bottom: 8px;
+}
+
+.cluster__device {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.cluster__budget {
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: 2px;
+}
+
+.cluster__note {
+  font-size: 11px;
+  color: var(--dim);
+  padding: 6px 8px;
+}
+
+.plans {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.plan {
+  display: grid;
+  grid-template-columns: 1fr auto 56px 36px;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: 0;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-elev);
+  color: var(--text);
+  font-size: 12px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.plan:hover {
+  border-color: var(--accent);
+}
+
+.plan--current {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.plan--tight .plan__fill {
+  background: var(--warn);
+}
+
+.plan__summary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plan__bytes,
+.plan__pct {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: right;
+}
+
+.plan__bar {
+  display: block;
+  height: 6px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-input);
+}
+
+.plan__fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.plan__detail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.plan__parts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px 12px;
+}
+
+.plan__part {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.plan__partLabel {
+  color: var(--dim);
+}
+
+.plan__note {
+  font-size: 11px;
+  color: var(--text-dim);
+  border-left: 2px solid var(--border);
+  padding-left: 6px;
+}

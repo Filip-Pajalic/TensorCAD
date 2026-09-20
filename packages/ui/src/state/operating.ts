@@ -38,6 +38,16 @@ export interface OperatingPoint {
   tp: number;
   /** Pipeline stages. */
   pp: number;
+  /** Expert-parallel degree. Meaningless on a design with no experts. */
+  ep: number;
+  /**
+   * Shard the activations along the sequence across the tensor-parallel group.
+   *
+   * Only means anything when tp > 1, and then it is most of what tensor
+   * parallelism is worth: without it the norms and the dropouts stay
+   * replicated on every rank.
+   */
+  sequenceParallel: boolean;
   /** Concurrent sequences when serving. */
   concurrency: number;
   /** Training token budget. Null means the Chinchilla-optimal budget. */
@@ -57,6 +67,8 @@ export const DEFAULT_OPERATING: OperatingPoint = {
   zero: 1,
   tp: 1,
   pp: 1,
+  ep: 1,
+  sequenceParallel: false,
   concurrency: 1,
   tokens: null,
 };
@@ -67,7 +79,7 @@ export const DEFAULT_OPERATING: OperatingPoint = {
  * pipeline parallelism have claimed their share of the GPUs.
  */
 export function toAnalysisOptions(o: OperatingPoint): AnalysisOptions {
-  const dp = Math.max(1, Math.floor(o.gpus / Math.max(1, o.tp * o.pp)));
+  const dp = Math.max(1, Math.floor(o.gpus / Math.max(1, o.tp * o.pp * o.ep)));
   return {
     B: o.B,
     ...(o.T !== null ? { T: o.T } : {}),
@@ -80,7 +92,17 @@ export function toAnalysisOptions(o: OperatingPoint): AnalysisOptions {
     flash: o.flash,
     concurrency: o.concurrency,
     ...(o.tokens !== null ? { tokens: o.tokens } : {}),
-    parallel: { ...DEFAULT_PARALLEL, dp, tp: o.tp, pp: o.pp, zero: o.zero },
+    parallel: {
+      ...DEFAULT_PARALLEL,
+      dp,
+      tp: o.tp,
+      pp: o.pp,
+      ep: o.ep,
+      zero: o.zero,
+      // Meaningless without a group to shard across, and the analysis would
+      // otherwise take it at its word.
+      sequenceParallel: o.tp > 1 && o.sequenceParallel,
+    },
   };
 }
 

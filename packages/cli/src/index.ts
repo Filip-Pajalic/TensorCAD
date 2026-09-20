@@ -15,6 +15,7 @@ import { cmdCodegen } from "./commands/codegen.js";
 import { cmdDiff } from "./commands/diff.js";
 import { cmdPlan } from "./commands/plan.js";
 import { cmdShow } from "./commands/show.js";
+import { cmdImport } from "./commands/import.js";
 import { PRESET_NAMES, loadEngine } from "@tensorcad/engine/node";
 
 const COMMANDS: Record<string, { run: (args: Args) => number; usage: string; blurb: string }> = {
@@ -47,6 +48,11 @@ const COMMANDS: Record<string, { run: (args: Args) => number; usage: string; blu
   },
   diff: { run: cmdDiff, usage: "diff <a> <b> [--json]", blurb: "structural and numeric difference" },
   show: { run: cmdShow, usage: "show <file|preset> [--json]", blurb: "block tree with inferred shapes" },
+  import: {
+    run: cmdImport,
+    usage: "import <config.json> [--name name] [--out file] [--json]",
+    blurb: "turn a Hugging Face config.json into a design",
+  },
 };
 
 function help(): string {

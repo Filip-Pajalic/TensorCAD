@@ -30,6 +30,7 @@ const VALUE_FLAGS = new Set([
   "concurrency",
   "out",
   "class-name",
+  "name",
 ]);
 
 export function parseArgs(argv: string[]): Args {

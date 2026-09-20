@@ -7,11 +7,31 @@ twenty of them are the regression suite.
 
 The library is `packages/core-go/presets/data`: twenty JSON documents and an
 `index.json` listing them, embedded into the binary by `go:embed`. There is no
-builder to go through, and nothing generates these files — a preset is a
-document in exactly the format the editor saves.
+builder to go through — a preset is a document in exactly the format the editor
+saves, and the format `import` writes.
 
-Start from the nearest one rather than an empty file. Almost every decoder-only
-model differs from `llama-3-8b.json` in seven numbers and a note:
+If the model has a Hugging Face `config.json`, start there:
+
+```bash
+bun packages/cli/src/index.ts import config.json \
+  --name my-model-7b \
+  --out packages/core-go/presets/data/my-model-7b.json
+```
+
+The importer reproduces eight of the presets to the parameter. It prints the
+count the analysis gets, to be held against the model card, and every warning
+about where the document is not the model — a multi-token-prediction head left
+out, layers made sparse that the model keeps dense. Each warning gets fixed by
+hand or written into the notes; none of them are swallowed. The families it
+knows are `gpt2`, `llama`, `mistral`, `mixtral`, `qwen2`, `qwen3`, `qwen3_moe`,
+`gemma`, `gemma2` and `deepseek_v3`, and it refuses anything else by name
+rather than guessing.
+
+`--out` puts the document straight into the library; the name still has to go
+into `index.json`.
+
+Otherwise start from the nearest preset rather than an empty file. Almost every
+decoder-only model differs from `llama-3-8b.json` in seven numbers and a note:
 
 ```jsonc
 "symbols": {
@@ -36,12 +56,10 @@ Two presets are not transformers at all and are written out block by block:
 `alexnet.json` is convolutional with `B C H W` tensors. Copy those instead when
 that is what you are describing.
 
-If the model has a Hugging Face `config.json`, the importer will do most of
-this: `importHuggingFace` is engine functionality and reproduces eight of the
-presets to the parameter. Nothing exposes it as a command yet, so today that
-means a few lines against `@tensorcad/engine/node`.
-
 ## `published` is the point
+
+An import gives you `meta.name` and `meta.family`. The claim is the rest, and
+either way you write it yourself:
 
 - `params` — what the authors report, with a `source` link to the config or paper.
 - `tolerance` — **only** where the published figure is itself rounded ("22B

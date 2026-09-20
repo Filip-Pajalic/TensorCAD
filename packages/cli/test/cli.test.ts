@@ -7,7 +7,7 @@
 
 import { describe, expect, test, afterAll } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, existsSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -274,5 +274,92 @@ describe("plan", () => {
     const r = cli("plan", "gpt2-small");
     expect(r.code).toBe(1);
     expect(r.stdout).toContain("--gpus");
+  });
+});
+
+describe("import", () => {
+  // The same corpus the importer's own test uses, so a config that changes
+  // there cannot leave a stale copy asserted against here.
+  const CONFIGS = JSON.parse(
+    readFileSync(resolve(import.meta.dir, "../../core-go/testdata/hf-configs.json"), "utf8"),
+  ) as Record<string, Record<string, unknown>>;
+
+  function configFile(dir: string, config: unknown, name = "config.json"): string {
+    const path = join(dir, name);
+    writeFileSync(path, JSON.stringify(config, null, 2), "utf8");
+    return path;
+  }
+
+  test("writes a document whose count matches the preset the config describes", () => {
+    const dir = tempDir();
+    const out = join(dir, "gpt2.tensorcad.json");
+    const r = cli("import", configFile(dir, CONFIGS["gpt2-small"]), "--out", out);
+    expect(r.code).toBe(0);
+    // The count is printed both ways: rounded to read, exact to compare.
+    expect(r.stdout).toContain("124.4M");
+    expect(r.stdout).toContain("124,439,808");
+
+    expect(existsSync(out)).toBe(true);
+    const doc = JSON.parse(readFileSync(out, "utf8"));
+    expect(doc.version).toBe(1);
+    expect(doc.graph.nodes.length).toBeGreaterThan(0);
+
+    // And it is a design the rest of the command line accepts.
+    const analyzed = JSON.parse(cli("analyze", out, "--json").stdout);
+    expect(analyzed.params.total).toBe(124_439_808);
+  });
+
+  test("--name names the design; without it the config does", () => {
+    const dir = tempDir();
+    const config = configFile(dir, { ...CONFIGS["gpt2-small"], _name_or_path: "openai-community/gpt2" });
+
+    const named = cli("import", config, "--name", "my-gpt", "--out", join(dir, "named.json"));
+    expect(named.code).toBe(0);
+    expect(JSON.parse(readFileSync(join(dir, "named.json"), "utf8")).meta.name).toBe("my-gpt");
+
+    const unnamed = cli("import", config, "--out", join(dir, "unnamed.json"));
+    expect(unnamed.code).toBe(0);
+    expect(JSON.parse(readFileSync(join(dir, "unnamed.json"), "utf8")).meta.name).toBe(
+      "openai-community/gpt2",
+    );
+  });
+
+  test("reports what the import could not represent rather than swallowing it", () => {
+    const dir = tempDir();
+    // DeepSeek-V3's own config carries a multi-token-prediction module, which
+    // the importer leaves out and says so.
+    const config = configFile(dir, { ...CONFIGS["deepseek-v3"], num_nextn_predict_layers: 1 });
+    const r = cli("import", config, "--out", join(dir, "ds.json"));
+    expect(r.code).toBe(0);
+    expect(r.stdout).toContain("warning");
+    expect(r.stdout).toContain("multi-token-prediction");
+    // The document is still written, and still the design the preset is.
+    expect(r.stdout).toContain("671,026,419,200");
+  });
+
+  test("--json carries the document without touching the disk", () => {
+    const dir = tempDir();
+    const out = join(dir, "not-written.json");
+    const r = cli("import", configFile(dir, CONFIGS["llama-3-8b"]), "--out", out, "--json");
+    expect(r.code).toBe(0);
+    expect(existsSync(out)).toBe(false);
+    const parsed = JSON.parse(r.stdout);
+    expect(parsed.params).toBe(8_030_261_248);
+    expect(parsed.warnings).toEqual([]);
+    expect(parsed.doc.meta.name).toBe(parsed.name);
+  });
+
+  test("an unsupported model_type names the ones it knows", () => {
+    const dir = tempDir();
+    const r = cli("import", configFile(dir, { model_type: "mamba", num_hidden_layers: 4 }));
+    expect(r.code).toBe(2);
+    expect(r.stderr).toContain("unsupported model_type");
+    expect(r.stderr).toContain("llama");
+  });
+
+  test("a missing config is a usage error, not a crash", () => {
+    const r = cli("import", "no-such-config.json");
+    expect(r.code).toBe(2);
+    expect(r.stderr).toContain("Could not read");
   });
 });

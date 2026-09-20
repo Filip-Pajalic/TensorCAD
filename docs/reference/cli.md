@@ -5,7 +5,8 @@ bun packages/cli/src/index.ts <command> [args]
 ```
 
 Every command takes a **file path or a preset name** in the same position, so
-anything you can do to your design you can do to `llama-3-8b` first.
+anything you can do to your design you can do to `llama-3-8b` first. The one
+exception is `import`, whose argument is somebody else's file.
 
 `--json` on any command gives machine-readable output.
 
@@ -105,6 +106,27 @@ sparse layer — so the choice among the plans that fit stays with you.
 
 Expert parallelism is offered only to designs that have experts, and the result
 says so when it is absent.
+
+## `import`
+
+```bash
+bun packages/cli/src/index.ts import <config.json> [--name name] [--out file] [--json]
+```
+
+Reads a Hugging Face `config.json` into a design. Knows `gpt2`, `llama`,
+`mistral`, `mixtral`, `qwen2`, `qwen3`, `qwen3_moe`, `gemma`, `gemma2` and
+`deepseek_v3`; refuses anything else by name rather than guessing.
+
+`--name` names the design, which otherwise takes the config's `_name_or_path`.
+`--out` is where the document goes, defaulting to `out/<name>.tensorcad.json`
+and written the way `packages/core-go/presets/data` is, so an import can be
+dropped in there unedited. With `--json` nothing is written and the whole
+report, document included, comes back on stdout.
+
+It prints the parameter count the analysis gets, to be compared against the
+model card, and every warning about what the import could not represent
+faithfully — a multi-token-prediction head left out, layers made sparse that
+the model keeps dense. See [Add a preset](../how-to/add-a-preset.md).
 
 ## Scripts
 

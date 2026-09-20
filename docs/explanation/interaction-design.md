@@ -1416,3 +1416,32 @@ the first time the canvas is restyled.
 Chrome the screenshots use, and refuses to write a file with no wires in it. A
 schematic with no nets is not a schematic, and writing one quietly would be
 worse than not writing it.
+
+## Twentieth pass: saying which slab is which
+
+The volume view labelled nothing until you hovered. That was the right call for
+the *tensor* names — there are several thousand cubes and drawing all their
+names is a wall of text, which is why the reference raises a label only for the
+group under the pointer.
+
+It is the wrong call for the stages. A still of the tower said nothing at all
+about what any of it was, and hovering is not something a screenshot does.
+
+So the half dozen top-level stages — `embed`, `layers`, `final_norm`, `head` —
+are always named, in the left margin at the height of the stage they belong to.
+The distinction is the count: six against several thousand, so the reason the
+tensor labels are hover-only simply does not apply to these.
+
+### In the margin, not in the model
+
+The first version pinned each name to a point off to the left of the model,
+which looked right and then swung across the picture the moment the camera
+orbited. A name now goes in the margin at the projected height of its stage,
+the way a schematic puts its row names down the side rather than beside
+whatever happens to stick out furthest on that row.
+
+Two stages that project to the same height would print over each other, so the
+second is dropped: two names in one place is worse than one name. And the
+margin is not the whole height — the title sits across the top and the legend
+across the bottom left, and a stage name printed over the legend is the same
+mistake. No room, no label, which orbiting a little fixes.

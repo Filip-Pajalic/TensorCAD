@@ -366,6 +366,13 @@ interface Tag {
  */
 const HOVER_DIM = 0.22;
 
+/**
+ * What the stage names in the left margin have to stay clear of: the title
+ * block across the top, and the legend and hints across the bottom.
+ */
+const MARGIN_TOP = 48;
+const MARGIN_BOTTOM = 132;
+
 interface Ctx {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
@@ -400,6 +407,14 @@ export default function View3D(): React.ReactElement {
   const mount = useRef<HTMLDivElement | null>(null);
   const [hover, setHover] = useState<Hover | null>(null);
   const [tags, setTags] = useState<Tag[]>([]);
+  /**
+   * The stage names, which unlike the tags are always up.
+   *
+   * Half a dozen of them against several thousand tags, so the reason the tags
+   * are hover-only does not apply: a still of the tower has to say which slab
+   * is which, and hovering is not something a screenshot does.
+   */
+  const [marks, setMarks] = useState<Tag[]>([]);
   /** The group under the mouse, which is the only thing that gets named. */
   const hoverGroup = useRef<string | null>(null);
   const [theme, setTheme] = useState(resolvedTheme);
@@ -656,12 +671,58 @@ export default function View3D(): React.ReactElement {
     setTags(next);
   }, []);
 
+  /** The same projection for the stage names, which do not depend on a hover. */
+  const projectMarks = useCallback(() => {
+    const ctx = gl.current;
+    const host = mount.current;
+    if (!ctx || !host || !ctx.model) {
+      setMarks((held) => (held.length === 0 ? held : []));
+      return;
+    }
+    const { clientWidth: w, clientHeight: h } = host;
+    const at = new THREE.Vector3();
+    const next: Tag[] = [];
+    const taken: number[] = [];
+    for (const m of ctx.model.landmarks) {
+      at.set(m.x, -m.y, m.z).add(ctx.group.position).project(ctx.camera);
+      if (at.z < -1 || at.z > 1) continue;
+      const y = ((1 - at.y) / 2) * h;
+      // The margin is not the whole height: the title sits across the top and
+      // the legend across the bottom left, and a stage name printed over the
+      // legend is two things in one place. No room, no label — which is
+      // honest, and orbiting a little brings it back.
+      if (y < MARGIN_TOP || y > h - MARGIN_BOTTOM) continue;
+      // Two stages at the same height in this projection would print over each
+      // other, and two names in one place is worse than one name.
+      if (taken.some((other) => Math.abs(other - y) < 16)) continue;
+      taken.push(y);
+      next.push({
+        key: `mark:${m.path}`,
+        text: m.text,
+        sub: "",
+        // In the margin, at the stage's height. A schematic puts its row names
+        // down the side rather than beside whatever sticks out furthest, and
+        // a point pinned in the model would swing across the picture as the
+        // camera orbits.
+        x: 12,
+        y,
+        kind: "mark",
+      });
+    }
+    setMarks(next);
+  }, []);
+
   useEffect(() => {
-    if (gl.current) gl.current.onTags = projectTags;
+    if (gl.current) {
+      gl.current.onTags = () => {
+        projectTags();
+        projectMarks();
+      };
+    }
     return () => {
       if (gl.current) gl.current.onTags = null;
     };
-  }, [projectTags]);
+  }, [projectTags, projectMarks]);
 
   useEffect(() => {
     rebuild(model);
@@ -840,6 +901,20 @@ export default function View3D(): React.ReactElement {
 
       {/* Names pinned to the blocks, the way the reference labels every tensor.
           A drawing of unlabelled boxes is a texture, not a diagram. */}
+      {/* The stage names, under the hover tags so a tag that lands on one is
+          the thing you asked for rather than the thing that was already there. */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {marks.map((mark) => (
+          <div
+            key={mark.key}
+            className="absolute -translate-y-1/2 whitespace-nowrap font-mono text-[10px] leading-tight tracking-wide text-dim"
+            style={{ left: mark.x, top: mark.y }}
+          >
+            {mark.text}
+          </div>
+        ))}
+      </div>
+
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {tags.map((tag) => (
           <div

@@ -95,9 +95,29 @@ export interface Arrow {
   endDir: [number, number, number] | null;
 }
 
+/**
+ * A name for a whole stage of the model, pinned beside the tower.
+ *
+ * Not the same thing as the hover labels. Those name every cube in one group
+ * and are raised only while the pointer is on it, because there are several
+ * thousand of them and drawing them all is a wall of text. These are the half
+ * dozen stages the design is made of, and they are always up — a still of the
+ * tower that does not say which slab is which is a picture of some boxes.
+ */
+export interface Landmark {
+  /** The top-level node this stage came from. */
+  path: string;
+  text: string;
+  /** The middle of the stage, in the reference's frame. The view puts the label in the margin at this height. */
+  x: number;
+  y: number;
+  z: number;
+}
+
 export interface Model3D {
   name: string;
   blocks: Blk[];
+  landmarks: Landmark[];
   arrows: Arrow[];
   cell: number;
   shape: Shape;
@@ -790,6 +810,7 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
   return {
     name: doc.meta.name || "design",
     blocks,
+    landmarks: landmarksOf(blocks),
     arrows,
     cell,
     shape,
@@ -808,6 +829,48 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
     totalParams: derived.params.total,
     notes: [...new Set(notes)],
   };
+}
+
+/**
+ * One name per stage, pinned to the left of the tower.
+ *
+ * The stage is the *top-level* node a block came from: `embed`, `layers`,
+ * `final_norm`, `head`. Deeper than that and it is a wall of text again —
+ * `layers` alone is thirty-two of everything inside a transformer block.
+ *
+ * `leftX` is the left edge of the whole model, so every label hangs off the
+ * same line the way a schematic puts its row names in a margin rather than
+ * beside whatever happens to stick out furthest on that row.
+ */
+function landmarksOf(blocks: Blk[]): Landmark[] {
+  const stages = new Map<string, { x: number; yMin: number; yMax: number; z: number; n: number }>();
+  for (const b of blocks) {
+    if (!b.path) continue;
+    const stage = b.path.split("/")[0]!;
+    const held = stages.get(stage);
+    const [xMid, yMid, zMid] = [b.x + b.dx / 2, b.y + b.dy / 2, b.z + b.dz / 2];
+    if (!held) stages.set(stage, { x: xMid, yMin: yMid, yMax: yMid, z: zMid, n: 1 });
+    else {
+      held.x += xMid;
+      held.yMin = Math.min(held.yMin, yMid);
+      held.yMax = Math.max(held.yMax, yMid);
+      held.z += zMid;
+      held.n += 1;
+    }
+  }
+
+  // The middle of the stage, not a point off to one side of it: the view puts
+  // the label in the margin at that height, so a point pinned in model space
+  // would swing across the picture as the camera orbits.
+  return [...stages.entries()]
+    .map(([path, s]) => ({
+      path,
+      text: path,
+      x: s.x / s.n,
+      y: (s.yMin + s.yMax) / 2,
+      z: s.z / s.n,
+    }))
+    .sort((a, b) => a.y - b.y);
 }
 
 /** A one-line description, for the hover readout. */

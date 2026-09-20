@@ -79,6 +79,12 @@ jobs:
       - name: The public boundary holds
         run: bun run boundary
 
+      # A raw NUL byte makes a source file binary to git and grep, so it is
+      # skipped by every repository-wide edit and invisible in every diff. It
+      # cost one scope rename two files and a red build.
+      - name: Every source file is text
+        run: bun run text
+
       - name: Test
         # Ninety seconds rather than bun's five: every test in `packages/cli`
         # spawns the command line, and each of those loads a 7.7 MB

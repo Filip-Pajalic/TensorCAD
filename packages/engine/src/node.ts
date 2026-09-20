@@ -70,6 +70,8 @@ import type {
   AnalysisOptions,
   AnalysisResult,
   CatalogEntry,
+  ClusterRequest,
+  ClusterResult,
   Derived,
   Doc,
   Dtype,
@@ -122,6 +124,14 @@ export function generateTorch(doc: Doc, options?: TorchOptions): GeneratedCode {
 
 export function scaleDesign(doc: Doc, options: ScaleOptions): ScaleResult {
   return engine().scale(doc, options);
+}
+
+export function planCluster(
+  doc: Doc,
+  options: AnalysisOptions,
+  cluster: ClusterRequest,
+): ClusterResult {
+  return engine().plan(doc, options, cluster);
 }
 
 export function importHfConfig(configText: string, name?: string): ImportResult {

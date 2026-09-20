@@ -25,6 +25,11 @@ type FlatNode struct {
 	ActiveMultiplier float64
 	// Container is the path of the nearest enclosing repeat container, if any.
 	Container string
+	// Expert is true for a node inside a moe_experts container: a weight that
+	// belongs to one expert rather than to every token's path. It shards by the
+	// expert-parallel degree, where everything else shards by tensor and
+	// pipeline parallelism.
+	Expert bool
 }
 
 // FlatBlock is a node at any level, composites and containers included.
@@ -67,8 +72,8 @@ func Flatten(doc *ir.Doc, symbols *ir.SymbolTable) *FlatResult {
 	out := &FlatResult{Errors: []string{}}
 	seen := map[string]bool{}
 
-	var walk func(graph *ir.Graph, prefix string, multiplier, activeMultiplier float64, container string, depth int)
-	walk = func(graph *ir.Graph, prefix string, multiplier, activeMultiplier float64, container string, depth int) {
+	var walk func(graph *ir.Graph, prefix string, multiplier, activeMultiplier float64, container string, expert bool, depth int)
+	walk = func(graph *ir.Graph, prefix string, multiplier, activeMultiplier float64, container string, expert bool, depth int) {
 		if depth > 32 {
 			out.Errors = append(out.Errors, fmt.Sprintf(
 				"Graph nesting deeper than 32 levels at %q; is a composite expanding into itself?", prefix))
@@ -107,7 +112,7 @@ func Flatten(doc *ir.Doc, symbols *ir.SymbolTable) *FlatResult {
 					Path: path, Type: def.Type, Category: def.Category,
 					Def: def, Resolved: resolved,
 					Multiplier: multiplier, ActiveMultiplier: activeMultiplier,
-					Container: container,
+					Container: container, Expert: expert,
 				})
 
 			case catalog.IsComposite(def):
@@ -118,7 +123,7 @@ func Flatten(doc *ir.Doc, symbols *ir.SymbolTable) *FlatResult {
 					continue
 				}
 				walk(&ir.Graph{Nodes: exp.Nodes, Edges: exp.Edges}, path,
-					multiplier, activeMultiplier, container, depth+1)
+					multiplier, activeMultiplier, container, expert, depth+1)
 
 			case catalog.IsContainer(def):
 				counts := catalog.MultipliersOf(def, resolved)
@@ -139,12 +144,13 @@ func Flatten(doc *ir.Doc, symbols *ir.SymbolTable) *FlatResult {
 					inner = path
 				}
 				walk(node.Graph, path,
-					multiplier*counts.Total, activeMultiplier*counts.Active, inner, depth+1)
+					multiplier*counts.Total, activeMultiplier*counts.Active, inner,
+					expert || def.Type == "moe_experts", depth+1)
 			}
 		}
 	}
 
-	walk(&doc.Graph, "", 1, 1, "", 0)
+	walk(&doc.Graph, "", 1, 1, "", false, 0)
 	return out
 }
 

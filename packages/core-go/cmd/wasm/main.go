@@ -28,6 +28,7 @@ import (
 	"github.com/tensorcad/core/hf"
 	"github.com/tensorcad/core/ir"
 	"github.com/tensorcad/core/jsonx"
+	"github.com/tensorcad/core/plan"
 	"github.com/tensorcad/core/presets"
 	"github.com/tensorcad/core/report"
 	"github.com/tensorcad/core/rules"
@@ -49,9 +50,13 @@ func main() {
 		"infer":   wrap(2, inferShapes),
 		"explain": wrap(3, explainOne),
 		// The whole model at once, for the panel that lists every block.
-		"explainAll":     wrap(2, explainAll),
-		"generateTorch":  wrap(2, generateTorch),
-		"scale":          wrap(2, scaleDesign),
+		"explainAll":    wrap(2, explainAll),
+		"generateTorch": wrap(2, generateTorch),
+		"scale":         wrap(2, scaleDesign),
+		// Every way of splitting the work across a cluster, and which of them
+		// fit. Three arguments rather than two: the design, the operating point
+		// it is measured at, and the cluster it is being fitted to.
+		"plan":           wrap(3, planCluster),
 		"presets":        wrap(0, presetNames),
 		"preset":         wrap(1, preset),
 		"importHf":       wrap(2, importHf),
@@ -352,6 +357,29 @@ func scaleDesign(args []string) (string, error) {
 		return "", fmt.Errorf("could not read the scaling settings: %w", err)
 	}
 	result, err := scale.Design(doc, o)
+	if err != nil {
+		return "", err
+	}
+	return encode(result)
+}
+
+func planCluster(args []string) (string, error) {
+	doc, err := decodeDoc(args[0])
+	if err != nil {
+		return "", err
+	}
+	options, err := decodeOptions(args[1])
+	if err != nil {
+		return "", err
+	}
+	if args[2] == "" {
+		return "", fmt.Errorf("planning needs to know how many GPUs there are")
+	}
+	var req plan.Request
+	if err := json.Unmarshal([]byte(args[2]), &req); err != nil {
+		return "", fmt.Errorf("could not read the cluster: %w", err)
+	}
+	result, err := plan.Search(doc, options, req)
 	if err != nil {
 		return "", err
 	}

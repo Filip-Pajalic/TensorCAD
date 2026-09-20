@@ -17,11 +17,16 @@ type ParamsResult struct {
 	NonEmbedding float64 `json:"nonEmbedding"`
 	// NonEmbeddingActive is the active count without the embedding table: the N
 	// in the 2N rule.
-	NonEmbeddingActive float64            `json:"nonEmbeddingActive"`
-	ByPath             map[string]float64 `json:"byPath"`
-	ByCategory         map[string]float64 `json:"byCategory"`
-	ByType             map[string]float64 `json:"byType"`
-	Errors             []string           `json:"errors"`
+	NonEmbeddingActive float64 `json:"nonEmbeddingActive"`
+	// Expert is the weights that live inside a moe_experts container. They are
+	// most of a sparse model and they shard differently from the rest: expert
+	// parallelism hands whole experts to whole devices, where tensor
+	// parallelism splits every matrix across its group.
+	Expert     float64            `json:"expert"`
+	ByPath     map[string]float64 `json:"byPath"`
+	ByCategory map[string]float64 `json:"byCategory"`
+	ByType     map[string]float64 `json:"byType"`
+	Errors     []string           `json:"errors"`
 }
 
 var embeddingTypes = map[string]bool{"embedding": true, "pos_embedding": true}
@@ -61,6 +66,9 @@ func CountParams(flat *FlatResult) *ParamsResult {
 			res.Embedding += total
 		} else if node.Type == "lm_head" {
 			res.Head += total
+		}
+		if node.Expert {
+			res.Expert += total
 		}
 	}
 

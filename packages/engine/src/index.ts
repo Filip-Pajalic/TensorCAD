@@ -25,6 +25,8 @@ import type {
   Inference,
   ScaleOptions,
   ScaleResult,
+  ClusterRequest,
+  ClusterResult,
   TorchOptions,
   UserBlockDef,
   ValidationReport,
@@ -70,6 +72,14 @@ export interface Engine {
   explainAll(doc: Doc, options?: AnalysisOptions): Explanation[];
   generateTorch(doc: Doc, options?: TorchOptions): GeneratedCode;
   scale(doc: Doc, options: ScaleOptions): ScaleResult;
+  /**
+   * Every way of splitting the work across a cluster, and which of them fit.
+   *
+   * Memory is the claim, and it is arithmetic. Which plan is fastest is not:
+   * that turns on the interconnect and the kernels, so each plan carries a
+   * note about what it costs to run rather than a number pretending to.
+   */
+  plan(doc: Doc, options: AnalysisOptions, cluster: ClusterRequest): ClusterResult;
   /** The design library this engine ships with. */
   presets(): string[];
   preset(name: string): Doc;
@@ -103,6 +113,7 @@ interface Exports {
   explainAll(doc: string, options: string): string;
   generateTorch(doc: string, options: string): string;
   scale(doc: string, options: string): string;
+  plan(doc: string, options: string, cluster: string): string;
   presets(): string;
   preset(name: string): string;
   importHf(configText: string, name: string): string;
@@ -232,6 +243,10 @@ function wrap(api: Exports): Engine {
     generateTorch: (doc, options) =>
       unwrap(api.generateTorch(JSON.stringify(doc), options ? JSON.stringify(options) : "")) as GeneratedCode,
     scale: (doc, options) => unwrap(api.scale(JSON.stringify(doc), JSON.stringify(options))) as ScaleResult,
+    plan: (doc, options, cluster) =>
+      unwrap(
+        api.plan(JSON.stringify(doc), JSON.stringify(options ?? {}), JSON.stringify(cluster)),
+      ) as ClusterResult,
     presets: () => unwrap(api.presets()) as string[],
     preset: (name) => unwrap(api.preset(name)) as Doc,
     importHuggingFace: (configText, name) =>

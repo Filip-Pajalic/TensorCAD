@@ -17,6 +17,7 @@ import (
 	"github.com/tensorcad/core/catalog"
 	"github.com/tensorcad/core/codegen"
 	"github.com/tensorcad/core/ir"
+	"github.com/tensorcad/core/plan"
 	"github.com/tensorcad/core/scale"
 )
 
@@ -267,4 +268,24 @@ var ScaleCases = []ScaleCase{
 	{"50m-moe", "mixtral-8x7b", scale.Options{TargetParams: 50e6, Vocab: f(4096)}},
 	{"20m-mla", "deepseek-v3", scale.Options{TargetParams: 20e6, Vocab: f(4096)}},
 	{"10m-mamba", "nemotron-h-8b", scale.Options{TargetParams: 10e6, Vocab: f(4096)}},
+}
+
+// PlanCase is one design fitted to one cluster.
+type PlanCase struct {
+	Label   string
+	Preset  string
+	Seq     float64
+	Cluster plan.Request
+}
+
+// PlanCases cover the four answers the planner can give: a model that fits on
+// one node, one that needs a big cluster and a choice about how to use it, a
+// mixture of experts where expert parallelism is on the table, and a model that
+// does not fit at all.
+var PlanCases = []PlanCase{
+	{"8b-on-8", "llama-3-8b", 8192, plan.Request{GPUs: 8, Limit: 6}},
+	{"70b-on-64", "llama-3-70b", 8192, plan.Request{GPUs: 64, Limit: 6}},
+	{"moe-on-64", "mixtral-8x7b", 4096, plan.Request{GPUs: 64, Limit: 6}},
+	{"405b-on-8", "llama-3.1-405b", 8192, plan.Request{GPUs: 8, Limit: 6}},
+	{"8b-on-16-tight", "llama-3-8b", 8192, plan.Request{GPUs: 16, Headroom: 0.25, Limit: 4}},
 }

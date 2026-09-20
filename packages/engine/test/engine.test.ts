@@ -22,6 +22,7 @@ import {
   createEngine,
   EngineError,
   type AnalysisOptions,
+  type ClusterRequest,
   type Doc,
   type Engine,
   type Severity,
@@ -169,6 +170,49 @@ describe("the compiled engine", () => {
         label: one.label,
         changes: one.changes.map((c) => [...c]).sort(),
       });
+    }
+  });
+
+  // Memory is arithmetic, so the planner's numbers have to survive the
+  // boundary; the ranking is advice, so the order has to as well.
+  it("plans a cluster the same way", () => {
+    const file = golden<{
+      cases: {
+        label: string;
+        preset: string;
+        seq: number;
+        cluster: ClusterRequest;
+        budget: number;
+        considered: number;
+        fits: { summary: string; used: number; perGpu: { total: number }; notes: string[] }[];
+        closest?: { summary: string };
+        notes: string[];
+      }[];
+    }>("plans.json");
+    expect(file.cases.length).toBeGreaterThan(0);
+    for (const one of file.cases) {
+      const got = engine.plan(engine.preset(one.preset), { T: one.seq, hardware: "h100-sxm" }, one.cluster);
+      expect({ label: one.label, considered: got.considered, budget: got.budget }).toEqual({
+        label: one.label,
+        considered: one.considered,
+        budget: one.budget,
+      });
+      expect({ label: one.label, order: got.fits.map((f) => f.summary) }).toEqual({
+        label: one.label,
+        order: one.fits.map((f) => f.summary),
+      });
+      expect({ label: one.label, held: got.fits.map((f) => f.perGpu.total) }).toEqual({
+        label: one.label,
+        held: one.fits.map((f) => f.perGpu.total),
+      });
+      expect({ label: one.label, closest: got.closest?.summary ?? null }).toEqual({
+        label: one.label,
+        closest: one.closest?.summary ?? null,
+      });
+      expect({ label: one.label, notes: got.notes }).toEqual({ label: one.label, notes: one.notes });
+      // Nothing empty came across as null: a plan with no notes is a plan with
+      // an empty list of them.
+      for (const f of got.fits) expect(Array.isArray(f.notes)).toBe(true);
     }
   });
 

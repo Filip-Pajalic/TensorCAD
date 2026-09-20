@@ -23,12 +23,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tensorcad/engine": "workspace:*",
     "@modelcontextprotocol/server": "^2.0.0",
+    "@tensorcad/engine": "workspace:*",
+    "ws": "^8.21.3",
     "zod": "^4.2.0"
   },
   "devDependencies": {
-    "@modelcontextprotocol/client": "^2.0.0"
+    "@modelcontextprotocol/client": "^2.0.0",
+    "@types/ws": "^8.18.1"
   },
   "license": "MIT"
 }

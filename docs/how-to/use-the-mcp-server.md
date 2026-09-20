@@ -59,3 +59,43 @@ blocks to change widths is how a design stops being coherent.
 
 `get_block` reports each port's declared shape, and its `dtype` and `optional`
 flags where they are not the default — see [Ports](../reference/ports.md).
+
+## Watch it work
+
+By default the server is headless: it reads and writes `.tensorcad.json` files
+and never touches a window. Start it with `TENSORCAD_BRIDGE=1` and a running
+editor attaches to it instead.
+
+```bash
+TENSORCAD_BRIDGE=1 npx @tensorcad/mcp
+```
+
+Open the editor and the rightmost cell of the status bar says `agent`. What
+happens from there:
+
+- The editor **publishes the design on screen**, so the agent works on that
+  rather than on a file that resembles it. It appears in `list_designs`.
+- Every `apply_ops` **lands on the canvas** as it is made, and goes onto the
+  editor's undo stack — an agent's edit is one a person watching can take back.
+- What the person does **comes back the other way**, and the client is told
+  through `notifications/resources/updated` that the design's resources moved.
+
+There is one document, not two. An editor's edit goes through the same `apply`
+a tool call does, so the revision check that stops two agents overwriting each
+other is the same one that stops an agent overwriting a human.
+
+!!! note "It only listens to this machine"
+
+    The bridge binds `127.0.0.1`, refuses any connection whose `Origin` is not
+    a localhost one — the same-origin policy does *not* stop a page you visited
+    opening a socket to your own machine — and wants a token from
+    `~/.tensorcad/session.json`. Without `TENSORCAD_BRIDGE=1` it opens no port
+    at all, which is what keeps the server usable in CI.
+
+    `TENSORCAD_BRIDGE_PORT` moves it off 7357. The editor probes that port and
+    the three above it.
+
+The hosted editor at [app.tensorcad.dev](https://app.tensorcad.dev/) cannot
+attach: a browser will not open a plain socket from an https page, and there is
+no agent on the far side of the internet to attach to. Use the dev server or
+the desktop build.

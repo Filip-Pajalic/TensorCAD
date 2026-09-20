@@ -1097,6 +1097,20 @@ select.field {
   text-overflow: ellipsis;
 }
 
+/* The one cell you can press. It stays a status cell until the pointer is on
+   it, because a status bar that looked like a row of buttons would be read as
+   one. */
+.statusbar__cell--button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  cursor: pointer;
+}
+
+.statusbar__cell--button:hover {
+  background: var(--bg-elev);
+}
+
 .statusbar__key {
   color: var(--text-dim);
   text-transform: uppercase;

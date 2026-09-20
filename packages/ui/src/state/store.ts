@@ -176,6 +176,18 @@ export interface EditorState {
   closeDialog: () => void;
 
   setDoc: (doc: Doc, status?: string) => void;
+  /**
+   * A document that arrived from somewhere else — the live agent bridge.
+   *
+   * Not `setDoc`, which is *opening* a design: that resets the baseline, the
+   * level and the selection, all of which would be wrong here. Somebody is
+   * watching an agent work, and having the view thrown back to the top sheet
+   * every time it touches a symbol is how you stop watching.
+   *
+   * It goes on the undo stack, so an agent's edit can be taken back by the
+   * person who saw it happen.
+   */
+  applyRemote: (doc: Doc, status?: string) => void;
   setPath: (path: string[]) => void;
   enter: (path: string) => void;
   select: (path: string | null) => void;
@@ -362,6 +374,25 @@ export const useEditor = create<EditorState>((set, get) => {
         selection: null,
         status: status ?? null,
       })),
+    applyRemote: (doc, status) =>
+      set((s) => {
+        // The level survives unless the agent removed it from under us, and
+        // so does the selection unless the block it names is gone.
+        const path = ops.graphAtPath(doc, s.path) ? s.path : [];
+        const selection =
+          s.selection && path === s.path && ops.nodeAtPath(doc, ops.segmentsOf(s.selection))
+            ? s.selection
+            : null;
+        return {
+          doc,
+          past: [...s.past.slice(-(UNDO_LIMIT - 1)), s.doc],
+          future: [],
+          path,
+          selection,
+          also: [],
+          status: status ?? null,
+        };
+      }),
     markOpened: () => set((s) => ({ opened: s.doc, status: "Comparing against this design" })),
     setPath: (path) => set({ path, selection: null, also: [], findingFocus: null }),
     enter: (path) =>

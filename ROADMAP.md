@@ -4,14 +4,14 @@ Goal: a node-based CAD tool for designing neural network architectures at the pr
 
 Effort estimates assume one developer working with an AI coding assistant, part-time. They are ranges, not commitments.
 
-## Status as of 2026-09-19
+## Status as of 2026-09-20
 
 | Milestone | State |
 |---|---|
 | M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 23 presets, exact parameter match on 20 of them. |
 | M1 Check (design rules, full analysis) | **Done.** 18 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
 | M2 Manufacture (PyTorch codegen, verification) | **Done.** Every generated model's parameter count matches PyTorch exactly, and the FLOPs estimate matches a profiler once the causal mask is accounted for. |
-| M3 Agent (MCP server, CLI) | **Done**, minus the live-UI bridge. 13 MCP tools over stdio, 6 CLI commands, 67 tests. |
+| M3 Agent (MCP server, CLI) | **Done.** 13 MCP tools over stdio, 6 CLI commands, and the live editor bridge: an agent's edits land on the canvas as it makes them and the human's come back. |
 | M4 Test bench | **Partly done.** `tensorcad-runtime smoke-train` trains a scaled design on the local GPU and logs a loss curve; `scaleDesign` shrinks a design to a budget. No run registry or comparison view in the editor yet. |
 | M5 Advanced parts | **Mixture of experts, latent attention and state-space blocks all done.** DeepSeek-V3 and Nemotron-H-8B reproduce exactly. |
 | Go engine | **Done.** The whole analysis is Go, compiled to WebAssembly, and the editor, the command line, the MCP server and the desktop shell all load the same module. The TypeScript it was ported from has been deleted; the golden files it wrote are the specification the engine is held to. |
@@ -95,7 +95,13 @@ Let Claude Code and friends drive the tool.
 
 **Done when**: from Claude Code, "open the Llama-3-8B preset, make it a 4-expert MoE with top-2, and tell me the new active params" works end to end and the change appears on the canvas.
 
-**Result**: the tool half works, verified over a real stdio pipe. That edit takes Llama-3-8B from 8.03B dense to 24.94B total and 13.67B active. The canvas half waits on the live bridge, which is the one piece of M3 still outstanding: `DocumentStore` is the seam, `FileStore` is the only implementation, and the design for a `LiveStore` over a local WebSocket is recorded at the top of `packages/mcp/src/store/file-store.ts`.
+**Result**: both halves work. That edit takes Llama-3-8B from 8.03B dense to 24.94B total and 13.67B active, verified over a real stdio pipe, and with `TENSORCAD_BRIDGE=1` it lands on a running editor's canvas as it is made.
+
+The bridge is not the design that was written down here. That one had a `LiveStore` beside the `FileStore`, both behind `DocumentStore`, with the agent proxying to the editor — which gives a design two homes and no rule for deciding which is right when they differ. What is there instead observes the one store the tools already write to and mirrors it outward; an editor's edit comes back through the same `apply` a tool call uses, revision check and undo log included. There is one document and one revision counter, so "who is right" is a question that never has to be answered.
+
+Three things guard it, in order of how much they do: it binds 127.0.0.1; it refuses an upgrade whose `Origin` is not a localhost one, because the same-origin policy does not stop a page you visited opening a WebSocket to your own machine; and it wants a token, which a browser gets from a loopback-only endpoint because it cannot read the file the token lives in. It is off unless `TENSORCAD_BRIDGE=1` asks for it, so every CI job that runs this server still opens no port.
+
+Two Bun quirks are written into the tests, because each cost an afternoon: its `ws` shim does not implement `unexpected-response`, so a refused upgrade is a socket that never opens rather than an error; and *nothing* written to a socket taken off an `upgrade` event is ever delivered, so the 401 that arrives under Node is swallowed. A raw handshake that does succeed and is then dropped without a close takes the whole test process down with it — no error, no stack, exit 127.
 
 ### M4 — Test bench (simulation) · 2–3 weeks
 
@@ -142,11 +148,11 @@ Remaining:
 
 ### M6 — Ship
 
-- **Done.** The docs site: `mkdocs.yml` and a workflow that builds on every push and deploys from `main` to [filip-pajalic.github.io/TensorCAD](https://filip-pajalic.github.io/TensorCAD/). The pages were already organised by Diátaxis and read the same in the repository; what a directory of Markdown could not give them is a navigation that states that split rather than leaving it implied, and a search box, which is what a reference is useless without. The build runs `--strict`, so a cross-reference to a page that does not exist fails rather than warning — which found four links to files outside `docs/` on the first run. The second guided tour is `Tune small, run big`: shrink a published architecture until it trains on one card, sweep there, carry the answer up the μP ladder, and price the real run, with every figure pasted from the command above it.
+- **Done.** The docs site: `mkdocs.yml` and a workflow that builds on every push and deploys from `main` to [doc.tensorcad.dev](https://doc.tensorcad.dev/), with GitHub Pages as a mirror. The editor is served the same way, from `packages/ui/wrangler.jsonc`, at [app.tensorcad.dev](https://app.tensorcad.dev/) — static assets and nothing else, the engine being WebAssembly that runs in the tab. The pages were already organised by Diátaxis and read the same in the repository; what a directory of Markdown could not give them is a navigation that states that split rather than leaving it implied, and a search box, which is what a reference is useless without. The build runs `--strict`, so a cross-reference to a page that does not exist fails rather than warning — which found four links to files outside `docs/` on the first run. The second guided tour is `Tune small, run big`: shrink a published architecture until it trains on one card, sweep there, carry the answer up the μP ladder, and price the real run, with every figure pasted from the command above it.
 - **Block documentation done:** every block has a summary, every primitive that counts parameters gives the formula it counts them by, every parameter says what it means and every port declares what it carries — seventy-seven parameters said nothing, which is what the inspector showed on hover and what `get_block` answered with. Tests hold all four, because the ones that go undocumented are the ones whose names read plainly to whoever wrote them.
 - **Done.** `server.json` for the MCP registry, checked against the registry's own schema and pinned against `package.json` by a test. An MCPB bundle for Claude Desktop, built for Node with the engine beside it and started under Node before it is attached to a release.
 - Publish `@tensorcad/engine` and `@tensorcad/mcp` to npm, and `server.json` to the registry. **Prepared, not published.** Neither package was publishable as it sat: `main` pointed at TypeScript that Node cannot import, the server's `bin` carried a Bun shebang, and the dependency between them was written `workspace:*`, which npm rejects. `bun run build:dist` emits the publishable form, packs it, installs both tarballs into an empty directory, imports them under Node and starts the server — which found that the bundler tree-shakes the Go runtime's side-effect import and that the engine's wasm path assumed the repository's layout. The release workflow has a gated `npm` job: it builds and verifies on every tag, checks the tag against all three version numbers, and publishes only when `NPM_TOKEN` is set, saying in the run summary when it is not. Setting that secret and cutting a tag is the whole remaining step.
-- Optional: MCP Apps canvas preview for Claude Desktop/Cursor; hosted read-only viewer for sharing designs.
+- Optional: MCP Apps canvas preview for Claude Desktop/Cursor.
 
 ## Sequencing and dependencies
 

@@ -169,11 +169,25 @@ tensorcad_generate_code { design_id: "dsn_1", out_dir: "out/my-model" }
 tensorcad_restore    { design_id: "dsn_1", checkpoint_id: "ckpt_1" }   # if it did not work out
 ```
 
-## Not implemented: the live editor bridge
+## The live editor bridge
 
-The design has two stores behind one `DocumentStore` interface: the `FileStore` shipped here, and a `LiveStore` that would attach to a running TensorCAD editor over a 127.0.0.1 WebSocket (port and token in `~/.tensorcad/session.json`), forward the same operation stream to the canvas so a human watches the model edit, and emit resource-update notifications through `subscriptions/listen` when the human edits back. With no session file present it would fall back to the `FileStore`.
+Start the server with `TENSORCAD_BRIDGE=1` and a running TensorCAD editor attaches to it. The agent's edits appear on the canvas as it makes them, and the human's edits come back the other way.
 
-None of that is here yet. The TODO is on `FileStore` in `src/store/file-store.ts`. Until then the server is purely headless, which is also what makes it usable in CI.
+```bash
+TENSORCAD_BRIDGE=1 bun run packages/mcp/src/stdio.ts
+```
+
+Then open the editor (`bun run --cwd packages/ui dev`, or the desktop build). The status bar's rightmost cell says `agent`, and pressing it detaches.
+
+What happens, in order: the editor finds the bridge, publishes the design on screen — so the agent works on *that*, not on a file that resembles it — and the agent sees it in `tensorcad_list_designs`. From then on `tensorcad_apply_ops` lands on the canvas, and what the human does lands in the agent's store, at which point the client is told through `notifications/resources/updated` that the design's resources moved. An edit that arrives from the agent goes onto the editor's undo stack, so the person watching can take it back.
+
+There is no second document. An earlier design had a `LiveStore` beside the `FileStore`, both behind `DocumentStore`; that gives a design two homes and no rule for which one is right when they differ. The bridge observes the one store the tools already write to, and an editor's edit goes through the same `apply` a tool call does — same revision check, same undo log.
+
+**Off unless asked for.** Without the environment variable the server opens no port and is exactly as headless as it was, which is what keeps it usable in CI.
+
+**Who can connect.** It binds 127.0.0.1, so nothing off the machine reaches it. It refuses an upgrade whose `Origin` is not a localhost one, because the same-origin policy does *not* stop a page on the internet opening a WebSocket to your loopback address. And it requires a token, written to `~/.tensorcad/session.json` with owner-only permissions and served to loopback callers of `GET /session` — a browser cannot read the file, which is the only reason that endpoint exists. Anything already running on this machine as you can read the file anyway; the token is not a defence against that and is not meant to be.
+
+`TENSORCAD_BRIDGE_PORT` moves it off 7357. The editor probes that port and the three above it, which is also the range the bridge falls back through when one is taken.
 
 Also deliberately absent: `tensorcad_render_preview` (a canvas image needs the editor) and `tensorcad_run_script` (a scripting escape hatch, which wants a sandbox and an opt-in environment variable before it is worth shipping). Both are in the research notes as future tools; leaving them out keeps the count where clients are happy.
 

@@ -136,6 +136,18 @@ Two cross-checks worth knowing:
   it distinguished nothing because nearly every tensor in a transformer has both.
 - `packages/cli`, `packages/mcp` — thin adapters over the engine. Both load it once at
   startup, before the first command or the transport opens.
+- **The live editor bridge is an observer, not a second store.** `packages/mcp/src/bridge`
+  is a loopback WebSocket that mirrors the one `FileStore` the tools write to; an editor's
+  edit comes back through the same `apply` a tool call uses, so there is one document, one
+  revision counter and one undo log. It is off unless `TENSORCAD_BRIDGE=1` asks for it.
+  `packages/ui/src/state/bridge.ts` is the other end: it finds the bridge by probing
+  `127.0.0.1:7357..7360` for `GET /session`, publishes what is on screen, and lands what
+  arrives through `applyRemote` — which keeps the open level and the selection where
+  `setDoc` would throw them away, because somebody is watching. Two Bun quirks are written
+  into `packages/mcp/test/bridge.test.ts`: its `ws` shim has no `unexpected-response`, and
+  nothing written to a socket taken off an `upgrade` event is ever delivered. A raw
+  handshake that succeeds and is then dropped without a close aborts the test process
+  outright — exit 127, no message.
 - `python/tensorcad_runtime` — the only Python: instantiates generated models to verify them, and runs small training jobs.
 - `docs/` — documentation, organised by Diátaxis (tutorials, how-to, reference, explanation). `reference/analysis-math.md` is the sourced maths behind the analysis engine.
 - **Both sites are static.** `packages/ui/wrangler.jsonc` serves the Vite bundle at

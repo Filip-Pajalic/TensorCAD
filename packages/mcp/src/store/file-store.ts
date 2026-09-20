@@ -2,11 +2,10 @@
  * The headless document store: `.tensorcad.json` files plus the built-in presets,
  * held in memory with a revision counter and an operation log.
  *
- * TODO(live-ui): a `LiveStore` should attach to a running editor over a
- * 127.0.0.1 WebSocket (port and token in `~/.tensorcad/session.json`), forward the
- * same op stream to the canvas, and fall back to this store when no session
- * file exists. That bridge is deliberately not implemented here; see
- * `packages/mcp/README.md`.
+ * The live editor bridge watches this store through `subscribe` rather than
+ * replacing it. An earlier note here proposed a second `DocumentStore` that
+ * proxied to the editor; that would have given a design two homes and no rule
+ * for which one is right when they differ. See `src/bridge/`.
  */
 
 import { readdir, readFile, stat, writeFile, mkdir } from "node:fs/promises";
@@ -23,6 +22,8 @@ import {
   type DesignSummary,
   type DocumentStore,
   type NewDesignOptions,
+  type StoreChange,
+  type StoreListener,
 } from "./types.js";
 
 interface LogEntry {
@@ -58,6 +59,7 @@ export interface FileStoreOptions {
 
 export class FileStore implements DocumentStore {
   private readonly entries = new Map<string, Entry>();
+  private readonly listeners = new Set<StoreListener>();
   private nextDesign = 1;
   private nextCheckpoint = 1;
   readonly root: string;
@@ -66,6 +68,28 @@ export class FileStore implements DocumentStore {
   constructor(options: FileStoreOptions = {}) {
     this.root = resolve(options.root ?? process.cwd());
     this.depth = options.depth ?? 3;
+  }
+
+  // -- watching ------------------------------------------------------------
+
+  subscribe(listener: StoreListener): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  /**
+   * A listener that throws must not take the edit down with it. The store's
+   * job is the document; a mirror that has fallen over is the mirror's problem,
+   * and it is reported where a server's diagnostics go.
+   */
+  private emit(change: StoreChange): void {
+    for (const listener of this.listeners) {
+      try {
+        listener(change);
+      } catch (e) {
+        process.stderr.write(`tensorcad: store listener failed: ${(e as Error).message}\n`);
+      }
+    }
   }
 
   // -- reads ---------------------------------------------------------------
@@ -169,6 +193,7 @@ export class FileStore implements DocumentStore {
     };
     if (path) record.path = path;
     this.entries.set(id, { record, log: [], checkpoints: new Map() });
+    this.emit({ kind: "registered", record });
     return record;
   }
 
@@ -192,7 +217,29 @@ export class FileStore implements DocumentStore {
     record.dirty = true;
     record.updated_at = new Date().toISOString();
 
+    this.emit({ kind: "applied", record, ops });
     return { record, applied, previousRevision };
+  }
+
+  replace(id: string, doc: Doc, expectedRevision?: number): ApplyOutcome {
+    const entry = this.entry(id);
+    const { record } = entry;
+    if (expectedRevision !== undefined && expectedRevision !== record.revision) {
+      throw new RevisionConflictError(id, expectedRevision, record.revision);
+    }
+
+    const previousRevision = record.revision;
+    // No operations to log, but the document that was there is what undo
+    // restores, and that is the half that matters.
+    entry.log.push({ revision: previousRevision, at: new Date().toISOString(), ops: [], before: record.doc });
+    record.doc = doc;
+    record.name = doc.meta.name;
+    record.revision = previousRevision + 1;
+    record.dirty = true;
+    record.updated_at = new Date().toISOString();
+
+    this.emit({ kind: "replaced", record });
+    return { record, applied: ["replaced the document"], previousRevision };
   }
 
   async save(id: string, path?: string): Promise<{ record: DesignRecord; path: string; bytes: number }> {
@@ -208,6 +255,8 @@ export class FileStore implements DocumentStore {
     record.path = target;
     record.dirty = false;
     record.updated_at = new Date().toISOString();
+
+    this.emit({ kind: "saved", record });
     return { record, path: target, bytes: Buffer.byteLength(text, "utf8") };
   }
 
@@ -260,6 +309,8 @@ export class FileStore implements DocumentStore {
     record.revision += 1;
     record.dirty = true;
     record.updated_at = new Date().toISOString();
+
+    this.emit({ kind: "restored", record });
     return { record, restoredFrom };
   }
 

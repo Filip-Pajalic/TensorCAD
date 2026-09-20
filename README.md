@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/license-MIT-111111?style=flat-square" alt="MIT licensed" />
   <img src="https://img.shields.io/badge/engine-Go%20%E2%86%92%20WebAssembly-2f6fb0?style=flat-square" alt="Go engine compiled to WebAssembly" />
   <img src="https://img.shields.io/badge/presets-23%20verified-1b6834?style=flat-square" alt="23 verified presets" />
-  <img src="https://img.shields.io/badge/tests-275%20passing-1b6834?style=flat-square" alt="275 tests passing" />
+  <img src="https://img.shields.io/badge/tests-295%20passing-1b6834?style=flat-square" alt="295 tests passing" />
   <img src="https://img.shields.io/badge/MCP-server%20included-8a5b9c?style=flat-square" alt="MCP server included" />
 </p>
 
@@ -244,6 +244,14 @@ This repository is written to be worked on by coding agents as well as people.
   `bun run scripts/report.ts` before and after.
 - **The MCP server** exposes the whole engine as tools. Point your agent at
   `.mcp.json`.
+- **Start it with `TENSORCAD_BRIDGE=1` and the editor attaches to it.** The
+  agent's edits appear on the canvas as it makes them and land on the undo
+  stack, so a person watching can take one back; what that person does comes
+  back the other way. There is one document, not two — the editor's edits go
+  through the same revision-checked `apply` a tool call does. It binds
+  127.0.0.1, refuses a foreign `Origin`, and opens no port at all without the
+  variable. See
+  [Drive TensorCAD from an agent](./docs/how-to/use-the-mcp-server.md).
 
 ## Built on
 

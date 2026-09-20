@@ -14,6 +14,7 @@ import { registerPrompts } from "./prompts.js";
 import { registerResources } from "./resources.js";
 import { registerTools } from "./tools.js";
 import type { DocumentStore } from "./store/types.js";
+import type { BridgeServer } from "./bridge/server.js";
 
 export const SERVER_NAME = "tensorcad";
 /**
@@ -49,10 +50,16 @@ const INSTRUCTIONS = [
 export interface ServerOptions extends FileStoreOptions {
   /** Defaults to a `FileStore` rooted at the working directory. */
   store?: DocumentStore;
+  /**
+   * The live editor bridge, when one is running. Given one, the server tells
+   * its client that a design's resources changed whenever the *human* changed
+   * them — which is the half of the bridge an agent can act on.
+   */
+  bridge?: BridgeServer;
 }
 
 export function createServer(options: ServerOptions = {}): McpServer {
-  const { store: given, ...storeOptions } = options;
+  const { store: given, bridge, ...storeOptions } = options;
   const store = given ?? new FileStore(storeOptions);
 
   const server = new McpServer(
@@ -66,6 +73,39 @@ export function createServer(options: ServerOptions = {}): McpServer {
   registerTools(server, store);
   registerResources(server, store);
   registerPrompts(server);
+  if (bridge) followEditor(server, bridge);
 
   return server;
+}
+
+/**
+ * Tell the client that a design changed under it, when a human was the one who
+ * changed it.
+ *
+ * Three URIs rather than one, because a client that subscribed to a design's
+ * *analysis* cares that the numbers moved and never asked about the document.
+ * The notification carries no content: whoever wants the new value reads the
+ * resource, which is what makes this cheap enough to send on every keystroke's
+ * worth of edit.
+ *
+ * `serveStdio` builds one of these per connection — and one more for a
+ * `server/discover` probe it throws away — so the watcher comes off again when
+ * the connection closes. Otherwise the probe's dead instance would keep
+ * answering for the life of the process.
+ */
+function followEditor(server: McpServer, bridge: BridgeServer): void {
+  const stop = bridge.watch((change, from) => {
+    if (from !== "editor") return;
+    const base = `tensorcad://designs/${change.record.design_id}`;
+    for (const uri of [base, `${base}/analysis`, `${base}/validation`]) {
+      // Nothing to do about a client that has gone away mid-notification.
+      void server.server.sendResourceUpdated({ uri }).catch(() => {});
+    }
+  });
+
+  const closed = server.server.onclose;
+  server.server.onclose = () => {
+    stop();
+    closed?.();
+  };
 }

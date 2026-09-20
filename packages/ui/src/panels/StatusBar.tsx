@@ -9,6 +9,7 @@
 
 import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
+import { bridgeIsPossible, useBridge } from "../state/bridge.js";
 import { formatCount } from "@tensorcad/engine";
 
 function Cell({
@@ -29,6 +30,52 @@ function Cell({
       {label && <span className="statusbar__key">{label}</span>}
       <span className={`statusbar__value${tone ? ` statusbar__value--${tone}` : ""}`}>{value}</span>
     </div>
+  );
+}
+
+/**
+ * Whether an agent is watching, and what it last did.
+ *
+ * Only where one could be: the hosted editor cannot reach a process on your
+ * machine, and a cell that permanently said "no agent" there would be a cell
+ * that taught people to stop reading the status bar.
+ *
+ * Pressing it detaches, and pressing it again looks for one — because the
+ * thing a person wants when an agent starts editing under them is a way to
+ * make it stop.
+ */
+function AgentCell(): React.ReactElement | null {
+  const status = useBridge((s) => s.status);
+  const enabled = useBridge((s) => s.enabled);
+  const setEnabled = useBridge((s) => s.setEnabled);
+  const agent = useBridge((s) => s.agent);
+  const last = useBridge((s) => s.lastFromAgent);
+  const detail = useBridge((s) => s.detail);
+
+  if (!bridgeIsPossible()) return null;
+
+  const value = !enabled
+    ? "off"
+    : status === "connected"
+      ? (last ?? "attached")
+      : status === "looking"
+        ? "looking…"
+        : "none";
+
+  return (
+    <button
+      type="button"
+      className="statusbar__cell statusbar__cell--button"
+      onClick={() => setEnabled(!enabled)}
+      title={
+        status === "connected"
+          ? `Attached to ${agent ?? "an agent"}. Its edits arrive here and land on the undo stack. Press to detach.`
+          : (detail ?? "No agent is listening. Start one with TENSORCAD_BRIDGE=1. Press to look again.")
+      }
+    >
+      <span className="statusbar__key">agent</span>
+      <span className={`statusbar__value${status === "connected" ? " statusbar__value--ok" : ""}`}>{value}</span>
+    </button>
   );
 }
 
@@ -88,6 +135,7 @@ export default function StatusBar(): React.ReactElement {
         title={`${derived.params.total.toLocaleString("en-US")} parameters`}
       />
       <Cell label="drc" value={checkText} tone={checkTone} title="Design-rule check" />
+      <AgentCell />
     </div>
   );
 }

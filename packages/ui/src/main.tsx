@@ -27,6 +27,13 @@ loadEngine()
   .then(async () => {
     const { default: App } = await import("./app/App.js");
     root.render(<App />);
+
+    // After the first frame, not before it. Looking for an agent means four
+    // fetches that will usually find nothing, and nothing about the editor
+    // waits on the answer — the status bar says "none" until it says
+    // otherwise.
+    const { connect } = await import("./state/bridge.js");
+    void connect();
   })
   .catch((error: unknown) => {
     root.render(

@@ -5,9 +5,10 @@
  * session, which is what the 2026-07-28 spec asks for: state crosses calls as
  * an explicit handle in the arguments, never as an implicit connection.
  *
- * `FileStore` is the headless implementation. A `LiveStore` that proxies to a
- * running editor over a local WebSocket is the other half of the design and is
- * not implemented yet; see the TODO in `file-store.ts`.
+ * `FileStore` is the only implementation. The live editor bridge is *not* a
+ * second store: it observes this one through `subscribe` and mirrors it to a
+ * running editor. Two stores could disagree about what a design is; one store
+ * with a listener cannot.
  */
 
 import type { Op } from "../ops.js";
@@ -55,7 +56,28 @@ export interface NewDesignOptions {
   name?: string;
 }
 
+/** What happened to a design, for anybody mirroring the store. */
+export interface StoreChange {
+  kind: "registered" | "applied" | "replaced" | "saved" | "restored";
+  record: DesignRecord;
+  /** The operations, when there were any — `applied` alone carries them. */
+  ops?: Op[];
+}
+
+export type StoreListener = (change: StoreChange) => void;
+
 export interface DocumentStore {
+  /**
+   * Watch every change to every design. Returns the function that stops
+   * watching.
+   *
+   * Listeners are called *synchronously*, inside the call that changed
+   * something, which is what lets the bridge attribute a change to the
+   * connection that caused it without threading an origin through every
+   * signature.
+   */
+  subscribe(listener: StoreListener): () => void;
+
   /** Designs this server has open, newest first. */
   list(): DesignSummary[];
   /** `.tensorcad.json` files near the server's root that could be opened. */
@@ -74,6 +96,16 @@ export interface DocumentStore {
   get(id: string): DesignRecord;
 
   apply(id: string, ops: Op[], expectedRevision?: number): ApplyOutcome;
+  /**
+   * The whole document, in place of a list of operations.
+   *
+   * The editor's edits are not all expressible as the eight operations a tool
+   * call can send — a block moved on the sheet, a definition, a configuration —
+   * so what the running editor sends back is the document it now has. It is
+   * otherwise an `apply`: the revision is checked, the previous document goes
+   * on the undo log, and the change is announced.
+   */
+  replace(id: string, doc: Doc, expectedRevision?: number): ApplyOutcome;
   save(id: string, path?: string): Promise<{ record: DesignRecord; path: string; bytes: number }>;
 
   checkpoint(id: string, label?: string): CheckpointInfo;

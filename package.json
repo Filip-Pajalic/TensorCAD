@@ -8,7 +8,8 @@
     "desktop/frontend"
   ],
   "scripts": {
-    "test": "bun run build:wasm && bun test --timeout 30000 packages",
+    "_comment_test": "90s per test, not because any test is slow but because the CLI suite spawns a process per case and each loads a 7.7 MB engine; under full-suite load one of them has crossed 30s three times, always passing alone. A ceiling still catches a hang.",
+    "test": "bun run build:wasm && bun test --timeout 90000 packages",
     "build:wasm": "bun run scripts/build-wasm.ts",
     "build:mcpb": "bun run scripts/build-mcpb.ts --check",
     "build:dist": "bun run scripts/build-dist.ts --check",

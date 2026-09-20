@@ -77,7 +77,7 @@ jobs:
         # WebAssembly module before it can answer. On a busy runner that has
         # been measured past five, and a test that fails for having been slow
         # teaches people to re-run CI instead of reading it.
-        run: bun test --timeout 30000 packages
+        run: bun test --timeout 90000 packages
 
   goldens:
     name: Goldens are current

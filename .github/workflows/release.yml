@@ -65,7 +65,7 @@ jobs:
           cd packages/ui && node scripts/typecheck.mjs
       # Thirty seconds rather than bun's five: the command-line tests spawn a
       # process each, and each one loads the engine before it answers.
-      - run: bun test --timeout 30000 packages
+      - run: bun test --timeout 90000 packages
       # A release whose goldens are stale is a release whose tests were
       # comparing the engine against an answer nobody rewrote.
       - name: Goldens are current

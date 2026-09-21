@@ -17,18 +17,22 @@
     "directory": "./dist",
     "not_found_handling": "single-page-application"
   },
-  // The apex too, because there is nothing else to put there: the editor is the
+  // The apex, because there is nothing else to put there: this editor is the
   // project's front page. If `tensorcad.dev` ever wants a landing page of its
   // own, drop this entry and the record it made, and the deploy stops claiming
   // it. A first deploy will refuse the apex if the zone already has a record on
   // it — Cloudflare's parking page counts — so delete that record first.
+  //
+  // `app.tensorcad.dev` used to be here too and deliberately is not any more.
+  // It now serves a build that has somewhere to keep designs, assembled
+  // elsewhere from this editor plus a storage provider — see invariant 9. Two
+  // deployments claiming one hostname is a coin toss over which one is live,
+  // decided by whichever deployed last, so this one claims the apex and stops
+  // there. Putting it back would take that hostname away from whatever is
+  // serving it, on the next push to main, with nothing to warn you.
   "routes": [
     {
       "pattern": "tensorcad.dev",
-      "custom_domain": true
-    },
-    {
-      "pattern": "app.tensorcad.dev",
       "custom_domain": true
     }
   ],

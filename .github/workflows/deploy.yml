@@ -1,8 +1,14 @@
-# The two sites on tensorcad.dev.
+# The two sites this repository serves on tensorcad.dev.
 #
-#   app.tensorcad.dev  — the editor, which is the Vite bundle plus the engine
-#   tensorcad.dev      — the same Worker, because the editor is the front page
+#   tensorcad.dev      — the editor, which is the Vite bundle plus the engine
 #   docs.tensorcad.dev — the documentation MkDocs renders from `docs/`
+#
+# Not app.tensorcad.dev, which this used to deploy and no longer does. That
+# hostname serves a build assembled elsewhere from this editor plus a storage
+# provider, and two deployments claiming one name is a coin toss decided by
+# whichever pushed last. The route came out of `packages/ui/wrangler.jsonc`
+# rather than this file, so the job below is unchanged and simply claims one
+# hostname instead of two.
 #
 # Both are static-asset Workers: nothing is computed on a server, because the
 # engine is WebAssembly and runs in the browser. Deployed only from `main`, and
@@ -52,7 +58,7 @@ concurrency:
 
 jobs:
   app:
-    name: app.tensorcad.dev
+    name: tensorcad.dev
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

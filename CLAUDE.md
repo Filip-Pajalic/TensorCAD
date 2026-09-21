@@ -179,11 +179,15 @@ Two cross-checks worth knowing:
   outright — exit 127, no message.
 - `python/tensorcad_runtime` — the only Python: instantiates generated models to verify them, and runs small training jobs.
 - `docs/` — documentation, organised by Diátaxis (tutorials, how-to, reference, explanation). `reference/analysis-math.md` is the sourced maths behind the analysis engine.
-- **Both sites are static.** `packages/ui/wrangler.jsonc` serves the Vite bundle at
-  `app.tensorcad.dev` and the apex; `wrangler.docs.jsonc` serves what MkDocs renders at
-  `docs.tensorcad.dev`. Neither has a Worker script — `assets` with no `main` is an
-  assets-only deployment, which is all this needs, because the engine is WebAssembly and
-  runs in the tab. `.github/workflows/deploy.yml` uploads both from `main` when
+- **Both sites are static.** `packages/ui/wrangler.jsonc` serves the Vite bundle at the apex,
+  `tensorcad.dev`; `wrangler.docs.jsonc` serves what MkDocs renders at `docs.tensorcad.dev`.
+  Neither has a Worker script — `assets` with no `main` is an assets-only deployment, which
+  is all this needs, because the engine is WebAssembly and runs in the tab.
+  **`app.tensorcad.dev` is not this repository's any more.** It serves a build assembled
+  elsewhere from this editor plus a `StorageProvider` (invariant 9), so the editor there has
+  accounts and this one does not. Do not put that hostname back into `wrangler.jsonc`: two
+  deployments claiming one name is a coin toss decided by whichever pushed last, and this
+  repository pushes far more often. `.github/workflows/deploy.yml` uploads both from `main` when
   `CLOUDFLARE_API_TOKEN` is set and says so in the job summary when it is not, so a fork
   still builds. The editor is loaded with `WebAssembly.instantiate` over bytes rather than
   `instantiateStreaming`, so nothing depends on the `.wasm` arriving with the right content

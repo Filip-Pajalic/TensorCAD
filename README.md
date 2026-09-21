@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://github.com/Filip-Pajalic/TensorCAD/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Filip-Pajalic/TensorCAD/ci.yml?branch=main&style=flat-square&label=CI" alt="CI status" /></a>
-  <a href="https://app.tensorcad.dev"><img src="https://img.shields.io/badge/try%20it-app.tensorcad.dev-2f6fb0?style=flat-square" alt="Open the editor in a browser" /></a>
+  <a href="https://tensorcad.dev"><img src="https://img.shields.io/badge/try%20it-tensorcad.dev-2f6fb0?style=flat-square" alt="Open the editor in a browser" /></a>
   <img src="https://img.shields.io/badge/license-MIT-111111?style=flat-square" alt="MIT licensed" />
   <img src="https://img.shields.io/badge/engine-Go%20%E2%86%92%20WebAssembly-2f6fb0?style=flat-square" alt="Go engine compiled to WebAssembly" />
   <img src="https://img.shields.io/badge/presets-23%20verified-1b6834?style=flat-square" alt="23 verified presets" />
@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="https://app.tensorcad.dev">Open the editor</a> ·
+  <a href="https://tensorcad.dev">Open the editor</a> ·
   <a href="#quick-start">Quick start</a> ·
   <a href="#what-it-does">What it does</a> ·
   <a href="#how-it-is-kept-honest">Correctness</a> ·
@@ -82,11 +82,20 @@ looked like once. `bun run scripts/export-svg.ts` writes the sheet itself as a
 vector — [one is in `docs/images`](docs/images/llama-3-8b-sheet.svg) — which is
 also what `File > Export the sheet as SVG` does from the editor.
 
-**It runs in a browser: [app.tensorcad.dev](https://app.tensorcad.dev).** There
-is no server behind it — the engine is the same WebAssembly module the command
-line and the MCP server load, so every number on the screen is computed in the
-tab and no design is uploaded anywhere. The documentation is at
-[docs.tensorcad.dev](https://docs.tensorcad.dev).
+**It runs in a browser: [tensorcad.dev](https://tensorcad.dev).** There is no
+server behind it — the engine is the same WebAssembly module the command line
+and the MCP server load, so every number on the screen is computed in the tab,
+and this build has nowhere to send a design even if it wanted to: it registers
+no storage provider, so `File > Save a copy` writes to your disk and that is
+the only copy there is.
+
+A separate deployment at [app.tensorcad.dev](https://app.tensorcad.dev) is this
+same editor with an account attached, where designs are saved and can be
+shared. The first claim holds there too — the analysis still runs in the tab —
+but the second does not, which is why they are two sentences and two addresses
+rather than one of each.
+
+The documentation is at [docs.tensorcad.dev](https://docs.tensorcad.dev).
 
 ## Quick start
 

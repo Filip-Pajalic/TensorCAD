@@ -121,7 +121,13 @@ var Primitives = []*BlockDef{
 			if s == "" {
 				s = "B T"
 			}
-			return Ports{In: map[string]PortSpec{}, Out: map[string]PortSpec{"x": Port(s)}}
+			// The `dtype` parameter already says what this carries; the port
+			// said `inherit` and an input inherits from nothing, so the one
+			// place the answer was known was the one place it was not written.
+			return Ports{
+				In:  map[string]PortSpec{},
+				Out: map[string]PortSpec{"x": {Shape: s, Dtype: dtypeOfName(r.Str("dtype")), Anchor: "flow"}},
+			}
 		},
 		Docs: BlockDocs{Name: "input", Summary: "Model input, usually a batch of token ids."},
 	},
@@ -151,7 +157,14 @@ var Primitives = []*BlockDef{
 			{"vocab", pInt(1, "Vocabulary size")},
 			{"dim", pInt(1, "Embedding width")},
 		},
-		Ports:      Ports{In: map[string]PortSpec{"ids": Port("...")}, Out: map[string]PortSpec{"y": Port("... dim")}},
+		Ports: Ports{
+			// An index in, a vector out. This is the block where the integral
+			// side of a design stops and the real side begins, so both ends of
+			// it have to say so — without the output declaring `float`, `int`
+			// would propagate through the entire model.
+			In:  map[string]PortSpec{"ids": {Shape: "...", Dtype: "int", Anchor: "flow"}},
+			Out: map[string]PortSpec{"y": {Shape: "... dim", Dtype: "float", Anchor: "flow"}},
+		},
 		ParamCount: func(r *Resolved) float64 { return r.Num("vocab") * r.Num("dim") },
 		Flops:      noFlops,
 		Retains:    noRetains,
@@ -220,7 +233,7 @@ var Primitives = []*BlockDef{
 			{"bias", pBool(false, "Learn a per-output constant as well as the matrix")},
 		},
 		Ports: Ports{
-			In:  map[string]PortSpec{"x": Port("... in_features")},
+			In:  map[string]PortSpec{"x": {Shape: "... in_features", Dtype: "real", Anchor: "flow"}},
 			Out: map[string]PortSpec{"y": Port("... out_features")},
 		},
 		ParamCount: func(r *Resolved) float64 {
@@ -251,7 +264,7 @@ var Primitives = []*BlockDef{
 				Doc: "Bound the logits to this magnitude with tanh; 0 leaves them alone"}},
 		},
 		Ports: Ports{
-			In:  map[string]PortSpec{"x": Port("... dim")},
+			In:  map[string]PortSpec{"x": {Shape: "... dim", Dtype: "real", Anchor: "flow"}},
 			Out: map[string]PortSpec{"y": Port("... vocab")},
 		},
 		ParamCount: func(r *Resolved) float64 {
@@ -310,8 +323,11 @@ var Primitives = []*BlockDef{
 			oh := convOut(r.Int("in_h"), r.Int("kernel"), r.Int("stride"), r.Int("padding"))
 			ow := convOut(r.Int("in_w"), r.Int("kernel"), r.Int("stride"), r.Int("padding"))
 			return Ports{
-				In: map[string]PortSpec{"x": Port(fmt.Sprintf("B %d %d %d",
-					r.Int("in_channels"), r.Int("in_h"), r.Int("in_w")))},
+				In: map[string]PortSpec{"x": {
+					Shape: fmt.Sprintf("B %d %d %d",
+						r.Int("in_channels"), r.Int("in_h"), r.Int("in_w")),
+					Dtype: "real", Anchor: "flow",
+				}},
 				Out: map[string]PortSpec{"y": Port(fmt.Sprintf("B %d %d %d",
 					r.Int("out_channels"), oh, ow))},
 			}
@@ -411,7 +427,7 @@ var Primitives = []*BlockDef{
 			{"eps", pNum(1e-5, "Added to the mean square before the square root, against dividing by zero")},
 			{"scale", pBool(true, "Learned per-channel gain")},
 		},
-		Ports: Ports{In: map[string]PortSpec{"x": Port("... dim")}, Out: map[string]PortSpec{"y": Port("... dim")}},
+		Ports: Ports{In: map[string]PortSpec{"x": {Shape: "... dim", Dtype: "real", Anchor: "flow"}}, Out: map[string]PortSpec{"y": Port("... dim")}},
 		ParamCount: func(r *Resolved) float64 {
 			if r.Bool("scale") {
 				return r.Num("dim")
@@ -431,7 +447,7 @@ var Primitives = []*BlockDef{
 			{"eps", pNum(1e-5, "Added to the variance before the square root, against dividing by zero")},
 			{"bias", pBool(true, "Learn a shift as well as a gain")},
 		},
-		Ports: Ports{In: map[string]PortSpec{"x": Port("... dim")}, Out: map[string]PortSpec{"y": Port("... dim")}},
+		Ports: Ports{In: map[string]PortSpec{"x": {Shape: "... dim", Dtype: "real", Anchor: "flow"}}, Out: map[string]PortSpec{"y": Port("... dim")}},
 		ParamCount: func(r *Resolved) float64 {
 			n := r.Num("dim")
 			if r.Bool("bias") {
@@ -451,7 +467,7 @@ var Primitives = []*BlockDef{
 			{"kind", pEnum([]string{"silu", "gelu", "gelu_tanh", "relu", "relu2", "tanh", "sigmoid", "identity"}, "silu", "Which nonlinearity")},
 			{"dim", pInt(1, "Width, used for the memory and elementwise estimates")},
 		},
-		Ports:      Ports{In: map[string]PortSpec{"x": Port("... dim")}, Out: map[string]PortSpec{"y": Port("... dim")}},
+		Ports:      Ports{In: map[string]PortSpec{"x": {Shape: "... dim", Dtype: "real", Anchor: "flow"}}, Out: map[string]PortSpec{"y": Port("... dim")}},
 		ParamCount: noParams,
 		Flops: func(r *Resolved, _ AnalysisCtx) FlopsPerToken {
 			cost, ok := elementwiseCost[r.Str("kind")]
@@ -638,9 +654,9 @@ var Primitives = []*BlockDef{
 			}
 			return Ports{
 				In: map[string]PortSpec{
-					"q": Port("B heads T head_dim"),
-					"k": Port("B kv_heads T head_dim"),
-					"v": Port("B kv_heads T " + v),
+					"q": {Shape: "B heads T head_dim", Dtype: "real", Anchor: "flow"},
+					"k": {Shape: "B kv_heads T head_dim", Dtype: "real", Anchor: "flow"},
+					"v": {Shape: "B kv_heads T " + v, Dtype: "real", Anchor: "flow"},
 				},
 				Out: map[string]PortSpec{"y": Port("B heads T " + v)},
 			}
@@ -784,7 +800,11 @@ var Primitives = []*BlockDef{
 			{"n", pInt(1, "How many contributions are combined")},
 		},
 		Ports: Ports{
-			In:  map[string]PortSpec{"x": Port("... dim"), "weights": Port("... n")},
+			In: map[string]PortSpec{
+				"x": Port("... dim"),
+				// What the router produced, which the router declares `float`.
+				"weights": {Shape: "... n", Dtype: "float", Anchor: "flow"},
+			},
 			Out: map[string]PortSpec{"y": Port("... dim")},
 		},
 		ParamCount: noParams,
@@ -938,7 +958,7 @@ var Primitives = []*BlockDef{
 			{"bias", pBool(true, "Learn a per-channel constant as well as the kernel")},
 		},
 		Ports: Ports{
-			In:  map[string]PortSpec{"x": Port("... channels")},
+			In:  map[string]PortSpec{"x": {Shape: "... channels", Dtype: "real", Anchor: "flow"}},
 			Out: map[string]PortSpec{"y": Port("... channels")},
 		},
 		ParamCount: func(r *Resolved) float64 {

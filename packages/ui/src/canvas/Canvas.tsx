@@ -112,15 +112,35 @@ const NO_POSITIONS: Positions = {};
  * invent a type system, report what the block actually says and leave the rest
  * unlabelled.
  */
+/**
+ * What a pin carries, from the port's own declaration.
+ *
+ * This was a two-row table keyed on `node.type` strings — `input` and
+ * `embedding:ids` — which is what the seventeenth pass moved onto the port and
+ * then left half-moved: the declaration existed and the renderer went on
+ * guessing. Every pin says what it carries now, so every pin can be coloured
+ * by it rather than two.
+ */
+const DTYPE_CLASS: Record<string, string> = {
+  int64: "int",
+  int32: "int",
+  bool: "bool",
+  real: "float",
+  fp32: "float",
+  bf16: "half",
+  fp16: "half",
+};
+
 function dtypeOf(
-  node: { type: string },
-  resolved: { p: Record<string, unknown> } | undefined,
+  ports: { in: Record<string, { dtype?: string }>; out: Record<string, { dtype?: string }> } | undefined,
   port: string,
   side: "in" | "out",
 ): string | null {
-  if (node.type === "input") return String(resolved?.p.dtype ?? "int64");
-  if (node.type === "embedding" && side === "in" && port === "ids") return "int64";
-  return null;
+  const spec = (side === "in" ? ports?.in : ports?.out)?.[port];
+  const declared = spec?.dtype;
+  // `inherit` is not a colour: it says "whatever arrives", and what arrives is
+  // the producer's business.
+  return !declared || declared === "inherit" ? null : declared;
 }
 
 /**
@@ -238,18 +258,15 @@ function wireUp(
     mark(spec.target, targetHandle);
 
     const shape = derived.infer.outputs.get(`${spec.source}:${spec.sourcePort}`);
-    // A declared dtype wins; otherwise fall back to what the block's own
-    // parameters imply, which is all an inherited port can offer.
+    // What the producing pin declares. An inherited port says nothing, and a
+    // wire that carries something other than activations is drawn differently,
+    // so "nothing said" has to mean the ordinary case rather than a guess.
     const declared =
-      from.dtype !== "inherit"
-        ? from.dtype
-        : (dtypeOf(
-            fromItem?.node ?? { type: "" },
-            derived.infer.resolved.get(spec.source),
-            spec.sourcePort,
-            "out",
-          ) ?? "inherit");
-    const kind = wireKind({ ...from, dtype: declared.startsWith("int") ? "int" : declared }, to);
+      dtypeOf(derived.infer.ports.get(spec.source), spec.sourcePort, "out") ?? "inherit";
+    // Classed, not sniffed. This read `declared.startsWith("int")`, which is
+    // exactly the test the seventeenth pass replaced the sniffing with a
+    // declaration to be rid of.
+    const kind = wireKind({ ...from, dtype: DTYPE_CLASS[declared] ?? declared }, to);
 
     return {
       id: spec.id,
@@ -299,7 +316,7 @@ function portViews(
       name,
       shape: formatShape(shape, shapeMode, derived.symbols),
       connected: set.has(`${path}:${name}`),
-      dtype: dtypeOf(node, resolved, name, side),
+      dtype: dtypeOf(ports, name, side),
     };
   };
 

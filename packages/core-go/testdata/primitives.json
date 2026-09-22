@@ -22,7 +22,9 @@
         "out": {
           "x": "B T"
         },
-        "anchors": {}
+        "anchors": {
+          "x": "flow/int"
+        }
       },
       "portError": "",
       "paramCount": null,
@@ -126,7 +128,10 @@
         "out": {
           "y": "... dim"
         },
-        "anchors": {}
+        "anchors": {
+          "ids": "flow/int",
+          "y": "flow/float"
+        }
       },
       "portError": "",
       "paramCount": 525336576,
@@ -260,7 +265,9 @@
         "out": {
           "y": "... out_features"
         },
-        "anchors": {}
+        "anchors": {
+          "x": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 58720256,
@@ -297,7 +304,9 @@
         "out": {
           "y": "... out_features"
         },
-        "anchors": {}
+        "anchors": {
+          "x": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 58734592,
@@ -337,7 +346,9 @@
         "out": {
           "y": "... vocab"
         },
-        "anchors": {}
+        "anchors": {
+          "x": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 525336576,
@@ -377,7 +388,9 @@
         "out": {
           "y": "... vocab"
         },
-        "anchors": {}
+        "anchors": {
+          "x": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 0,
@@ -426,7 +439,9 @@
         "out": {
           "y": "B 64 55 55"
         },
-        "anchors": {}
+        "anchors": {
+          "x": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 23296,
@@ -475,7 +490,9 @@
         "out": {
           "y": "B 384 13 13"
         },
-        "anchors": {}
+        "anchors": {
+          "x": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 663936,
@@ -587,7 +604,9 @@
         "out": {
           "y": "... dim"
         },
-        "anchors": {}
+        "anchors": {
+          "x": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 4096,
@@ -623,7 +642,9 @@
         "out": {
           "y": "... dim"
         },
-        "anchors": {}
+        "anchors": {
+          "x": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 0,
@@ -659,7 +680,9 @@
         "out": {
           "y": "... dim"
         },
-        "anchors": {}
+        "anchors": {
+          "x": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 1536,
@@ -695,7 +718,9 @@
         "out": {
           "y": "... dim"
         },
-        "anchors": {}
+        "anchors": {
+          "x": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 768,
@@ -730,7 +755,9 @@
         "out": {
           "y": "... dim"
         },
-        "anchors": {}
+        "anchors": {
+          "x": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 0,
@@ -765,7 +792,9 @@
         "out": {
           "y": "... dim"
         },
-        "anchors": {}
+        "anchors": {
+          "x": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 0,
@@ -993,7 +1022,11 @@
         "out": {
           "y": "B heads T head_dim"
         },
-        "anchors": {}
+        "anchors": {
+          "k": "flow/real",
+          "q": "flow/real",
+          "v": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 0,
@@ -1044,7 +1077,11 @@
         "out": {
           "y": "B heads T head_dim"
         },
-        "anchors": {}
+        "anchors": {
+          "k": "flow/real",
+          "q": "flow/real",
+          "v": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 0,
@@ -1095,7 +1132,11 @@
         "out": {
           "y": "B heads T head_dim"
         },
-        "anchors": {}
+        "anchors": {
+          "k": "flow/real",
+          "q": "flow/real",
+          "v": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 0,
@@ -1145,7 +1186,11 @@
         "out": {
           "y": "B heads T head_dim"
         },
-        "anchors": {}
+        "anchors": {
+          "k": "flow/real",
+          "q": "flow/real",
+          "v": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 0,
@@ -1198,7 +1243,11 @@
         "out": {
           "y": "B heads T head_dim"
         },
-        "anchors": {}
+        "anchors": {
+          "k": "flow/real",
+          "q": "flow/real",
+          "v": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 0,
@@ -1324,7 +1373,9 @@
         "out": {
           "y": "... dim"
         },
-        "anchors": {}
+        "anchors": {
+          "weights": "flow/float"
+        }
       },
       "portError": "",
       "paramCount": 0,
@@ -1725,7 +1776,9 @@
         "out": {
           "y": "... channels"
         },
-        "anchors": {}
+        "anchors": {
+          "x": "flow/real"
+        }
       },
       "portError": "",
       "paramCount": 40960,

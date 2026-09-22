@@ -1,6 +1,809 @@
 {
   "cases": [
     {
+      "preset": "nano-sort",
+      "blocks": [
+        {
+          "path": "layers",
+          "type": "repeat",
+          "kind": "container",
+          "docs": {
+            "name": "stack",
+            "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
+          },
+          "copies": {
+            "total": 1,
+            "active": 1
+          },
+          "params": [
+            [
+              "count",
+              "L",
+              3,
+              "How many times the subgraph is stacked"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "B T D"
+            },
+            "out": {
+              "x": "B T D"
+            }
+          },
+          "contributes": {
+            "params": 84816,
+            "activeParams": 84816,
+            "shareOfParams": 0.9893617021276596,
+            "flopsPerToken": 169056,
+            "shareOfFlops": 0.9982993197278912,
+            "activationBytes": 54252,
+            "cacheBytesPerToken": 576,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/mlp/up",
+              "type": "linear",
+              "params": 28224
+            },
+            {
+              "path": "layers/block/mlp/down",
+              "type": "linear",
+              "params": 27792
+            },
+            {
+              "path": "layers/block/attn/q_proj",
+              "type": "linear",
+              "params": 7056
+            },
+            {
+              "path": "layers/block/attn/k_proj",
+              "type": "linear",
+              "params": 7056
+            },
+            {
+              "path": "layers/block/attn/v_proj",
+              "type": "linear",
+              "params": 7056
+            },
+            {
+              "path": "layers/block/attn/o_proj",
+              "type": "linear",
+              "params": 7056
+            },
+            {
+              "path": "layers/block/norm1",
+              "type": "layernorm",
+              "params": 288
+            },
+            {
+              "path": "layers/block/norm2",
+              "type": "layernorm",
+              "params": 288
+            }
+          ]
+        },
+        {
+          "path": "layers/block",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "name": "transformer block",
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 3,
+            "active": 3
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              48,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              3,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "Hkv",
+              3,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              16,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              192,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, or DeepSeek's latent attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "layernorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              false,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "dense",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              null,
+              0,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              null,
+              1,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              null,
+              0,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "gelu",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              true,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              true,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              false,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              null,
+              0,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              null,
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 84816,
+            "activeParams": 84816,
+            "shareOfParams": 0.9893617021276596,
+            "flopsPerToken": 169056,
+            "shareOfFlops": 0.9982993197278912,
+            "activationBytes": 54252,
+            "cacheBytesPerToken": 576,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/mlp/up",
+              "type": "linear",
+              "params": 28224
+            },
+            {
+              "path": "layers/block/mlp/down",
+              "type": "linear",
+              "params": 27792
+            },
+            {
+              "path": "layers/block/attn/q_proj",
+              "type": "linear",
+              "params": 7056
+            },
+            {
+              "path": "layers/block/attn/k_proj",
+              "type": "linear",
+              "params": 7056
+            },
+            {
+              "path": "layers/block/attn/v_proj",
+              "type": "linear",
+              "params": 7056
+            },
+            {
+              "path": "layers/block/attn/o_proj",
+              "type": "linear",
+              "params": 7056
+            },
+            {
+              "path": "layers/block/norm1",
+              "type": "layernorm",
+              "params": 288
+            },
+            {
+              "path": "layers/block/norm2",
+              "type": "layernorm",
+              "params": 288
+            }
+          ]
+        },
+        {
+          "path": "layers/block/mlp",
+          "type": "dense_mlp",
+          "kind": "composite",
+          "docs": {
+            "name": "feed-forward",
+            "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
+            "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
+          },
+          "copies": {
+            "total": 3,
+            "active": 3
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              48,
+              "Width of the residual stream"
+            ],
+            [
+              "hidden",
+              "F",
+              192,
+              "Width in the middle, where the nonlinearity is"
+            ],
+            [
+              "act",
+              null,
+              "gelu",
+              "Which nonlinearity"
+            ],
+            [
+              "bias",
+              null,
+              true,
+              "Learn a constant on each projection"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 56016,
+            "activeParams": 56016,
+            "shareOfParams": 0.6534154535274356,
+            "flopsPerToken": 110592,
+            "shareOfFlops": 0.6530612244897959,
+            "activationBytes": 28512,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/mlp/up",
+              "type": "linear",
+              "params": 28224
+            },
+            {
+              "path": "layers/block/mlp/down",
+              "type": "linear",
+              "params": 27792
+            }
+          ]
+        },
+        {
+          "path": "layers/block/attn",
+          "type": "gqa_attention",
+          "kind": "composite",
+          "docs": {
+            "name": "grouped-query attention",
+            "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
+            "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
+            "refs": [
+              "https://arxiv.org/abs/2305.13245"
+            ]
+          },
+          "copies": {
+            "total": 3,
+            "active": 3
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              48,
+              "Residual stream width"
+            ],
+            [
+              "heads",
+              "H",
+              3,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "Hkv",
+              3,
+              "Key/value heads. Equal to heads gives MHA, 1 gives MQA"
+            ],
+            [
+              "head_dim",
+              "dh",
+              16,
+              "Width of one head; query and key heads share it"
+            ],
+            [
+              "bias",
+              null,
+              true,
+              "Bias on the q/k/v/o projections"
+            ],
+            [
+              "o_bias",
+              null,
+              null,
+              "Override the output-projection bias (Qwen2.5 has qkv bias only)"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Mask out every position after the current one"
+            ],
+            [
+              "window",
+              "0",
+              0,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "qk_norm",
+              null,
+              false,
+              "RMSNorm on the query and key heads (Qwen3, Gemma 3)"
+            ],
+            [
+              "rope",
+              null,
+              null,
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "flash",
+              null,
+              true,
+              "Assume a memory-efficient kernel, which never builds the score matrix"
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 28224,
+            "activeParams": 28224,
+            "shareOfParams": 0.3292273236282195,
+            "flopsPerToken": 58464,
+            "shareOfFlops": 0.34523809523809523,
+            "activationBytes": 19404,
+            "cacheBytesPerToken": 576,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/attn/q_proj",
+              "type": "linear",
+              "params": 7056
+            },
+            {
+              "path": "layers/block/attn/k_proj",
+              "type": "linear",
+              "params": 7056
+            },
+            {
+              "path": "layers/block/attn/v_proj",
+              "type": "linear",
+              "params": 7056
+            },
+            {
+              "path": "layers/block/attn/o_proj",
+              "type": "linear",
+              "params": 7056
+            }
+          ]
+        },
+        {
+          "path": "layers/block/mlp/up",
+          "type": "linear",
+          "kind": "primitive",
+          "docs": {
+            "name": "linear",
+            "summary": "Dense projection.",
+            "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
+          },
+          "copies": {
+            "total": 3,
+            "active": 3
+          },
+          "params": [
+            [
+              "in_features",
+              "D",
+              48,
+              "Width in"
+            ],
+            [
+              "out_features",
+              "F",
+              192,
+              "Width out"
+            ],
+            [
+              "bias",
+              null,
+              true,
+              "Learn a per-output constant as well as the matrix"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... in_features"
+            },
+            "out": {
+              "y": "... out_features"
+            }
+          },
+          "contributes": {
+            "params": 28224,
+            "activeParams": 28224,
+            "shareOfParams": 0.3292273236282195,
+            "flopsPerToken": 55296,
+            "shareOfFlops": 0.32653061224489793,
+            "activationBytes": 12672,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/mlp/up",
+              "type": "linear",
+              "params": 28224
+            }
+          ]
+        },
+        {
+          "path": "layers/block/mlp/down",
+          "type": "linear",
+          "kind": "primitive",
+          "docs": {
+            "name": "linear",
+            "summary": "Dense projection.",
+            "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
+          },
+          "copies": {
+            "total": 3,
+            "active": 3
+          },
+          "params": [
+            [
+              "in_features",
+              "F",
+              192,
+              "Width in"
+            ],
+            [
+              "out_features",
+              "D",
+              48,
+              "Width out"
+            ],
+            [
+              "bias",
+              null,
+              true,
+              "Learn a per-output constant as well as the matrix"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... in_features"
+            },
+            "out": {
+              "y": "... out_features"
+            }
+          },
+          "contributes": {
+            "params": 27792,
+            "activeParams": 27792,
+            "shareOfParams": 0.32418812989921614,
+            "flopsPerToken": 55296,
+            "shareOfFlops": 0.32653061224489793,
+            "activationBytes": 0,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/mlp/down",
+              "type": "linear",
+              "params": 27792
+            }
+          ]
+        },
+        {
+          "path": "layers/block/attn/q_proj",
+          "type": "linear",
+          "kind": "primitive",
+          "docs": {
+            "name": "linear",
+            "summary": "Dense projection.",
+            "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
+          },
+          "copies": {
+            "total": 3,
+            "active": 3
+          },
+          "params": [
+            [
+              "in_features",
+              "D",
+              48,
+              "Width in"
+            ],
+            [
+              "out_features",
+              "H*dh",
+              48,
+              "Width out"
+            ],
+            [
+              "bias",
+              null,
+              true,
+              "Learn a per-output constant as well as the matrix"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... in_features"
+            },
+            "out": {
+              "y": "... out_features"
+            }
+          },
+          "contributes": {
+            "params": 7056,
+            "activeParams": 7056,
+            "shareOfParams": 0.08230683090705487,
+            "flopsPerToken": 13824,
+            "shareOfFlops": 0.08163265306122448,
+            "activationBytes": 0,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/attn/q_proj",
+              "type": "linear",
+              "params": 7056
+            }
+          ]
+        },
+        {
+          "path": "layers/block/attn/k_proj",
+          "type": "linear",
+          "kind": "primitive",
+          "docs": {
+            "name": "linear",
+            "summary": "Dense projection.",
+            "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
+          },
+          "copies": {
+            "total": 3,
+            "active": 3
+          },
+          "params": [
+            [
+              "in_features",
+              "D",
+              48,
+              "Width in"
+            ],
+            [
+              "out_features",
+              "Hkv*dh",
+              48,
+              "Width out"
+            ],
+            [
+              "bias",
+              null,
+              true,
+              "Learn a per-output constant as well as the matrix"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... in_features"
+            },
+            "out": {
+              "y": "... out_features"
+            }
+          },
+          "contributes": {
+            "params": 7056,
+            "activeParams": 7056,
+            "shareOfParams": 0.08230683090705487,
+            "flopsPerToken": 13824,
+            "shareOfFlops": 0.08163265306122448,
+            "activationBytes": 0,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/attn/k_proj",
+              "type": "linear",
+              "params": 7056
+            }
+          ]
+        }
+      ]
+    },
+    {
       "preset": "gpt2-small",
       "blocks": [
         {
@@ -8,6 +811,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -88,6 +892,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -355,6 +1160,7 @@
           "type": "dense_mlp",
           "kind": "composite",
           "docs": {
+            "name": "feed-forward",
             "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
             "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
           },
@@ -424,6 +1230,7 @@
           "type": "embedding",
           "kind": "primitive",
           "docs": {
+            "name": "token embedding",
             "summary": "Token embedding table.",
             "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
           },
@@ -476,6 +1283,7 @@
           "type": "gqa_attention",
           "kind": "composite",
           "docs": {
+            "name": "grouped-query attention",
             "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
             "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
             "refs": [
@@ -618,6 +1426,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -676,6 +1485,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -734,6 +1544,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -797,6 +1608,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -877,6 +1689,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -1144,6 +1957,7 @@
           "type": "dense_mlp",
           "kind": "composite",
           "docs": {
+            "name": "feed-forward",
             "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
             "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
           },
@@ -1213,6 +2027,7 @@
           "type": "gqa_attention",
           "kind": "composite",
           "docs": {
+            "name": "grouped-query attention",
             "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
             "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
             "refs": [
@@ -1355,6 +2170,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -1413,6 +2229,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -1471,6 +2288,7 @@
           "type": "embedding",
           "kind": "primitive",
           "docs": {
+            "name": "token embedding",
             "summary": "Token embedding table.",
             "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
           },
@@ -1523,6 +2341,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -1586,6 +2405,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -1666,6 +2486,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -1933,6 +2754,7 @@
           "type": "dense_mlp",
           "kind": "composite",
           "docs": {
+            "name": "feed-forward",
             "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
             "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
           },
@@ -2002,6 +2824,7 @@
           "type": "gqa_attention",
           "kind": "composite",
           "docs": {
+            "name": "grouped-query attention",
             "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
             "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
             "refs": [
@@ -2144,6 +2967,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -2202,6 +3026,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -2260,6 +3085,7 @@
           "type": "embedding",
           "kind": "primitive",
           "docs": {
+            "name": "token embedding",
             "summary": "Token embedding table.",
             "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
           },
@@ -2312,6 +3138,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -2375,6 +3202,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -2455,6 +3283,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -2722,6 +3551,7 @@
           "type": "dense_mlp",
           "kind": "composite",
           "docs": {
+            "name": "feed-forward",
             "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
             "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
           },
@@ -2791,6 +3621,7 @@
           "type": "gqa_attention",
           "kind": "composite",
           "docs": {
+            "name": "grouped-query attention",
             "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
             "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
             "refs": [
@@ -2933,6 +3764,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -2991,6 +3823,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -3049,6 +3882,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -3107,6 +3941,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -3170,6 +4005,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -3250,6 +4086,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -3517,6 +4354,7 @@
           "type": "dense_mlp",
           "kind": "composite",
           "docs": {
+            "name": "feed-forward",
             "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
             "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
           },
@@ -3586,6 +4424,7 @@
           "type": "embedding",
           "kind": "primitive",
           "docs": {
+            "name": "token embedding",
             "summary": "Token embedding table.",
             "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
           },
@@ -3638,6 +4477,7 @@
           "type": "gqa_attention",
           "kind": "composite",
           "docs": {
+            "name": "grouped-query attention",
             "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
             "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
             "refs": [
@@ -3780,6 +4620,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -3838,6 +4679,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -3896,6 +4738,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -3959,6 +4802,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -4044,6 +4888,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -4318,6 +5163,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -4395,6 +5241,7 @@
           "type": "gqa_attention",
           "kind": "composite",
           "docs": {
+            "name": "grouped-query attention",
             "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
             "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
             "refs": [
@@ -4539,6 +5386,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -4597,6 +5445,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -4655,6 +5504,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -4713,6 +5563,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -4776,6 +5627,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -4861,6 +5713,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -5135,6 +5988,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -5212,6 +6066,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -5270,6 +6125,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -5328,6 +6184,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -5386,6 +6243,7 @@
           "type": "gqa_attention",
           "kind": "composite",
           "docs": {
+            "name": "grouped-query attention",
             "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
             "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
             "refs": [
@@ -5530,6 +6388,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -5593,6 +6452,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -5678,6 +6538,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -5952,6 +6813,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -6029,6 +6891,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -6087,6 +6950,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -6145,6 +7009,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -6203,6 +7068,7 @@
           "type": "gqa_attention",
           "kind": "composite",
           "docs": {
+            "name": "grouped-query attention",
             "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
             "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
             "refs": [
@@ -6347,6 +7213,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -6410,6 +7277,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -6495,6 +7363,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -6769,6 +7638,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -6846,6 +7716,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -6904,6 +7775,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -6962,6 +7834,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -7020,6 +7893,7 @@
           "type": "gqa_attention",
           "kind": "composite",
           "docs": {
+            "name": "grouped-query attention",
             "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
             "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
             "refs": [
@@ -7164,6 +8038,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -7227,6 +8102,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -7312,6 +8188,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -7586,6 +8463,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -7663,6 +8541,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -7721,6 +8600,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -7779,6 +8659,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -7837,6 +8718,7 @@
           "type": "gqa_attention",
           "kind": "composite",
           "docs": {
+            "name": "grouped-query attention",
             "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
             "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
             "refs": [
@@ -7981,6 +8863,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -8044,6 +8927,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -8129,6 +9013,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -8403,6 +9288,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -8480,6 +9366,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -8538,6 +9425,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -8596,6 +9484,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -8654,6 +9543,7 @@
           "type": "gqa_attention",
           "kind": "composite",
           "docs": {
+            "name": "grouped-query attention",
             "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
             "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
             "refs": [
@@ -8798,6 +9688,7 @@
           "type": "embedding",
           "kind": "primitive",
           "docs": {
+            "name": "token embedding",
             "summary": "Token embedding table.",
             "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
           },
@@ -8855,6 +9746,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -8950,6 +9842,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -9234,6 +10127,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -9311,6 +10205,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -9369,6 +10264,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -9427,6 +10323,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -9485,6 +10382,7 @@
           "type": "gqa_attention",
           "kind": "composite",
           "docs": {
+            "name": "grouped-query attention",
             "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
             "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
             "refs": [
@@ -9639,6 +10537,7 @@
           "type": "embedding",
           "kind": "primitive",
           "docs": {
+            "name": "token embedding",
             "summary": "Token embedding table.",
             "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
           },
@@ -9696,6 +10595,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -9796,6 +10696,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -10080,6 +10981,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -10364,6 +11266,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -10441,6 +11344,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -10518,6 +11422,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -10576,6 +11481,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -10634,6 +11540,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -10697,6 +11604,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -10797,6 +11705,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -11086,6 +11995,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -11375,6 +12285,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -11664,6 +12575,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -11953,6 +12865,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -12242,6 +13155,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -12535,6 +13449,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -12617,6 +13532,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -12707,6 +13623,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -12986,6 +13903,7 @@
           "type": "moe_layer",
           "kind": "composite",
           "docs": {
+            "name": "mixture of experts",
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
             "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
@@ -13105,6 +14023,7 @@
           "type": "moe_experts",
           "kind": "container",
           "docs": {
+            "name": "expert bank",
             "summary": "A bank of experts. Its subgraph describes one expert.",
             "formula": "total params scale with experts; FLOPs and activations scale with top_k"
           },
@@ -13167,6 +14086,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -13244,6 +14164,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -13302,6 +14223,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -13360,6 +14282,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -13423,6 +14346,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -13523,6 +14447,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -13812,6 +14737,7 @@
           "type": "moe_layer",
           "kind": "composite",
           "docs": {
+            "name": "mixture of experts",
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
             "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
@@ -13931,6 +14857,7 @@
           "type": "moe_experts",
           "kind": "container",
           "docs": {
+            "name": "expert bank",
             "summary": "A bank of experts. Its subgraph describes one expert.",
             "formula": "total params scale with experts; FLOPs and activations scale with top_k"
           },
@@ -13993,6 +14920,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -14070,6 +14998,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -14128,6 +15057,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -14186,6 +15116,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -14249,6 +15180,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -14349,6 +15281,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -14638,6 +15571,7 @@
           "type": "moe_layer",
           "kind": "composite",
           "docs": {
+            "name": "mixture of experts",
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
             "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
@@ -14757,6 +15691,7 @@
           "type": "moe_experts",
           "kind": "container",
           "docs": {
+            "name": "expert bank",
             "summary": "A bank of experts. Its subgraph describes one expert.",
             "formula": "total params scale with experts; FLOPs and activations scale with top_k"
           },
@@ -14819,6 +15754,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -14896,6 +15832,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -14954,6 +15891,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -15012,6 +15950,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -15075,6 +16014,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -15175,6 +16115,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -15464,6 +16405,7 @@
           "type": "moe_layer",
           "kind": "composite",
           "docs": {
+            "name": "mixture of experts",
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
             "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
@@ -15603,6 +16545,7 @@
           "type": "moe_layer",
           "kind": "composite",
           "docs": {
+            "name": "mixture of experts",
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
             "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
@@ -15742,6 +16685,7 @@
           "type": "moe_layer",
           "kind": "composite",
           "docs": {
+            "name": "mixture of experts",
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
             "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
@@ -15881,6 +16825,7 @@
           "type": "moe_layer",
           "kind": "composite",
           "docs": {
+            "name": "mixture of experts",
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
             "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
@@ -16020,6 +16965,7 @@
           "type": "moe_experts",
           "kind": "container",
           "docs": {
+            "name": "expert bank",
             "summary": "A bank of experts. Its subgraph describes one expert.",
             "formula": "total params scale with experts; FLOPs and activations scale with top_k"
           },
@@ -16082,6 +17028,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -16164,6 +17111,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -16264,6 +17212,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -16553,6 +17502,7 @@
           "type": "moe_layer",
           "kind": "composite",
           "docs": {
+            "name": "mixture of experts",
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
             "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
@@ -16687,6 +17637,7 @@
           "type": "moe_experts",
           "kind": "container",
           "docs": {
+            "name": "expert bank",
             "summary": "A bank of experts. Its subgraph describes one expert.",
             "formula": "total params scale with experts; FLOPs and activations scale with top_k"
           },
@@ -16749,6 +17700,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -16826,6 +17778,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -16884,6 +17837,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -16942,6 +17896,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -17005,6 +17960,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -17105,6 +18061,7 @@
           "type": "moe_layer",
           "kind": "composite",
           "docs": {
+            "name": "mixture of experts",
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
             "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
@@ -17224,6 +18181,7 @@
           "type": "moe_layer",
           "kind": "composite",
           "docs": {
+            "name": "mixture of experts",
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
             "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
@@ -17343,6 +18301,7 @@
           "type": "moe_layer",
           "kind": "composite",
           "docs": {
+            "name": "mixture of experts",
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
             "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
@@ -17462,6 +18421,7 @@
           "type": "moe_layer",
           "kind": "composite",
           "docs": {
+            "name": "mixture of experts",
             "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
             "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
             "refs": [
@@ -17581,6 +18541,7 @@
           "type": "moe_experts",
           "kind": "container",
           "docs": {
+            "name": "expert bank",
             "summary": "A bank of experts. Its subgraph describes one expert.",
             "formula": "total params scale with experts; FLOPs and activations scale with top_k"
           },
@@ -17643,6 +18604,7 @@
           "type": "gated_mlp",
           "kind": "composite",
           "docs": {
+            "name": "gated feed-forward",
             "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
             "formula": "params = 3 * d_model * hidden",
             "refs": [
@@ -17720,6 +18682,7 @@
           "type": "moe_experts",
           "kind": "container",
           "docs": {
+            "name": "expert bank",
             "summary": "A bank of experts. Its subgraph describes one expert.",
             "formula": "total params scale with experts; FLOPs and activations scale with top_k"
           },
@@ -17787,6 +18750,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -17887,6 +18851,7 @@
           "type": "embedding",
           "kind": "primitive",
           "docs": {
+            "name": "token embedding",
             "summary": "Token embedding table.",
             "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
           },
@@ -17939,6 +18904,7 @@
           "type": "lm_head",
           "kind": "primitive",
           "docs": {
+            "name": "output projection",
             "summary": "Output projection to vocabulary logits.",
             "formula": "params = 0 when tied, else vocab*dim; FLOPs/token = 2*vocab*dim; logits cost vocab*(bytes+4) per token",
             "refs": [
@@ -18012,6 +18978,7 @@
           "type": "dense_mlp",
           "kind": "composite",
           "docs": {
+            "name": "feed-forward",
             "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
             "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
           },
@@ -18081,6 +19048,7 @@
           "type": "dense_mlp",
           "kind": "composite",
           "docs": {
+            "name": "feed-forward",
             "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
             "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
           },
@@ -18150,6 +19118,7 @@
           "type": "dense_mlp",
           "kind": "composite",
           "docs": {
+            "name": "feed-forward",
             "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
             "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
           },
@@ -18219,6 +19188,7 @@
           "type": "dense_mlp",
           "kind": "composite",
           "docs": {
+            "name": "feed-forward",
             "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
             "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
           },
@@ -18288,6 +19258,7 @@
           "type": "dense_mlp",
           "kind": "composite",
           "docs": {
+            "name": "feed-forward",
             "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
             "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
           },
@@ -18362,6 +19333,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -18442,6 +19414,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -18709,6 +19682,7 @@
           "type": "repeat",
           "kind": "container",
           "docs": {
+            "name": "stack",
             "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
           },
           "copies": {
@@ -18789,6 +19763,7 @@
           "type": "transformer_block",
           "kind": "composite",
           "docs": {
+            "name": "transformer block",
             "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
             "formula": "params = attention + mlp + 2 norms"
           },
@@ -19056,6 +20031,7 @@
           "type": "dense_mlp",
           "kind": "composite",
           "docs": {
+            "name": "feed-forward",
             "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
             "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
           },
@@ -19125,6 +20101,7 @@
           "type": "dense_mlp",
           "kind": "composite",
           "docs": {
+            "name": "feed-forward",
             "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
             "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
           },
@@ -19194,6 +20171,7 @@
           "type": "gqa_attention",
           "kind": "composite",
           "docs": {
+            "name": "grouped-query attention",
             "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
             "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
             "refs": [
@@ -19336,6 +20314,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -19399,6 +20378,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -19457,6 +20437,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -19515,6 +20496,7 @@
           "type": "linear",
           "kind": "primitive",
           "docs": {
+            "name": "linear",
             "summary": "Dense projection.",
             "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
           },
@@ -19573,6 +20555,7 @@
           "type": "conv2d",
           "kind": "primitive",
           "docs": {
+            "name": "2D convolution",
             "summary": "Two-dimensional convolution, optionally with the activation a convnet always follows it with.",
             "formula": "params = (in/groups)*out*k*k (+out with bias); FLOPs = 2*(in/groups)*out*k*k*H_out*W_out; H_out = floor((H + 2*padding - k)/stride) + 1",
             "refs": [
@@ -19676,6 +20659,7 @@
           "type": "conv2d",
           "kind": "primitive",
           "docs": {
+            "name": "2D convolution",
             "summary": "Two-dimensional convolution, optionally with the activation a convnet always follows it with.",
             "formula": "params = (in/groups)*out*k*k (+out with bias); FLOPs = 2*(in/groups)*out*k*k*H_out*W_out; H_out = floor((H + 2*padding - k)/stride) + 1",
             "refs": [
@@ -19779,6 +20763,7 @@
           "type": "conv2d",
           "kind": "primitive",
           "docs": {
+            "name": "2D convolution",
             "summary": "Two-dimensional convolution, optionally with the activation a convnet always follows it with.",
             "formula": "params = (in/groups)*out*k*k (+out with bias); FLOPs = 2*(in/groups)*out*k*k*H_out*W_out; H_out = floor((H + 2*padding - k)/stride) + 1",
             "refs": [
@@ -19882,6 +20867,7 @@
           "type": "conv2d",
           "kind": "primitive",
           "docs": {
+            "name": "2D convolution",
             "summary": "Two-dimensional convolution, optionally with the activation a convnet always follows it with.",
             "formula": "params = (in/groups)*out*k*k (+out with bias); FLOPs = 2*(in/groups)*out*k*k*H_out*W_out; H_out = floor((H + 2*padding - k)/stride) + 1",
             "refs": [
@@ -19985,6 +20971,7 @@
           "type": "conv2d",
           "kind": "primitive",
           "docs": {
+            "name": "2D convolution",
             "summary": "Two-dimensional convolution, optionally with the activation a convnet always follows it with.",
             "formula": "params = (in/groups)*out*k*k (+out with bias); FLOPs = 2*(in/groups)*out*k*k*H_out*W_out; H_out = floor((H + 2*padding - k)/stride) + 1",
             "refs": [

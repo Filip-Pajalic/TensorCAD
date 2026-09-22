@@ -197,6 +197,14 @@ export interface PortSpec {
 }
 
 export interface BlockDocs {
+  /**
+   * What a drawing calls this block: a short noun phrase in the words a
+   * published figure would use, where `type` is the identifier the engine
+   * dispatches on and a path is written with. Both are kept — the identifier is
+   * what an MCP call names, and a reader who found a block by its drawing then
+   * has to type it.
+   */
+  name?: string;
   summary?: string;
   formula?: string;
   refs?: string[];

@@ -123,25 +123,25 @@ var Primitives = []*BlockDef{
 			}
 			return Ports{In: map[string]PortSpec{}, Out: map[string]PortSpec{"x": Port(s)}}
 		},
-		Docs: BlockDocs{Summary: "Model input, usually a batch of token ids."},
+		Docs: BlockDocs{Name: "input", Summary: "Model input, usually a batch of token ids."},
 	},
 	{
 		Kind: "primitive", Type: "output", Category: "io",
 		Params: ParamList{},
 		Ports:  Ports{In: map[string]PortSpec{"x": Port("...")}, Out: map[string]PortSpec{}},
-		Docs:   BlockDocs{Summary: "Model output."},
+		Docs:   BlockDocs{Name: "output", Summary: "Model output."},
 	},
 	{
 		Kind: "primitive", Type: "boundary_in", Category: "io",
 		Params:  ParamList{{"ports", pObj(map[string]any{"x": "B T D"}, "Port name -> shape pattern")}},
 		PortsFn: func(r *Resolved) Ports { return Ports{In: map[string]PortSpec{}, Out: portsParam(r)} },
-		Docs:    BlockDocs{Summary: "Entry point of a container subgraph."},
+		Docs:    BlockDocs{Name: "block input", Summary: "Entry point of a container subgraph."},
 	},
 	{
 		Kind: "primitive", Type: "boundary_out", Category: "io",
 		Params:  ParamList{{"ports", pObj(map[string]any{"x": "B T D"}, "Port name -> shape pattern")}},
 		PortsFn: func(r *Resolved) Ports { return Ports{In: portsParam(r), Out: map[string]PortSpec{}} },
-		Docs:    BlockDocs{Summary: "Exit point of a container subgraph."},
+		Docs:    BlockDocs{Name: "block output", Summary: "Exit point of a container subgraph."},
 	},
 
 	// --- embeddings ---------------------------------------------------------
@@ -156,6 +156,7 @@ var Primitives = []*BlockDef{
 		Flops:      noFlops,
 		Retains:    noRetains,
 		Docs: BlockDocs{
+			Name:    "token embedding",
 			Summary: "Token embedding table.",
 			Formula: "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)",
 		},
@@ -173,6 +174,7 @@ var Primitives = []*BlockDef{
 		},
 		Retains: noRetains,
 		Docs: BlockDocs{
+			Name:    "position embedding",
 			Summary: "Learned absolute position embedding, added to the token embedding (GPT-2 style).",
 			Formula: "params = max_seq * dim",
 		},
@@ -200,6 +202,7 @@ var Primitives = []*BlockDef{
 		Flops:      noFlops,
 		Retains:    noRetains,
 		Docs: BlockDocs{
+			Name: "learned tokens",
 			Summary: "A learned tensor with no input: a mask token, a CLS token, register tokens, " +
 				"learned queries. I-JEPA's predictor stands one of these in for every patch " +
 				"it has to predict.",
@@ -232,6 +235,7 @@ var Primitives = []*BlockDef{
 		},
 		Retains: func(*Resolved) []string { return []string{"x"} },
 		Docs: BlockDocs{
+			Name:    "linear",
 			Summary: "Dense projection.",
 			Formula: "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient",
 		},
@@ -273,6 +277,7 @@ var Primitives = []*BlockDef{
 			return r.Num("vocab") * (c.Bytes + 4)
 		},
 		Docs: BlockDocs{
+			Name:    "output projection",
 			Summary: "Output projection to vocabulary logits.",
 			Formula: "params = 0 when tied, else vocab*dim; FLOPs/token = 2*vocab*dim; " +
 				"logits cost vocab*(bytes+4) per token",
@@ -335,6 +340,7 @@ var Primitives = []*BlockDef{
 		},
 		Retains: func(*Resolved) []string { return []string{"x"} },
 		Docs: BlockDocs{
+			Name:    "2D convolution",
 			Summary: "Two-dimensional convolution, optionally with the activation a convnet always follows it with.",
 			Formula: "params = (in/groups)*out*k*k (+out with bias); " +
 				"FLOPs = 2*(in/groups)*out*k*k*H_out*W_out; " +
@@ -371,6 +377,7 @@ var Primitives = []*BlockDef{
 		},
 		Retains: func(*Resolved) []string { return []string{"x"} },
 		Docs: BlockDocs{
+			Name:    "max pool",
 			Summary: "Spatial max pooling.",
 			Formula: "no parameters; H_out = floor((H + 2*padding - k)/stride) + 1",
 		},
@@ -393,7 +400,7 @@ var Primitives = []*BlockDef{
 			}
 		},
 		ParamCount: noParams, Flops: noFlops, Retains: noRetains,
-		Docs: BlockDocs{Summary: "Folds a feature map into one vector per sample."},
+		Docs: BlockDocs{Name: "flatten", Summary: "Folds a feature map into one vector per sample."},
 	},
 
 	// --- normalisation and elementwise --------------------------------------
@@ -415,7 +422,7 @@ var Primitives = []*BlockDef{
 			return FlopsPerToken{Elementwise: 4 * r.Num("dim")}
 		},
 		Retains: func(*Resolved) []string { return []string{"x"} },
-		Docs:    BlockDocs{Summary: "Root-mean-square layer norm.", Formula: "params = dim (scale only, no bias)"},
+		Docs:    BlockDocs{Name: "RMS norm", Summary: "Root-mean-square layer norm.", Formula: "params = dim (scale only, no bias)"},
 	},
 	{
 		Kind: "primitive", Type: "layernorm", Category: "norm",
@@ -436,7 +443,7 @@ var Primitives = []*BlockDef{
 			return FlopsPerToken{Elementwise: 6 * r.Num("dim")}
 		},
 		Retains: func(*Resolved) []string { return []string{"x"} },
-		Docs:    BlockDocs{Summary: "Standard layer norm.", Formula: "params = 2*dim with bias, dim without"},
+		Docs:    BlockDocs{Name: "layer norm", Summary: "Standard layer norm.", Formula: "params = 2*dim with bias, dim without"},
 	},
 	{
 		Kind: "primitive", Type: "activation", Category: "elementwise",
@@ -454,7 +461,7 @@ var Primitives = []*BlockDef{
 			return FlopsPerToken{Elementwise: cost * r.Num("dim")}
 		},
 		Retains: func(*Resolved) []string { return []string{"x"} },
-		Docs:    BlockDocs{Summary: "Pointwise nonlinearity."},
+		Docs:    BlockDocs{Name: "activation", Summary: "Pointwise nonlinearity."},
 	},
 	{
 		Kind: "primitive", Type: "add", Category: "elementwise",
@@ -475,7 +482,7 @@ var Primitives = []*BlockDef{
 		Flops:      func(r *Resolved, _ AnalysisCtx) FlopsPerToken { return FlopsPerToken{Elementwise: r.Num("dim")} },
 		// The gradient of an add is the identity, so nothing needs saving.
 		Retains: noRetains,
-		Docs:    BlockDocs{Summary: "Elementwise sum, the residual connection."},
+		Docs:    BlockDocs{Name: "add", Summary: "Elementwise sum, the residual connection."},
 	},
 	{
 		Kind: "primitive", Type: "gate", Category: "elementwise",
@@ -500,6 +507,7 @@ var Primitives = []*BlockDef{
 		// Each side is needed to differentiate the other.
 		Retains: func(*Resolved) []string { return []string{"x", "g"} },
 		Docs: BlockDocs{
+			Name: "gate",
 			Summary: "Scale a stream by one value per token. What a shared expert's gate does, " +
 				"where the gate is a single learned direction rather than a matrix.",
 			Formula: "y = g * x, g broadcast across the width",
@@ -528,6 +536,7 @@ var Primitives = []*BlockDef{
 		// Each operand is needed to differentiate the other's weight.
 		Retains: func(*Resolved) []string { return []string{"a", "b"} },
 		Docs: BlockDocs{
+			Name: "learned mix",
 			Summary: "Weighted sum of two streams, with both weights learned. What mixes a value " +
 				"embedding into the values, and what mixes a U-net skip back into a later layer.",
 			Formula: "y = w0 * a + w1 * b, w0 and w1 scalars",
@@ -550,7 +559,7 @@ var Primitives = []*BlockDef{
 		Flops:      func(r *Resolved, _ AnalysisCtx) FlopsPerToken { return FlopsPerToken{Elementwise: r.Num("dim")} },
 		// Each operand is needed to differentiate the other.
 		Retains: func(*Resolved) []string { return []string{"a", "b"} },
-		Docs:    BlockDocs{Summary: "Elementwise product, the gate in a gated MLP."},
+		Docs:    BlockDocs{Name: "multiply", Summary: "Elementwise product, the gate in a gated MLP."},
 	},
 	{
 		Kind: "primitive", Type: "rearrange", Category: "shape",
@@ -566,6 +575,7 @@ var Primitives = []*BlockDef{
 		},
 		ParamCount: noParams, Flops: noFlops, Retains: noRetains,
 		Docs: BlockDocs{
+			Name:    "reshape",
 			Summary: "Reshape or permute, written in einops notation.",
 			Formula: "No parameters and no FLOPs; the product of the dimensions must be preserved",
 		},
@@ -602,6 +612,7 @@ var Primitives = []*BlockDef{
 			}}
 		},
 		Docs: BlockDocs{
+			Name:    "rotary positions",
 			Summary: "Rotary position embedding applied to queries or keys.",
 			Refs:    []string{"https://arxiv.org/abs/2104.09864"},
 		},
@@ -717,6 +728,7 @@ var Primitives = []*BlockDef{
 			return out
 		},
 		Docs: BlockDocs{
+			Name:    "scaled dot-product attention",
 			Summary: "Scaled dot-product attention core. Covers MHA, GQA and MQA through kv_heads.",
 			Formula: "FLOPs/token = 4*T_eff*heads*head_dim (halved when causal); KV cache = 2*kv_heads*head_dim*bytes per token",
 			Refs:    []string{"https://arxiv.org/abs/2305.13245", "https://arxiv.org/abs/2205.14135"},
@@ -759,6 +771,7 @@ var Primitives = []*BlockDef{
 			}}
 		},
 		Docs: BlockDocs{
+			Name:    "router",
 			Summary: "Chooses which experts each token is sent to.",
 			Formula: "params = d_model * experts (+ experts with a routing bias)",
 			Refs:    []string{"https://arxiv.org/abs/2401.06066"},
@@ -779,7 +792,7 @@ var Primitives = []*BlockDef{
 			return FlopsPerToken{Elementwise: r.Num("dim") * r.Num("n")}
 		},
 		Retains: noRetains,
-		Docs:    BlockDocs{Summary: "Combines the chosen experts' outputs using the router's weights."},
+		Docs:    BlockDocs{Name: "combine experts", Summary: "Combines the chosen experts' outputs using the router's weights."},
 	},
 
 	// --- tensor plumbing ----------------------------------------------------
@@ -804,6 +817,7 @@ var Primitives = []*BlockDef{
 		},
 		ParamCount: noParams, Flops: noFlops, Retains: noRetains,
 		Docs: BlockDocs{
+			Name:    "split",
 			Summary: "Cuts a tensor into pieces along its last dimension.",
 			Formula: "No parameters and no FLOPs; the pieces must add up to the incoming width",
 		},
@@ -838,6 +852,7 @@ var Primitives = []*BlockDef{
 			return nil
 		},
 		Docs: BlockDocs{
+			Name:    "shift",
 			Summary: "Moves a sequence along by a fixed number of positions, zero-filling the end.",
 			Formula: "y[t] = x[t + by], and zero where t + by runs past the end",
 		},
@@ -866,7 +881,7 @@ var Primitives = []*BlockDef{
 			return Ports{In: in, Out: map[string]PortSpec{"y": Port(r.Str("to"))}}
 		},
 		ParamCount: noParams, Flops: noFlops, Retains: noRetains,
-		Docs: BlockDocs{Summary: "Joins tensors along one dimension."},
+		Docs: BlockDocs{Name: "concatenate", Summary: "Joins tensors along one dimension."},
 	},
 	{
 		Kind: "primitive", Type: "expand_heads", Category: "shape",
@@ -882,6 +897,7 @@ var Primitives = []*BlockDef{
 		// A broadcast view costs nothing to keep.
 		Retains: noRetains,
 		Docs: BlockDocs{
+			Name:    "share across heads",
 			Summary: "Shares one tensor across every attention head, as latent attention does with its rotary key.",
 		},
 	},
@@ -904,6 +920,7 @@ var Primitives = []*BlockDef{
 			}
 		},
 		Docs: BlockDocs{
+			Name: "cached latent",
 			Summary: "Marks the compressed vector that latent attention caches instead of keys and values. " +
 				"The compression only pays off under a kernel that scores in latent space; an engine that " +
 				"decompresses holds the full multi-head cache, which the analysis reports beside it.",
@@ -940,6 +957,7 @@ var Primitives = []*BlockDef{
 			return StateBytes{PerSequence: r.Num("channels") * (r.Num("kernel") - 1) * c.Bytes}
 		},
 		Docs: BlockDocs{
+			Name:    "depthwise convolution",
 			Summary: "Short depthwise convolution over time, used before a state-space scan.",
 			Formula: "params = channels * kernel (+ channels with bias)",
 			Refs:    []string{"https://arxiv.org/abs/2405.21060"},
@@ -1002,6 +1020,7 @@ var Primitives = []*BlockDef{
 			return StateBytes{PerSequence: r.Num("heads") * r.Num("head_dim") * vHeadDim(r) * c.Bytes}
 		},
 		Docs: BlockDocs{
+			Name:    "gated delta rule",
 			Summary: "Gated DeltaNet recurrence: linear attention whose state is overwritten by a delta rule and decayed by a gate. Linear in sequence length, with a state fixed per sequence.",
 			Formula: "S_t = S_{t-1}(a_t (I - b_t k_t k_t^T)) + b_t v_t k_t^T; o_t = S_t q_t",
 			Refs:    []string{"https://arxiv.org/abs/2412.06464"},
@@ -1042,6 +1061,7 @@ var Primitives = []*BlockDef{
 			return StateBytes{PerSequence: r.Num("d_inner") * r.Num("state") * c.Bytes}
 		},
 		Docs: BlockDocs{
+			Name: "selective scan",
 			Summary: "Mamba's selective scan: a recurrence whose decay and gates are read from the " +
 				"token rather than fixed, so what it keeps depends on what it sees.",
 			Formula: "params = d_inner*state + d_inner (A_log and D); state = d_inner*state per sequence",
@@ -1097,6 +1117,7 @@ var Primitives = []*BlockDef{
 			return out
 		},
 		Docs: BlockDocs{
+			Name:    "state-space scan",
 			Summary: "Mamba-2 state-space scan. Linear in sequence length, and its state is fixed per sequence rather than growing per token.",
 			Formula: "params = 3*heads; state = heads*head_dim*state*bytes per sequence; FLOPs are approximate",
 			Refs:    []string{"https://arxiv.org/abs/2405.21060"},

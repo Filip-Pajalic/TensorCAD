@@ -196,6 +196,7 @@ var gqaAttention = &BlockDef{
 		}}
 	},
 	Docs: BlockDocs{
+		Name:    "grouped-query attention",
 		Summary: "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
 		Formula: "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
 		Refs:    []string{"https://arxiv.org/abs/2305.13245"},
@@ -331,6 +332,7 @@ var gatedMlp = &BlockDef{
 		Out: map[string]PortSpec{"y": Port("... d_model")},
 	},
 	Docs: BlockDocs{
+		Name:    "gated feed-forward",
 		Summary: "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
 		Formula: "params = 3 * d_model * hidden",
 		Refs:    []string{"https://arxiv.org/abs/2002.05202"},
@@ -373,6 +375,7 @@ var denseMlp = &BlockDef{
 		Out: map[string]PortSpec{"y": Port("... d_model")},
 	},
 	Docs: BlockDocs{
+		Name:    "feed-forward",
 		Summary: "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
 		Formula: "params = 2 * d_model * hidden (+ hidden + d_model with bias)",
 	},
@@ -419,6 +422,7 @@ var mlaAttention = &BlockDef{
 		Out: map[string]PortSpec{"y": Port("... d_model")},
 	},
 	Docs: BlockDocs{
+		Name:    "latent attention",
 		Summary: "Multi-head latent attention. Keys and values are compressed to one small vector per token, and only that vector is cached.",
 		Formula: "params = d_model*q_lora + q_lora + q_lora*heads*(nope+rope) + " +
 			"d_model*(kv_lora+rope) + kv_lora + kv_lora*heads*(nope+v_dim) + " +
@@ -516,6 +520,7 @@ var moeExperts = &BlockDef{
 		{"top_k", pInt(1, "How many a single token passes through")},
 	},
 	Docs: BlockDocs{
+		Name:    "expert bank",
 		Summary: "A bank of experts. Its subgraph describes one expert.",
 		Formula: "total params scale with experts; FLOPs and activations scale with top_k",
 	},
@@ -551,6 +556,7 @@ var moeLayer = &BlockDef{
 		}}
 	},
 	Docs: BlockDocs{
+		Name:    "mixture of experts",
 		Summary: "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
 		Formula: "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden " +
 			"(+ d_model when the shared expert is gated); active swaps experts for top_k",
@@ -658,6 +664,7 @@ var mambaBlock = &BlockDef{
 		Out: map[string]PortSpec{"y": Port("... d_model")},
 	},
 	Docs: BlockDocs{
+		Name: "Mamba block",
 		Summary: "Mamba-1: a selective state-space layer. The stream is widened, convolved, and " +
 			"run through a recurrence whose gates are read from the token, then gated and " +
 			"projected back. Its state is fixed per sequence, so context costs nothing to hold.",
@@ -757,6 +764,7 @@ var mamba2Block = &BlockDef{
 		Out: map[string]PortSpec{"y": Port("... d_model")},
 	},
 	Docs: BlockDocs{
+		Name:    "Mamba-2 block",
 		Summary: "Mamba-2 block. Its cost is linear in sequence length and it keeps a fixed state per sequence instead of a growing cache.",
 		Formula: "params = d_model*(2*d_inner + 2*groups*state + heads) + conv + 3*heads + d_inner + d_inner*d_model",
 		Refs:    []string{"https://arxiv.org/abs/2405.21060"},
@@ -834,6 +842,7 @@ var gatedDeltanetBlock = &BlockDef{
 		return nil
 	},
 	Docs: BlockDocs{
+		Name:    "gated DeltaNet",
 		Summary: "Gated DeltaNet: linear attention in place of softmax attention, with a delta rule writing the state and a gate decaying it. Its state is a matrix per head, fixed per sequence, so a layer of these caches nothing that grows with context.",
 		Formula: "params = d_model*(2*heads*head_dim + 2*value_heads*v_head_dim + 2*value_heads) + " +
 			"value_heads*v_head_dim*d_model + conv + 2*value_heads + v_head_dim",
@@ -914,6 +923,7 @@ var transformerBlock = &BlockDef{
 		return Ports{In: in, Out: map[string]PortSpec{"y": Port("... d_model")}}
 	},
 	Docs: BlockDocs{
+		Name:    "transformer block",
 		Summary: "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
 		Formula: "params = attention + mlp + 2 norms",
 	},
@@ -1052,6 +1062,7 @@ var mtpHeadComposite = &BlockDef{
 		Out: map[string]PortSpec{"y": Port("... d_model")},
 	},
 	Docs: BlockDocs{
+		Name: "multi-token prediction",
 		Summary: "One multi-token prediction module's projection: normalizes the hidden state " +
 			"and the embedding of the token `by` ahead, joins them, and projects 2*d_model back " +
 			"down to d_model. A whole module is this, then a transformer block, then the " +
@@ -1163,6 +1174,7 @@ var repeatContainer = &BlockDef{
 		{"count", pInt(1, "How many times the subgraph is stacked")},
 	},
 	Docs: BlockDocs{
+		Name:    "stack",
 		Summary: "Stacks its subgraph count times. The subgraph's input and output shapes must match.",
 		// There was a `pattern` parameter here, for hybrid stacks written as one
 		// character per layer. Nothing ever read it: the inspector offered the

@@ -190,6 +190,13 @@ export interface PortSpec {
   dtype?: string;
   /** A port that may legitimately dangle. */
   optional?: boolean;
+  /**
+   * What the tensor carries, as a *kind* rather than a width: "real" for
+   * anything a matmul can multiply, "int" for an index, "bool" for a mask,
+   * "inherit" to take it from whatever arrives. Which real type — fp32,
+   * bf16, fp8 — is a condition of the run and belongs to the operating
+   * point (invariant 8), not to the block.
+   */
   /** "flow" or "side": which edge of the symbol a wire leaves by. */
   anchor?: "flow" | "side";
   showName?: boolean;

@@ -483,7 +483,7 @@
       },
       "ok": false,
       "counts": {
-        "error": 5,
+        "error": 6,
         "info": 2,
         "warning": 2
       },
@@ -512,6 +512,14 @@
           "rule": "graph",
           "severity": "error",
           "message": "Duplicate node id \"twin\" in \"<root>\""
+        },
+        {
+          "rule": "dtype",
+          "severity": "error",
+          "path": "twin",
+          "port": "x",
+          "message": "Port \"x\" takes floating-point values and is wired to x:x, which carries integer.",
+          "hint": "Indices and activations have the same shape, so nothing else catches this. Check the wire, or the block that produces it."
         },
         {
           "rule": "published-drift",

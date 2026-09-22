@@ -252,6 +252,41 @@ export const COMMANDS: Command[] = [
     enabled: () => editor().selection !== null,
   },
   {
+    id: "edit.grow",
+    label: "Grow selection along the wires",
+    group: "edit",
+    shortcut: "Shift+g",
+    hint: "Add everything directly wired to what is selected. Press again to go further.",
+    enabled: () => editor().selected().length > 0,
+    run: () => {
+      const state = editor();
+      const have = state.selected();
+      if (have.length === 0) return;
+
+      const derived = derive(state.doc, state.operating);
+      const next = new Set(have);
+      // One junction at a time, because that is the gesture: press again to go
+      // further. Growing to the whole net in one press would make the common
+      // case — "this block and what feeds it" — unreachable.
+      for (const [consumer, producer] of derived.infer.producerOf) {
+        const from = producer.slice(0, producer.lastIndexOf(":"));
+        const to = consumer.slice(0, consumer.lastIndexOf(":"));
+        if (next.has(from)) next.add(to);
+        if (next.has(to)) next.add(from);
+      }
+      if (next.size === have.length) {
+        state.setStatus("Nothing further is wired to this.");
+        return;
+      }
+      // The primary stays the primary: the inspector should not jump to some
+      // other block because the selection grew around it.
+      const grown = [...next].filter((p) => p !== have[have.length - 1]);
+      grown.push(have[have.length - 1]!);
+      state.selectPaths(grown);
+      state.setStatus(`Selection grew to ${grown.length} blocks.`);
+    },
+  },
+  {
     id: "edit.deselect",
     label: "Deselect, or go up a level",
     group: "edit",

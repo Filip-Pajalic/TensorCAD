@@ -1,6 +1,6 @@
 # Design rules
 
-Eighteen checks, run on every edit. `validate(doc, options)` returns the analysis
+Nineteen checks, run on every edit. `validate(doc, options)` returns the analysis
 with its findings attached; the CLI's `validate` exits 1 on any error.
 
 Each finding carries a severity — `error`, `warning` or `info` — and the path of
@@ -12,6 +12,7 @@ the block it is about.
 |---|---|
 | `shape` | An interface does not match. The message names the polynomial difference, not two numbers. |
 | `symbols` | A symbol is undefined, cyclic, or does not evaluate to a number. |
+| `dtype` | A port that says what it carries is given the other thing: token ids into a matmul, activations where an index was wanted. Shapes agree perfectly in both cases, so nothing else catches it. |
 | `block-constraints` | A block's own `constraints()` objects — for example heads not divisible by key/value heads. |
 | `user-blocks` | A definition in `doc.defs` failed to compile. It is dropped from the catalog rather than thrown, and this says why. |
 | `dangling-output` | A block produces a tensor nothing reads. |

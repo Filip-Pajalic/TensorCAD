@@ -211,13 +211,20 @@ export function typeName(def: BlockDef | undefined, type: string): string {
  * readable at pin size.
  */
 const DTYPE_VAR: Record<string, string> = {
+  // The kinds a port declares.
+  int: "int",
+  bool: "bool",
+  real: "float",
+  // And the concrete names, for a port that pins one down and for the input
+  // block, whose `dtype` parameter is a real choice about the data.
   int64: "int",
   int32: "int",
   fp32: "float",
+  float: "float",
   bf16: "half",
   fp16: "half",
+  half: "half",
   fp8: "fp8",
-  bool: "bool",
 };
 
 export function dtypeColor(dtype: string | null | undefined): string {

@@ -97,7 +97,14 @@ func (l ParamList) Has(name string) bool {
 // PortSpec is what a pin declares. See the reference in docs/reference/ports.md.
 type PortSpec struct {
 	Shape string
-	// Dtype is what the tensor carries; "inherit" takes it from the producer.
+	// Dtype is what the tensor carries.
+	//
+	// A port declares a *kind*, not a width: "real" for anything a matmul can
+	// multiply, "int" for an index, "bool" for a mask, "inherit" to take it
+	// from whatever arrives. Which real type — fp32, bf16, fp8 — is a condition
+	// of the run and belongs to the operating point (invariant 8), not to the
+	// block. The concrete names are still accepted for a port that genuinely
+	// pins one down, and count as "real".
 	Dtype string
 	// Optional marks a port that may legitimately dangle.
 	Optional bool
@@ -119,6 +126,30 @@ type Ports struct {
 // Port builds a port from a bare shape pattern, which is what most declare.
 func Port(shape string) PortSpec {
 	return PortSpec{Shape: shape, Dtype: "inherit", Anchor: "flow"}
+}
+
+// dtypeOfName maps a concrete element type to the class a port declares.
+//
+// A port says what *kind* of thing it carries, not which width: `int64` and
+// `int32` are both indices, `bf16` and `fp32` are both activations. Five
+// distinctions rather than a dozen, which is also what the pin colours use.
+func dtypeOfName(name string) string {
+	switch name {
+	case "int64", "int32", "int":
+		return "int"
+	case "bool":
+		return "bool"
+	case "fp8":
+		return "fp8"
+	case "bf16", "fp16":
+		return "half"
+	case "fp32", "float":
+		return "float"
+	case "real":
+		return "real"
+	default:
+		return "inherit"
+	}
 }
 
 // NormalisePort fills in a port's defaults.

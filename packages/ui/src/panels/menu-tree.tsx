@@ -52,6 +52,8 @@ export const EDIT_MENU: MenuNode[] = [
   item("edit.lock"),
   item("edit.delete"),
   sep(),
+  item("edit.grow"),
+  sep(),
   item("edit.deselect"),
 ];
 

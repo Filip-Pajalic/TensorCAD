@@ -1049,6 +1049,98 @@ select.field {
   color: var(--sheet-ink);
 }
 
+/* ------------------------------------------------- the selection box --- */
+
+/*
+ * Dragged left-to-right the box takes only what it fully encloses; dragged
+ * right-to-left it takes anything it touches. That is a decades-old CAD
+ * convention and it changes what the gesture means, so the box has to say
+ * which one is in force while it is open — solid for enclosing, dashed for
+ * touching, the way every drafting program marks it.
+ */
+.react-flow__selection {
+  background: color-mix(in srgb, var(--accent, #4a90d9) 12%, transparent);
+  border: 1px solid var(--accent, #4a90d9);
+}
+
+.canvas__flow.is-touching .react-flow__selection {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+  border-color: var(--warn);
+}
+
+/* -------------------------------------------------------- clarify pick --- */
+
+/* What is under the cursor when several things are. Chrome rather than
+   drawing: it is the application asking a question, not part of the sheet. */
+.clarify {
+  position: absolute;
+  z-index: 9;
+  transform: translate(6px, 6px);
+  min-width: 11rem;
+  max-width: 18rem;
+  padding: 3px;
+  background: var(--bg-popover, var(--bg-panel));
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 22px rgb(0 0 0 / 32%);
+}
+
+.clarify__head {
+  padding: 3px 7px 4px;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.clarify__item {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 7px;
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: default;
+}
+
+.clarify__item:hover,
+.clarify__item:focus-visible {
+  background: var(--accent, var(--bg-elev));
+  color: var(--accent-foreground, var(--text));
+  outline: none;
+}
+
+.clarify__swatch {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  align-self: center;
+  background: var(--wire);
+}
+
+/* A wire is a line, not a box: the mark says which it is before the word does. */
+.clarify__swatch--wire {
+  height: 2px;
+  width: 9px;
+}
+
+.clarify__label {
+  font-size: 11px;
+  color: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clarify__sub {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
 /* ------------------------------------------------- the part's own words --- */
 
 /* The card itself. Positioned in the canvas's own coordinates rather than the

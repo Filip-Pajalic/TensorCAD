@@ -25,6 +25,7 @@ type goldenBlockDocs struct {
 	Type     string           `json:"type"`
 	Kind     string           `json:"kind"`
 	Category string           `json:"category"`
+	Name     string           `json:"name"`
 	Summary  string           `json:"summary"`
 	Formula  string           `json:"formula"`
 	Refs     []string         `json:"refs"`
@@ -57,6 +58,7 @@ func TestCatalogProseMatchesTheGoldens(t *testing.T) {
 			for _, s := range []struct{ label, got, want string }{
 				{"kind", def.Kind, want.Kind},
 				{"category", def.Category, want.Category},
+				{"name", def.Docs.Name, want.Name},
 				{"summary", def.Docs.Summary, want.Summary},
 				{"formula", def.Docs.Formula, want.Formula},
 			} {
@@ -126,6 +128,13 @@ func TestEveryBlockSaysWhatItIs(t *testing.T) {
 	for name, def := range catalog.Builtin {
 		if def.Docs.Summary == "" {
 			t.Errorf("%s has no summary", name)
+		}
+		// The name is what the drawing prints. A block without one falls back
+		// to its identifier, which is how the sheet came to be labelled
+		// `gqa_attention` — and a missing name is invisible precisely because
+		// the fallback works.
+		if def.Docs.Name == "" {
+			t.Errorf("%s has no name, so a drawing would label it %q", name, name)
 		}
 		if catalog.IsPrimitive(def) && def.ParamCount != nil && def.Docs.Formula == "" {
 			// A block that carries a parameter count should say where it comes

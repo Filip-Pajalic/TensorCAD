@@ -14,7 +14,7 @@ export type { Edit, Failure, Step } from "./edits.js";
 import type { Segments } from "./ops.js";
 import { DEFAULT_OPERATING, loadOperating, saveOperating, type OperatingPoint } from "./operating.js";
 import type { Doc, NodeDef, ParamValue, RuleSeverity, SymbolDef } from "@tensor-cad/engine";
-import { getPreset } from "../engine.js";
+import { getPreset, PRESET_NAMES } from "../engine.js";
 
 const UNDO_LIMIT = 100;
 
@@ -61,7 +61,14 @@ function loadDetail(): number {
 }
 
 export type RightTab = "inspector" | "symbols" | "cluster" | "ladder" | "runs" | "history" | "designs";
-export type DialogId = "settings" | "shortcuts" | "compare" | "palette" | "definitions" | null;
+export type DialogId =
+  | "settings"
+  | "shortcuts"
+  | "compare"
+  | "palette"
+  | "definitions"
+  | "library"
+  | null;
 
 /**
  * The active tool, the way any drawing program has one. Select edits, pan moves
@@ -236,6 +243,37 @@ export interface EditorState {
   /** Whether the title block is drawn on the sheet. */
   showTitleBlock: boolean;
   setShowTitleBlock: (show: boolean) => void;
+  /**
+   * Whether the key is open on the sheet.
+   *
+   * Open by default, and shut to a tab rather than away: the thing it explains
+   * is on every wire of every drawing, so a reader who does not know it is
+   * there is exactly the reader it is for.
+   */
+  showKey: boolean;
+  setShowKey: (show: boolean) => void;
+  /**
+   * Figure mode: draw what a paper draws.
+   *
+   * The reshapes on either side of attention are real and necessary and no
+   * published figure draws them, because they move no data and cost no
+   * parameters. Off by default: this is a CAD tool before it is a figure, and
+   * a view that leaves parts out should be asked for.
+   */
+  figure: boolean;
+  setFigure: (on: boolean) => void;
+  /**
+   * Which step of the walkthrough is open, or null when it is not running.
+   *
+   * The steps themselves are derived from the document on every render and are
+   * not state: a walkthrough that had been computed once would go stale the
+   * moment somebody changed `D`, and running on the design as it is now is the
+   * one thing this can do that a recorded explanation cannot.
+   */
+  walkthrough: number | null;
+  startWalkthrough: () => void;
+  setWalkthroughStep: (at: number) => void;
+  endWalkthrough: () => void;
   /** Which modal is open, if any. */
   dialog: DialogId;
   openDialog: (dialog: DialogId) => void;
@@ -348,7 +386,55 @@ const INITIAL_STATUS: CanvasStatus = {
   edgeCount: 0,
 };
 
-const initialDoc = getPreset("llama-3-8b");
+/**
+ * What the editor opens on.
+ *
+ * A toy, not an eight-billion-parameter Llama. Opening a CAD tool on the
+ * hardest thing it can draw is a real cost for a reader who has never seen it
+ * and no cost at all for somebody who loads a preset in the first five seconds
+ * — and `nano-sort` is GPT-2 exactly, at a size where every weight fits on the
+ * screen at a readable zoom. That is the whole argument for it.
+ *
+ * Which is also why the last preset loaded is remembered: somebody who works on
+ * Llama every day should land on Llama, and only the first visit should land on
+ * the toy. A name, not a document — an edited design is the storage provider's
+ * job, and this is one line of localStorage.
+ */
+const DEFAULT_PRESET = "nano-sort";
+const OPENED_KEY = "tensorcad.opened";
+
+function loadOpened(): string {
+  try {
+    const name = localStorage.getItem(OPENED_KEY);
+    return name && PRESET_NAMES.includes(name) ? name : DEFAULT_PRESET;
+  } catch {
+    return DEFAULT_PRESET;
+  }
+}
+
+function rememberOpened(name: string): void {
+  try {
+    localStorage.setItem(OPENED_KEY, name);
+  } catch {
+    // Not remembering it is harmless.
+  }
+}
+
+/**
+ * A preset that will not load must not take the editor with it. The library is
+ * embedded in the engine, so this can only happen when a remembered name has
+ * been withdrawn between one release and the next.
+ */
+function openingDoc(): Doc {
+  const wanted = loadOpened();
+  try {
+    return getPreset(wanted);
+  } catch {
+    return getPreset(DEFAULT_PRESET);
+  }
+}
+
+const initialDoc = openingDoc();
 
 export const useEditor = create<EditorState>((set, get) => {
   /**
@@ -421,12 +507,12 @@ export const useEditor = create<EditorState>((set, get) => {
     also: [],
     selectedNet: null,
     base: initialDoc,
-    baseLabel: "Opened llama-3-8b",
+    baseLabel: `Opened ${initialDoc.meta.name}`,
     steps: [],
     at: 0,
     cache: [initialDoc],
     failures: [],
-    docLabel: "Opened llama-3-8b",
+    docLabel: `Opened ${initialDoc.meta.name}`,
     rightTab: "inspector",
     dockOpen: false,
     shapeMode: "symbolic",
@@ -473,6 +559,18 @@ export const useEditor = create<EditorState>((set, get) => {
     showTitleBlock: loadFlag("titleblock", true),
     setShowTitleBlock: (showTitleBlock) =>
       set(saveFlag("titleblock", showTitleBlock, { showTitleBlock })),
+    showKey: loadFlag("key", true),
+    setShowKey: (showKey) => set(saveFlag("key", showKey, { showKey })),
+    figure: loadFlag("figure", false),
+    setFigure: (figure) => set(saveFlag("figure", figure, { figure })),
+
+    walkthrough: null,
+    // Opening it clears the selection: the walkthrough lights what a step is
+    // about, and a selection left over from before would be a second thing
+    // claiming the eye.
+    startWalkthrough: () => set({ walkthrough: 0, selection: null, also: [], selectedNet: null }),
+    setWalkthroughStep: (at) => set({ walkthrough: Math.max(0, at) }),
+    endWalkthrough: () => set({ walkthrough: null }),
 
     dialog: null,
     openDialog: (dialog) => set({ dialog }),
@@ -747,6 +845,7 @@ export const useEditor = create<EditorState>((set, get) => {
     setMetaName: (name) => commit({ kind: "setMetaName", name }, `Named the design "${name}"`),
     loadPreset: (name) => {
       const doc = getPreset(name);
+      rememberOpened(name);
       get().setDoc(doc, `Loaded preset ${name}`);
     },
     newDoc: () => get().setDoc(ops.emptyDoc(), "New document"),

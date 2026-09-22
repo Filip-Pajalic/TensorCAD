@@ -1,12 +1,12 @@
 {
   "version": 1,
   "meta": {
-    "name": "gpt2-medium",
-    "family": "gpt2",
-    "notes": "GPT-2 at 355M: the small model's architecture with 24 layers of width 1024 and 16 heads. Everything else is unchanged, head dimension included — GPT-2 grows by adding heads and layers, not by widening a head.",
+    "name": "nano-sort",
+    "family": "toy",
+    "notes": "A transformer small enough to look at: three layers of width 48, three heads of 16, and a vocabulary of three tokens. It is the model in Karpathy's minGPT sorting demo and in Brendan Bycroft's LLM visualisation, and its structure is GPT-2's exactly — learned positions, LayerNorm with bias, a GELU feed-forward, causal attention, an untied head. Everything a 405B model does, at a size where every weight fits on the screen at a readable zoom. The 85,728 is a figure this repository computed and checked against PyTorch rather than one a vendor published; the visualisation's 85,584 is the same model counted without its output projection.",
     "published": {
-      "params": 354823168,
-      "source": "https://huggingface.co/openai-community/gpt2-medium"
+      "params": 85728,
+      "source": "https://github.com/karpathy/minGPT/blob/master/demo.ipynb"
     }
   },
   "symbols": {
@@ -17,32 +17,32 @@
     },
     "T": {
       "kind": "runtime",
-      "default": 1024,
+      "default": 11,
       "doc": "Sequence length in tokens"
     },
     "L": {
       "kind": "design",
-      "value": 24,
+      "value": 3,
       "doc": "Number of transformer layers"
     },
     "D": {
       "kind": "design",
-      "value": 1024,
+      "value": 48,
       "doc": "Residual stream width (d_model)"
     },
     "H": {
       "kind": "design",
-      "value": 16,
+      "value": 3,
       "doc": "Query heads"
     },
     "Hkv": {
       "kind": "design",
-      "value": 16,
+      "value": 3,
       "doc": "Key/value heads"
     },
     "dh": {
       "kind": "design",
-      "value": 64,
+      "value": 16,
       "doc": "Head dimension"
     },
     "F": {
@@ -52,13 +52,13 @@
     },
     "V": {
       "kind": "design",
-      "value": 50257,
-      "doc": "Vocabulary size"
+      "value": 3,
+      "doc": "Vocabulary size: three symbols, A, B and C"
     },
     "Tmax": {
       "kind": "design",
-      "value": 1024,
-      "doc": "Maximum position index"
+      "value": 11,
+      "doc": "Maximum position index: six to read and five to write"
     }
   },
   "graph": {
@@ -90,7 +90,7 @@
       {
         "id": "layers",
         "type": "repeat",
-        "label": "Transformer block x24",
+        "label": "Transformer block x3",
         "params": {
           "count": "L"
         },
@@ -164,7 +164,7 @@
         "params": {
           "vocab": "V",
           "dim": "D",
-          "tied": true
+          "tied": false
         }
       },
       {

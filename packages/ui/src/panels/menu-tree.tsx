@@ -39,6 +39,8 @@ export const FILE_MENU: MenuNode[] = [
   item("file.open"),
   item("file.save"),
   sep(),
+  item("file.library"),
+  sep(),
   item("file.export"),
 ];
 
@@ -61,6 +63,9 @@ export const ZOOM_MENU: MenuNode[] = [
 ];
 
 export const SHOW_MENU: MenuNode[] = [
+  item("view.walkthrough"),
+  item("view.figure"),
+  item("view.key"),
   item("view.callouts"),
   item("view.shapes"),
   item("view.palette"),

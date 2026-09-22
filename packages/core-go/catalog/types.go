@@ -243,6 +243,14 @@ type StateBytes struct {
 // Tagged, because this crosses to the editor as JSON: an inspector reading
 // `summary` would find nothing under `Summary`.
 type BlockDocs struct {
+	// Name is what a drawing calls this block: a short noun phrase in the words
+	// a published figure would use, where Type is the identifier the engine
+	// dispatches on and a path is written with. A sheet labelled `gqa_attention`
+	// is labelled with an implementation detail; one labelled "grouped-query
+	// attention" is labelled with the thing. Both are kept, because the
+	// identifier is what an MCP call names and what a reader who found a block
+	// by its drawing then has to type.
+	Name    string   `json:"name,omitempty"`
 	Summary string   `json:"summary,omitempty"`
 	Formula string   `json:"formula,omitempty"`
 	Refs    []string `json:"refs,omitempty"`

@@ -267,6 +267,12 @@ select.field {
   color: var(--text);
 }
 
+/* The type identifier, beside the name. Monospace because it is what gets
+   typed into a path or an MCP call, which is the one place that is wanted. */
+.badge--id {
+  color: var(--text-dim);
+}
+
 .dot {
   width: 7px;
   height: 7px;
@@ -709,10 +715,407 @@ select.field {
 }
 
 .part__type {
-  font-family: var(--mono);
-  font-size: 10px;
+  font-size: 10.5px;
+  letter-spacing: -0.005em;
   color: color-mix(in srgb, var(--part-ink, var(--ink)) 76%, transparent);
   margin-top: 1px;
+}
+
+/* --------------------------------------------------------- the library --- */
+
+.library__family + .library__family {
+  margin-top: 8px;
+}
+
+.library__familyname {
+  padding: 3px 0 2px;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border-soft, var(--border));
+}
+
+.library__item {
+  padding: 6px 7px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.library__item:hover,
+.library__item:focus-visible {
+  background: var(--bg-elev);
+  border-color: var(--border);
+  outline: none;
+}
+
+/* The design already open. Named rather than merely tinted, because the whole
+   point of the list is telling twenty-three near-identical names apart. */
+.library__item.is-open {
+  border-color: var(--accent, var(--border));
+}
+
+.library__head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.library__name {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.library__params {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.library__notes {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+.library__source {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.library__source:hover {
+  color: var(--text);
+}
+
+/* ----------------------------------------------------- the walkthrough --- */
+
+/*
+ * A column beside the drawing rather than a dialog over it: the step lights the
+ * parts it is about, and a modal would cover exactly what it was describing.
+ */
+.wt {
+  /* Bounded by the sheet it sits on, so a narrow canvas gets a narrow column
+     rather than a column hanging over the drawing it is describing. */
+  width: min(21rem, calc(100vw - 2rem));
+  max-width: 100%;
+  max-height: calc(100% - 16px);
+  overflow-y: auto;
+  padding: 10px 12px 12px;
+  background: var(--sheet-paper);
+  border: 1px solid var(--sheet-rule);
+  color: var(--sheet-ink);
+  box-shadow: 0 6px 20px var(--shadow);
+}
+
+.wt__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.wt__count {
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sheet-ink-dim);
+}
+
+.wt__shut {
+  display: flex;
+  background: none;
+  border: 0;
+  color: var(--sheet-ink-dim);
+  cursor: pointer;
+}
+
+.wt__shut:hover {
+  color: var(--sheet-ink);
+}
+
+.wt__title {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--sheet-ink);
+}
+
+.wt__para {
+  margin: 0 0 7px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--sheet-ink);
+}
+
+.wt__dots {
+  display: flex;
+  gap: 4px;
+  margin: 10px 0 8px;
+}
+
+/* One mark per step, so the length of the thing is visible before it is
+   started and a step can be gone back to without walking there. */
+.wt__dot {
+  flex: 1;
+  height: 3px;
+  padding: 0;
+  border: 0;
+  background: var(--sheet-rule);
+  cursor: pointer;
+}
+
+.wt__dot.is-at {
+  background: var(--sheet-ink);
+}
+
+.wt__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* What the step is not about. Dimmed rather than hidden: the shape of the whole
+   design has to stay readable, or the step loses the context it is a step of. */
+.react-flow__node.is-dimmed {
+  opacity: 0.22;
+  filter: saturate(0.4);
+  transition: opacity 120ms ease-out;
+}
+
+/* ------------------------------------------------------------- the key --- */
+
+/*
+ * What the letters and the marks mean. It sits on the sheet, so it is drawn in
+ * the sheet's ink on the sheet's paper rather than in the panel tokens — it is
+ * part of the drawing, the way a legend on a plan is.
+ *
+ * Every sample below is drawn from the same custom properties the canvas draws
+ * with. A legend that restated the stylesheet in its own numbers would be a
+ * legend that goes quietly wrong the first time the canvas is restyled.
+ */
+.key {
+  width: 268px;
+  max-height: calc(100% - 16px);
+  overflow-y: auto;
+  padding: 7px 9px 9px;
+  background: var(--sheet-paper);
+  border: 1px solid var(--sheet-rule);
+  color: var(--sheet-ink);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.key--shut {
+  width: auto;
+  padding: 3px 9px;
+  background: var(--sheet-paper);
+  border: 1px solid var(--sheet-rule);
+  color: var(--sheet-ink-dim);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.key--shut:hover {
+  color: var(--sheet-ink);
+}
+
+.key__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.key__title {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sheet-ink-dim);
+}
+
+.key__shut {
+  background: none;
+  border: 0;
+  color: var(--sheet-ink-dim);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.key__shut:hover {
+  color: var(--sheet-ink);
+}
+
+.key__group + .key__group {
+  margin-top: 7px;
+  padding-top: 6px;
+  border-top: 1px solid var(--sheet-rule);
+}
+
+.key__heading {
+  margin-bottom: 3px;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sheet-ink-dim);
+}
+
+.key__row {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 7px;
+  align-items: start;
+  padding: 1px 0;
+}
+
+.key__sym {
+  font-weight: 600;
+  color: var(--sheet-ink);
+}
+
+.key__val,
+.key__note {
+  color: var(--sheet-ink-dim);
+}
+
+.key__prose {
+  margin: 0;
+  color: var(--sheet-ink);
+}
+
+.key__swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 15px;
+  overflow: visible;
+}
+
+.key__wire {
+  fill: none;
+  stroke: var(--wire);
+  stroke-width: var(--wire-w);
+}
+
+/* The two that are not a plain net, with the dash patterns the edges use. */
+.key__wire--bypass {
+  stroke-dasharray: 5 4;
+  stroke-width: calc(var(--wire-w) * 0.8);
+}
+
+.key__wire--index {
+  stroke-dasharray: 1.5 3;
+  stroke-width: calc(var(--wire-w) * 0.8);
+}
+
+.key__junction,
+.key__dangling,
+.key__dot {
+  display: block;
+  border-radius: 50%;
+}
+
+.key__junction {
+  width: var(--junction-d);
+  height: var(--junction-d);
+  background: var(--wire);
+}
+
+/* Hollow against the card it sits on, which is the paper here rather than
+   the sheet: the mark means "nothing is attached", and a filled one would not. */
+.key__dangling {
+  width: var(--dangling-d);
+  height: var(--dangling-d);
+  background: var(--sheet-paper);
+  border: var(--wire-w) solid var(--warn);
+}
+
+.key__dot {
+  width: var(--junction-d);
+  height: var(--junction-d);
+}
+
+.key__glyph {
+  font-size: 13px;
+  color: var(--sheet-ink);
+}
+
+/* ------------------------------------------------- the part's own words --- */
+
+/* The card itself. Positioned in the canvas's own coordinates rather than the
+   sheet's, because it annotates the pointer and not the drawing: it must not
+   scale with the zoom or slide with a pan. */
+.partdoc-card {
+  position: absolute;
+  z-index: 8;
+  transform: translate(14px, 14px);
+  padding: 7px 9px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 28%);
+  pointer-events: none;
+  max-width: 24rem;
+}
+
+/* The hover card on a part. Chrome, not drawing: it uses the panel tokens
+   rather than the sheet's ink, because it sits above the sheet and belongs to
+   the application. */
+.partdoc {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: 22rem;
+}
+
+.partdoc__head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.partdoc__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.partdoc__id {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.partdoc__summary {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.partdoc__formula {
+  margin: 0;
+  padding: 3px 5px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--text-dim);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.partdoc__hint {
+  margin: 0;
+  font-size: 10px;
+  color: var(--text-dim);
 }
 
 .part__rule {
@@ -1632,8 +2035,7 @@ select.field {
 }
 
 .tree__type {
-  font-family: var(--mono);
-  font-size: 10px;
+  font-size: 10.5px;
   color: var(--text-dim);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1824,6 +2226,10 @@ select.field {
   font-size: 10px;
   color: var(--ink);
   min-width: 268px;
+  /* A title block is a fixed-width stamp in the corner of a sheet, not a
+     paragraph that grows to fit its longest line. Bounded, so the design's own
+     sentence wraps inside it rather than stretching it across the drawing. */
+  max-width: 300px;
   box-shadow: 0 1px 4px var(--shadow);
 }
 
@@ -1848,6 +2254,20 @@ select.field {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--ink-soft);
+}
+
+/* Two lines and no more: a title block is a title block, and the whole
+   paragraph is in the library and on hover. */
+.title-block__notes {
+  margin: 0 8px 6px;
+  font-family: var(--sans);
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--sheet-ink-dim);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .title-block__grid {
@@ -2383,8 +2803,7 @@ select.field {
 }
 
 .frame__type {
-  font-family: var(--mono);
-  font-size: 9.5px;
+  font-size: 10px;
   color: var(--ink-soft);
 }
 

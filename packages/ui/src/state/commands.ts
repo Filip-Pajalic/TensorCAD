@@ -9,6 +9,7 @@
  */
 
 import { blockFromGraph, defsOf, freeTypeName, mergeLibrary, toLibrary, withBlock } from "./blocks.js";
+import { SHAPE_MODES } from "../canvas/shapes.js";
 import { resolveLevel } from "./level.js";
 import { derive } from "./derive.js";
 import { useEditor } from "./store.js";
@@ -291,6 +292,41 @@ export const COMMANDS: Command[] = [
     run: () => editor().setDetail(editor().detail - 1),
   },
   {
+    id: "file.library",
+    label: "Reference architectures\u2026",
+    group: "file",
+    hint: "The twenty-three ported designs, and what each one is",
+    run: () => editor().openDialog("library"),
+  },
+  {
+    id: "view.walkthrough",
+    label: "Walk me through it",
+    group: "view",
+    shortcut: "w",
+    hint: "What each stage of this design does, on this design, with its numbers",
+    run: () =>
+      editor().walkthrough === null ? editor().startWalkthrough() : editor().endWalkthrough(),
+    checked: () => editor().walkthrough !== null,
+  },
+  {
+    id: "view.figure",
+    label: "Draw it as a figure",
+    group: "view",
+    shortcut: "g",
+    hint: "Leave out the reshapes, the way a published figure does",
+    run: () => editor().setFigure(!editor().figure),
+    checked: () => editor().figure,
+  },
+  {
+    id: "view.key",
+    label: "Key",
+    group: "view",
+    shortcut: "k",
+    hint: "What the letters and the marks on the sheet mean",
+    run: () => editor().setShowKey(!editor().showKey),
+    checked: () => editor().showKey,
+  },
+  {
     id: "view.callouts",
     label: "Annotations",
     group: "view",
@@ -300,15 +336,15 @@ export const COMMANDS: Command[] = [
   },
   {
     id: "view.shapes",
-    label: "Wire labels show sizes",
+    label: "How wire labels are written",
     group: "view",
     shortcut: "s",
-    hint: "Otherwise they show symbol names",
+    hint: "Cycles: symbol names, sizes, then plain English",
     run: () => {
       const { shapeMode, setShapeMode } = editor();
-      setShapeMode(shapeMode === "numeric" ? "symbolic" : "numeric");
+      const at = SHAPE_MODES.indexOf(shapeMode);
+      setShapeMode(SHAPE_MODES[(at + 1) % SHAPE_MODES.length]!);
     },
-    checked: () => editor().shapeMode === "numeric",
   },
   {
     id: "view.volume",

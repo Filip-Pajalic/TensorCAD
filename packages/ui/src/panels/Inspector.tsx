@@ -11,11 +11,11 @@ import { useState } from "react";
 import { useEditor } from "../state/store.js";
 import { useLevel } from "../state/hooks.js";
 import { TextArea, TextField } from "./Field.js";
-import { categoryColor } from "../canvas/blocks.js";
+import { categoryColor, typeName } from "../canvas/blocks.js";
 import { formatShape } from "../canvas/shapes.js";
 import type { NodeDef, ParamSpec, ParamValue, Resolved } from "@tensor-cad/engine";
 import { formatCount } from "@tensor-cad/engine";
-import { CATALOG, type BlockDef } from "../engine.js";
+import { blockDef, type BlockDef } from "../engine.js";
 
 function isPlainNumber(text: string): boolean {
   return /^-?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(text.trim());
@@ -326,6 +326,7 @@ export default function Inspector(): React.ReactElement {
   const selection = useEditor((s) => s.selection);
   const also = useEditor((s) => s.also);
   const shapeMode = useEditor((s) => s.shapeMode);
+  const doc = useEditor((s) => s.doc);
   const { level, derived } = useLevel();
 
   if (!selection) {
@@ -353,7 +354,9 @@ export default function Inspector(): React.ReactElement {
     );
   }
 
-  const def: BlockDef | undefined = CATALOG[node.type];
+  // Through the document's own catalog (invariant 1), or a design's own
+  // block inspects as an unknown kind with no documentation.
+  const def: BlockDef | undefined = blockDef(node.type, doc);
   // The inspector edits one block, because a parameter belongs to one block.
   // Saying which one is being edited, when several are selected, is the least
   // it can do — the alternative is a panel that silently ignores the rest.
@@ -368,8 +371,16 @@ export default function Inspector(): React.ReactElement {
   return (
     <div className="panel__body inspector">
       <div className="inspector__title" style={{ ["--accent" as string]: categoryColor(def?.category) }}>
-        <div className="inspector__type mono">{node.type}</div>
+        {/*
+          The name leads and the identifier follows it, because this is the
+          panel where the identifier is actually wanted: a reader who found a
+          block by its drawing comes here to learn what to type.
+        */}
+        <div className="inspector__type">{typeName(def, node.type)}</div>
         <div className="inspector__meta">
+          <span className="badge badge--id mono" title="the type, as a path and an MCP call write it">
+            {node.type}
+          </span>
           <span className="badge">{def?.kind ?? "unknown"}</span>
           <span className="badge">{def?.category ?? "?"}</span>
           {params > 0 && (
@@ -446,7 +457,9 @@ export default function Inspector(): React.ReactElement {
                   <tr key={`in-${p}`}>
                     <td className="dim">in</td>
                     <td className="mono">{p}</td>
-                    <td className="mono num">{formatShape(shape, shapeMode) ?? "—"}</td>
+                    <td className="mono num">
+                      {formatShape(shape, shapeMode, derived.symbols) ?? "—"}
+                    </td>
                   </tr>
                 );
               })}
@@ -456,7 +469,9 @@ export default function Inspector(): React.ReactElement {
                   <tr key={`out-${p}`}>
                     <td className="dim">out</td>
                     <td className="mono">{p}</td>
-                    <td className="mono num">{formatShape(shape, shapeMode) ?? "—"}</td>
+                    <td className="mono num">
+                      {formatShape(shape, shapeMode, derived.symbols) ?? "—"}
+                    </td>
                   </tr>
                 );
               })}

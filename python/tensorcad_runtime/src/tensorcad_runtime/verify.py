@@ -287,6 +287,26 @@ def _run_forward(cls, in_spec, vocab: int, batch: int, seq: int, warnings: list[
         return f"failed: {message[:200]}", None, None
 
 
+def _context_length(design: dict[str, Any] | None) -> int | None:
+    """How long a sequence this design admits, or None when it does not say.
+
+    `Tmax` is the learned position table's size and is the real limit; `T` is
+    the sequence the analysis was measured at, which is a condition of a run
+    rather than a property of the design, so it is only a fallback.
+    """
+    if not design:
+        return None
+    try:
+        symbols = resolve_symbols(design)
+    except Exception:
+        return None
+    for name in ("Tmax", "T"):
+        value = symbols.get(name)
+        if isinstance(value, (int, float)) and value >= 1:
+            return int(value)
+    return None
+
+
 def verify_model(
     model_path: str | os.PathLike[str],
     batch: int = 2,
@@ -308,6 +328,19 @@ def verify_model(
     warnings: list[str] = []
     info = ModelFile(model_path)
     design = read_design(info)
+
+    # A design says how long a sequence it can take, and a learned position
+    # table is exactly that long. Running the forward pass past it indexes off
+    # the end of the table and raises `index out of range in self`, which reads
+    # as a fault in the generated model rather than as the default sequence
+    # length being longer than the model. The export phase already consults
+    # `Tmax`; so does this now.
+    context = _context_length(design)
+    if context is not None and seq > context:
+        warnings.append(
+            f"sequence shortened from {seq} to {context}: the design's context is {context} tokens"
+        )
+        seq = context
 
     say(f"importing {info.path}")
     module = load_module(info.path)

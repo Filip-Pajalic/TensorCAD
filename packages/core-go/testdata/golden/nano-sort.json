@@ -1,0 +1,550 @@
+{
+  "preset": "nano-sort",
+  "symbols": {
+    "order": [
+      "B",
+      "T",
+      "L",
+      "D",
+      "H",
+      "Hkv",
+      "dh",
+      "F",
+      "V",
+      "Tmax"
+    ],
+    "values": {
+      "B": 1,
+      "D": 48,
+      "F": 192,
+      "H": 3,
+      "Hkv": 3,
+      "L": 3,
+      "T": 11,
+      "Tmax": 11,
+      "V": 3,
+      "dh": 16
+    },
+    "designValues": {
+      "D": 48,
+      "F": 192,
+      "H": 3,
+      "Hkv": 3,
+      "L": 3,
+      "Tmax": 11,
+      "V": 3,
+      "dh": 16
+    },
+    "runtime": [
+      "B",
+      "T"
+    ],
+    "docs": {
+      "B": "Batch size",
+      "D": "Residual stream width (d_model)",
+      "F": "Feed-forward hidden width",
+      "H": "Query heads",
+      "Hkv": "Key/value heads",
+      "L": "Number of transformer layers",
+      "T": "Sequence length in tokens",
+      "Tmax": "Maximum position index: six to read and five to write",
+      "V": "Vocabulary size: three symbols, A, B and C",
+      "dh": "Head dimension"
+    },
+    "errors": []
+  },
+  "infer": {
+    "outputs": [
+      [
+        "embed:y",
+        "B T D"
+      ],
+      [
+        "final_norm:y",
+        "B T D"
+      ],
+      [
+        "head:y",
+        "B T V"
+      ],
+      [
+        "layers/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block:y",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "pos:y",
+        "B T D"
+      ],
+      [
+        "tokens:x",
+        "B T"
+      ]
+    ],
+    "inputs": [
+      [
+        "embed:ids",
+        "B T"
+      ],
+      [
+        "final_norm:x",
+        "B T D"
+      ],
+      [
+        "head:x",
+        "B T D"
+      ],
+      [
+        "layers/_out:x",
+        "B T D"
+      ],
+      [
+        "layers/block:x",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "logits:x",
+        "B T V"
+      ],
+      [
+        "pos:x",
+        "B T D"
+      ]
+    ],
+    "producerOf": [
+      [
+        "embed:ids",
+        "tokens:x"
+      ],
+      [
+        "final_norm:x",
+        "layers:x"
+      ],
+      [
+        "head:x",
+        "final_norm:y"
+      ],
+      [
+        "layers/_out:x",
+        "layers/block:y"
+      ],
+      [
+        "layers/block:x",
+        "layers/_in:x"
+      ],
+      [
+        "layers:x",
+        "pos:y"
+      ],
+      [
+        "logits:x",
+        "head:y"
+      ],
+      [
+        "pos:x",
+        "embed:y"
+      ]
+    ],
+    "issues": []
+  },
+  "inferExpanded": {
+    "outputs": [
+      [
+        "embed:y",
+        "B T D"
+      ],
+      [
+        "final_norm:y",
+        "B T D"
+      ],
+      [
+        "head:y",
+        "B T V"
+      ],
+      [
+        "layers/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "layers/block/attn/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/block/attn/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/block/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/block/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "layers/block/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/block/attn/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/block/attn/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/block/attn:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/act:y",
+        "B T F"
+      ],
+      [
+        "layers/block/mlp/down:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/up:y",
+        "B T F"
+      ],
+      [
+        "layers/block/mlp:y",
+        "B T D"
+      ],
+      [
+        "layers/block/norm1:y",
+        "B T D"
+      ],
+      [
+        "layers/block/norm2:y",
+        "B T D"
+      ],
+      [
+        "layers/block/resid1:y",
+        "B T D"
+      ],
+      [
+        "layers/block/resid2:y",
+        "B T D"
+      ],
+      [
+        "layers/block:y",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "pos:y",
+        "B T D"
+      ],
+      [
+        "tokens:x",
+        "B T"
+      ]
+    ],
+    "inputs": [
+      [
+        "embed:ids",
+        "B T"
+      ],
+      [
+        "final_norm:x",
+        "B T D"
+      ],
+      [
+        "head:x",
+        "B T D"
+      ],
+      [
+        "layers/_out:x",
+        "B T D"
+      ],
+      [
+        "layers/block/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/block/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "layers/block/attn/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/block/attn/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/block/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "layers/block/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/block/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/block/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/block/attn/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/block/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/block/attn:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp/act:x",
+        "B T F"
+      ],
+      [
+        "layers/block/mlp/down:x",
+        "B T F"
+      ],
+      [
+        "layers/block/mlp/up:x",
+        "B T D"
+      ],
+      [
+        "layers/block/mlp:x",
+        "B T D"
+      ],
+      [
+        "layers/block/norm1:x",
+        "B T D"
+      ],
+      [
+        "layers/block/norm2:x",
+        "B T D"
+      ],
+      [
+        "layers/block/resid1:a",
+        "B T D"
+      ],
+      [
+        "layers/block/resid1:b",
+        "B T D"
+      ],
+      [
+        "layers/block/resid2:a",
+        "B T D"
+      ],
+      [
+        "layers/block/resid2:b",
+        "B T D"
+      ],
+      [
+        "layers/block:x",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "logits:x",
+        "B T V"
+      ],
+      [
+        "pos:x",
+        "B T D"
+      ]
+    ],
+    "producerOf": [
+      [
+        "embed:ids",
+        "tokens:x"
+      ],
+      [
+        "final_norm:x",
+        "layers:x"
+      ],
+      [
+        "head:x",
+        "final_norm:y"
+      ],
+      [
+        "layers/_out:x",
+        "layers/block:y"
+      ],
+      [
+        "layers/block/_out:y",
+        "layers/block/resid2:y"
+      ],
+      [
+        "layers/block/attn/_out:y",
+        "layers/block/attn/o_proj:y"
+      ],
+      [
+        "layers/block/attn/attn:k",
+        "layers/block/attn/k_heads:y"
+      ],
+      [
+        "layers/block/attn/attn:q",
+        "layers/block/attn/q_heads:y"
+      ],
+      [
+        "layers/block/attn/attn:v",
+        "layers/block/attn/v_heads:y"
+      ],
+      [
+        "layers/block/attn/k_heads:x",
+        "layers/block/attn/k_proj:y"
+      ],
+      [
+        "layers/block/attn/k_proj:x",
+        "layers/block/attn/_in:x"
+      ],
+      [
+        "layers/block/attn/o_merge:x",
+        "layers/block/attn/attn:y"
+      ],
+      [
+        "layers/block/attn/o_proj:x",
+        "layers/block/attn/o_merge:y"
+      ],
+      [
+        "layers/block/attn/q_heads:x",
+        "layers/block/attn/q_proj:y"
+      ],
+      [
+        "layers/block/attn/q_proj:x",
+        "layers/block/attn/_in:x"
+      ],
+      [
+        "layers/block/attn/v_heads:x",
+        "layers/block/attn/v_proj:y"
+      ],
+      [
+        "layers/block/attn/v_proj:x",
+        "layers/block/attn/_in:x"
+      ],
+      [
+        "layers/block/attn:x",
+        "layers/block/norm1:y"
+      ],
+      [
+        "layers/block/mlp/_out:y",
+        "layers/block/mlp/down:y"
+      ],
+      [
+        "layers/block/mlp/act:x",
+        "layers/block/mlp/up:y"
+      ],
+      [
+        "layers/block/mlp/down:x",
+        "layers/block/mlp/act:y"
+      ],
+      [
+        "layers/block/mlp/up:x",
+        "layers/block/mlp/_in:x"
+      ],
+      [
+        "layers/block/mlp:x",
+        "layers/block/norm2:y"
+      ],
+      [
+        "layers/block/norm1:x",
+        "layers/block/_in:x"
+      ],
+      [
+        "layers/block/norm2:x",
+        "layers/block/resid1:y"
+      ],
+      [
+        "layers/block/resid1:a",
+        "layers/block/attn:y"
+      ],
+      [
+        "layers/block/resid1:b",
+        "layers/block/_in:x"
+      ],
+      [
+        "layers/block/resid2:a",
+        "layers/block/mlp:y"
+      ],
+      [
+        "layers/block/resid2:b",
+        "layers/block/resid1:y"
+      ],
+      [
+        "layers/block:x",
+        "layers/_in:x"
+      ],
+      [
+        "layers:x",
+        "pos:y"
+      ],
+      [
+        "logits:x",
+        "head:y"
+      ],
+      [
+        "pos:x",
+        "embed:y"
+      ]
+    ],
+    "issues": []
+  }
+}

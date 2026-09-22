@@ -33,7 +33,16 @@ export interface PortView {
 export interface BlockNodeData extends Record<string, unknown> {
   path: string;
   label: string;
+  /** The identifier: what a path is written with and an MCP call names. */
   type: string;
+  /** What the drawing prints for the type: the catalog's own words. */
+  typeName: string;
+  /**
+   * What the catalog says this block is and how it counts, for the hover.
+   * Forty-odd written sentences crossed the boundary and only the inspector
+   * ever showed one, and only on a block you had already selected.
+   */
+  docs: { summary?: string; formula?: string };
   category: string;
   kind: BlockKind;
   summary: string;
@@ -159,7 +168,7 @@ function BlockNodeView({ data, selected }: NodeProps<BlockFlowNode>): React.Reac
       <div
         className={"glyph" + (selected ? " glyph--selected" : "")}
         style={{ ["--edge" as string]: part.edge }}
-        title={`${data.label} — ${data.summary || data.type}`}
+        title={`${data.label} — ${data.typeName}${data.summary ? `: ${data.summary}` : ""}`}
       >
         <Pins ports={data.inPorts} dir="i" live={live} flagged={flaggedPorts} />
         <span className="glyph__mark" aria-hidden>
@@ -192,10 +201,7 @@ function BlockNodeView({ data, selected }: NodeProps<BlockFlowNode>): React.Reac
     >
       <Pins ports={data.inPorts} dir="i" live={live} flagged={flaggedPorts} />
 
-      <div
-        className="part__body"
-        title={data.drillable ? "double-click to open this block" : undefined}
-      >
+      <div className="part__body">
         <div className="part__name">
           {data.label}
           {data.severity && (
@@ -213,7 +219,15 @@ function BlockNodeView({ data, selected }: NodeProps<BlockFlowNode>): React.Reac
           )}
         </div>
 
-        <div className="part__type">{data.type}</div>
+        {/*
+          The name, not the identifier. `gqa_attention` is what the engine
+          dispatches on; "grouped-query attention" is what a figure writes, and
+          the sheet is a figure. The identifier is a hover away and is what the
+          inspector shows, because it is what has to be typed.
+        */}
+        <div className="part__type" title={data.type}>
+          {data.typeName}
+        </div>
 
         {(data.summary || data.params > 0) && (
           <div className="part__rule">

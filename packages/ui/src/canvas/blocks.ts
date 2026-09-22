@@ -1,5 +1,6 @@
-import type { NodeDef, ParamSpec, Resolved } from "@tensor-cad/engine";
-import { CATALOG, type BlockDef } from "../engine.js";
+import type { NodeDef, ParamSpec, Resolved, SymbolTable } from "@tensor-cad/engine";
+import { reshapeInEnglish, type ShapeMode } from "./shapes.js";
+import type { BlockDef } from "../engine.js";
 /**
  * Presentation helpers for catalog blocks: colours, one-line summaries and the
  * handle-id convention the canvas uses.
@@ -121,17 +122,33 @@ function fmtValue(v: unknown): string | null {
  * the grouping is the whole point: `B H T dh -> B T (H dh)` says the heads are
  * being folded back into the stream, and dropping the brackets would lose that.
  */
-function rearrangeSummary(resolved: Resolved): string {
+function rearrangeSummary(
+  resolved: Resolved,
+  mode: ShapeMode,
+  symbols: SymbolTable | undefined,
+): string {
   const from = typeof resolved.p.from === "string" ? resolved.p.from.trim() : "";
   const to = typeof resolved.p.to === "string" ? resolved.p.to.trim() : "";
   if (!from || !to) return "";
+  if (mode === "english" && symbols) {
+    // Named where it can be named, and the pattern where it cannot. A reshape
+    // this catalog does not produce is better shown as notation than as a
+    // sentence that might be describing something else.
+    const said = reshapeInEnglish(from, to, symbols);
+    if (said) return said;
+  }
   return `${from} → ${to}`;
 }
 
 /** A short, information-dense parameter line for the node body. */
-export function paramSummary(def: BlockDef | undefined, resolved: Resolved | undefined): string {
+export function paramSummary(
+  def: BlockDef | undefined,
+  resolved: Resolved | undefined,
+  mode: ShapeMode = "symbolic",
+  symbols?: SymbolTable,
+): string {
   if (!def || !resolved) return "";
-  if (def.type === "rearrange") return rearrangeSummary(resolved);
+  if (def.type === "rearrange") return rearrangeSummary(resolved, mode, symbols);
   const specs = def.params as Record<string, ParamSpec>;
   const wanted = SUMMARY_KEYS[def.type] ?? Object.keys(specs ?? {}).slice(0, 3);
   const parts: string[] = [];
@@ -153,13 +170,37 @@ export function paramSummary(def: BlockDef | undefined, resolved: Resolved | und
 
 export type BlockKind = "primitive" | "composite" | "container" | "unknown";
 
-export function kindOf(type: string): BlockKind {
-  const def: BlockDef | undefined = CATALOG[type];
+/**
+ * Which of the three kinds a block is.
+ *
+ * It takes the definition rather than a type to look up, and that is the whole
+ * point: looking one up means choosing a catalog, and choosing the built-in one
+ * answers "unknown" for a design's own block — which is the same shape as a
+ * real answer and reads as one (invariant 1). Every caller has already had to
+ * resolve the block in order to draw it, so there is nothing to look up here.
+ */
+export function kindOf(def: BlockDef | undefined): BlockKind {
   return def ? def.kind : "unknown";
 }
 
 export function labelOf(node: NodeDef): string {
   return node.label ?? node.id;
+}
+
+/**
+ * What to print for a block's type.
+ *
+ * The catalog carries a name — the phrase a published figure would use — beside
+ * the identifier the engine dispatches on. The drawing wants the first and a
+ * path, an MCP call and the inspector want the second, so both are kept and
+ * this decides which one a label gets.
+ *
+ * The identifier is the fallback rather than a blank, because a block the
+ * catalog has never heard of still has to be drawn as something, and its type
+ * is the only true thing left to say about it.
+ */
+export function typeName(def: BlockDef | undefined, type: string): string {
+  return def?.docs.name || type;
 }
 
 /**

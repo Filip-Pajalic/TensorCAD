@@ -14,11 +14,11 @@ import { useMemo, useState } from "react";
 import { ChevronsLeft } from "lucide-react";
 import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
-import { categoryColor } from "../canvas/blocks.js";
+import { categoryColor, typeName } from "../canvas/blocks.js";
 import * as ops from "../state/ops.js";
-import type { NodeDef } from "@tensor-cad/engine";
+import type { Doc, NodeDef } from "@tensor-cad/engine";
 import { formatCount } from "@tensor-cad/engine";
-import { getBlock } from "../engine.js";
+import { catalogOf, type BlockDef } from "../engine.js";
 
 /**
  * A stable empty array. A zustand selector must return the same reference when
@@ -30,7 +30,10 @@ interface TreeItem {
   path: string;
   id: string;
   label: string;
+  /** The identifier, for the tooltip and for anything that has to be typed. */
   type: string;
+  /** What the row prints: the catalog's own name for the type. */
+  typeName: string;
   category: string;
   depth: number;
   children: TreeItem[];
@@ -40,20 +43,26 @@ interface TreeItem {
   drillable: boolean;
 }
 
-function build(nodes: NodeDef[], prefix: string, depth: number): TreeItem[] {
+function build(
+  cat: Record<string, BlockDef>,
+  nodes: NodeDef[],
+  prefix: string,
+  depth: number,
+): TreeItem[] {
   return nodes.map((node) => {
     const path = prefix ? `${prefix}/${node.id}` : node.id;
-    const def = getBlock(node.type);
+    const def = cat[node.type];
     return {
       path,
       id: node.id,
       label: node.label ?? node.id,
       type: node.type,
+      typeName: typeName(def, node.type),
       category: def?.category ?? "unknown",
       depth,
-      children: node.graph ? build(node.graph.nodes, path, depth + 1) : [],
+      children: node.graph ? build(cat, node.graph.nodes, path, depth + 1) : [],
       expandable: Boolean(node.graph && node.graph.nodes.length > 0),
-      drillable: ops.isDrillable(node),
+      drillable: ops.isDrillable(node, def),
     };
   });
 }
@@ -82,7 +91,7 @@ function Row({
       onDoubleClick={() => {
         if (item.drillable || item.expandable) useEditor.getState().focusOn(item.path);
       }}
-      title={`${item.path}\n${item.type}`}
+      title={`${item.path}\n${item.typeName} (${item.type})`}
     >
       <button
         className={`tree__twisty${item.expandable ? "" : " is-empty"}`}
@@ -98,7 +107,7 @@ function Row({
 
       <span className="tree__swatch" style={{ background: categoryColor(item.category) }} />
       <span className="tree__label">{item.label}</span>
-      <span className="tree__type">{item.type}</span>
+      <span className="tree__type">{item.typeName}</span>
 
       {severity && <span className={`mark mark--${severity}`}>{severity === "error" ? "✖" : "⚠"}</span>}
       {params > 0 && <span className="tree__params">{formatCount(params)}</span>}
@@ -149,7 +158,9 @@ export default function ModelTree(): React.ReactElement {
   const doc = useEditor((s) => s.doc);
   const lockList = useEditor((s) => (s.doc.ui as { locked?: string[] } | undefined)?.locked);
   const locked = lockList ?? NO_LOCKS;
-  const items = useMemo(() => build(doc.graph.nodes, "", 0), [doc.graph]);
+  // Through the document's own catalog, not the built-in one (invariant 1):
+  // a design's own blocks would otherwise list as an unknown category.
+  const items = useMemo(() => build(catalogOf(doc), doc.graph.nodes, "", 0), [doc]);
 
   return (
     <div className="tree">

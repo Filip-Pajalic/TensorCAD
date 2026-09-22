@@ -17,7 +17,8 @@
 import { useEditor } from "../state/store.js";
 import { useDerived, useLevel } from "../state/hooks.js";
 import { formatShape } from "../canvas/shapes.js";
-import { CATALOG } from "../engine.js";
+import { typeName } from "../canvas/blocks.js";
+import { blockDef } from "../engine.js";
 
 const gib = (bytes: number): string =>
   bytes >= 1024 ** 3
@@ -39,6 +40,7 @@ export default function Tensor(): React.ReactElement {
   const net = useEditor((s) => s.selectedNet);
   const select = useEditor((s) => s.select);
   const shapeMode = useEditor((s) => s.shapeMode);
+  const doc = useEditor((s) => s.doc);
   const derived = useDerived();
   const { derived: levelDerived } = useLevel();
 
@@ -68,7 +70,9 @@ export default function Tensor(): React.ReactElement {
   const activations = derived.analysis.memory.train.activationsByTensor?.[net] ?? 0;
   const blockTotal = derived.analysis.memory.train.activationsByPath?.[producer] ?? 0;
   const resolved = derived.infer.resolved.get(producer);
-  const def = resolved ? CATALOG[resolved.type] : undefined;
+  // Doc-aware (invariant 1): a tensor produced by a design's own block
+  // would otherwise name nothing at all.
+  const def = resolved ? blockDef(resolved.type, doc) : undefined;
   const dtype = derived.infer.ports.get(producer)?.out?.[port]?.dtype;
 
   return (
@@ -82,7 +86,7 @@ export default function Tensor(): React.ReactElement {
         <button type="button" className="tensor__link" onClick={() => select(producer)}>
           {producer}
         </button>
-        {def && <span className="tensor__type"> · {resolved?.type}</span>}
+        {def && <span className="tensor__type"> · {typeName(def, def.type)}</span>}
       </Row>
 
       <Row label="to">

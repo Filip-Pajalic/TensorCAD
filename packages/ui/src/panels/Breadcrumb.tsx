@@ -3,6 +3,7 @@
  */
 
 import { useEditor } from "../state/store.js";
+import { SHAPE_MODES, SHAPE_MODE_HINT, SHAPE_MODE_LABEL } from "../canvas/shapes.js";
 import { useLevel } from "../state/hooks.js";
 import { formatCount } from "@tensor-cad/engine";
 
@@ -37,14 +38,15 @@ export default function Breadcrumb(): React.ReactElement {
         ))}
       </nav>
       <div className="breadcrumb__right">
-        <div className="toggle" title="How shapes are written on edges and handles">
-          {(["symbolic", "numeric"] as const).map((mode) => (
+<div className="toggle" title="How shapes are written on edges and handles">
+          {SHAPE_MODES.map((mode) => (
             <button
               key={mode}
               className={`toggle__option${shapeMode === mode ? " is-active" : ""}`}
               onClick={() => act.setShapeMode(mode)}
+              title={SHAPE_MODE_HINT[mode]}
             >
-              {mode === "symbolic" ? "B T D" : "B T 4096"}
+              {SHAPE_MODE_LABEL[mode]}
             </button>
           ))}
         </div>

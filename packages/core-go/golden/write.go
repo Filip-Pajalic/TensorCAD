@@ -457,6 +457,7 @@ type blockDocs struct {
 	Type     string           `json:"type"`
 	Kind     string           `json:"kind"`
 	Category string           `json:"category"`
+	Name     string           `json:"name"`
 	Summary  string           `json:"summary"`
 	Formula  string           `json:"formula"`
 	Refs     []string         `json:"refs"`
@@ -481,7 +482,7 @@ func (w *writer) catalogDocs() int {
 		def := catalog.Builtin[name]
 		entry := blockDocs{
 			Type: name, Kind: def.Kind, Category: def.Category,
-			Summary: def.Docs.Summary, Formula: def.Docs.Formula,
+			Name: def.Docs.Name, Summary: def.Docs.Summary, Formula: def.Docs.Formula,
 			Refs: def.Docs.Refs, Params: []goldenParamDoc{},
 		}
 		if entry.Refs == nil {

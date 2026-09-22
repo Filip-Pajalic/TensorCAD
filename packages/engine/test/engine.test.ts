@@ -80,7 +80,7 @@ describe("the compiled engine", () => {
 
   it("ships the whole design library", () => {
     expect(engine.presets().sort()).toEqual(PRESET_NAMES);
-    expect(PRESET_NAMES.length).toBe(23);
+    expect(PRESET_NAMES.length).toBe(24);
   });
 
   it("hands back documents that still carry their published figures", () => {

@@ -17,6 +17,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M6 Ship | **Done bar one step.** Documentation at [docs.tensorcad.dev](https://docs.tensorcad.dev/) and the editor at [app.tensorcad.dev](https://app.tensorcad.dev/), both static-asset Workers deployed from `main`; a release workflow that builds the engine, the MCPB bundle and the desktop binaries and cuts a GitHub release on a tag. The npm packages are prepared and verified on every tag and publish only when `NPM_TOKEN` is set. |
 | Go engine | **Done.** The whole analysis is Go, compiled to WebAssembly, and the editor, the command line, the MCP server and the desktop shell all load the same module. The TypeScript it was ported from has been deleted; the golden files it wrote are the specification the engine is held to. |
 | Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, named refusals, a definition editor, a selectable tensor, a feature timeline, an SVG export of the sheet and a volume view whose stages are named. Twenty passes, each with what was wrong and what replaced it, in `docs/explanation/interaction-design.md`. |
+| M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -185,13 +186,43 @@ Remaining:
 - Publish `@tensor-cad/engine` and `@tensor-cad/mcp` to npm, and `server.json` to the registry. **Prepared, not published.** Neither package was publishable as it sat: `main` pointed at TypeScript that Node cannot import, the server's `bin` carried a Bun shebang, and the dependency between them was written `workspace:*`, which npm rejects. `bun run build:dist` emits the publishable form, packs it, installs both tarballs into an empty directory, imports them under Node and starts the server — which found that the bundler tree-shakes the Go runtime's side-effect import and that the engine's wasm path assumed the repository's layout. The release workflow has a gated `npm` job: it builds and verifies on every tag, checks the tag against all three version numbers, and publishes only when `NPM_TOKEN` is set, saying in the run summary when it is not. Setting that secret and cutting a tag is the whole remaining step.
 - Optional: MCP Apps canvas preview for Claude Desktop/Cursor.
 
+### M7 — Legibility · Done
+
+The analysis is right and the drawing is hard to read. Twenty-three architectures
+are reproduced to the parameter, and the sheet labels them with the identifiers
+the engine dispatches on — `gqa_attention`, `rmsnorm`, `lm_head`, `boundary_in` —
+writes their shapes as `B T (H dh)` with no key anywhere, opens by default on an
+eight-billion-parameter model, and renders the `meta.notes` paragraph each preset
+carries about itself in no place at all. Meanwhile the volume view, being a port
+of Bycroft's visualisation, calls the same parts *Token Embed* and *Attention
+Matrix*: the vocabulary exists in this repository and one view has it.
+
+Eight phases, ordered and estimated in
+[docs/explanation/legibility.md](docs/explanation/legibility.md): a plain name on
+every block, the summary reaching the drawing, a notation key, shapes in English,
+the preset's own prose on screen, a model small enough to see every number of,
+plumbing out of the drawing, and — the one that earns the comparison — a
+walkthrough that narrates whatever design is open rather than a recorded one.
+
+All eight phases are done. The twenty-first and twenty-second passes in
+[interaction-design.md](docs/explanation/interaction-design.md) record what
+happened, including five silent bugs the work walked into — a block a design
+defines for itself could be listed in the palette, dragged onto the sheet, and
+simply not appear — and the three rules it took to stop `dh` ("Head dimension")
+rendering as "128 heads", which was false on every attention block of every
+design.
+
+The default document is now `nano-sort`: 85,728 parameters, GPT-2's structure
+exactly, and small enough that every weight fits on the screen. The last preset
+loaded is remembered, so only a first visit lands on the toy.
+
 ## Sequencing and dependencies
 
 ```
 M0 Sketch ──► M1 Check ──► M2 Manufacture ──► M3 Agent ──► M4 Test bench
                                │                 │
                                └──► M5 Advanced parts (starts after M2, runs alongside M3/M4)
-                                                                 └──► M6 Ship
+                                                                 └──► M6 Ship ──► M7 Legibility
 ```
 
 M3 is deliberately short because the core is pure; the MCP server is a thin adapter. M5 is where most of the long-tail work lives and is driven by which architectures you want to learn next.

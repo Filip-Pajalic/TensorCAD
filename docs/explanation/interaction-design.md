@@ -1469,3 +1469,235 @@ is — an optimisation whose stated reason has gone, with an unmeasured one that
 might replace it, and nobody has reported the view being slow. Instancing a
 render path that works, in a file whose conventions are a port of somebody
 else's and easy to get subtly wrong, is not a trade worth making on a guess.
+
+## Twenty-first pass: the drawing says what it is
+
+The first three phases of [legibility.md](legibility.md), which is the roadmap
+this pass is working through rather than a record of it.
+
+### The middle row was an identifier
+
+Every part on the sheet printed `data.type`: `gqa_attention`, `rmsnorm`,
+`gated_mlp`, `lm_head`, `boundary_in`. That is the string the engine dispatches
+on and a path is written with, and it was doing duty as the label on a drawing.
+Meanwhile the volume view — being a port of somebody else's visualisation —
+called the same parts *Token Embed* and *Attention Matrix*. The vocabulary was
+already in the repository and one view had it.
+
+`BlockDocs` now carries a `Name`: a short noun phrase in the words a published
+figure would use, one per catalog entry, forty-five of them. The sheet prints
+the name and the inspector leads with it and carries the identifier beside it,
+because the inspector is where somebody who found a block by its drawing goes to
+learn what to type. A test fails if any block lacks one — the failure is
+otherwise invisible, since the fallback is the identifier and the identifier is
+what was there before.
+
+The type row also stopped being set in the monospace face. A name in a monospace
+face still reads as code, which was most of what was wrong with it.
+
+### The catalog's prose had nowhere to go
+
+Forty-odd summaries, written for M6, crossing the boundary on every catalog
+entry, and the only way to read one was to select the block and look at the
+inspector. Hovering a part now raises a card with its name, its identifier, what
+it is and the formula it counts by.
+
+It went in twice. The first version wrapped each part in the house `Tooltip`,
+which is Base UI underneath, and that could not be verified: Base UI's hover
+detection does not fire under synthetic pointer events, so the automation could
+not tell a working tooltip from a broken one — and the toolbar's existing
+tooltips did not open either, which is what proved it was the harness. It is now
+one card owned by the canvas, positioned from React Flow's own
+`onNodeMouseEnter`. That is better for three other reasons: a dense sheet is a
+few hundred parts and this is one floating element rather than several hundred,
+it cannot interfere with dragging, and it clears itself on a drag or a pan
+instead of hanging over a drawing that has moved underneath it.
+
+### The key
+
+`B T (H dh)` is not gibberish to somebody who has been told what the four
+letters are. Nothing had ever told anyone.
+
+A key sits on the sheet, open by default and shut to a tab, remembered like the
+grid and the title block. Two of its five sections are the design describing
+itself — the symbol table with its documentation strings, which `derive()`
+already returns — and the marks are drawn from the same custom properties the
+canvas draws with, for the reason the callouts are derived: a legend that
+restates the stylesheet in its own numbers goes quietly wrong the first time the
+canvas is restyled. Only the sentence about the shape grammar is authored.
+
+### What the design is
+
+`meta.notes` — a paragraph per preset, saying that nanoGPT's vocabulary padding
+is a speed decision rather than a modelling one and costs 36,096 parameters —
+was in every file and rendered nowhere. It is now under the name in the title
+block, clamped to two lines, and in full in a new library dialog: twenty-three
+designs grouped by family with their published counts and their sources, so
+choosing between `qwen3-30b-a3b` and `qwen3-next-80b-a3b` no longer means
+loading both and looking.
+
+Six presets had no notes at all. They have them now. One draft of them was
+wrong — it said Llama 3 70B writes its feed-forward width out because the 8B's
+rounding rule does not produce it, and `ceil_mult(1.3 * 8/3 * 8192, 1024)` is
+exactly 28,672. The rule breaks at 405B, not at 70B, so the fact moved to the
+preset it is true of. Both cache figures in that note were checked against the
+engine rather than worked out by hand.
+
+### Four bugs the work walked into
+
+All four are the same bug, and it is invariant 1: resolve a block through
+`catalogOf(doc)`, never the bare `CATALOG`. The built-in catalog is filled once
+at load, so against it a design's *own* block does not exist — and every one of
+these then failed silently, returning a value the same shape as a real answer.
+
+- **`newNodeFor` returned `null`.** That is how the drop handler is told there
+  is no such block, so a block the palette listed could be dragged onto the
+  sheet and simply not appear.
+- **`isDrillable` returned false**, so a design's own composite could not be
+  opened — which is the kind of block somebody most wants to open.
+- **`kindOf` returned `"unknown"`**, so it drew as an unknown category.
+- **`flatItems`, the inspector and the tensor panel** all resolved against the
+  built-ins, so the same block had no parameter summary and no documentation.
+
+`kindOf` and `isDrillable` now take the definition rather than a type to look
+up, which is the fix rather than a patch: looking a type up means choosing a
+catalog, and the whole failure was choosing the wrong one at a distance from
+where the block had already been resolved. Every caller had one in hand.
+`newNodeFor` genuinely has only a name — it is answering a click in the palette
+— so it takes the document. `packages/ui/test/user-block.test.ts` pins all of
+it; three of its five assertions failed before the change.
+
+A fifth, found the same way: a frame that had merged with the one inside it
+showed the inner block's *type* with the outer block's *name*. Three parallel
+`merged*` fields were being copied by hand at two hops, and the third one added
+was missed at one of them. They are one `mergedDef` now.
+
+### Still outstanding
+
+L4 and L6 through L8 of [legibility.md](legibility.md): shapes written in
+English, a model small enough to see every number of, the plumbing out of the
+drawing, and the walkthrough.
+
+## Twenty-second pass: the rest of M7
+
+L4 and L6 through L8 of [legibility.md](legibility.md), which finishes it.
+
+### A model small enough to see
+
+The editor opened on Llama 3 8B. Opening a CAD tool on the hardest thing it can
+draw costs a reader who has never seen it everything and costs somebody who
+loads a preset in the first five seconds nothing, so the default is now
+`nano-sort`: three layers of width 48, three heads of 16, a vocabulary of three.
+It is the model in Karpathy's minGPT sorting demo and in the reference
+visualisation, and its structure is GPT-2's exactly — so nothing about it is a
+special case, it is just small enough that every weight fits on the screen.
+
+Its published figure is 85,728, which is a number this repository computed and
+then checked against PyTorch rather than one a vendor stated. A first attempt at
+it by hand gave 64,992: the down-projection was worked out at the wrong width.
+The engine was right and the arithmetic in my head was not, which is the whole
+argument for having the engine.
+
+The last preset loaded is remembered, so only a first visit lands on the toy.
+That is a name in `localStorage`, not a document — an edited design is the
+storage provider's job (invariant 9) and this is one line.
+
+**And a bug in the verifier.** `tensorcad-runtime verify` runs its forward pass
+at a fixed sequence of 128. A design whose context is 11 has a position table
+with 11 rows, so the pass raised `index out of range in self` — which reads as a
+fault in the generated model rather than as the default being longer than the
+model. The export phase had consulted `Tmax` all along; the forward pass now
+does too, and says when it shortened.
+
+### Shapes in English
+
+A third setting beside symbolic and numeric. `B T D` becomes
+`1 batch × 8,192 tokens × 4,096`, and `B T H*dh` becomes
+`1 batch × 8,192 tokens × 4,096 (32 heads × 128)`.
+
+What an axis *counts* is a fact about the design, not about the shape: `T` is
+tokens in a language model, patches in a vision transformer and one image in a
+convnet, and every design already says so in its own symbol table. So the noun
+comes from the symbol's documentation — and getting that right took three
+attempts, each one found by rendering all twenty-four presets and reading them.
+
+- **A width is not a count of the thing it is a width of.** `dh` is documented
+  "Head dimension", so the first version rendered it `128 heads`. Not merely
+  unhelpful — false, on every attention block of every design. Anything whose
+  documentation says *width*, *dimension*, *resolution* or *rank* gets no noun.
+- **The earliest word in the sentence wins, not the first row of the table.**
+  Gemma 3's `G` is "Groups of eight layers" and its `Ltail` is "Windowed layers
+  past the last whole group". A fixed table order had to call one of them wrong;
+  which word the sentence leads with tells them apart.
+- **A count of what is inside one of a thing is not a count of the thing.**
+  I-JEPA's `P` is "Values in one patch": 588 values, one patch.
+
+One preset's prose was the problem rather than the rule — `nano-sort`'s
+vocabulary said "the three tokens it sorts" and so read as a count of tokens. It
+says "three symbols, A, B and C" now, which is better in the symbols panel too.
+
+A reshape gets a sentence rather than an einops pattern: `B T (H dh) → B H T dh`
+becomes *split 4,096 into 32 heads of 128*. Only the two reshapes this catalog
+actually produces are named; anything else prints its pattern, because a reshape
+nobody can name is better as notation than as a sentence that might be
+describing something else.
+
+### The plumbing out of the drawing
+
+Figure mode, on `g`. A reshape is real, necessary, and the thing that makes
+multi-head attention multi-head — and no published figure draws one, because it
+moves no data and costs no parameters. So the mode leaves them out and traces
+the wire straight through: `q_proj → q_heads → rope_q` becomes
+`q_proj → rope_q`.
+
+The risk was named before it was built: a view that hides a block is a view that
+can lose a design-rule finding. `unfold` returns what each hidden block was
+absorbed into, and the canvas shows an absorbed block's findings on whatever
+absorbed it, with the hidden block's name in the message so the marker is
+honestly pointing at a consequence rather than a cause.
+
+The set of what counts as plumbing is named rather than inferred, and pinned by
+a test that every name in it is a real catalog type of the category it claims.
+That is the failure `SIDEWAYS_IN` had in the seventeenth pass: two of its five
+rows matched no block type at all and had never done anything.
+
+### The walkthrough
+
+The reference has ten hand-written phases against one model. Twenty-four presets
+cannot each have ten and do not need to: what differs between them is which
+*kinds* of stage they have. An embedding is an embedding in a 85,728-parameter
+sorter and in a 671B mixture of experts, and one sentence explains both once its
+numbers are filled in.
+
+So the steps are derived from the blocks the design actually contains, in flow
+order, and the prose is authored once per kind. `alexnet` gets a convolution
+step and no attention step; `nemotron-h-8b` gets a state-space one; a dense
+model is told its feed-forward widens the vector and a sparse one is told a
+router picks two of eight experts. A step exists because the design has the
+block it is about, and if it does not, the step is not there to be wrong.
+
+That is also the thing a recorded explanation cannot do. Change `D` from 768 to
+1536 and the walkthrough changes with it, because every number in it was read
+out of the design rather than typed — which a test asserts directly.
+
+It is a column beside the drawing rather than a dialog over it, and the step
+lights the blocks it names and dims everything else. A modal would cover exactly
+what it was describing. The key shuts to its tab while a walkthrough runs,
+without touching the stored preference, because two panels over one sheet is one
+too many and a walkthrough is the guided version of the same job.
+
+### What the tests hold
+
+Four new files, and each one is about a way this could be quietly wrong rather
+than about a happy path: that a block a design defines for itself can be placed,
+drawn and opened; that every shape of every preset renders without a `NaN` or a
+leftover symbol; that figure mode strands no wire and loses no finding; and that
+the walkthrough names no block that does not exist, prints no empty paragraph,
+and says something different when the design changes.
+
+### Still outstanding
+
+The volume view still names its stages from a port of somebody else's layout
+rather than from the catalog's names, so the same block is *Token Embed* there
+and *token embedding* on the sheet. Now that a name is a fact the catalog
+carries, the port should read it.

@@ -10,6 +10,7 @@
 
 import { blockFromGraph, defsOf, freeTypeName, mergeLibrary, toLibrary, withBlock } from "./blocks.js";
 import { SHAPE_MODES } from "../canvas/shapes.js";
+import { buildWalkthrough } from "./walkthrough.js";
 import { resolveLevel } from "./level.js";
 import { derive } from "./derive.js";
 import { useEditor } from "./store.js";
@@ -304,8 +305,18 @@ export const COMMANDS: Command[] = [
     group: "view",
     shortcut: "w",
     hint: "What each stage of this design does, on this design, with its numbers",
-    run: () =>
-      editor().walkthrough === null ? editor().startWalkthrough() : editor().endWalkthrough(),
+    run: () => {
+      const state = editor();
+      if (state.walkthrough !== null) return state.endWalkthrough();
+      // A design with no blocks has no steps, and the panel renders nothing —
+      // so the command reported itself as on and put nothing on screen, which
+      // is the same silent success the rest of this pass is about.
+      if (buildWalkthrough(state.doc, derive(state.doc, state.operating)).length === 0) {
+        state.setStatus("Nothing to walk through yet: this design has no blocks.");
+        return;
+      }
+      state.startWalkthrough();
+    },
     checked: () => editor().walkthrough !== null,
   },
   {

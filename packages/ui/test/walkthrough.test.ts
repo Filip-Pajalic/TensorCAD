@@ -22,6 +22,9 @@ const { getPreset, PRESET_NAMES } = await import("../src/engine.js");
 const { derive } = await import("../src/state/derive.js");
 const { DEFAULT_OPERATING } = await import("../src/state/operating.js");
 const { buildWalkthrough } = await import("../src/state/walkthrough.js");
+const { useEditor } = await import("../src/state/store.js");
+
+const state = () => useEditor.getState();
 
 import type { Doc } from "@tensor-cad/engine";
 
@@ -130,5 +133,35 @@ describe("it narrates the design in front of you", () => {
     expect(before).toContain("768");
     expect(after).toContain("1,536");
     expect(after).not.toBe(before);
+  });
+});
+
+describe("opening one", () => {
+
+  test("goes back to the top level, because it narrates the whole design", () => {
+    // The steps name blocks of the whole design. Starting one while drilled
+    // into a container left every step with nothing to light, so the sheet
+    // greyed out entirely and no part of it lit — the drawing said the step
+    // was about nothing.
+    state().setDoc(getPreset("nano-sort"), "test");
+    state().setPath(["layers"]);
+    expect(state().path).toEqual(["layers"]);
+
+    state().startWalkthrough();
+    expect(state().path).toEqual([]);
+    expect(state().walkthrough).toBe(0);
+
+    state().endWalkthrough();
+    expect(state().walkthrough).toBeNull();
+  });
+
+  test("and takes the selection out of the way", () => {
+    state().setDoc(getPreset("nano-sort"), "test");
+    state().select("embed");
+    state().startWalkthrough();
+    // A selection left over from before would be a second thing claiming the
+    // eye, against a step that is already lighting what it is about.
+    expect(state().selection).toBeNull();
+    state().endWalkthrough();
   });
 });

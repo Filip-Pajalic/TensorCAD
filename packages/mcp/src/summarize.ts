@@ -343,6 +343,15 @@ export interface CatalogEntry {
   type: string;
   kind: string;
   category: string;
+  /**
+   * What a drawing calls this block.
+   *
+   * The editor has printed it since M7 and an agent could not see it, so the
+   * two were describing one design in two vocabularies: the human's screen
+   * said "grouped-query attention" and the assistant only ever knew
+   * `gqa_attention`. Falls back to the type, so it is always something to say.
+   */
+  name: string;
   summary: string;
   formula?: string;
   refs: string[];
@@ -358,6 +367,7 @@ export function catalogEntry(def: EngineCatalogEntry): CatalogEntry {
     type: def.type,
     kind: def.kind,
     category: def.category,
+    name: def.docs.name ?? def.type,
     summary: def.docs.summary ?? "",
     refs: def.docs.refs ?? [],
     // In the order the block declares them, which is the order a reader
@@ -404,7 +414,12 @@ export function allCatalogEntries(): CatalogEntry[] {
 export function catalogText(entries: CatalogEntry[]): string {
   return entries
     .map((e) => {
-      const lines = [`${e.type}  (${e.kind}/${e.category})`, `  ${e.summary}`];
+      const lines = [
+        e.name && e.name !== e.type
+          ? `${e.type}  — ${e.name}  (${e.kind}/${e.category})`
+          : `${e.type}  (${e.kind}/${e.category})`,
+        `  ${e.summary}`,
+      ];
       if (e.formula) lines.push(`  formula: ${e.formula}`);
       if (e.params.length > 0) {
         lines.push(

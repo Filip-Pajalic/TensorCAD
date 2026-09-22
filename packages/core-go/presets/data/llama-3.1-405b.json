@@ -3,6 +3,7 @@
   "meta": {
     "name": "llama-3.1-405b",
     "family": "llama",
+    "notes": "Llama 3.1 at 405B: 126 layers of width 16,384, 128 query heads and still 8 key/value heads. The feed-forward width is written out rather than derived here, because the rounding rule the 8B uses would give 57,344 at this width and the model uses 53,248. Held against a rounded vendor figure rather than a checkpoint, so it carries a tolerance where the smaller two match to the parameter.",
     "published": {
       "params": 405853388800,
       "source": "https://arxiv.org/abs/2407.21783"

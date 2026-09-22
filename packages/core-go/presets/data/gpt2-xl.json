@@ -3,6 +3,7 @@
   "meta": {
     "name": "gpt2-xl",
     "family": "gpt2",
+    "notes": "The largest GPT-2, 1.56B: 48 layers of width 1600 and 25 heads. Twenty-five is not a power of two and does not divide the width evenly into anything tidy, which is the point at which the family's arithmetic stops being decorative.",
     "published": {
       "params": 1557611200,
       "source": "https://huggingface.co/openai-community/gpt2-xl"

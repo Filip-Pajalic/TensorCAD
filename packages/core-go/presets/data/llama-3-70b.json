@@ -3,6 +3,7 @@
   "meta": {
     "name": "llama-3-70b",
     "family": "llama",
+    "notes": "Llama 3 at 70B: 80 layers of width 8192 with 64 query heads against the same 8 key/value heads the 8B model has. That is what grouped-query attention buys — nine times the parameters of the 8B for two and a half times the cache per token, 320 KiB against 128 KiB.",
     "published": {
       "params": 70553706496,
       "source": "https://arxiv.org/abs/2407.21783"

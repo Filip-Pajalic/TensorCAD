@@ -3,6 +3,7 @@
   "meta": {
     "name": "qwen3-235b-a22b",
     "family": "qwen",
+    "notes": "Qwen3's larger mixture of experts: 94 layers, 128 experts of width 1536 with 8 live per token, so about 22B of 235B parameters do the work. The same expert count and top-k as qwen3-30b-a3b — what grew is the model around them. Held against a rounded published figure, so it carries a tolerance.",
     "published": {
       "params": 235000000000,
       "activeParams": 22000000000,

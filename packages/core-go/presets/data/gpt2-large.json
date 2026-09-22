@@ -3,6 +3,7 @@
   "meta": {
     "name": "gpt2-large",
     "family": "gpt2",
+    "notes": "GPT-2 at 774M: 36 layers of width 1280, 20 heads of 64. The same tied head, learned positions and LayerNorm-with-bias as the rest of the family, and the same 1,024-token context, which is what dates it.",
     "published": {
       "params": 774030080,
       "source": "https://huggingface.co/openai-community/gpt2-large"

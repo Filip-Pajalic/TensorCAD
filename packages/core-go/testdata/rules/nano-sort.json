@@ -1,0 +1,134 @@
+{
+  "preset": "nano-sort",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 3,
+        "warning": 1
+      },
+      "findings": [
+        {
+          "rule": "flash-head-dim",
+          "severity": "warning",
+          "path": "layers/block/attn/attn",
+          "message": "Head dimension 16 is not one a fused attention kernel supports.",
+          "hint": "Use 32 instead, or expect to fall back to an unfused attention path."
+        },
+        {
+          "rule": "vocab-padding",
+          "severity": "info",
+          "path": "head",
+          "message": "Vocabulary 3 is not a multiple of 128.",
+          "hint": "Padding to 128 adds 6.0K parameters and speeds up the output projection."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "layers/block/attn/q_proj",
+          "message": "Projection width 48 is not a multiple of 64.",
+          "hint": "Rounding up to 64 usually costs little memory and speeds up the matmul."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "layers/block/attn/q_proj",
+          "message": "Projection width 48 is not a multiple of 64.",
+          "hint": "Rounding up to 64 usually costs little memory and speeds up the matmul."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 4,
+        "warning": 1
+      },
+      "findings": [
+        {
+          "rule": "flash-head-dim",
+          "severity": "warning",
+          "path": "layers/block/attn/attn",
+          "message": "Head dimension 16 is not one a fused attention kernel supports.",
+          "hint": "Use 32 instead, or expect to fall back to an unfused attention path."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 8817720.1x the compute-optimal budget of 0B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        },
+        {
+          "rule": "vocab-padding",
+          "severity": "info",
+          "path": "head",
+          "message": "Vocabulary 3 is not a multiple of 128.",
+          "hint": "Padding to 128 adds 6.0K parameters and speeds up the output projection."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "layers/block/attn/q_proj",
+          "message": "Projection width 48 is not a multiple of 64.",
+          "hint": "Rounding up to 64 usually costs little memory and speeds up the matmul."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "layers/block/attn/q_proj",
+          "message": "Projection width 48 is not a multiple of 64.",
+          "hint": "Rounding up to 64 usually costs little memory and speeds up the matmul."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 4,
+        "warning": 1
+      },
+      "findings": [
+        {
+          "rule": "flash-head-dim",
+          "severity": "warning",
+          "path": "layers/block/attn/attn",
+          "message": "Head dimension 16 is not one a fused attention kernel supports.",
+          "hint": "Use 32 instead, or expect to fall back to an unfused attention path."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 8192 tokens, attention is 93% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        },
+        {
+          "rule": "vocab-padding",
+          "severity": "info",
+          "path": "head",
+          "message": "Vocabulary 3 is not a multiple of 128.",
+          "hint": "Padding to 128 adds 6.0K parameters and speeds up the output projection."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "layers/block/attn/q_proj",
+          "message": "Projection width 48 is not a multiple of 64.",
+          "hint": "Rounding up to 64 usually costs little memory and speeds up the matmul."
+        },
+        {
+          "rule": "tensor-core-multiples",
+          "severity": "info",
+          "path": "layers/block/attn/q_proj",
+          "message": "Projection width 48 is not a multiple of 64.",
+          "hint": "Rounding up to 64 usually costs little memory and speeds up the matmul."
+        }
+      ]
+    }
+  ]
+}

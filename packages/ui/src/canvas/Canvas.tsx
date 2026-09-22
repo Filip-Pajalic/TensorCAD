@@ -14,6 +14,7 @@ import {
   MiniMap,
   Panel,
   ReactFlow,
+  SelectionMode,
   applyNodeChanges,
   useNodesInitialized,
   useReactFlow,
@@ -35,6 +36,7 @@ import { layoutGraph, layoutTree, type LayoutBox } from "./layout.js";
 import CalloutLayer from "./CalloutLayer.js";
 import PartDoc from "./PartDoc.js";
 import Key from "./Key.js";
+import Clarify, { type Candidate } from "./Clarify.js";
 import Walkthrough from "../panels/Walkthrough.js";
 import { buildWalkthrough } from "../state/walkthrough.js";
 import TitleBlock from "../panels/TitleBlock.js";
@@ -347,6 +349,53 @@ interface BuildOptions {
   lit: ReadonlySet<string> | null;
 }
 
+/**
+ * Everything the pointer is over, topmost first.
+ *
+ * `elementsFromPoint` rather than geometry: the browser already knows what is
+ * stacked at a point, including which of two overlapping wires is in front,
+ * and a second opinion computed from node boxes would disagree with what the
+ * eye sees. A frame is skipped for the reason the sixteenth pass gave — it is
+ * picked by its outline, and its interior belongs to what it holds.
+ */
+function whatIsUnder(clientX: number, clientY: number, nodes: CanvasNode[]): Candidate[] {
+  const byPath = new Map(nodes.map((n) => [n.id, n]));
+  const out: Candidate[] = [];
+  const seen = new Set<string>();
+
+  for (const el of document.elementsFromPoint(clientX, clientY)) {
+    const node = (el as HTMLElement).closest?.(".react-flow__node");
+    const edge = (el as HTMLElement).closest?.(".react-flow__edge");
+
+    if (node) {
+      const id = node.getAttribute("data-id");
+      const found = id ? byPath.get(id) : undefined;
+      if (!id || !found || found.type === "frame" || seen.has(`b:${id}`)) continue;
+      seen.add(`b:${id}`);
+      const data = found.data as BlockNodeData;
+      out.push({
+        id,
+        kind: "block",
+        label: data.label,
+        sub: data.typeName,
+        category: data.category,
+      });
+      continue;
+    }
+
+    if (edge) {
+      const id = edge.getAttribute("data-id");
+      if (!id || seen.has(`w:${id}`)) continue;
+      seen.add(`w:${id}`);
+      // A wire is selected as the net it belongs to, which is what the rest of
+      // the editor means by selecting one.
+      const net = id.split("->")[0] ?? id;
+      out.push({ id: net, kind: "wire", label: net, sub: "wire" });
+    }
+  }
+  return out;
+}
+
 /** True when a path is one the step named, or sits inside one. */
 function isLit(lit: ReadonlySet<string>, path: string): boolean {
   if (lit.has(path)) return true;
@@ -642,6 +691,24 @@ export default function Canvas(): React.ReactElement {
    */
   const figure = useEditor((s) => s.figure);
   const walkAt = useEditor((s) => s.walkthrough);
+
+  /**
+   * Which way the selection box is being dragged.
+   *
+   * A decades-old CAD convention, and one React Flow has as a fixed prop
+   * rather than a gesture: dragged left-to-right the box takes only what it
+   * fully encloses, dragged right-to-left it takes anything it touches. The
+   * difference matters on a dense sheet, where enclosing a block means
+   * enclosing its wires too.
+   *
+   * The prop is read on every move while the box is open, so setting it during
+   * the drag is enough — it does not have to be right when the drag begins.
+   */
+  const boxFrom = useRef<number | null>(null);
+  const [touching, setTouching] = useState(false);
+
+  /** What is under the cursor, when Alt asked and there was more than one. */
+  const [clarify, setClarify] = useState<{ x: number; y: number; items: Candidate[] } | null>(null);
   const view = useMemo(
     () => (detail > 0 ? unfold(doc, level, derived, detail, figure) : null),
     [detail, doc, level, derived, figure],
@@ -1219,11 +1286,47 @@ export default function Canvas(): React.ReactElement {
         </div>
       )}
       <div
-        className={`canvas__flow tool-${tool}${rejection ? " is-rejecting" : ""}`}
+        // `is-touching` styles the selection box for the direction it is being
+        // dragged. A mode you cannot see is a mode you cannot trust, and this
+        // one changes what the gesture means.
+        className={
+          `canvas__flow tool-${tool}` +
+          (rejection ? " is-rejecting" : "") +
+          (touching ? " is-touching" : "")
+        }
+        onPointerDownCapture={(e) => {
+          // Alt asks what is here, rather than taking whatever is on top.
+          if (e.altKey && e.button === 0) {
+            const found = whatIsUnder(e.clientX, e.clientY, builtNodes);
+            if (found.length > 1) {
+              e.preventDefault();
+              e.stopPropagation();
+              const box = e.currentTarget.getBoundingClientRect();
+              setClarify({ x: e.clientX - box.left, y: e.clientY - box.top, items: found });
+              return;
+            }
+          }
+          setClarify(null);
+          boxFrom.current = e.clientX;
+          if (touching) setTouching(false);
+        }}
+        onPointerUpCapture={() => {
+          boxFrom.current = null;
+          // The box is gone, so the mark for which kind it was has to go with
+          // it — otherwise the sheet goes on saying "touching" with nothing
+          // being dragged, and the next box starts in a mode nobody chose.
+          if (touching) setTouching(false);
+        }}
         onPointerMove={(e) => {
           useEditor
             .getState()
             .setCanvasStatus({ cursor: screenToFlowPosition({ x: e.clientX, y: e.clientY }) });
+          const from = boxFrom.current;
+          if (from === null) return;
+          // A few pixels of slop, so a click that wobbles left does not become
+          // a touching box.
+          const wants = e.clientX < from - 4;
+          if (wants !== touching) setTouching(wants);
         }}
         onPointerLeave={() => useEditor.getState().setCanvasStatus({ cursor: null })}
       >
@@ -1310,6 +1413,8 @@ export default function Canvas(): React.ReactElement {
         // user expects.
         panOnDrag={tool === "pan" ? true : [1, 2]}
         selectionOnDrag={tool === "select"}
+        // Right-to-left touches, left-to-right encloses.
+        selectionMode={touching ? SelectionMode.Partial : SelectionMode.Full}
         panOnScroll={false}
         zoomOnDoubleClick={false}
         // A wire can be re-pointed by dragging either end, which is the one
@@ -1404,6 +1509,19 @@ export default function Canvas(): React.ReactElement {
           />
         )}
       </ReactFlow>
+        {clarify && (
+          <Clarify
+            x={clarify.x}
+            y={clarify.y}
+            items={clarify.items}
+            onClose={() => setClarify(null)}
+            onPick={(item) => {
+              setClarify(null);
+              if (item.kind === "wire") useEditor.getState().selectNet(item.id);
+              else useEditor.getState().select(item.id);
+            }}
+          />
+        )}
         {hover && (
           <div
             className="partdoc-card"

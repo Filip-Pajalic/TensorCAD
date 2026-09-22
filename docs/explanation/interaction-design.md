@@ -1739,3 +1739,87 @@ it. An integer tensor arriving at a float matmul is a real design error that
 shape inference cannot catch, because the shapes agree perfectly — the
 declaration was added to make the check possible and the check was never
 written. It is a design rule and it belongs beside the other eighteen.
+
+## Twenty-fourth pass: the element types, and picking things
+
+Two lists, both of them old, both of them finished here.
+
+### The check the declaration was added for
+
+`PortSpec.Dtype` arrived in the seventeenth pass with a stated purpose — "an
+integer tensor arriving at a float matmul is a bug shape inference cannot catch,
+because the shapes agree perfectly" — and the check was never written. By the
+time it was looked at again, **exactly one port in the whole catalog declared
+anything**, and the renderer was still deciding what a wire carried from a
+two-row table keyed on `node.type` strings. That is what a declaration with no
+consumer decays to: not wrong, just inert, and quietly replaced by the thing it
+was supposed to replace.
+
+So both halves went in together.
+
+**A port declares a kind, not a width.** "real" for anything a matmul can
+multiply, "int" for an index, "bool" for a mask. Which real type — fp32, bf16,
+fp8 — is a condition of the run and belongs to the operating point (invariant
+8); a block has no business declaring it. The blocks that multiply say they take
+numbers to multiply, and `embedding` is the one that changes class — an index
+in, a vector out — so both ends of it say so. Without that, `int` would
+propagate through the entire model.
+
+**The rule walks back through `inherit`** to find what a pin actually carries,
+and is deliberately timid: one input it cannot resolve makes the whole block
+unknown rather than a guess. A rule that fires on a shipped design is a rule
+that teaches people to read past it, so a test holds it silent on all
+twenty-four presets. It found a real one on the first run, in a broken-design
+fixture that had been wiring an `int64` input into a linear since it was
+written.
+
+**And the renderer reads the declaration.** Twenty pins carry a colour on the
+default sheet where two did, and `declared.startsWith("int")` — the sniffing the
+seventeenth pass added the declaration to be rid of — is gone.
+
+### Three things from KiCad
+
+The sixteenth pass listed them and did none of them.
+
+**A box selection whose direction changes its meaning.** Left-to-right takes
+only what it fully encloses; right-to-left takes anything it touches. React Flow
+has this as a fixed prop rather than a gesture, and the prop is read on every
+move while the box is open — so tracking which way the pointer has gone since it
+went down is enough. The box is drawn differently for each: solid and accented
+for enclosing, dashed and amber for touching. A mode you cannot see is a mode
+you cannot trust, and this one changes what the gesture means. It resets when
+the drag ends, or the sheet goes on claiming a mode with nothing being dragged.
+
+**Clarify selection.** Alt and a press, and what is under the cursor is listed
+rather than guessed at — on a dense sheet a click is ambiguous far more often
+than a tool admits, and the only other way to reach the thing underneath is to
+move the drawing. The hit test is `elementsFromPoint` rather than geometry: the
+browser already knows what is stacked at a point, and a second opinion computed
+from node boxes would disagree with what the eye sees. Frames are skipped, for
+the reason the sixteenth pass gave — a frame is picked by its outline and its
+interior belongs to what it holds.
+
+Deliberately not a long press. A long press on a block is how a touch device
+starts a drag, and a gesture that means two things on two devices means neither.
+
+**Select connection**, on `Shift+G`: add everything directly wired to what is
+selected, and press again to go further. One junction at a time rather than the
+whole net, because the common case is "this block and what feeds it" and
+swallowing the net in one press makes that unreachable. The primary selection
+stays primary, so the inspector does not jump to some other block because the
+selection grew around it.
+
+### What is left, and what was already done
+
+Several entries on the standing lists had outlived their work. E7 — operations
+as first-class objects — was delivered by the eighteenth pass, which said so at
+the time. A visual block editor is the definition editor, thirteenth and
+sixteenth passes.
+
+Two are real and neither is a defect. **Instancing** in the volume view: the
+twentieth pass measured it, found the premise gone — the block cap means a
+100-layer design is thirty-two layers of geometry — and left it with an
+unmeasured reason that might replace it. That reasoning still holds, and nobody
+has reported the view being slow. **Real values in the cells** rather than the
+speckle needs trained weights, which a design tool does not have; it is a
+feature about loading checkpoints, not a gap in this one.

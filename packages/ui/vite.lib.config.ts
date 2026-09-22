@@ -2,7 +2,7 @@
  * The editor as something another application can import.
  *
  * `vite.config.ts` builds the editor as a *site*: one bundle with React and
- * everything else inside it, served at app.tensorcad.dev. That is the wrong
+ * everything else inside it, served as static assets. That is the wrong
  * shape for a dependency. An application that installs this already has React,
  * and two copies of React in one page is not a larger download — it is hooks
  * throwing `Invalid hook call` on the first render, because the component was

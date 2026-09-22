@@ -183,11 +183,11 @@ Two cross-checks worth knowing:
   `tensorcad.dev`; `wrangler.docs.jsonc` serves what MkDocs renders at `docs.tensorcad.dev`.
   Neither has a Worker script — `assets` with no `main` is an assets-only deployment, which
   is all this needs, because the engine is WebAssembly and runs in the tab.
-  **`app.tensorcad.dev` is not this repository's any more.** It serves a build assembled
-  elsewhere from this editor plus a `StorageProvider` (invariant 9), so the editor there has
-  accounts and this one does not. Do not put that hostname back into `wrangler.jsonc`: two
-  deployments claiming one name is a coin toss decided by whichever pushed last, and this
-  repository pushes far more often. `.github/workflows/deploy.yml` uploads both from `main` when
+  **One hostname each, and adding a route is not a small change.** A custom domain
+  belongs to whichever Worker claimed it most recently, so a route added here can take
+  a hostname away from whatever is serving it, on the next push to `main`, with nothing
+  to warn you. These two deployments claim what this repository builds and nothing else.
+  `.github/workflows/deploy.yml` uploads both from `main` when
   `CLOUDFLARE_API_TOKEN` is set and says so in the job summary when it is not, so a fork
   still builds. The editor is loaded with `WebAssembly.instantiate` over bytes rather than
   `instantiateStreaming`, so nothing depends on the `.wasm` arriving with the right content

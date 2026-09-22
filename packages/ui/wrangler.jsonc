@@ -23,13 +23,12 @@
   // it. A first deploy will refuse the apex if the zone already has a record on
   // it — Cloudflare's parking page counts — so delete that record first.
   //
-  // `app.tensorcad.dev` used to be here too and deliberately is not any more.
-  // It now serves a build that has somewhere to keep designs, assembled
-  // elsewhere from this editor plus a storage provider — see invariant 9. Two
-  // deployments claiming one hostname is a coin toss over which one is live,
-  // decided by whichever deployed last, so this one claims the apex and stops
-  // there. Putting it back would take that hostname away from whatever is
-  // serving it, on the next push to main, with nothing to warn you.
+  // One hostname, and adding another is not a small change.
+  //
+  // A custom domain belongs to whichever Worker claimed it most recently, and
+  // claiming one that something else is already serving takes it away on the
+  // next push to main with nothing to warn you. This deployment serves the
+  // apex and stops there.
   "routes": [
     {
       "pattern": "tensorcad.dev",

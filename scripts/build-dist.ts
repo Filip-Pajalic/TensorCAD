@@ -93,8 +93,8 @@ const PACKAGES: Pkg[] = [
  * Where a package's publishable form is written.
  *
  * `npm/` rather than `dist/`, because `dist/` is already taken: the editor
- * builds the *site* there, which is the directory `wrangler.jsonc` uploads to
- * app.tensorcad.dev. Writing the package over it means a build of one silently
+ * builds the *site* there, which is the directory `wrangler.jsonc` uploads.
+ * Writing the package over it means a build of one silently
  * destroys the other, and the way that ends is deploying a directory of
  * `.d.ts` files with no index.html in it.
  */

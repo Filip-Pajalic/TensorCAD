@@ -9,6 +9,8 @@
 import { useEffect, useState } from "react";
 import Compare from "./Compare.js";
 import Definitions from "./Definitions.js";
+import Library from "./Library.js";
+import { SHAPE_MODES, SHAPE_MODE_HINT, type ShapeMode } from "../canvas/shapes.js";
 import CommandPalette from "./CommandPalette.js";
 import { Dialog, DialogContent } from "../ui/dialog.js";
 import { Label } from "../ui/label.js";
@@ -85,6 +87,9 @@ function SettingsBody(): React.ReactElement {
         <Setting label="Title block" hint="The drawing's own summary, in the corner of the sheet.">
           <Switch checked={s.showTitleBlock} onCheckedChange={s.setShowTitleBlock} />
         </Setting>
+        <Setting label="Key" hint="What the letters, the lines and the marks mean.">
+          <Switch checked={s.showKey} onCheckedChange={s.setShowKey} />
+        </Setting>
       </section>
 
       <section className="py-2">
@@ -107,13 +112,24 @@ function SettingsBody(): React.ReactElement {
             ]}
           />
         </Setting>
+        <Setting
+          label="Draw it as a figure"
+          hint="Leave the reshapes out, the way a published figure does. Their findings move to the block that absorbed them."
+        >
+          <Switch checked={s.figure} onCheckedChange={s.setFigure} />
+        </Setting>
         <Setting label="Annotations" hint="Callouts on leader lines, derived from the design.">
           <Switch checked={s.showCallouts} onCheckedChange={() => s.toggleCallouts()} />
         </Setting>
-        <Setting label="Wire labels" hint="Show evaluated sizes instead of symbol names.">
-          <Switch
-            checked={s.shapeMode === "numeric"}
-            onCheckedChange={(on) => s.setShapeMode(on ? "numeric" : "symbolic")}
+        <Setting label="Wire labels" hint="What a shape on an edge or a pin is written as.">
+          <Select
+            className="w-40"
+            value={s.shapeMode}
+            onValueChange={(v) => s.setShapeMode(v as ShapeMode)}
+            options={SHAPE_MODES.map((mode) => ({
+              value: mode,
+              label: SHAPE_MODE_HINT[mode],
+            }))}
           />
         </Setting>
       </section>
@@ -198,6 +214,14 @@ export default function Dialogs(): React.ReactElement {
         {dialog === "compare" && (
           <DialogContent title="Compare" width="46rem">
             <Compare />
+          </DialogContent>
+        )}
+      </Dialog>
+
+      <Dialog open={dialog === "library"} onOpenChange={(open) => !open && close()}>
+        {dialog === "library" && (
+          <DialogContent title="Reference architectures" width="42rem">
+            <Library />
           </DialogContent>
         )}
       </Dialog>

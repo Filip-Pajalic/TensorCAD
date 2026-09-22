@@ -9,7 +9,7 @@ import { useMemo, useState } from "react";
 import { useEditor } from "../state/store.js";
 import { useLevel } from "../state/hooks.js";
 import { newNodeFor } from "../state/addBlock.js";
-import { categoryColor } from "../canvas/blocks.js";
+import { categoryColor, typeName } from "../canvas/blocks.js";
 import { DRAG_MIME } from "../canvas/Canvas.js";
 import { catalogByCategory, isUserBlock, type BlockDef } from "../engine.js";
 
@@ -21,7 +21,8 @@ const KIND_MARK: Record<string, string> = {
 
 function matches(def: BlockDef, needle: string): boolean {
   if (!needle) return true;
-  const hay = `${def.type} ${def.category} ${def.docs.summary}`.toLowerCase();
+  const hay =
+    `${def.docs.name ?? ""} ${def.type} ${def.category} ${def.docs.summary}`.toLowerCase();
   return hay.includes(needle);
 }
 
@@ -40,7 +41,7 @@ export default function Palette(): React.ReactElement {
       useEditor.getState().setStatus("This level is read-only");
       return;
     }
-    const node = newNodeFor(type);
+    const node = newNodeFor(type, doc);
     if (!node) return;
     const count = level.graph.nodes.length;
     useEditor.getState().addNode(level.segments, node, [40 + (count % 4) * 260, 40 + count * 24]);
@@ -96,7 +97,11 @@ export default function Palette(): React.ReactElement {
                 className="palette__item"
                 style={{ ["--accent" as string]: categoryColor(def.category) }}
                 draggable={level.editable}
-                title={def.docs.summary + (def.docs.formula ? `\n\n${def.docs.formula}` : "")}
+                title={
+                  `${def.type}` +
+                  `\n\n${def.docs.summary}` +
+                  (def.docs.formula ? `\n\n${def.docs.formula}` : `` )
+                }
                 onDragStart={(e) => {
                   e.dataTransfer.setData(DRAG_MIME, def.type);
                   e.dataTransfer.effectAllowed = "move";
@@ -106,7 +111,7 @@ export default function Palette(): React.ReactElement {
                 <span className="palette__kind" title={def.kind}>
                   {KIND_MARK[def.kind] ?? "?"}
                 </span>
-                <span className="palette__type mono">{def.type}</span>
+                <span className="palette__type">{typeName(def, def.type)}</span>
                 {isUserBlock(doc, def.type) && (
                   <span className="palette__own" title="Defined by this design">
                     own

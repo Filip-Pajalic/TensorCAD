@@ -9,7 +9,7 @@ import type {
   UserBlockDef,
 } from "@tensor-cad/engine";
 import { splitEndpoint } from "@tensor-cad/engine";
-import { CATALOG } from "../engine.js";
+import type { BlockDef } from "../engine.js";
 import { DEF_PREFIX, storeInDefinition } from "./definition.js";
 /**
  * Document operations.
@@ -69,9 +69,15 @@ export function nodeAtPath(doc: Doc, segments: Segments): NodeDef | null {
   return parent.nodes.find((n) => n.id === segments[segments.length - 1]) ?? null;
 }
 
-/** True when the node can be opened as its own canvas level. */
-export function isDrillable(node: NodeDef): boolean {
-  const def = CATALOG[node.type];
+/**
+ * True when the node can be opened as its own canvas level.
+ *
+ * Takes the definition rather than looking the type up, for the reason
+ * `kindOf` does: against the built-in catalog (invariant 1) a design's own
+ * composite answered that it could not be opened, which is exactly the kind of
+ * block somebody wants to open.
+ */
+export function isDrillable(node: NodeDef, def: BlockDef | undefined): boolean {
   if (!def) return false;
   if (def.kind === "container") return Boolean(node.graph);
   return def.kind === "composite";

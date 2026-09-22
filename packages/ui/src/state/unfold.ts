@@ -43,7 +43,13 @@ export interface UnfoldedNode {
    * published figure, not two.
    */
   mergedType?: string;
-  mergedCategory?: string;
+  /**
+   * And the inner one's definition, which is what the caption's name and the
+   * frame's tint are read from. One field rather than one per thing a caller
+   * wants off it: the two that were here before had to be copied by hand at
+   * every hop, and the third one added was missed at exactly one of them.
+   */
+  mergedDef?: BlockDef;
 }
 
 export interface UnfoldedEdge {
@@ -68,6 +74,15 @@ export interface Unfolded {
   generated: boolean;
   /** True when something could still be opened, for the depth control. */
   moreAvailable: boolean;
+  /**
+   * In figure mode, which drawn block took the place of each block that was
+   * left out — hidden path to the part the signal now runs to.
+   *
+   * A view that hides a block is a view that can lose a design-rule finding,
+   * and a mode that quietly hides an error is worse than no mode. The canvas
+   * reads this and shows an absorbed block's findings on whatever absorbed it.
+   */
+  absorbed: Map<string, string>;
 }
 
 interface Endpoint {
@@ -101,6 +116,23 @@ function interiorOf(
 
 const isBoundaryIn = (def: BlockDef | undefined): boolean => def?.type === "boundary_in";
 const isBoundaryOut = (def: BlockDef | undefined): boolean => def?.type === "boundary_out";
+
+/**
+ * Blocks a published figure does not draw.
+ *
+ * Not "blocks that do not matter" — a reshape is real, necessary, and the thing
+ * that makes multi-head attention multi-head. It is that a figure of a
+ * transformer draws attention as one box and does not draw the two reshapes on
+ * either side of it, because they move no data and cost no parameters: the
+ * tensor that comes out holds exactly the numbers that went in.
+ *
+ * Named rather than inferred, and pinned by a test, because a table of type
+ * strings assembled at a distance from the catalog is how `SIDEWAYS_IN` came to
+ * hold two rows that matched no block type at all.
+ */
+const PLUMBING = new Set(["rearrange", "expand_heads"]);
+
+const isPlumbing = (def: BlockDef | undefined): boolean => !!def && PLUMBING.has(def.type);
 
 function push<K, V>(map: Map<K, V[]>, k: K, v: V): void {
   const held = map.get(k);
@@ -138,7 +170,7 @@ function mergeTrivialFrames(nodes: UnfoldedNode[], frames: Set<string>): Unfolde
 
     const inner = kids.get(victim.path)![0];
     victim.mergedType = inner.mergedType ?? inner.node.type;
-    victim.mergedCategory = inner.mergedCategory ?? inner.def?.category;
+    victim.mergedDef = inner.mergedDef ?? inner.def;
     frames.delete(inner.path);
     live = live
       .filter((n) => n.path !== inner.path)
@@ -146,7 +178,14 @@ function mergeTrivialFrames(nodes: UnfoldedNode[], frames: Set<string>): Unfolde
   }
 }
 
-export function unfold(doc: Doc, level: Level, derived: Derived, depth: number): Unfolded {
+export function unfold(
+  doc: Doc,
+  level: Level,
+  derived: Derived,
+  depth: number,
+  /** Figure mode: draw what a paper draws, leaving the plumbing out. */
+  figure = false,
+): Unfolded {
   const cat = catalogOf(doc);
   const nodes: UnfoldedNode[] = [];
   /** Every node reached, including the boundaries that get short-circuited. */
@@ -170,7 +209,11 @@ export function unfold(doc: Doc, level: Level, derived: Derived, depth: number):
       // of the drawing. It stays in `byPath` so edges can be traced through it
       // and out of `nodes` so nothing draws it. At the top of the view — when
       // the user has drilled into a container — it is a real node again.
-      const hidden = parent !== null && (isBoundaryIn(def) || isBoundaryOut(def));
+      // Only inside an opened frame, which is the same rule the boundaries
+      // follow: at the top of the view a block the user placed is a block the
+      // user gets to see, whatever it is.
+      const plumbing = figure && parent !== null && isPlumbing(def) && !open;
+      const hidden = plumbing || (parent !== null && (isBoundaryIn(def) || isBoundaryOut(def)));
       if (!hidden) {
         const count = derived.infer.resolved.get(path)?.p.count;
         nodes.push({
@@ -227,10 +270,14 @@ export function unfold(doc: Doc, level: Level, derived: Derived, depth: number):
     boundaries.set(entry.parent, held);
   }
 
+  const drawnPaths = new Set(nodes.map((n) => n.path));
+  const drawn = drawnPaths;
+
   /**
    * Follow a signal forwards until it reaches nodes the drawing shows. Entering
    * an opened frame means entering whatever its input boundary feeds; reaching
-   * a frame's output boundary means leaving the frame.
+   * a frame's output boundary means leaving the frame; and in figure mode, a
+   * block the figure leaves out is passed straight through.
    */
   const realTargets = (ep: Endpoint, seen: Set<string>): Endpoint[] => {
     if (seen.has(key(ep))) return [];
@@ -248,10 +295,20 @@ export function unfold(doc: Doc, level: Level, derived: Derived, depth: number):
         realTargets(n, seen),
       );
     }
+    // A block left out of a figure is walked straight through. Its output port
+    // is not the port the signal arrived on — a reshape takes `x` and gives
+    // `y` — so every edge leaving it is followed rather than one by name.
+    if (figure && !drawnPaths.has(ep.path) && isPlumbing(entry.def)) {
+      const onward: Endpoint[] = [];
+      for (const [k, targets] of bySource) {
+        if (!k.startsWith(`${ep.path}:`)) continue;
+        for (const t of targets) onward.push(...realTargets(t, seen));
+      }
+      return onward;
+    }
     return [ep];
   };
 
-  const drawn = new Set(nodes.map((n) => n.path));
   const edges: UnfoldedEdge[] = [];
   const emitted = new Set<string>();
 
@@ -281,6 +338,31 @@ export function unfold(doc: Doc, level: Level, derived: Derived, depth: number):
   // Merging happens last. `frames` is what `realTargets` walks through to find
   // the parts on either side of a container wall, so folding two frames into
   // one before the edges are resolved would cut every wire that crosses it.
+  // Which drawn part each left-out block's signal now runs to, so a finding on
+  // it has somewhere to appear.
+  const absorbed = new Map<string, string>();
+  if (figure) {
+    for (const [path, entry] of byPath) {
+      if (drawnPaths.has(path) || !isPlumbing(entry.def)) continue;
+      for (const [k, targets] of bySource) {
+        if (!k.startsWith(`${path}:`)) continue;
+        const real = targets.flatMap((t) => realTargets(t, new Set()));
+        const landed = real.find((e) => drawnPaths.has(e.path));
+        if (landed) {
+          absorbed.set(path, landed.path);
+          break;
+        }
+      }
+    }
+  }
+
   const merged = mergeTrivialFrames(nodes, frames);
-  return { nodes: merged, edges, frames, generated: frames.size > 0, moreAvailable };
+  return {
+    nodes: merged,
+    edges,
+    frames,
+    generated: frames.size > 0,
+    moreAvailable,
+    absorbed,
+  };
 }

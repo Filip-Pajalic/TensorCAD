@@ -53,6 +53,20 @@ export default function TitleBlock(): React.ReactElement | null {
         {doc.meta.family && <span className="title-block__family">{doc.meta.family}</span>}
       </div>
 
+      {/*
+        What this design is, in the words the file carries. Every preset has
+        had one of these since it was written and nothing rendered it, so the
+        one sentence that says how a design differs from the one beside it in
+        the library was in the repository and never on screen. Clamped to two
+        lines here, because a title block is a title block; the whole paragraph
+        is in the library and on hover.
+      */}
+      {doc.meta.notes && (
+        <p className="title-block__notes" title={doc.meta.notes}>
+          {doc.meta.notes}
+        </p>
+      )}
+
       <div className="title-block__grid">
         <Field label="Parameters" value={formatCount(derived.params.total)} />
         <Field

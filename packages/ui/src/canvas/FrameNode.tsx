@@ -21,7 +21,12 @@ import { formatCount } from "@tensor-cad/engine";
 export interface FrameNodeData extends Record<string, unknown> {
   path: string;
   label: string;
+  /** The identifier: what a path is written with. */
   type: string;
+  /** What the caption prints for the type: the catalog's own words. */
+  typeName: string;
+  /** What the catalog says this container is, for the hover on the caption. */
+  docs: { summary?: string; formula?: string };
   category: string;
   /** Parameters in everything the frame contains. */
   params: number;
@@ -50,7 +55,9 @@ function FrameNodeView({ data, selected }: NodeProps<FrameFlowNode>): React.Reac
     >
       <div className="frame__caption">
         <span className="frame__name">{data.label}</span>
-        <span className="frame__type">{data.type}</span>
+        <span className="frame__type" title={data.type}>
+          {data.typeName}
+        </span>
         {data.severity && (
           <span className={`mark mark--${data.severity}`} title={`this block has ${data.severity}s`}>
             {data.severity === "error" ? "●" : "▲"}

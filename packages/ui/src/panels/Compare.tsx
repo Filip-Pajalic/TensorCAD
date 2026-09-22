@@ -14,7 +14,8 @@
 import { useMemo, useState } from "react";
 import { useEditor } from "../state/store.js";
 import { toAnalysisOptions } from "../state/operating.js";
-import { diffDesigns, getPreset, PRESET_NAMES } from "../engine.js";
+import { blockDef, diffDesigns, getPreset, PRESET_NAMES } from "../engine.js";
+import { typeName } from "../canvas/blocks.js";
 import { formatBytes, formatCount, formatFlops } from "@tensor-cad/engine";
 import type { DesignDiff, DiffDelta } from "@tensor-cad/engine";
 
@@ -173,14 +174,18 @@ export default function Compare(): React.ReactElement {
               <button className="cmp__path mono" onClick={() => useEditor.getState().focusOn(b.path)}>
                 {b.path}
               </button>
-              <span className="dim">{b.type}</span>
+              <span className="dim" title={b.type}>
+                {typeName(blockDef(b.type, doc), b.type)}
+              </span>
             </div>
           ))}
           {blocks.removed.map((b) => (
             <div className="cmp__line" key={`br${b.path}`}>
               <span className="cmp__mark cmp__mark--remove">−</span>
               <span className="mono">{b.path}</span>
-              <span className="dim">{b.type}</span>
+              <span className="dim" title={b.type}>
+                {typeName(blockDef(b.type, doc), b.type)}
+              </span>
             </div>
           ))}
           {blocks.changed.map((c) => (

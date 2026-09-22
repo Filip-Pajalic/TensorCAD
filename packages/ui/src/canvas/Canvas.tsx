@@ -26,13 +26,17 @@ import {
 } from "@xyflow/react";
 import BlockNodeView, { type BlockFlowNode, type BlockNodeData, type PortView } from "./BlockNode.js";
 import FrameNodeView, { type FrameFlowNode, type FrameNodeData } from "./FrameNode.js";
-import { categoryColor, glyphFor, kindOf, labelOf, paramSummary } from "./blocks.js";
+import { categoryColor, glyphFor, kindOf, labelOf, paramSummary, typeName } from "./blocks.js";
 import { chooseSides, handleId, portOfHandle, sideOfHandle, wireKind, type Box } from "./wiring.js";
 import WireEdge from "./WireEdge.js";
 import { formatShape, type ShapeMode } from "./shapes.js";
 import { createConnectionChecker } from "./validate.js";
 import { layoutGraph, layoutTree, type LayoutBox } from "./layout.js";
 import CalloutLayer from "./CalloutLayer.js";
+import PartDoc from "./PartDoc.js";
+import Key from "./Key.js";
+import Walkthrough from "../panels/Walkthrough.js";
+import { buildWalkthrough } from "../state/walkthrough.js";
 import TitleBlock from "../panels/TitleBlock.js";
 import { onThemeChange, resolvedTheme, themeValue } from "../state/theme.js";
 import { calloutFor, type Callout } from "./callouts.js";
@@ -44,9 +48,9 @@ import { type Level } from "../state/level.js";
 import { unfold, type Unfolded } from "../state/unfold.js";
 import { newNodeFor } from "../state/addBlock.js";
 import * as ops from "../state/ops.js";
-import type { NodeDef } from "@tensor-cad/engine";
+import type { Doc, NodeDef } from "@tensor-cad/engine";
 import { joinPath, splitEndpoint } from "@tensor-cad/engine";
-import { CATALOG, type BlockDef } from "../engine.js";
+import { blockDef, catalogOf, type BlockDef } from "../engine.js";
 
 const nodeTypes: NodeTypes = {
   block: BlockNodeView as unknown as NodeTypes[string],
@@ -73,6 +77,9 @@ export const GRID_MAJOR = 80;
 export const DRAG_MIME = "application/tensorcad-block";
 
 const NODE_WIDTH = 216;
+
+/** Shared, so a block the catalog does not know still compares equal. */
+const EMPTY_DOCS: { summary?: string; formula?: string } = {};
 
 /** A circled operator is a junction on the line, not a part with a caption. */
 const GLYPH_SIZE = 38;
@@ -132,7 +139,7 @@ interface Item {
   frame: boolean;
   multiplier: number | null;
   mergedType?: string;
-  mergedCategory?: string;
+  mergedDef?: BlockDef;
 }
 
 interface EdgeSpec {
@@ -255,7 +262,10 @@ function wireUp(
       type: "wire",
       // A bypass carries the same tensor as the line it rejoins; labelling both
       // just doubles the ink.
-      label: kind === "bypass" ? undefined : (formatShape(shape, shapeMode) ?? undefined),
+      label:
+        kind === "bypass"
+          ? undefined
+          : (formatShape(shape, shapeMode, derived.symbols) ?? undefined),
       labelShowBg: true,
       className: `flow-edge flow-edge--${kind}`,
       deletable,
@@ -287,7 +297,7 @@ function portViews(
     const set = side === "in" ? connectedIn : connectedOut;
     return {
       name,
-      shape: formatShape(shape, shapeMode),
+      shape: formatShape(shape, shapeMode, derived.symbols),
       connected: set.has(`${path}:${name}`),
       dtype: dtypeOf(node, resolved, name, side),
     };
@@ -311,6 +321,22 @@ interface BuildOptions {
   lockedPaths: ReadonlySet<string>;
   /** True for the flat view, where the document owns positions and edits. */
   editable: boolean;
+  /** Drawn path -> the left-out blocks whose findings it carries. */
+  absorbedBy: ReadonlyMap<string, string[]>;
+  /**
+   * What the open walkthrough step is about, or null when none is running.
+   * Everything outside it is dimmed, which is what makes the narration point.
+   */
+  lit: ReadonlySet<string> | null;
+}
+
+/** True when a path is one the step named, or sits inside one. */
+function isLit(lit: ReadonlySet<string>, path: string): boolean {
+  if (lit.has(path)) return true;
+  for (const one of lit) {
+    if (path.startsWith(`${one}/`)) return true;
+  }
+  return false;
 }
 
 /** The last segment of a path: the node's own id within its level. */
@@ -323,8 +349,19 @@ function idOf(path: string): string {
  * carry a line, then draw the parts.
  */
 function buildView(opts: BuildOptions): { nodes: CanvasNode[]; edges: FlowEdge[] } {
-  const { items, specs, derived, selection, alsoSelected, boxes, shapeMode, lockedPaths, editable } =
-    opts;
+  const {
+    items,
+    specs,
+    derived,
+    selection,
+    alsoSelected,
+    boxes,
+    shapeMode,
+    lockedPaths,
+    editable,
+    absorbedBy,
+    lit,
+  } = opts;
   const byPath = new Map(items.map((i) => [i.path, i]));
   const parentOf = new Map(items.map((i) => [i.path, i.parent]));
 
@@ -343,6 +380,10 @@ function buildView(opts: BuildOptions): { nodes: CanvasNode[]; edges: FlowEdge[]
       id: path,
       position: { x: box?.x ?? 0, y: box?.y ?? 0 },
       parentId: item.parent ?? undefined,
+      // A step names a block, and everything under it belongs to that step too:
+      // lighting `attn` without lighting what it expands into would dim the
+      // very thing the sentence is describing.
+      className: lit && !isLit(lit, path) ? "is-dimmed" : undefined,
       selected: selection === path || alsoSelected.has(path),
       draggable: editable && !lockedPaths.has(path),
       connectable: editable,
@@ -350,11 +391,17 @@ function buildView(opts: BuildOptions): { nodes: CanvasNode[]; edges: FlowEdge[]
     };
 
     if (item.frame) {
+      // A merged frame shows the inner block's identity throughout: its type,
+      // its name and its colour. `def` here is still the outer one.
+      const frameType = item.mergedType ?? node.type;
+      const frameDef = item.mergedDef ?? def;
       const data: FrameNodeData = {
         path,
         label: labelOf(node),
-        type: item.mergedType ?? node.type,
-        category: item.mergedCategory ?? def?.category ?? "unknown",
+        type: frameType,
+        typeName: typeName(frameDef, frameType),
+        docs: frameDef?.docs ?? EMPTY_DOCS,
+        category: frameDef?.category ?? "unknown",
         params: derived.paramsByPath.get(path) ?? 0,
         multiplier: item.multiplier,
         severity: derived.severityByPath.get(path) ?? null,
@@ -391,9 +438,11 @@ function buildView(opts: BuildOptions): { nodes: CanvasNode[]; edges: FlowEdge[]
       path,
       label: labelOf(node),
       type: node.type,
+      typeName: typeName(def, node.type),
+      docs: def?.docs ?? EMPTY_DOCS,
       category: def?.category ?? "unknown",
-      kind: kindOf(node.type),
-      summary: paramSummary(def, resolved),
+      kind: kindOf(def),
+      summary: paramSummary(def, resolved, shapeMode, derived.symbols),
       params: derived.paramsByPath.get(path) ?? 0,
       inPorts,
       outPorts,
@@ -401,13 +450,26 @@ function buildView(opts: BuildOptions): { nodes: CanvasNode[]; edges: FlowEdge[]
       // Attributed to this block exactly, not rolled up from its interior: a
       // marker that fired because of something three levels down would be
       // pointing at the wrong part.
-      findings: (derived.findingsByPath.get(path) ?? []).map((f) => ({
-        severity: f.severity,
-        message: f.message,
-        rule: f.rule,
-        port: f.port,
-      })),
-      drillable: editable && ops.isDrillable(node),
+      // A block the figure left out still has its findings, and they appear on
+      // the part that took its place. Naming the block in the message is what
+      // keeps the marker honest — it is pointing at a consequence, not a cause.
+      findings: [
+        ...(derived.findingsByPath.get(path) ?? []).map((f) => ({
+          severity: f.severity,
+          message: f.message,
+          rule: f.rule,
+          port: f.port,
+        })),
+        ...(absorbedBy.get(path) ?? []).flatMap((hidden) =>
+          (derived.findingsByPath.get(hidden) ?? []).map((f) => ({
+            severity: f.severity,
+            message: `${idOf(hidden)}: ${f.message}`,
+            rule: f.rule,
+            port: undefined,
+          })),
+        ),
+      ],
+      drillable: editable && ops.isDrillable(node, def),
       readOnly: !editable,
       locked: lockedPaths.has(path),
       repeat: editable && typeof resolved?.p.count === "number" ? resolved.p.count : null,
@@ -420,12 +482,24 @@ function buildView(opts: BuildOptions): { nodes: CanvasNode[]; edges: FlowEdge[]
   return { nodes, edges };
 }
 
-/** The flat, editable view: one graph level, hand-placed. */
-function flatItems(level: Level, derived: Derived): { items: Item[]; specs: EdgeSpec[] } {
+/**
+ * The flat, editable view: one graph level, hand-placed.
+ *
+ * Resolved through the document's own catalog rather than the built-in one
+ * (invariant 1): a design that defines its own blocks would otherwise draw them
+ * as an unknown category with no parameter summary and no way in, and only on
+ * this view — the unfolded one has always gone through `catalogOf`.
+ */
+function flatItems(
+  doc: Doc,
+  level: Level,
+  derived: Derived,
+): { items: Item[]; specs: EdgeSpec[] } {
+  const cat = catalogOf(doc);
   const items: Item[] = level.graph.nodes.map((node) => ({
     path: joinPath(level.prefix, node.id),
     node,
-    def: CATALOG[node.type],
+    def: cat[node.type],
     parent: null,
     depth: 0,
     frame: false,
@@ -468,7 +542,7 @@ function unfoldedItems(view: Unfolded): { items: Item[]; specs: EdgeSpec[] } {
     frame: n.frame,
     multiplier: n.multiplier,
     mergedType: n.mergedType,
-    mergedCategory: n.mergedCategory,
+    mergedDef: n.mergedDef,
   }));
   const specs: EdgeSpec[] = view.edges.map((e) => ({
     id: e.id,
@@ -549,16 +623,31 @@ export default function Canvas(): React.ReactElement {
    * the flat, editable, hand-placed graph; anything above it draws containers
    * open, which is how every published figure shows an architecture.
    */
+  const figure = useEditor((s) => s.figure);
+  const walkAt = useEditor((s) => s.walkthrough);
   const view = useMemo(
-    () => (detail > 0 ? unfold(doc, level, derived, detail) : null),
-    [detail, doc, level, derived],
+    () => (detail > 0 ? unfold(doc, level, derived, detail, figure) : null),
+    [detail, doc, level, derived, figure],
   );
 
   /** Frame and leaf boxes for the unfolded view, from the layout engine. */
   const [boxes, setBoxes] = useState<Record<string, LayoutBox>>({});
 
+  /**
+   * What the pointer is over, and what the catalog says about it.
+   *
+   * One card owned by the sheet rather than one tooltip per part: a dense
+   * drawing is a few hundred parts, and a floating-element instance on each of
+   * them is machinery in the way of the one gesture — dragging — that the
+   * canvas exists for. React Flow already reports which node the pointer
+   * entered, so the card only has to be told where to sit.
+   */
+  const [hover, setHover] = useState<
+    { x: number; y: number; name: string; type: string; docs: { summary?: string; formula?: string }; drillable: boolean } | null
+  >(null);
+
   const built = useMemo(() => {
-    const { items, specs } = view ? unfoldedItems(view) : flatItems(level, derived);
+    const { items, specs } = view ? unfoldedItems(view) : flatItems(doc, level, derived);
     // The flat view stores only a position; a box still needs a size for the
     // geometry that decides which side a wire leaves by.
     const flatBoxes: Record<string, Box> = {};
@@ -573,6 +662,22 @@ export default function Canvas(): React.ReactElement {
         };
       }
     }
+    // What the open walkthrough step is about. Built here rather than in the
+    // store because the steps are derived from the document and are not state.
+    const lit =
+      walkAt === null
+        ? null
+        : new Set(buildWalkthrough(doc, derived)[walkAt]?.paths ?? []);
+
+    // Inverted: unfold says which drawn part each left-out block landed on,
+    // and the canvas needs the other direction to gather findings onto a part.
+    const absorbedBy = new Map<string, string[]>();
+    for (const [hidden, landed] of view?.absorbed ?? []) {
+      const held = absorbedBy.get(landed);
+      if (held) held.push(hidden);
+      else absorbedBy.set(landed, [hidden]);
+    }
+
     return buildView({
       items,
       specs,
@@ -583,8 +688,10 @@ export default function Canvas(): React.ReactElement {
       shapeMode,
       lockedPaths,
       editable: !view && level.editable,
+      absorbedBy,
+      lit,
     });
-  }, [view, boxes, level, derived, selection, alsoSelected, positions, shapeMode, lockedPaths]);
+  }, [view, boxes, level, derived, selection, alsoSelected, positions, shapeMode, lockedPaths, doc, walkAt]);
 
   const builtNodes = built.nodes;
 
@@ -1063,7 +1170,7 @@ export default function Canvas(): React.ReactElement {
         useEditor.getState().setStatus("This level is read-only");
         return;
       }
-      const node = newNodeFor(type);
+      const node = newNodeFor(type, doc);
       if (!node) return;
       const p = screenToFlowPosition({ x: event.clientX, y: event.clientY });
       useEditor.getState().addNode(level.segments, node, [p.x - NODE_WIDTH / 2, p.y - 30]);
@@ -1082,7 +1189,8 @@ export default function Canvas(): React.ReactElement {
         <div className="strip strip--readonly">
           <strong>Read-only</strong>
           <span>
-            The catalog expansion of <code>{level.owner?.type}</code>. Composite interiors are
+            The catalog expansion of{" "}
+            <strong>{typeName(blockDef(level.owner?.type ?? "", doc), level.owner?.type ?? "")}</strong>. Composite interiors are
             generated, not stored &mdash; edit the block&rsquo;s parameters instead.
           </span>
         </div>
@@ -1126,6 +1234,28 @@ export default function Canvas(): React.ReactElement {
         onReconnectEnd={onReconnectEnd}
         onEdgeMouseEnter={(_, e) => setLitNet((e.data as { net?: string } | undefined)?.net ?? null)}
         onEdgeMouseLeave={() => setLitNet(null)}
+        // What this part is, where the pointer already is. The card is placed
+        // in the canvas's own coordinates so it does not move with the drawing:
+        // it annotates the pointer, not the sheet.
+        onNodeMouseEnter={(e, n) => {
+          const d = n.data as BlockNodeData | FrameNodeData;
+          if (!d.docs?.summary && !d.docs?.formula) return setHover(null);
+          const host = e.currentTarget.closest(".canvas__flow") ?? e.currentTarget;
+          const box = host.getBoundingClientRect();
+          setHover({
+            x: e.clientX - box.left,
+            y: e.clientY - box.top,
+            name: d.typeName,
+            type: d.type,
+            docs: d.docs,
+            drillable: (d as BlockNodeData).drillable ?? false,
+          });
+        }}
+        onNodeMouseLeave={() => setHover(null)}
+        // Anything that moves the drawing under the pointer invalidates where
+        // the card was put, so it goes rather than lags.
+        onNodeDragStart={() => setHover(null)}
+        onMoveStart={() => setHover(null)}
         // A wire is a tensor, and a tensor is selectable. It goes to the
         // inspector like a block does, and every other segment of the same net
         // lights with it, because they are one tensor and not several.
@@ -1220,6 +1350,12 @@ export default function Canvas(): React.ReactElement {
           </>
         )}
         <CalloutLayer callouts={callouts} />
+        <Panel position="top-left">
+          <Key />
+        </Panel>
+        <Panel position="top-right">
+          <Walkthrough />
+        </Panel>
         {showTitleBlock && (
           <Panel position="bottom-right">
             <TitleBlock />
@@ -1251,6 +1387,21 @@ export default function Canvas(): React.ReactElement {
           />
         )}
       </ReactFlow>
+        {hover && (
+          <div
+            className="partdoc-card"
+            style={{ left: hover.x, top: hover.y }}
+            role="tooltip"
+            aria-hidden
+          >
+            <PartDoc
+              name={hover.name}
+              type={hover.type}
+              docs={hover.docs}
+              drillable={hover.drillable}
+            />
+          </div>
+        )}
         {level.graph.nodes.length === 0 && (
           <div className="banner banner--empty">
             <strong>Empty graph</strong>

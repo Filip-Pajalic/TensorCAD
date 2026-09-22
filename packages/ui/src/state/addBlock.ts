@@ -7,8 +7,8 @@
  */
 
 import { repeatSkeleton } from "./ops.js";
-import type { NodeDef, ParamSpec, ParamValue } from "@tensor-cad/engine";
-import { CATALOG, type BlockDef } from "../engine.js";
+import type { Doc, NodeDef, ParamSpec, ParamValue } from "@tensor-cad/engine";
+import { blockDef, type BlockDef } from "../engine.js";
 
 /** Short, readable node ids instead of repeating the full type name. */
 const BASE_ID: Record<string, string> = {
@@ -50,8 +50,12 @@ export function defaultParams(def: BlockDef): Record<string, ParamValue> {
  * absent on purpose: the Inspector marks them and the analysis reports them,
  * which is more honest than inventing a value.
  */
-export function newNodeFor(type: string): NodeDef | null {
-  const def = CATALOG[type];
+export function newNodeFor(type: string, doc: Doc | undefined): NodeDef | null {
+  // The document's catalog, not the built-in one (invariant 1). A design's own
+  // block is listed in the palette, so resolving it here against the built-ins
+  // meant dragging one onto the sheet did nothing at all, silently: `null` is
+  // how the drop handler is told there is no such block.
+  const def = blockDef(type, doc);
   if (!def) return null;
   if (def.kind === "container") return repeatSkeleton(baseIdFor(type));
   return { id: baseIdFor(type), type, params: defaultParams(def) };

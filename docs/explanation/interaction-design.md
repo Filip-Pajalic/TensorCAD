@@ -1701,3 +1701,41 @@ The volume view still names its stages from a port of somebody else's layout
 rather than from the catalog's names, so the same block is *Token Embed* there
 and *token embedding* on the sheet. Now that a name is a fact the catalog
 carries, the port should read it.
+
+## Twenty-third pass: five silent no-ops
+
+M7 shipped and then went looking for what it had missed. Every one of these is
+the same shape as the bugs the twenty-first pass found, which is the shape worth
+learning: something reports success and puts nothing on screen.
+
+- **A walkthrough started below the top level dimmed the whole sheet.** The
+  steps name blocks of the whole design; drilled into `layers`, not one of them
+  matched anything drawn, so every part was dimmed and none was lit — a drawing
+  saying the step was about nothing. Opening one now goes back to the top,
+  which is where the thing it narrates is.
+- **A walkthrough of an empty design did nothing and said nothing.** No blocks,
+  no steps, a panel that renders null, and a command reporting itself as on. It
+  says why now.
+- **The breadcrumb still printed the identifier.** `repeat`, where the sheet,
+  the tree and the inspector all said "stack". The twenty-first pass reached
+  every other surface and missed this one.
+- **The volume view labelled its stages with node ids** — `embed`, `layers`,
+  `final_norm` — beside a sheet that called the same blocks "token embedding",
+  "stack" and "layer norm". One design, two vocabularies. It reads the catalog
+  now; the id stays in `path`, which is what cross-probing uses.
+- **The MCP never learned the name.** An agent knew `gqa_attention` while the
+  human's screen said "grouped-query attention", which is half of what M7 was
+  for: the point of naming a block is that everybody uses the same word for it.
+  `catalogEntry` carries it, `catalogText` prints it, and `search_catalog`
+  matches on it.
+
+And one thing that was simply wasteful: `resolveLevel` called `catalogOf(doc)`
+once per path segment. Once now.
+
+### Still outstanding
+
+`PortSpec.dtype` has been declared since the seventeenth pass and nothing checks
+it. An integer tensor arriving at a float matmul is a real design error that
+shape inference cannot catch, because the shapes agree perfectly — the
+declaration was added to make the check possible and the check was never
+written. It is a design rule and it belongs beside the other eighteen.

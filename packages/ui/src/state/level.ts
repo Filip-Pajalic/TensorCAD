@@ -18,7 +18,8 @@
 
 import type { Derived } from "./derive.js";
 import type { Doc, Graph, NodeDef } from "@tensor-cad/engine";
-import { catalogOf, isComposite, isContainer } from "../engine.js";
+import { typeName } from "../canvas/blocks.js";
+import { catalogOf, isComposite, isContainer, type BlockDef } from "../engine.js";
 import { DEF_PREFIX, previewDoc } from "./definition.js";
 
 export type LevelKind = "root" | "container" | "composite" | "definition";
@@ -43,11 +44,16 @@ export interface Level {
   error: string | null;
 }
 
-function crumb(node: NodeDef, segments: string[]): Crumb {
-  return { label: node.label ?? node.id, sub: node.type, segments };
+function crumb(node: NodeDef, segments: string[], cat: Record<string, BlockDef>): Crumb {
+  // The name, as every other surface prints it. This one was missed: the
+  // breadcrumb said `repeat` where the sheet, the tree and the inspector all
+  // said "stack".
+  return { label: node.label ?? node.id, sub: typeName(cat[node.type], node.type), segments };
 }
 
 export function resolveLevel(doc: Doc, path: string[], derived: Derived): Level {
+  // Once, not once per segment: the walk below asked for it on every hop.
+  const cat = catalogOf(doc);
   const crumbs: Crumb[] = [{ label: doc.meta.name || "design", sub: "model", segments: [] }];
   let graph: Graph = doc.graph;
   let editable = true;
@@ -87,7 +93,7 @@ export function resolveLevel(doc: Doc, path: string[], derived: Derived): Level 
       };
     }
     walked.push(seg);
-    const def = catalogOf(doc)[node.type];
+    const def = cat[node.type];
     if (def && isContainer(def)) {
       if (!node.graph) {
         return {
@@ -104,7 +110,7 @@ export function resolveLevel(doc: Doc, path: string[], derived: Derived): Level 
       graph = node.graph;
       kind = "container";
       owner = node;
-      crumbs.push(crumb(node, [...walked]));
+      crumbs.push(crumb(node, [...walked], cat));
       continue;
     }
     if (def && isComposite(def)) {
@@ -140,7 +146,7 @@ export function resolveLevel(doc: Doc, path: string[], derived: Derived): Level 
       editable = false;
       kind = "composite";
       owner = node;
-      crumbs.push(crumb(node, [...walked]));
+      crumbs.push(crumb(node, [...walked], cat));
       continue;
     }
     return {

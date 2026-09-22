@@ -436,6 +436,7 @@ export function registerTools(
             type: z.string(),
             kind: z.string(),
             category: z.string(),
+            name: z.string().describe("What a drawing calls this block."),
             summary: z.string(),
             formula: z.string().optional(),
             refs: z.array(z.string()),
@@ -464,7 +465,10 @@ export function registerTools(
           if (category && e.category !== category) return false;
           if (kind && e.kind !== kind) return false;
           if (!q) return true;
-          const hay = `${e.type} ${e.category} ${e.summary} ${e.formula ?? ""}`.toLowerCase();
+          // The name is searchable too, so an agent asked about "grouped-query
+          // attention" finds the block the human is looking at.
+          const hay =
+            `${e.type} ${e.name} ${e.category} ${e.summary} ${e.formula ?? ""}`.toLowerCase();
           return hay.includes(q);
         });
         const blocks = matched.slice(0, limit ?? 20);

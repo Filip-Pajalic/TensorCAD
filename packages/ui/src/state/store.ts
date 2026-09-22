@@ -565,10 +565,12 @@ export const useEditor = create<EditorState>((set, get) => {
     setFigure: (figure) => set(saveFlag("figure", figure, { figure })),
 
     walkthrough: null,
-    // Opening it clears the selection: the walkthrough lights what a step is
-    // about, and a selection left over from before would be a second thing
-    // claiming the eye.
-    startWalkthrough: () => set({ walkthrough: 0, selection: null, also: [], selectedNet: null }),
+    // Opening it goes back to the top level and clears the selection. The
+    // steps name blocks of the whole design, so starting one while drilled
+    // into a container left every step with nothing to light and the entire
+    // sheet dimmed — the drawing greyed out and no part of it lit.
+    startWalkthrough: () =>
+      set({ walkthrough: 0, path: [], selection: null, also: [], selectedNet: null, findingFocus: null }),
     setWalkthroughStep: (at) => set({ walkthrough: Math.max(0, at) }),
     endWalkthrough: () => set({ walkthrough: null }),
 

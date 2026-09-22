@@ -27,6 +27,8 @@
 import type { Derived } from "../state/derive.js";
 import type { Doc, NodeDef } from "@tensor-cad/engine";
 import { formatCount, joinPath } from "@tensor-cad/engine";
+import { catalogOf } from "../engine.js";
+import { typeName } from "../canvas/blocks.js";
 
 /** Weights, intermediate values, or an aggregate (layer norm and softmax). */
 export type BlkKind = "w" | "i" | "a";
@@ -809,7 +811,7 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
   return {
     name: doc.meta.name || "design",
     blocks,
-    landmarks: landmarksOf(blocks),
+    landmarks: landmarksOf(blocks, doc),
     arrows,
     cell,
     shape,
@@ -841,7 +843,13 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
  * same line the way a schematic puts its row names in a margin rather than
  * beside whatever happens to stick out furthest on that row.
  */
-function landmarksOf(blocks: Blk[]): Landmark[] {
+function landmarksOf(blocks: Blk[], doc: Doc): Landmark[] {
+  const cat = catalogOf(doc);
+  const named = new Map<string, string>();
+  for (const node of doc.graph.nodes) {
+    named.set(node.id, typeName(cat[node.type], node.type));
+  }
+
   const stages = new Map<string, { x: number; yMin: number; yMax: number; z: number; n: number }>();
   for (const b of blocks) {
     if (!b.path) continue;
@@ -864,7 +872,11 @@ function landmarksOf(blocks: Blk[]): Landmark[] {
   return [...stages.entries()]
     .map(([path, s]) => ({
       path,
-      text: path,
+      // The block's name, the way the sheet labels it, rather than the node id.
+      // The tower said `final_norm` where the drawing of the same model said
+      // "layer norm", which is two vocabularies for one design. The id stays
+      // in `path`, which is what cross-probing uses.
+      text: named.get(path) ?? path,
       x: s.x / s.n,
       y: (s.yMin + s.yMax) / 2,
       z: s.z / s.n,

@@ -9,11 +9,10 @@
  * the three things you edit, only one of which you edit at a time.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { ChevronsRight } from "lucide-react";
 import Canvas from "../canvas/Canvas.js";
-import View3D from "../three/View3D.js";
 import Palette from "../panels/Palette.js";
 import Toolbar from "../panels/Toolbar.js";
 import Breadcrumb from "../panels/Breadcrumb.js";
@@ -28,6 +27,14 @@ import ToolStrip from "../panels/ToolStrip.js";
 import Dialogs from "../panels/Dialogs.js";
 import Ladder from "../panels/Ladder.js";
 import Runs from "../panels/Runs.js";
+
+/**
+ * The volume view, fetched the first time it is opened.
+ *
+ * It is three.js, which is most of what the editor would otherwise download
+ * before drawing its first sheet — and most sessions never press Shift+V.
+ */
+const View3D = lazy(() => import("../three/View3D.js"));
 import Tensor from "../panels/Tensor.js";
 import History from "../panels/History.js";
 import Designs from "../panels/Designs.js";
@@ -231,7 +238,9 @@ export default function App(): React.ReactElement {
               <Breadcrumb />
               <CanvasMenu>
                 {viewMode === "volume" ? (
-                  <View3D />
+                  <Suspense fallback={<div className="app__loading">loading the volume view</div>}>
+                    <View3D />
+                  </Suspense>
                 ) : (
                   <ReactFlowProvider key={path.join("/") || "root"}>
                     <Canvas />

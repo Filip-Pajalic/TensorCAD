@@ -194,15 +194,27 @@ Also deliberately absent: `tensorcad_render_preview` (a canvas image needs the e
 ## Publishing
 
 `server.json` beside this README is the [MCP registry][registry] manifest:
-the namespace (`io.github.filip-pajalic/tensorcad`, which matches `mcpName` in
+the namespace (`io.github.Filip-Pajalic/tensorcad`, which matches `mcpName` in
 `package.json`), the npm package it points at, and the one environment variable
 the server reads. It is checked against the registry's own schema when it is
 written and against `package.json` on every test run, because what drifts is not
 the schema but the version in two files.
 
+The namespace is spelled the way GitHub spells the account, capitals and all.
+The registry grants a GitHub login `io.github.<owner>/*` in the owner's own
+casing and compares case-sensitively, so a lowercase namespace is refused with
+a 403 even though GitHub itself does not care
+([registry#689](https://github.com/modelcontextprotocol/registry/issues/689)).
+A test holds the namespace to the repository URL.
+
+The release workflow publishes it: after the npm job has uploaded the package
+this points at, the `registry` job signs in with the workflow's own GitHub OIDC
+token — no secret — and runs `mcp-publisher publish`. By hand, from this
+directory:
+
 ```bash
-mcp-publisher login github            # the namespace is verified as the GitHub user
-mcp-publisher publish --file server.json
+mcp-publisher login github
+mcp-publisher publish
 ```
 
 [registry]: https://github.com/modelcontextprotocol/registry

@@ -40,15 +40,21 @@ export const CHROME = [
 export class Devtools {
   private next = 1;
   private pending = new Map<number, { ok: (v: unknown) => void; no: (e: Error) => void }>();
+  private listeners = new Map<string, ((params: any) => void)[]>();
 
   private constructor(private socket: WebSocket) {
     socket.addEventListener("message", (event) => {
       const message = JSON.parse(String(event.data)) as {
         id?: number;
+        method?: string;
+        params?: unknown;
         result?: unknown;
         error?: { message: string };
       };
-      if (message.id === undefined) return; // An event, which nothing here waits on.
+      if (message.id === undefined) {
+        for (const fn of this.listeners.get(message.method ?? "") ?? []) fn(message.params);
+        return;
+      }
       const waiter = this.pending.get(message.id);
       if (!waiter) return;
       this.pending.delete(message.id);
@@ -66,6 +72,11 @@ export class Devtools {
       });
     });
     return new Devtools(socket);
+  }
+
+  /** Be told about a protocol event, such as `Runtime.exceptionThrown`. */
+  on(method: string, fn: (params: any) => void): void {
+    this.listeners.set(method, [...(this.listeners.get(method) ?? []), fn]);
   }
 
   send<T = Record<string, unknown>>(method: string, params: unknown = {}): Promise<T> {

@@ -38,6 +38,7 @@ import PartDoc from "./PartDoc.js";
 import Key from "./Key.js";
 import Clarify, { type Candidate } from "./Clarify.js";
 import Walkthrough from "../panels/Walkthrough.js";
+import { ARIA_LABELS, blockLabel, frameLabel, wireLabel } from "./a11y.js";
 import { buildWalkthrough } from "../state/walkthrough.js";
 import TitleBlock from "../panels/TitleBlock.js";
 import { onThemeChange, resolvedTheme, themeValue } from "../state/theme.js";
@@ -269,6 +270,7 @@ function wireUp(
     // exactly the test the seventeenth pass replaced the sniffing with a
     // declaration to be rid of.
     const kind = wireKind({ ...from, dtype: DTYPE_CLASS[declared] ?? declared }, to);
+    const shapeText = formatShape(shape, shapeMode, derived.symbols) ?? undefined;
 
     return {
       id: spec.id,
@@ -281,10 +283,10 @@ function wireUp(
       type: "wire",
       // A bypass carries the same tensor as the line it rejoins; labelling both
       // just doubles the ink.
-      label:
-        kind === "bypass"
-          ? undefined
-          : (formatShape(shape, shapeMode, derived.symbols) ?? undefined),
+      label: kind === "bypass" ? undefined : shapeText,
+      // Spoken whether or not it is drawn: a bypass has no label because the
+      // eye already has one, which is no help to an ear.
+      ariaLabel: wireLabel(spec.source, spec.sourcePort, spec.target, spec.targetPort, shapeText),
       labelShowBg: true,
       className: `flow-edge flow-edge--${kind}`,
       deletable,
@@ -477,6 +479,7 @@ function buildView(opts: BuildOptions): { nodes: CanvasNode[]; edges: FlowEdge[]
       return {
         ...shared,
         type: "frame",
+        ariaLabel: frameLabel(data),
         // A frame is sized by what it holds, which only ELK knows.
         width: box?.width,
         height: box?.height,
@@ -542,7 +545,7 @@ function buildView(opts: BuildOptions): { nodes: CanvasNode[]; edges: FlowEdge[]
       glyph: glyphFor(node.type),
       livePins: live.get(path) ?? NO_PINS,
     };
-    return { ...shared, type: "block", width: NODE_WIDTH, data } as BlockFlowNode;
+    return { ...shared, type: "block", width: NODE_WIDTH, ariaLabel: blockLabel(data, ops.isDrillable(node, def)), data } as BlockFlowNode;
   });
 
   return { nodes, edges };
@@ -1332,6 +1335,8 @@ export default function Canvas(): React.ReactElement {
       >
       <ReactFlow<CanvasNode>
         className={connecting || tool === "wire" ? "is-connecting" : undefined}
+        aria-label={`Schematic of ${doc.meta.name || "the design"}${path.length ? `, inside ${path.join(" / ")}` : ""}`}
+        ariaLabelConfig={ARIA_LABELS}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}

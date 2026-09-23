@@ -1003,6 +1003,10 @@ export default function View3D(): React.ReactElement {
       <div
         ref={mount}
         className="absolute inset-0 cursor-grab active:cursor-grabbing"
+        // A canvas is one opaque element to a screen reader. What it shows is
+        // what the sheet says in words, so this says what the picture adds.
+        role="img"
+        aria-label={`Volume view of ${model.name}: ${model.blocksDrawn} blocks of ${shape.nHeads} attention heads, width ${shape.C}, drawn at their real proportions${trace && covered > 0 ? `, with the values of a trained run on ${trace.letters.join(" ")}` : ""}.`}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}

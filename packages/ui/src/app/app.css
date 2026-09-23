@@ -132,6 +132,18 @@ a:hover {
   background: var(--bg);
 }
 
+/* Where the volume view goes while three.js is still arriving. */
+.app__loading {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+  background: var(--sheet);
+}
+
 .resizer {
   background: var(--border-soft);
   transition: background 120ms;

@@ -93,6 +93,12 @@ jobs:
         # and always passing alone — a test that fails for having been slow
         # teaches people to re-run CI instead of reading it.
         run: bun test --timeout 90000 packages
+      - name: Browser
+        # The production build in headless Chrome, driven by real key events:
+        # what the suite above cannot see, because it has no browser. The
+        # runner image ships Chrome; the script fails rather than skips when
+        # CI is set, so a missing browser cannot pass for a passing test.
+        run: bun run test:browser
 
   goldens:
     name: Goldens are current

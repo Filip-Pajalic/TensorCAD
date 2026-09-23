@@ -6,6 +6,12 @@
       "runtimeExecutable": "bun",
       "runtimeArgs": ["run", "--cwd", "packages/ui", "dev"],
       "port": 5173
+    },
+    {
+      "name": "tensorcad-ui-build",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "--cwd", "packages/ui", "preview", "--port", "4173", "--strictPort"],
+      "port": 4173
     }
   ]
 }

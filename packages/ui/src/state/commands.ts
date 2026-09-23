@@ -12,12 +12,13 @@ import { blockFromGraph, defsOf, freeTypeName, mergeLibrary, toLibrary, withBloc
 import { SHAPE_MODES } from "../canvas/shapes.js";
 import { buildWalkthrough } from "./walkthrough.js";
 import { resolveLevel } from "./level.js";
+import { isDrillable, nodeAtPath, segmentsOf } from "./ops.js";
 import { derive } from "./derive.js";
 import { useEditor } from "./store.js";
 import { downloadDoc, downloadText } from "./serialize.js";
 import { resolvedTheme, setThemePreference } from "./theme.js";
 import { sheetToSvg } from "../canvas/svg.js";
-import { generateTorch, resolveSymbols } from "../engine.js";
+import { catalogOf, generateTorch, resolveSymbols } from "../engine.js";
 
 export type CommandGroup = "file" | "edit" | "view" | "panel" | "blocks" | "help";
 
@@ -293,8 +294,18 @@ export const COMMANDS: Command[] = [
     shortcut: "Escape",
     run: () => {
       const state = editor();
-      if (state.selection) state.select(null);
-      else if (state.path.length > 0) state.setPath(state.path.slice(0, -1));
+      // What was selected when the key went down, not now: React Flow
+      // deselects a focused block on Escape itself, before this runs, and
+      // going by the state it leaves would take one press as two.
+      const had = selectionAtKeyDown === undefined ? state.selection : selectionAtKeyDown;
+      if (had || state.selection) state.select(null);
+      else if (state.path.length > 0) {
+        // Back out onto the block that was just left, as a file manager
+        // puts you back on the folder you came up out of.
+        const left = state.path.join("/");
+        state.setPath(state.path.slice(0, -1));
+        refocus(left);
+      }
     },
   },
 
@@ -328,10 +339,44 @@ export const COMMANDS: Command[] = [
     run: () => editor().setDetail(editor().detail - 1),
   },
   {
+    id: "view.open",
+    label: "Open block",
+    group: "view",
+    shortcut: "Enter",
+    hint: "Go inside the selected block. Escape comes back out.",
+    // Double-click was the only way in, which left a keyboard with no way
+    // down the hierarchy at all. Enter is what opens a thing everywhere else;
+    // it counts only while the drawing has focus, because on a focused button
+    // it already means press.
+    enabled: () => {
+      if (!drawingHasFocus()) return false;
+      // What was selected before the key, as for Escape: React Flow selects a
+      // focused block on Enter before this runs, and going by what it leaves
+      // would open on the press that was meant to select.
+      const { doc } = editor();
+      const selection = selectionAtKeyDown === undefined ? editor().selection : selectionAtKeyDown;
+      if (!selection) return false;
+      const node = nodeAtPath(doc, segmentsOf(selection));
+      return node !== null && isDrillable(node, catalogOf(doc)[node.type]);
+    },
+    run: () => {
+      const state = editor();
+      const path = state.selection;
+      // In an unfolded drawing a block is opened in place, as a double-click does.
+      if (state.detail > 0) {
+        state.setDetail(state.detail + 1);
+        refocus(path);
+      } else if (path) {
+        state.enter(path);
+        refocus(null);
+      }
+    },
+  },
+  {
     id: "file.library",
     label: "Reference architectures\u2026",
     group: "file",
-    hint: "The twenty-three ported designs, and what each one is",
+    hint: "The ported designs, and what each one is",
     run: () => editor().openDialog("library"),
   },
   {
@@ -583,9 +628,14 @@ export const COMMAND_BY_ID = new Map(COMMANDS.map((c) => [c.id, c]));
 
 export function runCommand(id: string): void {
   const command = COMMAND_BY_ID.get(id);
-  if (!command) return;
-  if (command.enabled && !command.enabled()) return;
-  command.run();
+  try {
+    if (!command) return;
+    if (command.enabled && !command.enabled()) return;
+    command.run();
+  } finally {
+    // A key's snapshot is for that key. A menu item run afterwards goes by now.
+    selectionAtKeyDown = undefined;
+  }
 }
 
 /** Chord to command, built once. Later entries do not overwrite earlier ones. */
@@ -604,7 +654,56 @@ for (const command of COMMANDS) {
  * chords still work, because Ctrl+S while the cursor sits in a name field
  * should still save.
  */
+/**
+ * Put the keyboard back on a block once the drawing has redrawn around it.
+ *
+ * Opening a level replaces every node, and the one that had focus goes with
+ * it: focus falls to the page, and the next Tab starts from the top of the
+ * window. Null means the first block of the new level.
+ */
+function refocus(path: string | null): void {
+  if (typeof document === "undefined") return;
+  // Retried rather than timed. The new nodes are rendered at once but kept
+  // invisible until React Flow has measured them, and an invisible element
+  // refuses focus — how long that takes is up to the browser's frames, which
+  // a background tab may not be drawing at all.
+  let tries = 0;
+  const attempt = (): void => {
+    const nodes = document.querySelectorAll<HTMLElement>(".react-flow__node");
+    const target = (path && [...nodes].find((n) => n.dataset.id === path)) || nodes[0];
+    target?.focus();
+    if ((!target || document.activeElement !== target) && ++tries < 40) setTimeout(attempt, 25);
+  };
+  setTimeout(attempt, 0);
+}
+
+/** Whether keys are the drawing's: nothing focused, or something inside the sheet. */
+function drawingHasFocus(): boolean {
+  if (typeof document === "undefined") return true;
+  const active = document.activeElement;
+  return !active || active === document.body || active.closest(".react-flow") !== null;
+}
+
+/** The selection as the key being handled went down, before the drawing saw it. Unset outside a key. */
+let selectionAtKeyDown: string | null | undefined;
+
+/**
+ * Note what is selected before anything handles a key. Registered in the
+ * capture phase, so it runs ahead of React Flow's own handlers on the node.
+ */
+export function beforeKey(): void {
+  selectionAtKeyDown = editor().selection;
+}
+
 export function handleKey(e: KeyboardEvent): boolean {
+  try {
+    return dispatchKey(e);
+  } finally {
+    selectionAtKeyDown = undefined;
+  }
+}
+
+function dispatchKey(e: KeyboardEvent): boolean {
   const target = e.target as HTMLElement | null;
   const typing =
     target !== null &&

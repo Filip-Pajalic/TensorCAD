@@ -143,6 +143,68 @@ describe("handshake", () => {
   });
 });
 
+describe("annotations", () => {
+  // Read off the protocol, as a client sees them, rather than out of the source.
+  const hints = (name: string) => tools.find((t) => t.name === name)?.annotations ?? {};
+
+  test("every tool states all four hints", () => {
+    // `destructiveHint` defaults to true for anything that is not read-only, so
+    // leaving it out is not neutral: it tells a client the tool may destroy
+    // something. Seventeen of nineteen did, including "New design".
+    const missing: string[] = [];
+    for (const tool of tools) {
+      const a = tool.annotations ?? {};
+      for (const key of ["readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint"] as const) {
+        if (typeof a[key] !== "boolean") missing.push(`${tool.name}.${key}`);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  test("nothing read-only claims to destroy anything", () => {
+    for (const tool of tools) {
+      const a = tool.annotations ?? {};
+      if (a.readOnlyHint) expect({ tool: tool.name, destructive: a.destructiveHint }).toEqual({
+        tool: tool.name,
+        destructive: false,
+      });
+    }
+  });
+
+  test("the hints that were wrong say the true thing", () => {
+    // Every call adopts a new design under a new id, so none of these is
+    // idempotent. They all said they were.
+    for (const name of ["tensorcad_scale", "tensorcad_mup", "tensorcad_import_hf"]) {
+      expect({ name, idempotent: hints(name).idempotentHint }).toEqual({ name, idempotent: false });
+      expect({ name, destructive: hints(name).destructiveHint }).toEqual({ name, destructive: false });
+    }
+    // Writes into out_dir with an unconditional writeFile: a hand-edited
+    // model.py there is gone. The same arguments write the same bytes.
+    expect(hints("tensorcad_generate_code").destructiveHint).toBe(true);
+    expect(hints("tensorcad_generate_code").idempotentHint).toBe(true);
+    // The same path twice is the same handle, as the description promises.
+    expect(hints("tensorcad_open_design").idempotentHint).toBe(true);
+    // Creating a design destroys nothing.
+    expect(hints("tensorcad_new_design").destructiveHint).toBe(false);
+  });
+
+  test("and the behaviour agrees with the hint", async () => {
+    // Not idempotent means a second identical call has an effect. For scale
+    // the effect is a second design, which is what this looks for.
+    const llama = await newLlama();
+    const args = {
+      design_id: llama.id,
+      target_params: 30e6,
+      target_basis: "non-embedding",
+      vocab: 8192,
+      tie_head: true,
+    };
+    const first = await call("tensorcad_scale", args);
+    const second = await call("tensorcad_scale", args);
+    expect(second.design_id).not.toBe(first.design_id);
+  });
+});
+
 describe("designs", () => {
   test("creating from a preset gives a handle at revision 1", async () => {
     const r = await call("tensorcad_new_design", { preset: "llama-3-8b" });
@@ -697,6 +759,24 @@ describe("explain", () => {
 });
 
 describe("scale", () => {
+  test("a design it made can still be listed", async () => {
+    // The output schema knew three sources and the store four, so the first
+    // design made by scale, mup or import broke tensorcad_list_designs for the
+    // rest of the session. It was only ever seen because a new test happened
+    // to run before the one that lists.
+    const llama = await newLlama();
+    const made = await call("tensorcad_scale", {
+      design_id: llama.id,
+      target_params: 30e6,
+      target_basis: "non-embedding",
+      vocab: 8192,
+      tie_head: true,
+    });
+    const listed = await call("tensorcad_list_designs");
+    const row = listed.designs.find((d: { design_id: string }) => d.design_id === made.design_id);
+    expect(row?.source).toBe("derived");
+  });
+
   test("shrinks a design to a budget and saves the result", async () => {
     const llama = await newLlama();
     const data = await call("tensorcad_scale", {

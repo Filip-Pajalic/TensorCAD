@@ -130,9 +130,55 @@ function toAnalysisOptions(input: AnalysisInput): AnalysisOptions {
   return out;
 }
 
-const READ = { readOnlyHint: true, idempotentHint: true, openWorldHint: false } as const;
-const WRITE = { readOnlyHint: false, idempotentHint: false, openWorldHint: false } as const;
-const DESTRUCTIVE = { readOnlyHint: false, idempotentHint: false, destructiveHint: true, openWorldHint: false } as const;
+/**
+ * What each tool does to its surroundings, in the four hints the MCP spec
+ * defines. A client reads these to decide what to confirm with a person first.
+ *
+ * All four, always. `destructiveHint` looks optional and is not: the spec's
+ * default for a tool that is not read-only is `true`, so leaving it out does
+ * not mean "no comment", it means "this may destroy something". Seventeen of
+ * nineteen tools were saying that — including the one that creates an empty
+ * design.
+ *
+ * Nothing here reaches past this machine: the store is in memory, files go
+ * where the caller says, and `import_hf` takes the config's text rather than
+ * fetching it. So `openWorldHint` is false throughout.
+ *
+ * - READ          answers a question and changes nothing.
+ * - WRITE         changes a design in memory, or adds one. Never destructive:
+ *                 nothing reaches disk until `save_design`, and every batch of
+ *                 edits can be put back with `restore`. Not idempotent,
+ *                 because every call that adds a design adds another one.
+ * - OVERWRITES    writes files to a path the caller chose, replacing whatever
+ *                 was there — a hand-edited `model.py` included. The same
+ *                 arguments write the same bytes, so it is idempotent.
+ * - DESTRUCTIVE   replaces something that cannot be had back: a file on disk,
+ *                 or a design's state since a checkpoint.
+ */
+const READ = {
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: false,
+} as const;
+const WRITE = {
+  readOnlyHint: false,
+  destructiveHint: false,
+  idempotentHint: false,
+  openWorldHint: false,
+} as const;
+const OVERWRITES = {
+  readOnlyHint: false,
+  destructiveHint: true,
+  idempotentHint: true,
+  openWorldHint: false,
+} as const;
+const DESTRUCTIVE = {
+  readOnlyHint: false,
+  destructiveHint: true,
+  idempotentHint: false,
+  openWorldHint: false,
+} as const;
 
 // ---------------------------------------------------------------------------
 
@@ -256,7 +302,9 @@ export function registerTools(
         params_total: z.number(),
         validation: ValidationSummary,
       }),
-      annotations: { ...WRITE, title: "Open design" },
+      // The same path twice returns the same handle, which is what idempotent
+      // means; the description has always said so.
+      annotations: { ...WRITE, idempotentHint: true, title: "Open design" },
     },
     async ({ path }) =>
       guard(async () => {
@@ -655,7 +703,7 @@ export function registerTools(
         ),
         warnings: z.array(z.string()),
       }),
-      annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false, title: "Generate code" },
+      annotations: { ...OVERWRITES, title: "Generate code" },
     },
     async ({ design_id, class_name, include_smoke_test, out_dir }) =>
       guard(async () => {
@@ -914,7 +962,7 @@ export function registerTools(
         changes: z.array(z.object({ symbol: z.string(), from: z.number(), to: z.number() })),
         notes: z.array(z.string()),
       }),
-      annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false, title: "Scale a design" },
+      annotations: { ...WRITE, title: "Scale a design" },
     },
     async ({ design_id, target_params, target_basis, vocab, tie_head, keep_depth }) =>
       guard(async () => {
@@ -994,7 +1042,7 @@ export function registerTools(
         ),
         notes: z.array(z.string()),
       }),
-      annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false, title: "Build a width ladder" },
+      annotations: { ...WRITE, title: "Build a width ladder" },
     },
     async ({ design_id, widths, base_width }) =>
       guard(async () => {
@@ -1273,7 +1321,7 @@ export function registerTools(
         params_total: z.number(),
         warnings: z.array(z.string()),
       }),
-      annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false, title: "Import a config" },
+      annotations: { ...WRITE, title: "Import a config" },
     },
     async ({ config, name }) =>
       guard(async () => {

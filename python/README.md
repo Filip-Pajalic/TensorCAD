@@ -125,6 +125,35 @@ vocab 50257) emitted by the same generator as the real presets. Regenerate it wi
 bun run python/fixtures/make-tiny-gpt2.ts
 ```
 
+## `trace`
+
+```bash
+tensorcad-runtime trace out/nano-sort/model.py --out trace.json
+```
+
+Trains a design small enough to look at on minGPT's sorting task — read `n`
+symbols, write them back sorted — then runs one input through it and writes every
+weight and every activation to `--out`, keyed by the block paths the editor uses
+(`layers.0.block.attn.q_proj` becomes `layers/block/attn/q_proj`, layer 0). The
+task is read off the design: the vocabulary is its `V` and the context `Tmax`
+must be odd, `2n - 1` positions for the input and all but the last of the answer.
+Training stops at the first check where every held-out input is sorted; for
+`nano-sort` that is 250 steps and about four seconds on a CPU.
+
+Tensors are base64 little-endian float32 in PyTorch's own axis order. Only leaf
+modules are hooked, and an input that is some other module's output is recorded
+once, as a `same_as` pointer to it.
+
+Scaled dot-product attention never hands back its matrix, so the trace recomputes
+it from the captured query and key, multiplies it by the captured values and
+holds the result against what the fused kernel fed the output projection. If
+they differ by more than `1e-4` the matrix is left out and `checks.attention_note`
+says why; `ok` on stdout is false unless the input was sorted and the attention
+checked. The summary carries `model_sha256`, the hash of the generated file, which
+is what the editor matches a trace to a design by.
+
+`bun run trace` regenerates the one trace the editor ships, for `nano-sort`.
+
 ## `data prepare`
 
 ```bash
@@ -152,6 +181,7 @@ over the synthetic one, and synthesizes in memory if the directory is empty.
 
 ```python
 from tensorcad_runtime import verify_model, smoke_train, prepare_data
+from tensorcad_runtime.trace import trace_model
 
 report = verify_model("out/gpt2-small/model.py")
 assert report["matches"]

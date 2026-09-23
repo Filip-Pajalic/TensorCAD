@@ -13,6 +13,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEditor } from "../state/store.js";
 import { useLevel } from "../state/hooks.js";
 import { buildWalkthrough } from "../state/walkthrough.js";
+import { useTrace } from "../three/trace.js";
 import { Button } from "../ui/button.js";
 
 export default function Walkthrough(): React.ReactElement | null {
@@ -21,7 +22,9 @@ export default function Walkthrough(): React.ReactElement | null {
   const act = useEditor.getState();
   const { derived } = useLevel();
 
-  const steps = useMemo(() => buildWalkthrough(doc, derived), [doc, derived]);
+  // The run of this design, if there is one: its steps then quote real numbers.
+  const trace = useTrace(doc);
+  const steps = useMemo(() => buildWalkthrough(doc, derived, trace), [doc, derived, trace]);
 
   const step = at === null ? null : steps[Math.min(at, steps.length - 1)];
 

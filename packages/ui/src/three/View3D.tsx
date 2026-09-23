@@ -24,6 +24,7 @@ import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
 import { onThemeChange, resolvedTheme, themeValue } from "../state/theme.js";
 import { buildModel3D, describeBlk, type Arrow, type Blk, type Model3D } from "./model3d.js";
+import { cellsFor, useTrace, type Trace } from "./trace.js";
 import { formatCount } from "@tensor-cad/engine";
 
 /**
@@ -51,6 +52,11 @@ uniform vec3 uEdge;
 uniform vec3 uCells;
 uniform float uHighlight;
 uniform float uHover;
+// A block's real values, when a trace covers it: red is the value scaled to
+// [-1, 1] by the block's own largest, green is 1 where there is a value and 0
+// where the position was never visible — a masked attention score.
+uniform sampler2D uData;
+uniform float uHasData;
 varying vec3 vLocal;
 varying vec3 vNormal;
 
@@ -86,7 +92,9 @@ float hash(vec2 p) {
 
 // A value per cell, drawn only where the divisions really are the cells. The
 // design carries shapes, not weights, so this is texture rather than data and
-// it is kept faint enough never to be mistaken for one.
+// it is kept faint enough never to be mistaken for one. A block a trace covers
+// draws its real values instead, much stronger, and the legend says which is
+// which.
 float speckle(vec2 coord, vec2 divs, vec2 cells) {
   if (divs.x < cells.x || divs.y < cells.y) return 0.0;
   return hash(floor(coord * divs)) - 0.5;
@@ -122,7 +130,22 @@ void main() {
 
   vec2 divs = vec2(divisionsFor(uv.x, cells.x), divisionsFor(uv.y, cells.y));
   float g = max(rule(uv.x, divs.x), rule(uv.y, divs.y));
-  float v = speckle(uv, divs, cells);
+  float v;
+  float empty = 0.0;
+  if (uHasData > 0.5) {
+    // Only the faces that show both of the tensor's axes carry its values.
+    // The others would be a slice along the batch, and a trace is one sequence.
+    v = 0.0;
+    if (an.z > an.x && an.z > an.y) {
+      // The layout's rows run downward from the top of the block; a data
+      // texture's first row is at v = 0.
+      vec2 d = texture2D(uData, vec2(uv.x, 1.0 - uv.y)).rg;
+      v = d.r * 2.0;
+      empty = 1.0 - d.g;
+    }
+  } else {
+    v = speckle(uv, divs, cells);
+  }
   float b = border(uv);
 
   // Mostly ambient with one soft key, so a face turned away still reads and
@@ -130,6 +153,7 @@ void main() {
   float lambert = 0.78 + 0.22 * max(0.0, dot(n, normalize(vec3(0.3, 0.85, 0.45))));
   vec3 col = uColor * lambert;
   col *= 1.0 + v * 0.34;
+  col = mix(col, uGrid, empty * 0.75);
   col = mix(col, uGrid, g * 0.32);
   col = mix(col, uEdge, b * 0.9);
   col = mix(col, vec3(1.0), uHover);
@@ -143,6 +167,32 @@ void main() {
 }
 `;
 
+
+/**
+ * A block's values as a texture: one texel per cell, nearest-sampled.
+ *
+ * Scaled by the block's own largest magnitude, so a weight matrix and the
+ * residual stream beside it are each legible rather than one washing out the
+ * other. That makes the brightness a comparison *within* a block; the hover
+ * readout says what the scale was.
+ */
+function dataTexture(values: Float32Array, cx: number, cy: number): { tex: THREE.DataTexture; max: number } {
+  let max = 0;
+  for (const v of values) if (Number.isFinite(v)) max = Math.max(max, Math.abs(v));
+  const scale = max > 0 ? 1 / max : 1;
+  const rg = new Float32Array(cx * cy * 2);
+  for (let i = 0; i < values.length; i++) {
+    const v = values[i]!;
+    const seen = Number.isFinite(v);
+    rg[i * 2] = seen ? v * scale : 0;
+    rg[i * 2 + 1] = seen ? 1 : 0;
+  }
+  const tex = new THREE.DataTexture(rg, cx, cy, THREE.RGFormat, THREE.FloatType);
+  tex.magFilter = THREE.NearestFilter;
+  tex.minFilter = THREE.NearestFilter;
+  tex.needsUpdate = true;
+  return { tex, max };
+}
 
 /**
  * A ribbon between two blocks.
@@ -344,7 +394,19 @@ interface Hover {
   blk: Blk;
   x: number;
   y: number;
+  /** The cell under the pointer and its value, on a block a trace covers. */
+  cell: { x: number; y: number; value: number; max: number } | null;
 }
+
+/** A block's values as the view drew them, kept for the hover readout. */
+interface CellValues {
+  cells: Float32Array;
+  max: number;
+}
+
+/** A number the way the readout prints it: three significant figures, a real minus. */
+const fmt = (v: number): string =>
+  Number.isFinite(v) ? v.toPrecision(3).replace(/^-/, "−") : "masked";
 
 /** A name pinned to a block, in screen pixels. */
 interface Tag {
@@ -398,11 +460,33 @@ interface Ctx {
   onTags: (() => void) | null;
 }
 
+/**
+ * Where a cell is, in the block's own axes: `T 3 (B) · C 17`.
+ *
+ * A position names the symbol that was there, which is what makes the
+ * attention matrix readable — row `C` looked at column `A`.
+ */
+function cellLabel(blk: Blk, cell: { x: number; y: number }, trace: Trace): string {
+  const axis = (dim: string, i: number): string | null => {
+    if (!dim) return null;
+    const letter = dim === "T" ? trace.letters[i] : dim === "n_vocab" ? trace.file.task.symbols[i] : undefined;
+    return letter ? `${dim} ${i} (${letter})` : `${dim} ${i}`;
+  };
+  return [axis(blk.dimX, cell.x), axis(blk.dimY, cell.y)].filter(Boolean).join(" · ") || "value";
+}
+
 export default function View3D(): React.ReactElement {
   const doc = useEditor((s) => s.doc);
   const selection = useEditor((s) => s.selection);
   const derived = useDerived();
   const model = useMemo(() => buildModel3D(doc, derived), [doc, derived]);
+  /**
+   * The design's trace, when it has one that still describes it.
+   *
+   * Looked up per document rather than per rebuild: the check generates the
+   * model and hashes it, which is cheap once and wasteful on every hover.
+   */
+  const trace = useTrace(doc);
 
   const mount = useRef<HTMLDivElement | null>(null);
   const [hover, setHover] = useState<Hover | null>(null);
@@ -530,7 +614,10 @@ export default function View3D(): React.ReactElement {
   }, []);
 
   // --- geometry ------------------------------------------------------------
-  const rebuild = useCallback((m: Model3D) => {
+  const values = useRef(new Map<Blk, CellValues>()).current;
+  /** How many blocks drew real values, as state so the legend follows a rebuild. */
+  const [covered, setCovered] = useState(0);
+  const rebuild = useCallback((m: Model3D, trace: Trace | null) => {
     const ctx = gl.current;
     if (!ctx) return;
     const { group, picks } = ctx;
@@ -541,12 +628,15 @@ export default function View3D(): React.ReactElement {
         // The unit box is shared and recreated each rebuild; only the ribbon
         // geometries are owned per object.
         if (child.userData.owned) child.geometry.dispose();
-        (Array.isArray(child.material) ? child.material : [child.material]).forEach((mat) =>
-          mat.dispose(),
-        );
+        (Array.isArray(child.material) ? child.material : [child.material]).forEach((mat) => {
+          // A material does not own the textures in its uniforms.
+          if (mat instanceof THREE.ShaderMaterial) mat.uniforms.uData?.value?.dispose();
+          mat.dispose();
+        });
       }
     }
     picks.clear();
+    values.clear();
     ctx.pickable = [];
 
     const sheet = new THREE.Color(themeValue("--sheet", "#f7f6f2"));
@@ -562,6 +652,8 @@ export default function View3D(): React.ReactElement {
     const box = new THREE.BoxGeometry(1, 1, 1);
 
     for (const b of m.blocks) {
+      const cells = trace && b.source ? cellsFor(trace, b.source, b.cx, b.cy) : null;
+      const data = cells ? dataTexture(cells, b.cx, b.cy) : null;
       const material = new THREE.ShaderMaterial({
         vertexShader: CELL_VERT,
         fragmentShader: CELL_FRAG,
@@ -572,8 +664,11 @@ export default function View3D(): React.ReactElement {
           uCells: { value: new THREE.Vector3(b.cx, b.cy, b.cz) },
           uHighlight: { value: 0 },
           uHover: { value: 0 },
+          uData: { value: data?.tex ?? null },
+          uHasData: { value: data ? 1 : 0 },
         },
       });
+      if (data) values.set(b, { cells: cells!, max: data.max });
       const mesh = new THREE.Mesh(box, material);
       // The layout's y is positive downward; three's is up.
       mesh.position.set(b.x + b.dx / 2, -(b.y + b.dy / 2), b.z + b.dz / 2);
@@ -583,6 +678,8 @@ export default function View3D(): React.ReactElement {
       picks.set(mesh.id, b);
       ctx.pickable.push(mesh);
     }
+
+    setCovered(values.size);
 
     // Flow ribbons: blue out of a weight, green out of a value, as the
     // reference colours them. Drawn without depth writes so they layer over the
@@ -725,8 +822,8 @@ export default function View3D(): React.ReactElement {
   }, [projectTags, projectMarks]);
 
   useEffect(() => {
-    rebuild(model);
-  }, [model, rebuild, theme]);
+    rebuild(model, trace);
+  }, [model, trace, rebuild, theme]);
 
   // --- selection highlight -------------------------------------------------
   useEffect(() => {
@@ -746,7 +843,7 @@ export default function View3D(): React.ReactElement {
   // --- interaction ---------------------------------------------------------
   const pointer = useRef<{ x: number; y: number; moved: boolean } | null>(null);
 
-  const pick = useCallback((clientX: number, clientY: number): Blk | null => {
+  const hitAt = useCallback((clientX: number, clientY: number): THREE.Intersection | null => {
     const ctx = gl.current;
     const host = mount.current;
     if (!ctx || !host) return null;
@@ -756,9 +853,31 @@ export default function View3D(): React.ReactElement {
       -((clientY - rect.top) / rect.height) * 2 + 1,
     );
     ctx.raycaster.setFromCamera(ndc, ctx.camera);
-    const hits = ctx.raycaster.intersectObjects(ctx.pickable, false);
-    return hits.length > 0 ? (ctx.picks.get(hits[0].object.id) ?? null) : null;
+    return ctx.raycaster.intersectObjects(ctx.pickable, false)[0] ?? null;
   }, []);
+
+  const pick = useCallback(
+    (clientX: number, clientY: number): Blk | null => {
+      const hit = hitAt(clientX, clientY);
+      return hit ? (gl.current?.picks.get(hit.object.id) ?? null) : null;
+    },
+    [hitAt],
+  );
+
+  /**
+   * The cell under the pointer, on the face that carries values.
+   *
+   * The same arithmetic as the shader, run backwards: the hit in the box's own
+   * unit frame, x across from the left and rows down from the top.
+   */
+  const cellAt = (hit: THREE.Intersection, blk: Blk): Hover["cell"] => {
+    const held = values.get(blk);
+    if (!held || !hit.face || Math.abs(hit.face.normal.z) < 0.5) return null;
+    const local = hit.object.worldToLocal(hit.point.clone()).addScalar(0.5);
+    const x = Math.min(blk.cx - 1, Math.max(0, Math.floor(local.x * blk.cx)));
+    const y = Math.min(blk.cy - 1, Math.max(0, Math.floor((1 - local.y) * blk.cy)));
+    return { x, y, value: held.cells[y * blk.cx + x]!, max: held.max };
+  };
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>): void => {
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -796,8 +915,9 @@ export default function View3D(): React.ReactElement {
       return;
     }
 
-    const blk = pick(e.clientX, e.clientY);
-    setHover(blk ? { blk, x: e.clientX, y: e.clientY } : null);
+    const hit = hitAt(e.clientX, e.clientY);
+    const blk = hit ? (ctx.picks.get(hit.object.id) ?? null) : null;
+    setHover(blk && hit ? { blk, x: e.clientX, y: e.clientY, cell: cellAt(hit, blk) } : null);
 
     const key = blk?.group ?? null;
     if (key !== hoverGroup.current) {
@@ -962,6 +1082,14 @@ export default function View3D(): React.ReactElement {
           </span>
         </div>
         <div>drag to orbit · shift-drag to pan · wheel to zoom · click a tensor to select it</div>
+        {trace && covered > 0 ? (
+          <div className="text-foreground">
+            real values: trained to sort, reading {trace.letters.join(" ")} · brighter is larger
+            {covered < model.blocks.length && " · speckled cells are decoration"}
+          </div>
+        ) : (
+          <div>cell shading is decoration: a design has shapes, not weights</div>
+        )}
         {model.notes.map((n) => (
           <div key={n} className="text-warn">
             {n}
@@ -982,6 +1110,12 @@ export default function View3D(): React.ReactElement {
             {[hover.blk.dimX, hover.blk.dimY].filter(Boolean).join(" × ") || " "}
             {hover.blk.layer >= 0 && ` · block ${hover.blk.layer + 1}`}
           </div>
+          {hover.cell && trace && (
+            <div>
+              {cellLabel(hover.blk, hover.cell, trace)} = <b>{fmt(hover.cell.value)}</b>
+              <span className="text-dim"> · largest here {fmt(hover.cell.max)}</span>
+            </div>
+          )}
         </div>
       )}
     </div>

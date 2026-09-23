@@ -18,7 +18,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | Go engine | **Done.** The whole analysis is Go, compiled to WebAssembly, and the editor, the command line, the MCP server and the desktop shell all load the same module. The TypeScript it was ported from has been deleted; the golden files it wrote are the specification the engine is held to. |
 | Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, named refusals, a definition editor, a selectable tensor, a feature timeline, an SVG export of the sheet and a volume view whose stages are named. Twenty passes, each with what was wrong and what replaced it, in `docs/explanation/interaction-design.md`. |
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
-| M8 Real values | **Planned.** Everything the editor shows about a design is its structure and its cost; nothing shows what it *computes*. The volume view's cells are a hash of their own coordinates. A trained `nano-sort`, traced on one input, would put the actual numbers in them. |
+| M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -234,20 +234,28 @@ parameters and eleven positions is a few hundred kilobytes of floats.
    letters, six to read and five to write — then run one input through it and
    write every weight and every activation to a file, keyed by the block paths
    the editor already uses. Verified the way the rest of the runtime is: the
-   trace's own forward pass must reproduce the model's output exactly.
+   attention matrix, which the fused kernel never materialises, is recomputed
+   and multiplied back into what the kernel produced, and must agree to `1e-4`.
+   *Done:* `tensorcad-runtime trace`; it agrees to `3e-8`.
 2. **The volume view reads it.** Where a trace covers a tensor, the shader
    samples its values instead of `speckle()`. Where it does not, the speckle
    stays and the legend says it is decoration — a view that mixes real numbers
-   with invented ones has to say which is which.
+   with invented ones has to say which is which. *Done:* every box names the
+   tensor it is a picture of, and the tests recompute the input embedding and
+   every head's output from the boxes beside them, which fails on a transposed
+   read.
 3. **The walkthrough quotes it.** "Each token becomes a vector of 48 numbers"
    becomes *these* 48 numbers, and the attention step says which earlier token
-   each position actually attended to.
+   each position actually attended to. *Done.*
 
-The open question is where a trace lives. The editor is static and the runtime
-is Python, so the public site can only show a trace that was made ahead of
-time. One committed trace for `nano-sort`, regenerated deliberately like the
-goldens, is the likely answer; tracing an arbitrary edited design is not
-something a static site can do, and the view should say so rather than pretend.
+A trace lives in `packages/ui/src/three/traces`, one committed file for
+`nano-sort`, regenerated deliberately by `bun run trace` like the goldens and
+loaded only when something asks for it. It is shown only on a design that still
+generates the `model.py` it was made from — the hash of that file is the
+fingerprint, because it is the whole computation: an edit that changes what the
+model does changes it, and one that does not leaves the numbers true. Tracing
+an arbitrary edited design is not something a static site can do, and the view
+says so rather than pretending.
 
 **Done when** `nano-sort`, opened fresh, shows the real numbers for a real input
 in the volume view; the attention matrix shows which letters attended to which;

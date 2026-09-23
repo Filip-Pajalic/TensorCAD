@@ -29,6 +29,7 @@
     "ui": "cd packages/ui && bun run dev",
     "report": "bun run scripts/report.ts",
     "codegen": "bun run scripts/codegen-demo.ts",
+    "trace": "bun run scripts/trace.ts",
     "desktop": "cd desktop && wails3 dev",
     "desktop:build": "cd desktop && wails3 build"
   },

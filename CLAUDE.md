@@ -15,6 +15,7 @@ bun run scripts/analyze-demo.ts      # full analysis + design rules for one pres
 bun run scripts/codegen-demo.ts <preset>   # writes out/<preset>/model.py
 bun run scripts/scale-demo.ts        # shrink a design to a bench budget
 bun run packages/cli/src/index.ts mup <preset>   # the width ladder for a sweep
+bun run trace                        # retrain nano-sort and rewrite the committed trace (needs torch)
 ```
 
 A stale `.wasm` is the one way to see an answer the source does not give. If you
@@ -137,6 +138,17 @@ Two cross-checks worth knowing:
   would then contradict. Colours live only in
   `app/theme.css` as `data-theme` tokens — a literal colour in a stylesheet or a component is
   a bug, because it will not switch themes.
+  `three/trace.ts` is what a design *computes*, where everything else is what it
+  costs: a run of `nano-sort` recorded by `tensorcad-runtime trace` and committed
+  under `three/traces`. It is shown only on a design that still generates the
+  `model.py` it was made from, matched by that file's hash, because anything
+  cheaper — a name, the symbols, the parameter count — lets `gelu` swapped for
+  `relu` through. Each box in `model3d.ts` names the tensor it is a picture of as
+  a `CellSource` (a path, a layer, a role, which axis runs across); the view fills
+  those from the trace and leaves the rest as decoration, and says which is which.
+  `trace.test.ts` recomputes the input embedding and each head's output from the
+  boxes beside them, which is what catches a transposed read — a transposed
+  weight is still a plausible texture.
   `three/model3d.ts` and `three/View3D.tsx` are the volume view, a port of Brendan Bycroft's
   LLM visualisation (MIT). Its conventions are his and deliberately so — y positive downward,
   a block as a grid of cells, the residual as a tall standing plate, flow ribbons blue out of

@@ -12,7 +12,7 @@
 
 import { describe, expect, it } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { analyze, generateTorch, getPreset, loadEngine, PRESET_NAMES, scaleDesign } from "../src/node.js";
@@ -193,6 +193,51 @@ describe.skipIf(!available)("tensorcad-runtime verify", () => {
  * and a tanh on the logits — and drops only the widths. If the emitted eager
  * attention were wrong, this is where it would show.
  */
+describe.skipIf(!available)("tensorcad-runtime trace", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+
+  it(
+    "trains nano-sort to sort and records a forward pass it checked",
+    () => {
+      const { dir, model } = writePreset("nano-sort");
+      try {
+        const out = join(dir, "trace.json");
+        const [cmd, base] = invocation;
+        const result = spawnSync(cmd, [...base, "trace", model, "--out", out], {
+          encoding: "utf8",
+          timeout: TIMEOUT_MS,
+          shell: process.platform === "win32",
+        });
+        const summary = JSON.parse(result.stdout.trim().split(/\r?\n/).at(-1)!);
+        expect({ ok: summary.ok, error: summary.error }).toEqual({ ok: true, error: undefined });
+        expect(summary.training.held_out_accuracy).toBe(1);
+        expect(summary.answer).toEqual([...summary.input].sort((a: number, b: number) => a - b));
+        // The attention matrix is recomputed from the captured query and key,
+        // then multiplied by the captured values and held against what the
+        // fused kernel produced. A trace that disagreed would leave it out.
+        expect(summary.checks.attention_note).toBeNull();
+        expect(summary.checks.attention_max_abs_error).toBeLessThan(1e-4);
+        expect(summary.params).toBe(analyze(getPreset("nano-sort"), {}).params.total);
+
+        const trace = JSON.parse(readFileSync(out, "utf8"));
+        // Keyed by the design's own paths, with the stack index as a layer.
+        const q = trace.activations["layers.2.block.attn.q_proj:out"];
+        expect({ path: q.path, layer: q.layer, shape: q.shape }).toEqual({
+          path: "layers/block/attn/q_proj",
+          layer: 2,
+          shape: [11, 48],
+        });
+        // An input that is another module's output is stored once.
+        expect(trace.activations["layers.0.block.attn.k_proj:in"].same_as).toBe("layers.0.block.norm1:out");
+        expect(trace.attention).toHaveLength(3);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+});
+
 describe.skipIf(!available)("a windowed, softcapped design runs", () => {
   const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
 

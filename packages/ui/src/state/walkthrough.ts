@@ -23,6 +23,7 @@ import { catalogOf } from "../engine.js";
 import { formatBytes, formatCount, formatFlops, joinPath } from "@tensor-cad/engine";
 import type { Doc, NodeDef, Resolved } from "@tensor-cad/engine";
 import type { Derived } from "./derive.js";
+import type { Trace } from "../three/trace.js";
 
 export interface Step {
   id: string;
@@ -90,18 +91,90 @@ function findAll(doc: Doc, derived: Derived): Found[] {
 const firstOf = (all: Found[], test: (f: Found) => boolean): Found | undefined => all.find(test);
 const allOf = (all: Found[], test: (f: Found) => boolean): Found[] => all.filter(test);
 
+/** A number in prose: three significant figures and a real minus sign. */
+const num = (v: number): string => v.toPrecision(3).replace(/^-/, "\u2212");
+const pct = (v: number): string => `${Math.round(v * 100)}%`;
+
+/**
+ * What the traced run did, in sentences for the steps that it illustrates.
+ *
+ * Only ever added to a step, never a step of its own: the steps are what the
+ * design has, and a trace changes what can be said about them, not which of
+ * them there are. The canvas lights a step by its index, and that must not
+ * move because a file finished loading.
+ */
+function traced(trace: Trace, embedPath: string | undefined, attnPath: string | undefined, layers: number) {
+  const f = trace.file;
+  const letters = trace.letters;
+  const input = f.input.map((t) => f.task.symbols[t]).join(" ");
+  const answer = f.answer.map((t) => f.task.symbols[t]).join(" ");
+  const out: Partial<Record<"input" | "embed" | "attention" | "output", string>> = {};
+
+  out.input =
+    `In the run the volume view shows, the input is ${input}: ${f.task.length} symbols to sort, followed by the model's own answer so far, ${letters.length} positions in all. ` +
+    `It was trained on nothing else for ${count(f.training.steps)} steps, and ` +
+    (f.training.held_out_accuracy === 1
+      ? "sorts every held-out input it was tested on."
+      : `sorts ${pct(f.training.held_out_accuracy)} of the held-out inputs it was tested on.`);
+
+  const table = embedPath ? trace.tensor(embedPath, -1, "weight") : null;
+  if (table && table.shape.length === 2) {
+    const dim = table.shape[1]!;
+    const first = f.sequence[0]!;
+    const row = [...table.data.subarray(first * dim, first * dim + 4)].map(num).join(", ");
+    out.embed = `Its first symbol, ${letters[0]}, is row ${first} of the table: ${row}, and ${dim - 4} more. In the volume view that is column ${first} of the token embedding; the input embedding beside it is that plus the first position's own row.`;
+  }
+
+  // The sharpest look any head takes while the model is writing its answer,
+  // in the last block, where attention has had the most to work with.
+  const probs = attnPath ? trace.tensor(attnPath, layers - 1, "probs") : null;
+  if (probs && probs.shape.length === 3) {
+    const [H, T] = [probs.shape[0]!, probs.shape[1]!];
+    let best = { h: 0, q: 0, k: 0, p: -1 };
+    for (let h = 0; h < H; h++) {
+      for (let q = f.task.length - 1; q < T; q++) {
+        for (let k = 0; k <= q; k++) {
+          const p = probs.data[h * T * T + q * T + k]!;
+          if (p > best.p) best = { h, q, k, p };
+        }
+      }
+    }
+    const writing = best.q - (f.task.length - 1);
+    out.attention =
+      `In the run the volume view shows, the sharpest look is in the last block: when the model is about to write its ${ordinal(writing + 1)} answer symbol, head ${best.h + 1} puts ${pct(best.p)} of its attention on position ${best.k}, the ${letters[best.k]}. ` +
+      "Each row of an attention matrix in that view is one position deciding what to look at.";
+  }
+
+  out.output = `Reading ${input}, the traced model wrote ${answer}, one symbol at a time, each one the highest of its ${f.task.vocab} scores.`;
+  return out;
+}
+
+const ordinal = (n: number): string => ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth"][n - 1] ?? `${n}th`;
+
 /**
  * The steps, in the order a token passes through them.
  *
  * Built by asking the design what it has rather than by assuming a transformer:
  * `alexnet` has convolutions and no attention, `nemotron-h-8b` has state-space
  * layers, and each gets the steps its own blocks earn.
+ *
+ * With a trace — a run of this exact design, which only `nano-sort` has — the
+ * steps it illustrates also quote what the run actually computed.
  */
-export function buildWalkthrough(doc: Doc, derived: Derived): Step[] {
+export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null = null): Step[] {
   const all = findAll(doc, derived);
   const steps: Step[] = [];
   const sym = derived.symbols.values;
   const a = derived.analysis;
+
+  const run = trace
+    ? traced(
+        trace,
+        firstOf(all, (f) => f.type === "embedding")?.path,
+        firstOf(all, (f) => f.category === "attention")?.path,
+        sym.L ?? 1,
+      )
+    : {};
 
   const push = (
     id: string,
@@ -152,6 +225,7 @@ export function buildWalkthrough(doc: Doc, derived: Derived): Step[] {
         ? `A sequence of integers, one per token, each one an index into a vocabulary of ${count(n(embed.resolved?.p.vocab))}.`
         : "A batch of inputs; this design takes tensors rather than token ids.",
       "Batch and sequence length stay symbolic all the way through the design, because they are conditions of a run rather than properties of the model.",
+      run.input ?? null,
     ],
     [input?.path],
     1,
@@ -167,6 +241,7 @@ export function buildWalkthrough(doc: Doc, derived: Derived): Step[] {
       [
         `A table with ${count(vocab)} rows and ${count(dim)} columns. Looking a token up is a row lookup, not a matrix multiply, which is why this block costs ${formatCount(vocab * dim)} parameters and almost no arithmetic.`,
         `Those ${count(dim)} numbers are the residual stream. Every block from here to the output reads a vector of that width and writes one back.`,
+        run.embed ?? null,
       ],
       [embed.path],
       1,
@@ -246,6 +321,7 @@ export function buildWalkthrough(doc: Doc, derived: Derived): Step[] {
           ? `All ${count(heads)} heads keep their own keys and values.`
           : `${count(heads)} heads ask, but only ${count(kv)} sets of keys and values are kept and shared between them. That is what makes the cache affordable: ${formatBytes(a.kv.bytesPerToken)} per token rather than ${formatBytes((a.kv.bytesPerToken * heads) / Math.max(kv, 1))}.`,
         `Attention is the one stage whose cost grows with the sequence: ${formatFlops(a.flops.fwdAttention)} per token at ${count(a.options.T)} tokens, against ${formatFlops(a.flops.fwdDense)} for everything else.`,
+        run.attention ?? null,
       ],
       [attn.path],
       attn.depth,
@@ -334,6 +410,7 @@ export function buildWalkthrough(doc: Doc, derived: Derived): Step[] {
           ? `The projection reuses the embedding table rather than learning its own, which costs nothing and is why this block reports no parameters of its own.`
           : `${count(vocab)} scores per position, from its own ${formatCount(vocab * n(p.dim, n(sym.D)))} parameters.`,
         "The highest score is the next token. Feed it back in at the end and you have the loop the whole thing exists for.",
+        run.output ?? null,
       ],
       [finalNorm?.path, head.path],
       1,

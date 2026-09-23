@@ -3,7 +3,7 @@
 !!! tip "Nothing to install"
 
     The editor runs in a browser at
-    **[app.tensorcad.dev](https://app.tensorcad.dev/)**. The engine is
+    **[tensorcad.dev](https://tensorcad.dev/)**. The engine is
     WebAssembly, so the analysis happens in your tab — open a preset and the
     numbers on this site are the numbers you will see.
 
@@ -69,8 +69,8 @@ is, or why it is not something else.
 
 These pages are published at [docs.tensorcad.dev](https://docs.tensorcad.dev/),
 and read the same in the repository. The editor itself runs in a browser at
-[app.tensorcad.dev](https://app.tensorcad.dev/) — the engine is WebAssembly, so
-nothing is computed on a server and no design leaves the tab.
+[tensorcad.dev](https://tensorcad.dev/) — the engine is WebAssembly, so nothing
+is computed on a server and no design leaves the tab.
 
 `pip install mkdocs-material && mkdocs serve` brings this site up locally, with
 search.

@@ -95,7 +95,7 @@ other is the same one that stops an agent overwriting a human.
     `TENSORCAD_BRIDGE_PORT` moves it off 7357. The editor probes that port and
     the three above it.
 
-The hosted editor at [app.tensorcad.dev](https://app.tensorcad.dev/) cannot
-attach: a browser will not open a plain socket from an https page, and there is
-no agent on the far side of the internet to attach to. Use the dev server or
+An editor served over https cannot attach: a browser will not open a plain
+socket from an https page, and there is no agent on the far side of the
+internet to attach to. Use the dev server or
 the desktop build.

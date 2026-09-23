@@ -99,9 +99,9 @@ export const useBridge = create<BridgeState>((set) => ({
 /**
  * Whether a bridge could be on this machine at all.
  *
- * The desktop shell and a dev server can reach one. The hosted editor at
- * app.tensorcad.dev cannot: the browser blocks a `ws://` from an https page,
- * and there is no agent on the far side of the internet to talk to anyway.
+ * The desktop shell and a dev server can reach one. An editor served over
+ * https cannot: the browser blocks a `ws://` from an https page, and there is
+ * no agent on the far side of the internet to talk to anyway.
  */
 export function bridgeIsPossible(): boolean {
   if (typeof location === "undefined") return false;

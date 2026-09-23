@@ -5,7 +5,7 @@ twenty of them are the regression suite.
 
 ## Write the document
 
-The library is `packages/core-go/presets/data`: twenty-three JSON documents and an
+The library is `packages/core-go/presets/data`: twenty-four JSON documents and an
 `index.json` listing them, embedded into the binary by `go:embed`. There is no
 builder to go through — a preset is a document in exactly the format the editor
 saves, and the format `import` writes.

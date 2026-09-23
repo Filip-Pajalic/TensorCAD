@@ -8,8 +8,8 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 
 | Milestone | State |
 |---|---|
-| M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 23 presets, exact parameter match on 20 of them. |
-| M1 Check (design rules, full analysis) | **Done.** 18 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
+| M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 24 presets, exact parameter match on 21 of them. |
+| M1 Check (design rules, full analysis) | **Done.** 19 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
 | M2 Manufacture (PyTorch codegen, verification) | **Done.** Every generated model's parameter count matches PyTorch exactly, and the FLOPs estimate matches a profiler once the causal mask is accounted for. |
 | M3 Agent (MCP server, CLI) | **Done.** 13 MCP tools over stdio, 6 CLI commands, and the live editor bridge: an agent's edits land on the canvas as it makes them and the human's come back. |
 | M4 Test bench | **Done.** `tensorcad-runtime smoke-train` trains a scaled design on the local GPU and writes a run record; the editor's `Runs` tab opens several and draws their loss curves on one chart, naming anything that makes the comparison unfair. |
@@ -18,6 +18,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | Go engine | **Done.** The whole analysis is Go, compiled to WebAssembly, and the editor, the command line, the MCP server and the desktop shell all load the same module. The TypeScript it was ported from has been deleted; the golden files it wrote are the specification the engine is held to. |
 | Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, named refusals, a definition editor, a selectable tensor, a feature timeline, an SVG export of the sheet and a volume view whose stages are named. Twenty passes, each with what was wrong and what replaced it, in `docs/explanation/interaction-design.md`. |
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
+| M8 Real values | **Planned.** Everything the editor shows about a design is its structure and its cost; nothing shows what it *computes*. The volume view's cells are a hash of their own coordinates. A trained `nano-sort`, traced on one input, would put the actual numbers in them. |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -27,7 +28,7 @@ settings, the full analysis and the design-rule check at three operating points,
 and the generated PyTorch byte for byte. `go run ./cmd/golden` rewrites those
 files, deliberately and never as part of a test.
 
-23 presets, 20 matching their published parameter count exactly and 3 within a
+24 presets, 21 matching their published parameter count exactly and 3 within a
 stated tolerance, and every one of them confirmed against PyTorch 2.11 by
 instantiating the generated model. Not all are language models:
 `ijepa-vit-h14` is a vision transformer and `alexnet` a convolutional
@@ -215,6 +216,43 @@ design.
 The default document is now `nano-sort`: 85,728 parameters, GPT-2's structure
 exactly, and small enough that every weight fits on the screen. The last preset
 loaded is remembered, so only a first visit lands on the toy.
+
+### M8 — Real values · 3–5 weeks
+
+M7 made the drawing say what each block *is*. It still cannot say what one
+*does* to a particular input, which is the half of Bycroft's visualisation that
+makes it land: a token goes in, and every number it becomes is on screen.
+
+Nothing here computes that yet, and the gap is precise. `tensorcad-runtime
+smoke-train` trains a design and writes loss curves and throughput, and keeps no
+weights. The volume view fills every cell from `speckle()`, a hash of the cell's
+own coordinates, so what looks like data is decoration. And `nano-sort`, the
+default design since M7, is exactly the size where a full trace is small: 85,728
+parameters and eleven positions is a few hundred kilobytes of floats.
+
+1. **A trace from the runtime.** Train `nano-sort` to sort — minGPT's task, three
+   letters, six to read and five to write — then run one input through it and
+   write every weight and every activation to a file, keyed by the block paths
+   the editor already uses. Verified the way the rest of the runtime is: the
+   trace's own forward pass must reproduce the model's output exactly.
+2. **The volume view reads it.** Where a trace covers a tensor, the shader
+   samples its values instead of `speckle()`. Where it does not, the speckle
+   stays and the legend says it is decoration — a view that mixes real numbers
+   with invented ones has to say which is which.
+3. **The walkthrough quotes it.** "Each token becomes a vector of 48 numbers"
+   becomes *these* 48 numbers, and the attention step says which earlier token
+   each position actually attended to.
+
+The open question is where a trace lives. The editor is static and the runtime
+is Python, so the public site can only show a trace that was made ahead of
+time. One committed trace for `nano-sort`, regenerated deliberately like the
+goldens, is the likely answer; tracing an arbitrary edited design is not
+something a static site can do, and the view should say so rather than pretend.
+
+**Done when** `nano-sort`, opened fresh, shows the real numbers for a real input
+in the volume view; the attention matrix shows which letters attended to which;
+and the walkthrough can name them. Anything larger than a trace covers still
+draws, honestly labelled as structure only.
 
 ## Sequencing and dependencies
 

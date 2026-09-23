@@ -29,6 +29,7 @@ import type { Doc, NodeDef } from "@tensor-cad/engine";
 import { formatCount, joinPath } from "@tensor-cad/engine";
 import { catalogOf } from "../engine.js";
 import { typeName } from "../canvas/blocks.js";
+import type { CellSource } from "./trace.js";
 
 /** Weights, intermediate values, or an aggregate (layer norm and softmax). */
 export type BlkKind = "w" | "i" | "a";
@@ -65,6 +66,15 @@ export interface Blk {
   group: string;
   /** Which block of the stack, or -1 outside it. */
   layer: number;
+  /**
+   * The tensor this block is a picture of, when it can be named.
+   *
+   * Set by the layout, which is the only thing that knows what each box
+   * means; read by the view, which fills the cells from a trace when it has
+   * one. Named in the design's terms — a path, a layer, what of it — so that
+   * nothing here depends on how a model is generated or traced.
+   */
+  source: CellSource | null;
 }
 
 /** Which way a dogleg turns, for the rounded inside of the corner. */
@@ -154,6 +164,9 @@ export interface Shape {
   /** Path of a representative block inside it. */
   blockPath: string;
   embedPath: string | null;
+  posPath: string | null;
+  /** The norm after the stack, which is the one at the top level. */
+  finalNormPath: string | null;
   headPath: string | null;
 }
 
@@ -178,6 +191,8 @@ function shapeOf(doc: Doc, derived: Derived): Shape {
     stackPath: "",
     blockPath: "",
     embedPath: null,
+    posPath: null,
+    finalNormPath: null,
     headPath: null,
   };
 
@@ -194,6 +209,11 @@ function shapeOf(doc: Doc, derived: Derived): Shape {
           break;
         case "pos_embedding":
           s.hasPosEmbed = true;
+          s.posPath = path;
+          break;
+        case "layernorm":
+        case "rmsnorm":
+          if (!prefix) s.finalNormPath = path;
           break;
         case "lm_head":
           s.tiedHead = r.p.tied === true;
@@ -250,6 +270,8 @@ interface MkArgs {
   small?: boolean;
   path?: string | null;
   layer?: number;
+  /** The layer is the one being built unless it says otherwise. */
+  source?: Omit<CellSource, "layer"> & { layer?: number };
 }
 
 export function buildModel3D(doc: Doc, derived: Derived): Model3D {
@@ -352,6 +374,7 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
       small: args.small ?? false,
       group: group || args.name,
       layer: args.layer ?? layer,
+      source: args.source ? { ...args.source, layer: args.source.layer ?? args.layer ?? layer } : null,
     };
     blocks.push(blk);
     return blk;
@@ -372,6 +395,7 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
     dimX: "T",
     dimY: "",
     path: shape.embedPath,
+    source: shape.embedPath ? { path: shape.embedPath, role: "tokens", across: 0 } : undefined,
   });
 
   let leftX = (-T * cell) / 2 - margin;
@@ -390,6 +414,7 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
     dimX: "n_vocab",
     dimY: "C",
     path: shape.embedPath,
+    source: shape.embedPath ? { path: shape.embedPath, role: "weight", across: 0 } : undefined,
   });
   if (hasPosEmbed) {
     mk({
@@ -403,6 +428,7 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
       name: "Position Embed",
       dimX: "T",
       dimY: "C",
+      source: shape.posPath ? { path: shape.posPath, role: "weight", across: 0 } : undefined,
     });
   }
   const inputEmbed = mk({
@@ -416,6 +442,8 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
     name: "Input Embed",
     dimX: "T",
     dimY: "C",
+    // The sum of the two embeddings is what the first block's norm reads.
+    source: shape.blockPath ? { path: `${shape.blockPath}/norm1`, role: "in", across: 0, layer: 0 } : undefined,
   });
 
   y += C * cell + margin;
@@ -430,14 +458,16 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
     resid: Blk;
   }
 
-  function createLn(src: string | null, name: string): Ln {
+  /** A norm's primitive: a block's first or second, or the final one. */
+  function createLn(src: string | null, name: string, norm: string | null = null): Ln {
     const resLeftX = lnLeftX - T * cell - margin;
     group = `ln:${name}:${layer}:${Math.round(y)}`;
-    const agg = mk({ kind: "a", cx: T, cy: 1, cz: B, y, xR: lnLeftX, zM: 0, name: "LN Agg: μ, σ", dimX: "T", dimY: "", small: true });
-    mk({ kind: "a", cx: T, cy: 1, cz: B, y: y + cell, xR: lnLeftX, zM: 0, name: "", dimX: "T", dimY: "", small: true });
+    const stat = (role: "mean" | "std") => (norm ? { path: norm, role, across: 0 as const } : undefined);
+    const agg = mk({ kind: "a", cx: T, cy: 1, cz: B, y, xR: lnLeftX, zM: 0, name: "LN Agg: μ, σ", dimX: "T", dimY: "", small: true, source: stat("mean") });
+    mk({ kind: "a", cx: T, cy: 1, cz: B, y: y + cell, xR: lnLeftX, zM: 0, name: "", dimX: "T", dimY: "", small: true, source: stat("std") });
     y += 2 * cell + margin;
-    const gamma = mk({ kind: "w", cx: 1, cy: C, cz: 1, y, xR: resLeftX, zM: 0, name: "γ", dimX: "", dimY: "C", small: true });
-    const resid = mk({ kind: "i", cx: T, cy: C, cz: B, y, xR: lnLeftX, zM: 0, name, dimX: "T", dimY: "C", path: src });
+    const gamma = mk({ kind: "w", cx: 1, cy: C, cz: 1, y, xR: resLeftX, zM: 0, name: "γ", dimX: "", dimY: "C", small: true, source: norm ? { path: norm, role: "weight", across: 1 } : undefined });
+    const resid = mk({ kind: "i", cx: T, cy: C, cz: B, y, xR: lnLeftX, zM: 0, name, dimX: "T", dimY: "C", path: src, source: norm ? { path: norm, role: "out", across: 0 } : undefined });
     return { agg, gamma, resid };
   }
 
@@ -454,7 +484,7 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
 
   function createLayer(prevResid: Blk | undefined): Blk | undefined {
     const blockPath = shape.blockPath || null;
-    const ln1 = createLn(blockPath, "Layer Norm");
+    const ln1 = createLn(blockPath, "Layer Norm", blockPath && `${blockPath}/norm1`);
     const heads: Head[] = [];
 
     const interHeadMargin = 3 * margin + (C * cell) / 16;
@@ -468,6 +498,21 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
     const qkvValLeftX = attnLeftX - T * cell - margin;
     const qkvBiasLeftX = qkvValLeftX - C * cell - margin;
     const attnPath = blockPath ? `${blockPath}/attn` : null;
+    /** The projection a head's Q, K or V comes from, sliced to that head. */
+    const proj = (which: "Q" | "K" | "V", head: number, role: "weight" | "bias" | "out") => {
+      if (!attnPath) return undefined;
+      // Grouped query attention shares a K and V head among several Q heads.
+      const kv = which === "Q" ? head : Math.floor((head * shape.nKvHeads) / nHeads);
+      // A weight is `[out, in]` and a head is a band of its rows; the vectors
+      // are `[T, out]` and a head is a band of their columns.
+      const out = role === "out";
+      return {
+        path: `${attnPath}/${which.toLowerCase()}_proj`,
+        role,
+        across: (out ? 0 : 1) as 0 | 1,
+        slice: { axis: (out ? 1 : 0) as 0 | 1, start: kv * A, size: A },
+      };
+    };
 
     const wire: (() => void)[] = [];
     for (let i = 0; i < headsDrawn; i++) {
@@ -490,9 +535,9 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
         ["V", vMid],
       ] as const) {
         group = `${name}:${layer}:${i}`;
-        const w = mk({ kind: "w", cx: C, cy: A, cz: 1, y, xR: qkvValLeftX, zM, name: `${name} Weights`, dimX: "C", dimY: "A", path: attnPath });
-        const bias = mk({ kind: "w", cx: 1, cy: A, cz: 1, y, xR: qkvBiasLeftX, zM, name: `${name} Bias`, dimX: "", dimY: "A", small: true });
-        const v = mk({ kind: "i", cx: T, cy: A, cz: B, y, xR: attnLeftX, zM, name: `${name} vectors`, dimX: "T", dimY: "A", path: attnPath });
+        const w = mk({ kind: "w", cx: C, cy: A, cz: 1, y, xR: qkvValLeftX, zM, name: `${name} Weights`, dimX: "C", dimY: "A", path: attnPath, source: proj(name, i, "weight") });
+        const bias = mk({ kind: "w", cx: 1, cy: A, cz: 1, y, xR: qkvBiasLeftX, zM, name: `${name} Bias`, dimX: "", dimY: "A", small: true, source: proj(name, i, "bias") });
+        const v = mk({ kind: "i", cx: T, cy: A, cz: B, y, xR: attnLeftX, zM, name: `${name} vectors`, dimX: "T", dimY: "A", path: attnPath, source: proj(name, i, "out") });
         vectors[name] = v;
         if (name === "K") {
           head.qkvWeight = w;
@@ -507,11 +552,18 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
 
       const attn2LeftX = attnLeftX - (T + 2) * cell - 2 * margin;
       group = `mtx:${layer}:${i}`;
-      head.mtx = mk({ kind: "i", cx: T, cy: T, cz: B, y: attn1Y, xR: attnLeftX, zM: headZMid, name: "Attention Matrix", dimX: "T", dimY: "T", path: attnPath });
+      // A row is a query and a column a key, as the reference draws it: row t
+      // is what position t looked at.
+      const scores = (role: "scores" | "probs") => (attnPath ? { path: attnPath, role, across: 1 as const, head: i } : undefined);
+      head.mtx = mk({ kind: "i", cx: T, cy: T, cz: B, y: attn1Y, xR: attnLeftX, zM: headZMid, name: "Attention Matrix", dimX: "T", dimY: "T", path: attnPath, source: scores("scores") });
       const agg = mk({ kind: "a", cx: 1, cy: T, cz: B, y: attn1Y, xR: attnLeftX - T * cell - margin, zM: headZMid, name: "", dimX: "", dimY: "T", small: true });
-      head.smx = mk({ kind: "i", cx: T, cy: T, cz: B, y: attn1Y, xR: attn2LeftX, zM: headZMid, name: "Attn Matrix Softmax", dimX: "T", dimY: "T", path: attnPath });
+      head.smx = mk({ kind: "i", cx: T, cy: T, cz: B, y: attn1Y, xR: attn2LeftX, zM: headZMid, name: "Attn Matrix Softmax", dimX: "T", dimY: "T", path: attnPath, source: scores("probs") });
       group = `vout:${layer}:${i}`;
-      head.vOut = mk({ kind: "i", cx: T, cy: A, cz: B, y: vOutY, xR: attnLeftX, zM: headZMid, name: "V Output", dimX: "T", dimY: "A", path: attnPath });
+      // What the heads hand the output projection, before it mixes them.
+      const vOutSrc = attnPath
+        ? { path: `${attnPath}/o_proj`, role: "in" as const, across: 0 as const, slice: { axis: 1 as const, start: i * A, size: A } }
+        : undefined;
+      head.vOut = mk({ kind: "i", cx: T, cy: A, cz: B, y: vOutY, xR: attnLeftX, zM: headZMid, name: "V Output", dimX: "T", dimY: "A", path: attnPath, source: vOutSrc });
 
       heads.push(head);
       wire.push(() => {
@@ -530,27 +582,35 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
     group = `proj:${layer}`;
     const vFinalY = Math.max(vOutY + A * cell + 2 * margin, y + C * cell + margin);
 
-    const projWeight = mk({ kind: "w", cx: C, cy: C, cz: 1, y: vFinalY, xR: qkvValLeftX, zM: 0, name: "Projection Weights", dimX: "C", dimY: "C", path: attnPath });
-    const attnOut = mk({ kind: "i", cx: T, cy: C, cz: B, y: vFinalY, xR: attnLeftX, zM: 0, name: "Attention Output", dimX: "T", dimY: "C", path: attnPath });
-    const attnResid = mk({ kind: "i", cx: T, cy: C, cz: B, y: vFinalY, xM: 0, zM: 0, name: "Attention Residual", dimX: "T", dimY: "C" });
+    const oProj = attnPath ? `${attnPath}/o_proj` : null;
+    const projWeight = mk({ kind: "w", cx: C, cy: C, cz: 1, y: vFinalY, xR: qkvValLeftX, zM: 0, name: "Projection Weights", dimX: "C", dimY: "C", path: attnPath, source: oProj ? { path: oProj, role: "weight", across: 1 } : undefined });
+    const attnOut = mk({ kind: "i", cx: T, cy: C, cz: B, y: vFinalY, xR: attnLeftX, zM: 0, name: "Attention Output", dimX: "T", dimY: "C", path: attnPath, source: oProj ? { path: oProj, role: "out", across: 0 } : undefined });
+    // The residual after attention is what the second norm reads.
+    const attnResid = mk({ kind: "i", cx: T, cy: C, cz: B, y: vFinalY, xM: 0, zM: 0, name: "Attention Residual", dimX: "T", dimY: "C", source: blockPath ? { path: `${blockPath}/norm2`, role: "in", across: 0 } : undefined });
 
     y = vFinalY + C * cell + margin;
 
-    const ln2 = createLn(blockPath, "Layer Norm");
+    const ln2 = createLn(blockPath, "Layer Norm", blockPath && `${blockPath}/norm2`);
 
     const mlpPath = blockPath ? `${blockPath}/mlp` : null;
     group = `mlp:${layer}`;
     const mlpName = shape.experts > 0 ? `Expert Weights ×${shape.experts}` : "MLP Weights";
 
-    const mlpW = mk({ kind: "w", cx: ffn, cy: C, cz: 1, y, xR: attnLeftX, zM: 0, name: mlpName, dimX: "F", dimY: "C", path: mlpPath });
+    const up = mlpPath ? `${mlpPath}/up` : null;
+    const down = mlpPath ? `${mlpPath}/down` : null;
+    const mlpW = mk({ kind: "w", cx: ffn, cy: C, cz: 1, y, xR: attnLeftX, zM: 0, name: mlpName, dimX: "F", dimY: "C", path: mlpPath, source: up ? { path: up, role: "weight", across: 0 } : undefined });
     y += C * cell + margin;
-    const mlpFc = mk({ kind: "i", cx: ffn, cy: T, cz: B, y, xR: attnLeftX, zM: 0, name: "MLP", dimX: "F", dimY: "T", path: mlpPath });
+    const mlpFc = mk({ kind: "i", cx: ffn, cy: T, cz: B, y, xR: attnLeftX, zM: 0, name: "MLP", dimX: "F", dimY: "T", path: mlpPath, source: up ? { path: up, role: "out", across: 1 } : undefined });
     y += T * cell + margin;
-    const mlpAct = mk({ kind: "i", cx: ffn, cy: T, cz: B, y, xR: attnLeftX, zM: 0, name: "MLP Activation", dimX: "F", dimY: "T", path: mlpPath });
+    const mlpAct = mk({ kind: "i", cx: ffn, cy: T, cz: B, y, xR: attnLeftX, zM: 0, name: "MLP Activation", dimX: "F", dimY: "T", path: mlpPath, source: down ? { path: down, role: "in", across: 1 } : undefined });
     y += T * cell + margin;
-    const mlpProjW = mk({ kind: "w", cx: ffn, cy: C, cz: 1, y, xR: attnLeftX, zM: 0, name: "MLP Projection Weights", dimX: "F", dimY: "C", path: mlpPath });
-    const mlpResult = mk({ kind: "i", cx: T, cy: C, cz: B, y, xL: attnLeftX + margin, zM: 0, name: "MLP Result", dimX: "T", dimY: "C", path: mlpPath });
-    const mlpResid = mk({ kind: "i", cx: T, cy: C, cz: B, y, xM: 0, zM: 0, name: "MLP Residual", dimX: "T", dimY: "C" });
+    const mlpProjW = mk({ kind: "w", cx: ffn, cy: C, cz: 1, y, xR: attnLeftX, zM: 0, name: "MLP Projection Weights", dimX: "F", dimY: "C", path: mlpPath, source: down ? { path: down, role: "weight", across: 1 } : undefined });
+    const mlpResult = mk({ kind: "i", cx: T, cy: C, cz: B, y, xL: attnLeftX + margin, zM: 0, name: "MLP Result", dimX: "T", dimY: "C", path: mlpPath, source: down ? { path: down, role: "out", across: 0 } : undefined });
+    // The residual after the block is what reads it next: the following
+    // block's first norm, or after the last block the final one.
+    const last = layer + 1 >= shape.nBlocks;
+    const next = last ? shape.finalNormPath : blockPath && `${blockPath}/norm1`;
+    const mlpResid = mk({ kind: "i", cx: T, cy: C, cz: B, y, xM: 0, zM: 0, name: "MLP Residual", dimX: "T", dimY: "C", source: next ? { path: next, role: "in", across: 0, layer: last ? -1 : layer + 1 } : undefined });
 
     y += C * cell - margin;
 
@@ -760,7 +820,7 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
   // --- output --------------------------------------------------------------
 
   y += blockHalfMargin;
-  createLn(null, "Final Layer Norm");
+  createLn(null, "Final Layer Norm", shape.finalNormPath);
 
   group = "head";
   y += C * cell + margin;
@@ -778,13 +838,17 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
     dimX: "C",
     dimY: "n_vocab",
     path: shape.headPath,
+    // A tied head has no weight of its own; it is the token embedding's.
+    source: tiedHead
+      ? shape.embedPath ? { path: shape.embedPath, role: "weight", across: 1 } : undefined
+      : shape.headPath ? { path: shape.headPath, role: "weight", across: 1 } : undefined,
   });
-  mk({ kind: "i", cx: T, cy: vocab, cz: B, y, xR: leftX, zM: 0, name: "Logits", dimX: "T", dimY: "n_vocab", path: shape.headPath });
+  mk({ kind: "i", cx: T, cy: vocab, cz: B, y, xR: leftX, zM: 0, name: "Logits", dimX: "T", dimY: "n_vocab", path: shape.headPath, source: shape.headPath ? { path: shape.headPath, role: "out", across: 0 } : undefined });
 
   y += vocab * cell + margin;
   mk({ kind: "a", cx: T, cy: 1, cz: B, y, xR: leftX, zM: 0, name: "SM Agg", dimX: "T", dimY: "", small: true });
   y += 2 * cell + margin;
-  mk({ kind: "i", cx: T, cy: vocab, cz: B, y, xR: leftX, zM: 0, name: "Logits Softmax", dimX: "T", dimY: "n_vocab" });
+  mk({ kind: "i", cx: T, cy: vocab, cz: B, y, xR: leftX, zM: 0, name: "Logits Softmax", dimX: "T", dimY: "n_vocab", source: shape.headPath ? { path: shape.headPath, role: "softmax", across: 0 } : undefined });
 
   // --- bounds --------------------------------------------------------------
 

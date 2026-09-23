@@ -108,6 +108,22 @@ def build_parser() -> argparse.ArgumentParser:
         "'default' keeps PyTorch's defaults",
     )
 
+    # -- trace -------------------------------------------------------------
+    trace = subparsers.add_parser(
+        "trace", help="train a tiny model on the sort task and record every value it computes"
+    )
+    trace.add_argument("model", help="path to a generated model.py, with its design beside it")
+    trace.add_argument("--out", required=True, help="where to write the trace JSON")
+    trace.add_argument("--seed", type=int, default=1337, help="random seed")
+    trace.add_argument("--max-steps", type=int, default=6000, help="give up training after this")
+    trace.add_argument("--batch", type=int, default=64, help="batch size")
+    trace.add_argument("--lr", type=float, default=5e-4, help="learning rate")
+    trace.add_argument(
+        "--input",
+        default=None,
+        help="the symbols to sort, as digits, e.g. 210102 (default: Bycroft's own example)",
+    )
+
     # -- data --------------------------------------------------------------
     data = subparsers.add_parser("data", help="corpus preparation")
     data_sub = data.add_subparsers(dest="data_command", required=True)
@@ -190,6 +206,40 @@ def main(argv: list[str] | None = None) -> int:
             return _emit(summary)
         except Exception as exc:  # noqa: BLE001
             return _emit(_fail(exc, "smoke-train"))
+
+    if args.command == "trace":
+        try:
+            _require_torch()
+            from pathlib import Path
+
+            from .trace import trace_model
+
+            result = trace_model(
+                args.model,
+                seed=args.seed,
+                max_steps=args.max_steps,
+                batch=args.batch,
+                lr=args.lr,
+                tokens=[int(c) for c in args.input] if args.input else None,
+                progress=_progress,
+            )
+            out = Path(args.out)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            # Compact: the file is mostly base64, and indenting it buys nothing.
+            out.write_text(json.dumps(result, separators=(",", ":")) + "\n", encoding="utf-8")
+            checks = result["checks"]
+            ok = checks["sorted_correctly"] and not checks["attention_note"]
+            _progress(
+                f"trace: {result['training']['steps']} steps, "
+                f"{result['training']['held_out_accuracy']:.1%} sorted, "
+                f"attention error {checks['attention_max_abs_error']}, "
+                f"{out.stat().st_size:,} bytes -> {out}"
+            )
+            # stdout carries the summary; the trace itself is in the file.
+            summary = {k: v for k, v in result.items() if k not in ("weights", "activations", "attention")}
+            return _emit({"ok": ok, "command": "trace", "out": str(out), **summary})
+        except Exception as exc:  # noqa: BLE001
+            return _emit(_fail(exc, "trace"))
 
     if args.command == "data" and args.data_command == "prepare":
         try:

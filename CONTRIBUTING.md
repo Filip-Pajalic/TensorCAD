@@ -164,6 +164,32 @@ tries to be two of these serves neither.
 
 Filenames are lowercase and hyphenated.
 
+## Cutting a release
+
+Two commands, because a release is two events: the version change goes through a
+pull request like anything else, and the tag is cut afterwards from what `main`
+actually holds.
+
+    bun run release bump 0.1.6    # on a branch
+    bun run release tag           # on main, after that pull request has merged
+
+`bump` moves the version in all five places it lives — the root `package.json`,
+the three published packages and `packages/mcp/server.json` — and then builds,
+packs and installs the packages under Node, the same check the release workflow
+runs before it publishes. Those five disagree in different ways at different
+stages, which is why they are moved together and never by hand.
+
+`tag` refuses unless it is on an up-to-date, clean `main` whose versions all
+agree, then pushes the tag by its full ref and asks the remote whether it
+arrived. `git push --follow-tags` looks right and is not: it pushes only
+annotated tags, and this repository's are lightweight, so it succeeds, pushes
+nothing, and no release starts.
+
+The tag starts `.github/workflows/release.yml`: the desktop builds, the engine,
+and the npm packages. The registry has served a new version minutes after the
+publish job finished, so check `npm view @tensor-cad/ui version` before anything
+depends on it.
+
 ## Reporting a problem
 
 Say what you expected, what happened, and which preset or design shows it. If it

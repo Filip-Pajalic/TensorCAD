@@ -1,7 +1,7 @@
 {
   "name": "tensorcad",
   "private": true,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Schematic capture for neural network architectures",
   "workspaces": [
     "packages/*",
@@ -19,6 +19,7 @@
     "boundary": "bun run scripts/check-public-boundary.ts",
     "text": "bun run scripts/check-source-text.ts",
     "golden": "cd packages/core-go && go run ./cmd/golden",
+    "release": "bun run scripts/release.ts",
     "typecheck": "bun run typecheck:engine && bun run typecheck:cli && bun run typecheck:mcp && bun run typecheck:ui",
     "typecheck:engine": "tsc -p packages/engine/tsconfig.json --noEmit",
     "typecheck:cli": "tsc -p packages/cli/tsconfig.json --noEmit",

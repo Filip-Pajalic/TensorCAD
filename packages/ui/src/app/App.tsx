@@ -43,7 +43,7 @@ import FindingsDock from "../panels/FindingsDock.js";
 import DockRail from "../panels/DockRail.js";
 import { useEditor, type RightTab } from "../state/store.js";
 import { useDerived, useStorage } from "../state/hooks.js";
-import { handleKey } from "../state/commands.js";
+import { beforeKey, handleKey } from "../state/commands.js";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs.js";
 import { TooltipProvider } from "../ui/tooltip.js";
 import { formatCount } from "@tensor-cad/engine";
@@ -157,8 +157,12 @@ export default function App(): React.ReactElement {
         useEditor.getState().setTool(tool as "select" | "pan" | "wire");
       }
     };
+    window.addEventListener("keydown", beforeKey, { capture: true });
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", beforeKey, { capture: true });
+      window.removeEventListener("keydown", onKey);
+    };
   }, []);
 
 

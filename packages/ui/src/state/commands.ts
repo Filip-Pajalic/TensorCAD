@@ -350,7 +350,11 @@ export const COMMANDS: Command[] = [
     // it already means press.
     enabled: () => {
       if (!drawingHasFocus()) return false;
-      const { doc, selection } = editor();
+      // What was selected before the key, as for Escape: React Flow selects a
+      // focused block on Enter before this runs, and going by what it leaves
+      // would open on the press that was meant to select.
+      const { doc } = editor();
+      const selection = selectionAtKeyDown === undefined ? editor().selection : selectionAtKeyDown;
       if (!selection) return false;
       const node = nodeAtPath(doc, segmentsOf(selection));
       return node !== null && isDrillable(node, catalogOf(doc)[node.type]);
@@ -624,9 +628,14 @@ export const COMMAND_BY_ID = new Map(COMMANDS.map((c) => [c.id, c]));
 
 export function runCommand(id: string): void {
   const command = COMMAND_BY_ID.get(id);
-  if (!command) return;
-  if (command.enabled && !command.enabled()) return;
-  command.run();
+  try {
+    if (!command) return;
+    if (command.enabled && !command.enabled()) return;
+    command.run();
+  } finally {
+    // A key's snapshot is for that key. A menu item run afterwards goes by now.
+    selectionAtKeyDown = undefined;
+  }
 }
 
 /** Chord to command, built once. Later entries do not overwrite earlier ones. */

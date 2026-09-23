@@ -6,7 +6,8 @@ Node-based CAD for designing LLM architectures at the pretraining level: blocks,
 
 ```bash
 bun run build:wasm                   # the engine; nothing else runs without it
-bun run test:all                     # types, both suites, the Go engine
+bun run test:all                     # types, both suites, the browser, the Go engine
+bun run test:browser                 # the built editor in headless Chrome, driven by real key events
 bun test packages                    # the TypeScript suite: the compiled engine and its clients
 go test ./...                        # from packages/core-go: the engine against the goldens
 go run ./cmd/golden                  # from packages/core-go: rewrite them (deliberately)
@@ -112,7 +113,11 @@ Two cross-checks worth knowing:
   design-rule findings are a dock along the bottom rather than a tab — `panels/FindingsDock.tsx`
   wraps `Rules` in a strip that carries the counts even when collapsed, because the checks are
   about the drawing and belong under it.
-  `state/commands.ts` is the single list behind the keyboard, the menu and the shortcut sheet;
+  `state/commands.ts` is the single list behind the keyboard, the menu and the shortcut sheet.
+  React Flow answers Enter and Escape on a focused block itself — selecting and deselecting it —
+  before the window's handler sees the key, so a command that asks "is something selected"
+  must ask `selectionAtKeyDown`, recorded by `beforeKey` in the capture phase, or one press does
+  two things. `scripts/browser-test.ts` is what caught that: the unit suite has no React Flow in it.
   `commit(edit, label)` in `state/store.ts` is the single door every document edit goes through,
   and it takes a **value** rather than a closure — `{ kind: "setParam", path, key, value }` —
   because that is what makes the history a feature timeline rather than an undo stack. The

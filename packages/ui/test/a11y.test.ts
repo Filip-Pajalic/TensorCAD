@@ -95,6 +95,21 @@ describe("down the hierarchy and back up it", () => {
     expect(state().path).toEqual(["layers"]);
   });
 
+  test("the Enter that selects a block does not also open it", () => {
+    open(getPreset("nano-sort") as Doc);
+    // React Flow selects the focused block on Enter before the command runs.
+    // Nothing was selected when the key went down, so this press only selects.
+    beforeKey();
+    state().select("layers");
+    runCommand("view.open");
+    expect(state().path).toEqual([]);
+
+    // The next Enter finds it selected, and opens it.
+    beforeKey();
+    runCommand("view.open");
+    expect(state().path).toEqual(["layers"]);
+  });
+
   test("Escape deselects first, and goes up only when nothing was selected", () => {
     open(getPreset("nano-sort") as Doc);
     state().enter("layers");

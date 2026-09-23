@@ -1,7 +1,7 @@
 {
   "name": "tensorcad",
   "private": true,
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Schematic capture for neural network architectures",
   "workspaces": [
     "packages/*",

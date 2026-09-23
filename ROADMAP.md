@@ -4,19 +4,19 @@ Goal: a node-based CAD tool for designing neural network architectures at the pr
 
 Effort estimates assume one developer working with an AI coding assistant, part-time. They are ranges, not commitments.
 
-## Status as of 2026-09-20
+## Status as of 2026-09-23
 
 | Milestone | State |
 |---|---|
 | M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 24 presets, exact parameter match on 21 of them. |
 | M1 Check (design rules, full analysis) | **Done.** 19 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
 | M2 Manufacture (PyTorch codegen, verification) | **Done.** Every generated model's parameter count matches PyTorch exactly, and the FLOPs estimate matches a profiler once the causal mask is accounted for. |
-| M3 Agent (MCP server, CLI) | **Done.** 13 MCP tools over stdio, 6 CLI commands, and the live editor bridge: an agent's edits land on the canvas as it makes them and the human's come back. |
+| M3 Agent (MCP server, CLI) | **Done.** 19 MCP tools over stdio, 9 CLI commands, and the live editor bridge: an agent's edits land on the canvas as it makes them and the human's come back. |
 | M4 Test bench | **Done.** `tensorcad-runtime smoke-train` trains a scaled design on the local GPU and writes a run record; the editor's `Runs` tab opens several and draws their loss curves on one chart, naming anything that makes the comparison unfair. |
 | M5 Advanced parts | **Every block the plan named is there.** Mixture of experts, latent attention, state-space and linear-attention blocks; DeepSeek-V3, Nemotron-H-8B, Jamba, Qwen3-Next and Gemma-3 reproduce exactly. What is left is presets for models whose configs are still moving, which is not a thing that finishes. |
-| M6 Ship | **Done bar one step.** Documentation at [docs.tensorcad.dev](https://docs.tensorcad.dev/) and the editor at [tensorcad.dev](https://tensorcad.dev/), both static-asset Workers deployed from `main`; a release workflow that builds the engine, the MCPB bundle and the desktop binaries and cuts a GitHub release on a tag. The npm packages are prepared and verified on every tag and publish only when `NPM_TOKEN` is set. |
+| M6 Ship | **Done.** Documentation at [docs.tensorcad.dev](https://docs.tensorcad.dev/) and the editor at [tensorcad.dev](https://tensorcad.dev/), both static-asset Workers deployed from `main`. `bun run release` moves every version and tags `main`; the tag builds the engine, the MCPB bundle and the desktop binaries, publishes `@tensor-cad/engine`, `@tensor-cad/mcp` and `@tensor-cad/ui` to npm, then lists the server in the MCP registry, and cuts a GitHub release. |
 | Go engine | **Done.** The whole analysis is Go, compiled to WebAssembly, and the editor, the command line, the MCP server and the desktop shell all load the same module. The TypeScript it was ported from has been deleted; the golden files it wrote are the specification the engine is held to. |
-| Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, named refusals, a definition editor, a selectable tensor, a feature timeline, an SVG export of the sheet and a volume view whose stages are named. Twenty passes, each with what was wrong and what replaced it, in `docs/explanation/interaction-design.md`. |
+| Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, named refusals, a definition editor, a selectable tensor, a feature timeline, an SVG export of the sheet and a volume view whose stages are named. Twenty passes, each with what was wrong and what replaced it, in `docs/explanation/interaction-design.md`. Every block and wire has a spoken name and the hierarchy can be walked by keyboard — Enter into a block, Escape back out onto it — and `bun run test:browser` drives the built editor in headless Chrome with real key events, in CI, because the unit suite has no browser to see what React Flow does with a key first. |
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 
@@ -37,10 +37,10 @@ classifier, on the same machinery.
 ## Principles
 
 1. **Own the IR.** The design document is our JSON format; React Flow state is a view. (ComfyUI lesson.)
-2. **Pure core.** Schema, validation, analysis, and codegen are pure TypeScript functions with no I/O, shared by UI, CLI, and MCP.
-3. **Analyze primitives, present composites.** Param/FLOP/memory formulas live on ~20 primitive ops; composite blocks (GQA attention, SwiGLU MLP, MoE layer) are subgraphs of primitives with exposed parameters. New blocks need no new math.
+2. **One pure core.** Schema, validation, analysis and codegen are pure functions with no I/O — Go, compiled to WebAssembly — and the editor, the CLI, the MCP server and the desktop shell all load the same module. It began as TypeScript; the golden files that TypeScript wrote are what the Go is held to.
+3. **Analyze primitives, present composites.** Param/FLOP/memory formulas live on 33 primitive ops; composite blocks (GQA attention, SwiGLU MLP, MoE layer) are subgraphs of primitives with exposed parameters. New blocks need no new math.
 4. **Verify against PyTorch.** Every estimate can be cross-checked by instantiating the generated model on the meta device.
-5. **Regression-test against real models.** The 15-model table in [docs/reference/analysis-math.md](docs/reference/analysis-math.md) is the test suite from day one.
+5. **Regression-test against real models.** Every preset carries the figure its authors published, and the tests hold the analysis to it — 21 of 24 to the parameter. It started as the 15-model table in [docs/reference/analysis-math.md](docs/reference/analysis-math.md).
 6. **Assistant-native.** The MCP server is a first-class client of the core, not an afterthought.
 
 ## Milestones
@@ -184,7 +184,8 @@ Remaining:
 - **Done.** The docs site: `mkdocs.yml` and a workflow that builds on every push and deploys from `main` to [docs.tensorcad.dev](https://docs.tensorcad.dev/), with GitHub Pages as a mirror. The editor is served the same way, from `packages/ui/wrangler.jsonc`, at [tensorcad.dev](https://tensorcad.dev/) — static assets and nothing else, the engine being WebAssembly that runs in the tab. The pages were already organised by Diátaxis and read the same in the repository; what a directory of Markdown could not give them is a navigation that states that split rather than leaving it implied, and a search box, which is what a reference is useless without. The build runs `--strict`, so a cross-reference to a page that does not exist fails rather than warning — which found four links to files outside `docs/` on the first run. The second guided tour is `Tune small, run big`: shrink a published architecture until it trains on one card, sweep there, carry the answer up the μP ladder, and price the real run, with every figure pasted from the command above it.
 - **Block documentation done:** every block has a summary, every primitive that counts parameters gives the formula it counts them by, every parameter says what it means and every port declares what it carries — seventy-seven parameters said nothing, which is what the inspector showed on hover and what `get_block` answered with. Tests hold all four, because the ones that go undocumented are the ones whose names read plainly to whoever wrote them.
 - **Done.** `server.json` for the MCP registry, checked against the registry's own schema and pinned against `package.json` by a test. An MCPB bundle for Claude Desktop, built for Node with the engine beside it and started under Node before it is attached to a release.
-- Publish `@tensor-cad/engine` and `@tensor-cad/mcp` to npm, and `server.json` to the registry. **Prepared, not published.** Neither package was publishable as it sat: `main` pointed at TypeScript that Node cannot import, the server's `bin` carried a Bun shebang, and the dependency between them was written `workspace:*`, which npm rejects. `bun run build:dist` emits the publishable form, packs it, installs both tarballs into an empty directory, imports them under Node and starts the server — which found that the bundler tree-shakes the Go runtime's side-effect import and that the engine's wasm path assumed the repository's layout. The release workflow has a gated `npm` job: it builds and verifies on every tag, checks the tag against all three version numbers, and publishes only when `NPM_TOKEN` is set, saying in the run summary when it is not. Setting that secret and cutting a tag is the whole remaining step.
+- **Done.** `@tensor-cad/engine`, `@tensor-cad/mcp` and `@tensor-cad/ui` publish to npm on every tag, with provenance. Neither of the first two was publishable as it sat: `main` pointed at TypeScript that Node cannot import, the server's `bin` carried a Bun shebang, and the dependency between them was written `workspace:*`, which npm rejects. `bun run build:dist` emits the publishable form, packs it, installs both tarballs into an empty directory, imports them under Node and starts the server — which found that the bundler tree-shakes the Go runtime's side-effect import and that the engine's wasm path assumed the repository's layout. The release workflow has a gated `npm` job: it builds and verifies on every tag, checks the tag against all three version numbers, and publishes only when `NPM_TOKEN` is set, saying in the run summary when it is not. `bun run release bump` and `bun run release tag` are the two halves of cutting one, because `git push --follow-tags` silently pushes nothing for a lightweight tag.
+- **Done.** The MCP registry: after npm, a `registry` job signs in with the workflow's own GitHub OIDC token and publishes `server.json`, having waited for npm to serve the version, since the registry reads the package's `mcpName` before it accepts the entry. The namespace is `io.github.Filip-Pajalic`, capitals included: the registry grants the owner's own casing and compares case-sensitively, so the lowercase namespace the file was written with would have been refused ([registry#689](https://github.com/modelcontextprotocol/registry/issues/689)). A test holds the namespace to the repository URL.
 - Optional: MCP Apps canvas preview for Claude Desktop/Cursor.
 
 ### M7 — Legibility · Done
@@ -217,7 +218,7 @@ The default document is now `nano-sort`: 85,728 parameters, GPT-2's structure
 exactly, and small enough that every weight fits on the screen. The last preset
 loaded is remembered, so only a first visit lands on the toy.
 
-### M8 — Real values · 3–5 weeks
+### M8 — Real values · Done
 
 M7 made the drawing say what each block *is*. It still cannot say what one
 *does* to a particular input, which is the half of Bycroft's visualisation that
@@ -268,14 +269,14 @@ draws, honestly labelled as structure only.
 M0 Sketch ──► M1 Check ──► M2 Manufacture ──► M3 Agent ──► M4 Test bench
                                │                 │
                                └──► M5 Advanced parts (starts after M2, runs alongside M3/M4)
-                                                                 └──► M6 Ship ──► M7 Legibility
+                                                                 └──► M6 Ship ──► M7 Legibility ──► M8 Real values
 ```
 
 M3 is deliberately short because the core is pure; the MCP server is a thin adapter. M5 is where most of the long-tail work lives and is driven by which architectures you want to learn next.
 
 ## Open questions
 
-- **Bun vs Node for the MCP binary**: develop with Bun, but publish the MCP server so `npx` on Node 22 works (no Bun-only APIs).
+- ~~**Bun vs Node for the MCP binary**~~ Settled: developed with Bun, published for Node. `build:dist` installs the packed tarballs into an empty directory and starts the server under Node before anything is uploaded.
 - **How far to go op-level**: the plan keeps `sdpa` and `ssd_scan` as primitives rather than decomposing to matmul/softmax. Decomposing further would let users invent new attention cores but makes the FLOP/memory model kernel-unaware. Revisit after M2.
 - **Python dependency footprint**: `fla` and `mamba_ssm` need CUDA builds; keep them optional extras so the core runtime installs cleanly on CPU.
 - **Tiny-track dataset**: FineWeb-Edu sample (closer to real pretraining) vs TinyStories (faster signal). Start with a 100M-token FineWeb-Edu shard.

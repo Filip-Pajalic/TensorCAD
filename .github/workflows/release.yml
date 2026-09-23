@@ -229,6 +229,59 @@ jobs:
           name: npm
           path: dist/verify/*.tgz
 
+  # The MCP registry, after npm, because an entry is a pointer at a package:
+  # the registry fetches `@tensor-cad/mcp` at this version and refuses the
+  # entry unless the package's `mcpName` is the name being published.
+  registry:
+    name: MCP registry
+    needs: npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # The registry takes the workflow's own OIDC token as proof of the
+      # io.github.<owner>/* namespace, so there is no secret to set or to leak.
+      id-token: write
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Say why it did not publish
+        if: ${{ env.NPM_TOKEN == '' }}
+        run: echo "NPM_TOKEN is not set, so npm has no package for a registry entry to point at." >> "$GITHUB_STEP_SUMMARY"
+
+      # npm's read path has lagged its publish by minutes, and the registry
+      # reads it. Publishing the entry before npm serves the version is a
+      # rejected entry for a package that is in fact there.
+      - name: Wait for npm to serve this version
+        if: ${{ env.NPM_TOKEN != '' }}
+        run: |
+          version=$(node -p "require('./packages/mcp/server.json').version")
+          name=$(node -p "require('./packages/mcp/server.json').name")
+          for i in $(seq 1 30); do
+            got=$(npm view "@tensor-cad/mcp@${version}" mcpName 2>/dev/null || true)
+            if [ "$got" = "$name" ]; then exit 0; fi
+            sleep 20
+          done
+          echo "npm never served @tensor-cad/mcp@${version} with mcpName ${name}"
+          exit 1
+
+      # Pinned rather than `latest`: a publisher that changed under the release
+      # would change what gets published without a commit here saying so.
+      - name: Install mcp-publisher
+        if: ${{ env.NPM_TOKEN != '' }}
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/download/v1.8.1/mcp-publisher_linux_amd64.tar.gz" \
+            | tar xz mcp-publisher
+
+      - name: Publish
+        if: ${{ env.NPM_TOKEN != '' }}
+        run: |
+          ./mcp-publisher login github-oidc
+          cd packages/mcp
+          ../../mcp-publisher publish
+          echo "Published $(node -p "require('./server.json').name") $(node -p "require('./server.json').version") to the MCP registry." >> "$GITHUB_STEP_SUMMARY"
+
   desktop:
     name: Desktop (${{ matrix.label }})
     needs: verify

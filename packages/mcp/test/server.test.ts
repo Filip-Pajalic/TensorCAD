@@ -951,6 +951,16 @@ describe("registry manifest", () => {
     expect(manifest.packages[0].transport.type).toBe("stdio");
   });
 
+  // The registry grants a GitHub login `io.github.<owner>/*` in the owner's
+  // own casing and compares case-sensitively, so a namespace that differs from
+  // the account only in case is a 403 at publish time — after npm has taken
+  // the package. registry#689.
+  test("names its namespace exactly as GitHub spells the owner", () => {
+    const repo = (manifest as unknown as { repository: { url: string } }).repository.url;
+    const owner = new URL(repo).pathname.split("/")[1]!;
+    expect(manifest.name.split("/")[0]).toBe(`io.github.${owner}`);
+  });
+
   test("says the same version the server reports over the protocol", () => {
     expect(client.getServerVersion()?.version).toBe(manifest.version);
   });

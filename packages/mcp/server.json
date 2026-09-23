@@ -1,6 +1,6 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.filip-pajalic/tensorcad",
+  "name": "io.github.Filip-Pajalic/tensorcad",
   "description": "Design transformer LLM architectures and report their parameters, FLOPs, memory and cost",
   "version": "0.1.7",
   "repository": {

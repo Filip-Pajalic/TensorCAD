@@ -7,6 +7,7 @@
  */
 
 import * as z from "zod";
+import { DESIGN_SOURCES } from "./store/types.js";
 
 // ---------------------------------------------------------------------------
 // Shared fragments
@@ -44,7 +45,7 @@ export const DesignSummary = z.object({
   name: z.string(),
   revision: z.number().int(),
   path: z.string().optional(),
-  source: z.enum(["preset", "file", "empty"]),
+  source: z.enum(DESIGN_SOURCES),
   dirty: z.boolean(),
   created_at: z.string(),
   updated_at: z.string(),

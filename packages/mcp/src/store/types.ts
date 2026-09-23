@@ -29,7 +29,14 @@ import type { Doc } from "@tensor-cad/engine";
  * produced from another — scaled, or read out of a Hugging Face config — which
  * has no file behind it and is not a preset.
  */
-export type DesignSource = "preset" | "file" | "empty" | "derived";
+/**
+ * Where a design came from. One list, which the type and the output schema are
+ * both built from: they were two once, and the schema's copy never learned
+ * "derived" — so any session holding a design made by scale, mup or import
+ * could no longer list its designs.
+ */
+export const DESIGN_SOURCES = ["preset", "file", "empty", "derived"] as const;
+export type DesignSource = (typeof DESIGN_SOURCES)[number];
 
 export interface DesignSummary {
   design_id: string;

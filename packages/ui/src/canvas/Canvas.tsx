@@ -18,6 +18,7 @@ import {
   applyNodeChanges,
   useNodesInitialized,
   useReactFlow,
+  useStore,
   type Connection,
   type Edge as FlowEdge,
   type IsValidConnection,
@@ -39,6 +40,7 @@ import Key from "./Key.js";
 import Clarify, { type Candidate } from "./Clarify.js";
 import Walkthrough from "../panels/Walkthrough.js";
 import { ARIA_LABELS, blockLabel, frameLabel, wireLabel } from "./a11y.js";
+import { repairViewport } from "./viewport.js";
 import { buildWalkthrough } from "../state/walkthrough.js";
 import TitleBlock from "../panels/TitleBlock.js";
 import { onThemeChange, resolvedTheme, themeValue } from "../state/theme.js";
@@ -647,7 +649,7 @@ export default function Canvas(): React.ReactElement {
   // screen are the template's, analysed as a design of its own. The readout
   // goes on showing the design's, which is what it is for.
   const { level, derived } = useLevel();
-  const { screenToFlowPosition, fitView, setCenter, getZoom, zoomIn, zoomOut, zoomTo } =
+  const { screenToFlowPosition, fitView, setCenter, getZoom, zoomIn, zoomOut, zoomTo, setViewport } =
     useReactFlow();
 
   /**
@@ -913,13 +915,40 @@ export default function Canvas(): React.ReactElement {
    * says the measurements are in.
    */
   const pendingFit = useRef(true);
+  // A render as well as a flag. Parked in a ref alone, a request honoured
+  // "once the measurements are in" waited for some other render to come
+  // along — which, when the sheet was already measured and nothing else was
+  // changing, meant waiting for good.
+  const [fitRequests, setFitRequests] = useState(0);
   const fitSoon = useCallback(() => {
     pendingFit.current = true;
+    setFitRequests((n) => n + 1);
   }, []);
 
   const nodesInitialized = useNodesInitialized();
+
+  /**
+   * Whether there is anything to fit, and anything to fit it into.
+   *
+   * A fit divides the sheet's size by the size of what is on it. With a sheet
+   * of no size — a hidden window, a collapsed pane — and nothing measured on
+   * it, that is 0/0, and the viewport comes out NaN: the grid's pattern, every
+   * wire, the minimap's viewBox and "ZOOM NaN%" in the status bar all follow.
+   * So the fit waits for both, and a fit put off while the page was hidden
+   * happens when it is shown. `onMove` repairs a NaN viewport from any other
+   * route too, because this one was found by the arithmetic and the page was
+   * never caught taking it.
+   */
+  const sized = useStore((s) => s.width > 0 && s.height > 0);
+  const drawn = useStore((s) => {
+    for (const n of s.nodeLookup.values()) if ((n.measured.width ?? 0) > 0 && (n.measured.height ?? 0) > 0) return true;
+    return false;
+  });
+  /** The first fit is where the sheet opens, so it lands rather than travels there. */
+  const fitted = useRef(false);
+
   useEffect(() => {
-    if (!nodesInitialized || !pendingFit.current) return;
+    if (!nodesInitialized || !pendingFit.current || !sized || !drawn) return;
     pendingFit.current = false;
     // Never open at a zoom where the symbols cannot be read. Showing part of a
     // large design is better than showing all of it illegibly.
@@ -930,9 +959,10 @@ export default function Canvas(): React.ReactElement {
       padding: { top: 0.1, right: 0.3, bottom: 0.22, left: 0.14 },
       minZoom: 0.6,
       maxZoom: 1.1,
-      duration: 220,
+      duration: fitted.current ? 220 : 0,
     });
-  }, [nodesInitialized, nodes, fitView]);
+    fitted.current = true;
+  }, [nodesInitialized, nodes, fitView, sized, drawn, fitRequests]);
 
   const runLayout = useCallback(async () => {
     const current = nodesRef.current;
@@ -1409,7 +1439,18 @@ export default function Canvas(): React.ReactElement {
           if (n.data.drillable) useEditor.getState().enter(n.id);
         }}
         onPaneClick={() => useEditor.getState().select(null)}
-        onMove={(_, viewport) => useEditor.getState().setCanvasStatus({ zoom: viewport.zoom })}
+        onMove={(_, viewport) => {
+          // Whatever put NaN there, it does not stay: stand somewhere finite
+          // and fit again, rather than leave every wire and the grid unable
+          // to draw until something happens to set the viewport.
+          const repaired = repairViewport(viewport);
+          if (repaired) {
+            void setViewport(repaired);
+            fitSoon();
+            return;
+          }
+          useEditor.getState().setCanvasStatus({ zoom: viewport.zoom });
+        }}
         nodesConnectable={level.editable && !view && tool !== "pan"}
         nodesDraggable={!view && tool === "select"}
         elementsSelectable={tool !== "pan"}
@@ -1453,7 +1494,8 @@ export default function Canvas(): React.ReactElement {
         snapToGrid={snap}
         snapGrid={[GRID_MINOR, GRID_MINOR]}
         connectionLineStyle={{ stroke: palette.accent, strokeWidth: 2 }}
-        fitView
+        // No `fitView`: React Flow's own fit on mount does the same arithmetic
+        // without waiting for a size, and the effect above makes the first fit.
       >
         {/* Two grids, as every CAD canvas has: a fine one to snap to and a
             coarse one to judge distance by. The fine one is dropped once it is

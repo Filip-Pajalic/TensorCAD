@@ -93,6 +93,8 @@ const KEYS: Record<string, { code: string; vk: number; text?: string }> = {
   "[": { code: "BracketLeft", vk: 219, text: "[" },
   w: { code: "KeyW", vk: 87, text: "w" },
   V: { code: "KeyV", vk: 86, text: "V" },
+  f: { code: "KeyF", vk: 70, text: "f" },
+  "=": { code: "Equal", vk: 187 },
 };
 
 const failures: string[] = [];
@@ -224,6 +226,22 @@ try {
     await key("Enter");
     expect("blocks on the sheet", (await nodes()).length, 7);
     await key("Escape");
+  });
+
+  await check("f fits the sheet, with nothing else happening", async () => {
+    // A fit request waited for some other render to come along, so on a sheet
+    // nobody was changing, pressing f did nothing.
+    const scale = () =>
+      page<number>(`Number(document.querySelector(".react-flow__viewport").style.transform.split("scale(")[1]?.split(")")[0])`);
+    await page(`document.activeElement?.blur()`);
+    for (let i = 0; i < 4; i++) await key("=", 2); // Ctrl+=
+    await wait(600);
+    const zoomed = await scale();
+    if (!(zoomed > 1.1)) throw new Error(`zooming in did not take: ${zoomed}`);
+    await key("f");
+    await wait(800);
+    const fitted = await scale();
+    if (!(fitted <= 1.1)) throw new Error(`f left the zoom at ${fitted}`);
   });
 
   await check("the volume view loads on demand, with the traced values", async () => {

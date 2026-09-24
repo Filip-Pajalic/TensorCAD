@@ -112,13 +112,25 @@ const browser = Bun.spawn(
     "--headless=new",
     "--disable-gpu",
     "--no-sandbox",
+    // A CI runner's /dev/shm is small, and Chrome that runs out of it there
+    // crashes at start without a word. Temporary files instead.
+    "--disable-dev-shm-usage",
     `--remote-debugging-port=${PORT}`,
     `--user-data-dir=${profile}`,
     "--window-size=1440,900",
     "about:blank",
   ],
-  { stdout: "ignore", stderr: "ignore" },
+  // Kept rather than ignored, so a Chrome that never starts can say why.
+  { stdout: "ignore", stderr: "pipe" },
 );
+
+// Drained as it comes, keeping only the tail: a pipe nobody reads fills, and a
+// Chrome blocked writing to it stops answering halfway through the checks.
+let chromeSaid = "";
+void (async () => {
+  const text = new TextDecoder();
+  for await (const chunk of browser.stderr) chromeSaid = (chromeSaid + text.decode(chunk)).slice(-4000);
+})().catch(() => {});
 
 /** Keys by the name the page sees, with what the protocol needs to send them. */
 const KEYS: Record<string, { code: string; vk: number; text?: string }> = {
@@ -154,14 +166,24 @@ function expect(what: string, actual: unknown, want: unknown): void {
 
 try {
   let target: { webSocketDebuggerUrl: string } | undefined;
-  for (let i = 0; i < 60 && !target; i++) {
+  // A minute, not fifteen seconds: a first start with a fresh profile on a
+  // busy runner has taken longer than that, and the cost of waiting is only
+  // paid when it is slow.
+  for (let i = 0; i < 240 && !target && browser.exitCode === null; i++) {
     await wait(250);
     target = await fetch(`http://127.0.0.1:${PORT}/json/list`)
       .then((r) => r.json() as Promise<{ type: string; webSocketDebuggerUrl: string }[]>)
       .then((list) => list.find((t) => t.type === "page"))
       .catch(() => undefined);
   }
-  if (!target) throw new Error("Chrome never opened its debugging port");
+  if (!target) {
+    browser.kill();
+    const said = chromeSaid.trim().split("\n").slice(-15).join("\n");
+    throw new Error(
+      `Chrome never opened its debugging port${browser.exitCode !== null ? ` (it exited with ${browser.exitCode})` : ""}` +
+        (said ? `. It said:\n${said}` : ""),
+    );
+  }
 
   const dt = await Devtools.connect(target.webSocketDebuggerUrl);
   const errors: string[] = [];

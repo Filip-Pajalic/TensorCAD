@@ -16,6 +16,13 @@ import { formatShape } from "../canvas/shapes.js";
 import type { NodeDef, ParamSpec, ParamValue, Resolved } from "@tensor-cad/engine";
 import { formatCount } from "@tensor-cad/engine";
 import { blockDef, type BlockDef } from "../engine.js";
+import MaskPreview from "./MaskPreview.js";
+
+/** What an empty attention expression field suggests. */
+const EXPRESSION_EXAMPLES: Record<string, string> = {
+  mask: "e.g. kv <= q and q - kv < 1024",
+  score: "e.g. score - (q - kv) / 8",
+};
 
 function isPlainNumber(text: string): boolean {
   return /^-?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(text.trim());
@@ -186,6 +193,39 @@ function ParamRow({
       control = <JsonField value={raw} disabled={disabled} onCommit={set} />;
       break;
     }
+    case "mask":
+    case "score": {
+      // The engine keeps an expression the way it understood it — symbols
+      // replaced by their values, constants folded — which is worth showing
+      // when it differs from what was typed: it is what the kernel is given.
+      const understood = resolved?.p[name];
+      const text = rawText(raw);
+      control = (
+        <div>
+          <TextField
+            mono
+            value={text}
+            disabled={disabled}
+            placeholder={EXPRESSION_EXAMPLES[spec.type]}
+            title={
+              spec.type === "mask"
+                ? "Which scores count: q, kv, h, b, heads and the design's symbols"
+                : "What each score becomes: score, q, kv, h, heads and the design's symbols"
+            }
+            onCommit={(t) => set(t.trim() === "" ? undefined : t.trim())}
+          />
+          {typeof understood === "string" && understood !== text.trim() && (
+            <div className="param__eval mono" title="As the engine understood it">
+              = {understood}
+            </div>
+          )}
+          {spec.type === "mask" && !irrelevant && (
+            <MaskPreview path={path} heads={headCount(resolved)} />
+          )}
+        </div>
+      );
+      break;
+    }
     default: {
       control = (
         <TextField
@@ -232,6 +272,11 @@ function ParamRow({
       {spec.doc && <div className="param__doc">{spec.doc}</div>}
     </div>
   );
+}
+
+function headCount(resolved: Resolved | undefined): number {
+  const n = resolved?.p.heads;
+  return typeof n === "number" && Number.isFinite(n) ? n : 1;
 }
 
 /**

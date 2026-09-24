@@ -492,13 +492,13 @@
       },
       "flops": {
         "fwdDense": 54015983616,
-        "fwdAttention": 1107296256,
-        "fwdAttentionUnmasked": 2214592512,
-        "fwdTotal": 55123279872,
-        "fwdTotalUnmasked": 56230576128,
+        "fwdAttention": 1488977920,
+        "fwdAttentionUnmasked": 8321499136,
+        "fwdTotal": 55504961536,
+        "fwdTotalUnmasked": 62337482752,
         "elementwise": 20369408,
-        "trainPerToken": 165369839616,
-        "attentionShare": 0.02008763372882051,
+        "trainPerToken": 166514884608,
+        "attentionShare": 0.02682603282292634,
         "ruleOfThumb2N": 51199432192,
         "ruleOfThumb6N": 153598296576,
         "byPath": [
@@ -540,7 +540,7 @@
           ],
           [
             "layers/local0/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local0/attn/k_proj",
@@ -572,7 +572,7 @@
           ],
           [
             "layers/local1/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local1/attn/k_proj",
@@ -604,7 +604,7 @@
           ],
           [
             "layers/local2/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local2/attn/k_proj",
@@ -636,7 +636,7 @@
           ],
           [
             "layers/local3/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local3/attn/k_proj",
@@ -668,7 +668,7 @@
           ],
           [
             "layers/local4/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local4/attn/k_proj",
@@ -700,7 +700,7 @@
           ],
           [
             "tail0/attn/attn",
-            8388608
+            15728640
           ],
           [
             "tail0/attn/k_proj",
@@ -732,7 +732,7 @@
           ],
           [
             "tail1/attn/attn",
-            8388608
+            15728640
           ],
           [
             "tail1/attn/k_proj",
@@ -766,7 +766,7 @@
         "byCategory": [
           [
             "attention",
-            1107296256
+            1488977920
           ],
           [
             "head",
@@ -1963,20 +1963,20 @@
         "decodeBytesPerStep": 55125988864,
         "decodeWeightBytes": 54018692608,
         "residentWeightBytes": 54018692608,
-        "decodeFlopsPerStep": 55123279872,
+        "decodeFlopsPerStep": 55504961536,
         "decodeSecondsPerStep": 0.016455519063880597,
         "decodeTokensPerSecond": 60.76988493149219,
         "memoryBound": true,
-        "prefillSeconds": 1.141481063476805,
+        "prefillSeconds": 1.1493848455584226,
         "notes": [
           "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
         ]
       },
       "cost": {
-        "totalFlops": 8.466841890021307e+22,
-        "gpuHours": 59451.47939853182,
-        "wallClockHours": 59451.47939853182,
-        "dollars": 148628.69849632954,
+        "totalFlops": 8.525467543446e+22,
+        "gpuHours": 59863.13015002528,
+        "wallClockHours": 59863.13015002528,
+        "dollars": 149657.8253750632,
         "tokens": 511994321920,
         "mfu": 0.4
       },
@@ -2503,13 +2503,13 @@
       },
       "flops": {
         "fwdDense": 54015983616,
-        "fwdAttention": 1107296256,
-        "fwdAttentionUnmasked": 2214592512,
-        "fwdTotal": 55123279872,
-        "fwdTotalUnmasked": 56230576128,
+        "fwdAttention": 1488977920,
+        "fwdAttentionUnmasked": 8321499136,
+        "fwdTotal": 55504961536,
+        "fwdTotalUnmasked": 62337482752,
         "elementwise": 20369408,
-        "trainPerToken": 220493119488,
-        "attentionShare": 0.02008763372882051,
+        "trainPerToken": 222019846144,
+        "attentionShare": 0.02682603282292634,
         "ruleOfThumb2N": 51199432192,
         "ruleOfThumb6N": 153598296576,
         "byPath": [
@@ -2551,7 +2551,7 @@
           ],
           [
             "layers/local0/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local0/attn/k_proj",
@@ -2583,7 +2583,7 @@
           ],
           [
             "layers/local1/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local1/attn/k_proj",
@@ -2615,7 +2615,7 @@
           ],
           [
             "layers/local2/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local2/attn/k_proj",
@@ -2647,7 +2647,7 @@
           ],
           [
             "layers/local3/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local3/attn/k_proj",
@@ -2679,7 +2679,7 @@
           ],
           [
             "layers/local4/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local4/attn/k_proj",
@@ -2711,7 +2711,7 @@
           ],
           [
             "tail0/attn/attn",
-            8388608
+            15728640
           ],
           [
             "tail0/attn/k_proj",
@@ -2743,7 +2743,7 @@
           ],
           [
             "tail1/attn/attn",
-            8388608
+            15728640
           ],
           [
             "tail1/attn/k_proj",
@@ -2777,7 +2777,7 @@
         "byCategory": [
           [
             "attention",
-            1107296256
+            1488977920
           ],
           [
             "head",
@@ -3169,20 +3169,20 @@
         "decodeBytesPerStep": 44726086400,
         "decodeWeightBytes": 27009346304,
         "residentWeightBytes": 27009346304,
-        "decodeFlopsPerStep": 1763944955904,
+        "decodeFlopsPerStep": 1776158769152,
         "decodeSecondsPerStep": 0.01335107056716418,
         "decodeTokensPerSecond": 2396.811539495662,
         "memoryBound": true,
-        "prefillSeconds": 18.254468265242,
+        "prefillSeconds": 18.380864877328428,
         "notes": [
           "Decoding is memory-bound at batch 32. It stays that way until the batch passes this device's ridge point of about 591 FLOP per byte."
         ]
       },
       "cost": {
-        "totalFlops": 3.30739679232e+24,
-        "gpuHours": 1160587.8362809499,
-        "wallClockHours": 18134.184941889842,
-        "dollars": 2901469.5907023745,
+        "totalFlops": 3.33029769216e+24,
+        "gpuHours": 1168623.9164561226,
+        "wallClockHours": 18259.748694626916,
+        "dollars": 2921559.7911403067,
         "tokens": 15000000000000,
         "mfu": 0.4
       },
@@ -3709,13 +3709,13 @@
       },
       "flops": {
         "fwdDense": 54015983616,
-        "fwdAttention": 1107296256,
-        "fwdAttentionUnmasked": 2214592512,
-        "fwdTotal": 55123279872,
-        "fwdTotalUnmasked": 56230576128,
+        "fwdAttention": 1488977920,
+        "fwdAttentionUnmasked": 8321499136,
+        "fwdTotal": 55504961536,
+        "fwdTotalUnmasked": 62337482752,
         "elementwise": 20369408,
-        "trainPerToken": 165369839616,
-        "attentionShare": 0.02008763372882051,
+        "trainPerToken": 166514884608,
+        "attentionShare": 0.02682603282292634,
         "ruleOfThumb2N": 51199432192,
         "ruleOfThumb6N": 153598296576,
         "byPath": [
@@ -3757,7 +3757,7 @@
           ],
           [
             "layers/local0/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local0/attn/k_proj",
@@ -3789,7 +3789,7 @@
           ],
           [
             "layers/local1/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local1/attn/k_proj",
@@ -3821,7 +3821,7 @@
           ],
           [
             "layers/local2/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local2/attn/k_proj",
@@ -3853,7 +3853,7 @@
           ],
           [
             "layers/local3/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local3/attn/k_proj",
@@ -3885,7 +3885,7 @@
           ],
           [
             "layers/local4/attn/attn",
-            83886080
+            157286400
           ],
           [
             "layers/local4/attn/k_proj",
@@ -3917,7 +3917,7 @@
           ],
           [
             "tail0/attn/attn",
-            8388608
+            15728640
           ],
           [
             "tail0/attn/k_proj",
@@ -3949,7 +3949,7 @@
           ],
           [
             "tail1/attn/attn",
-            8388608
+            15728640
           ],
           [
             "tail1/attn/k_proj",
@@ -3983,7 +3983,7 @@
         "byCategory": [
           [
             "attention",
-            1107296256
+            1488977920
           ],
           [
             "head",
@@ -5182,20 +5182,20 @@
         "decodeBytesPerStep": 54572340736,
         "decodeWeightBytes": 54018692608,
         "residentWeightBytes": 54018692608,
-        "decodeFlopsPerStep": 55123279872,
+        "decodeFlopsPerStep": 55504961536,
         "decodeSecondsPerStep": 0.01629025096597015,
         "decodeTokensPerSecond": 61.38640847762077,
         "memoryBound": true,
-        "prefillSeconds": 1.141481063476805,
+        "prefillSeconds": 1.1493848455584226,
         "notes": [
           "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
         ]
       },
       "cost": {
-        "totalFlops": 8.466841890021307e+22,
-        "gpuHours": 59451.47939853182,
-        "wallClockHours": 7431.434924816477,
-        "dollars": 148628.69849632954,
+        "totalFlops": 8.525467543446e+22,
+        "gpuHours": 59863.13015002528,
+        "wallClockHours": 7482.89126875316,
+        "dollars": 149657.8253750632,
         "tokens": 511994321920,
         "mfu": 0.4
       },

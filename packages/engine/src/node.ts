@@ -130,6 +130,7 @@ import type {
   HardwareProfile,
   ImportResult,
   Inference,
+  MaskView,
   ParamsResult,
   MupLadder,
   MupOptions,
@@ -168,6 +169,16 @@ export function explain(doc: Doc, path: string, options?: AnalysisOptions): Expl
 
 export function explainAll(doc: Doc, options?: AnalysisOptions): Explanation[] {
   return engine().explainAll(doc, options);
+}
+
+/** One attention's mask, as the kernel's block mask sees it. */
+export function attentionMask(
+  doc: Doc,
+  path: string,
+  options?: AnalysisOptions,
+  head?: number,
+): MaskView {
+  return engine().attentionMask(doc, path, options, head);
 }
 
 export function generateTorch(doc: Doc, options?: TorchOptions): GeneratedCode {

@@ -26,6 +26,11 @@ const (
 	ParamStr     ParamKind = "str"
 	ParamPattern ParamKind = "pattern"
 	ParamObj     ParamKind = "obj"
+	// ParamMask is an attention mask written as an expression: which scores
+	// count. See package attnexpr.
+	ParamMask ParamKind = "mask"
+	// ParamScore is what each attention score becomes before the softmax.
+	ParamScore ParamKind = "score"
 )
 
 // ParamSpec declares one parameter of a block.

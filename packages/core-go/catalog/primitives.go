@@ -17,12 +17,31 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/tensorcad/core/attnexpr"
 	"github.com/tensorcad/core/shapes"
 )
 
 // softcapCost is the arithmetic in `tanh(x / cap) * cap`: a divide, a tanh and
-// a multiply, per element.
+// a multiply, per element. An attention score's cap is costed as the
+// expression it is, which comes to the same.
 const softcapCost = 1 + 6 + 1
+
+// maskSpec and scoreSpec are the two attention expressions, declared once for
+// every block that carries them down to sdpa.
+func maskSpec() ParamSpec {
+	return ParamSpec{Type: ParamMask, Default: "", HasDefault: true,
+		Doc: "Which scores count, as an expression over q and kv (the query's and the key's positions), " +
+			"h (the head) and the design's symbols. A score has to pass causal, window and this, so a " +
+			"mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first " +
+			"16 positions seen by all. Empty adds nothing."}
+}
+
+func scoreSpec() ParamSpec {
+	return ParamSpec{Type: ParamScore, Default: "", HasDefault: true,
+		Doc: "What each score becomes before the softmax, over score, q, kv, h, heads and the " +
+			"design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied " +
+			"before logit_softcap; empty leaves the scores alone."}
+}
 
 var elementwiseCost = map[string]float64{
 	"relu":      1,
@@ -646,6 +665,8 @@ var Primitives = []*BlockDef{
 			{"cache", pBool(true, "Whether this block owns the inference cache. Latent attention caches a compressed vector instead.")},
 			{"logit_softcap", ParamSpec{Type: ParamNum, Default: 0.0, HasDefault: true,
 				Doc: "Bound the attention scores to this magnitude with tanh; 0 leaves them alone. FlashAttention 2.6 and later caps inside the fused kernel; PyTorch's own scaled_dot_product_attention cannot."}},
+			{"mask", maskSpec()},
+			{"score", scoreSpec()},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			v := "head_dim"
@@ -663,23 +684,21 @@ var Primitives = []*BlockDef{
 		},
 		ParamCount: noParams,
 		Flops: func(r *Resolved, c AnalysisCtx) FlopsPerToken {
-			tEff := c.T
-			if w := r.Num("window"); w > 0 {
-				tEff = fmin(c.T, w)
-			}
-			// A causal kernel skips masked blocks, so on average each token
-			// attends to half the window.
-			causal := 1.0
-			if r.Bool("causal") {
-				causal = 0.5
-			}
-			unmasked := 4 * tEff * r.Num("heads") * r.Num("head_dim")
-			f := FlopsPerToken{FwdSeq: unmasked * causal, FwdSeqUnmasked: unmasked}
-			if r.Num("logit_softcap") != 0 {
-				// On the scores the kernel computes: a fused one caps inside
-				// the blocks it does not skip, so the causal half and the
-				// window count here exactly as they do for the matmuls.
-				f.Elementwise = softcapCost * tEff * r.Num("heads") * causal
+			a := AttentionOf(r)
+			// A kernel that skips what the mask removes multiplies each query
+			// by the keys it keeps: half of them when causal, the window when
+			// there is one, and whatever share the design's own mask leaves.
+			// A profiler counts the operator as if nothing were masked, since
+			// its shape does not depend on the mask.
+			keys := a.KeysPerQuery(c.T, c.B)
+			perKey := 4 * r.Num("heads") * r.Num("head_dim")
+			f := FlopsPerToken{FwdSeq: perKey * keys, FwdSeqUnmasked: perKey * c.T}
+			if s := a.Score(); s != nil {
+				// On the scores the kernel computes: a fused one changes them
+				// inside the blocks it does not skip, so the mask counts here
+				// exactly as it does for the matmuls. A cap is a divide, a
+				// tanh and a multiply, which is softcapCost.
+				f.Elementwise = attnexpr.Cost(s) * keys * r.Num("heads")
 			}
 			return f
 		},
@@ -735,7 +754,12 @@ var Primitives = []*BlockDef{
 					Message: "window must be non-negative",
 				})
 			}
-			if r.Num("logit_softcap") != 0 && r.Bool("flash") {
+			a := AttentionOf(r)
+			out = append(out, a.constraints(r)...)
+			// With an expression the cap is part of the score function
+			// FlexAttention compiles, which SDPA-06 says; without one it is
+			// FlashAttention's.
+			if r.Num("logit_softcap") != 0 && r.Bool("flash") && !a.Expressions() {
 				out = append(out, BlockFinding{
 					ID: "SDPA-03", Severity: "info", Param: "logit_softcap",
 					Message: "capping the attention scores needs a kernel that caps inside it: " +
@@ -751,7 +775,7 @@ var Primitives = []*BlockDef{
 		Docs: BlockDocs{
 			Name:    "scaled dot-product attention",
 			Summary: "Scaled dot-product attention core. Covers MHA, GQA and MQA through kv_heads.",
-			Formula: "FLOPs/token = 4*T_eff*heads*head_dim (halved when causal); KV cache = 2*kv_heads*head_dim*bytes per token",
+			Formula: "FLOPs/token = 4*keys*heads*head_dim, keys = T/2 causal, W - W^2/2T in a causal window of W, times the share a mask keeps; KV cache = 2*kv_heads*head_dim*bytes per token",
 			Refs:    []string{"https://arxiv.org/abs/2305.13245", "https://arxiv.org/abs/2205.14135"},
 		},
 	},

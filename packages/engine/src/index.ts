@@ -23,6 +23,7 @@ import type {
   HardwareProfile,
   ImportResult,
   Inference,
+  MaskView,
   MupLadder,
   MupOptions,
   ScaleOptions,
@@ -73,6 +74,12 @@ export interface Engine {
   explain(doc: Doc, path: string, options?: AnalysisOptions): Explanation;
   /** Every block, largest contribution first. */
   explainAll(doc: Doc, options?: AnalysisOptions): Explanation[];
+  /**
+   * The attention mask of the block at `path` — itself if it is an `sdpa`,
+   * otherwise the first attention inside it — drawn at the operating point's
+   * sequence length, for one head.
+   */
+  attentionMask(doc: Doc, path: string, options?: AnalysisOptions, head?: number): MaskView;
   generateTorch(doc: Doc, options?: TorchOptions): GeneratedCode;
   scale(doc: Doc, options: ScaleOptions): ScaleResult;
   /**
@@ -125,6 +132,7 @@ interface Exports {
   infer(doc: string, mode: string): string;
   explain(doc: string, path: string, options: string): string;
   explainAll(doc: string, options: string): string;
+  attentionMask(doc: string, path: string, options: string, head: string): string;
   generateTorch(doc: string, options: string): string;
   scale(doc: string, options: string): string;
   mup(doc: string, options: string): string;
@@ -308,6 +316,10 @@ function wrap(api: Exports): Engine {
       unwrap(api.explain(JSON.stringify(doc), path, point(options))) as Explanation,
     explainAll: (doc, options) =>
       unwrap(api.explainAll(JSON.stringify(doc), point(options))) as Explanation[],
+    attentionMask: (doc, path, options, head) =>
+      unwrap(
+        api.attentionMask(JSON.stringify(doc), path, point(options), String(head ?? 0)),
+      ) as MaskView,
     generateTorch: (doc, options) =>
       unwrap(api.generateTorch(JSON.stringify(doc), options ? JSON.stringify(options) : "")) as GeneratedCode,
     scale: (doc, options) => unwrap(api.scale(JSON.stringify(doc), JSON.stringify(options))) as ScaleResult,

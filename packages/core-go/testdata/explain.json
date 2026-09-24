@@ -279,6 +279,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -510,6 +522,18 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -1082,6 +1106,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -1366,6 +1402,18 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -1879,6 +1927,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -2110,6 +2170,18 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -2676,6 +2748,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -2907,6 +2991,18 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -3473,6 +3569,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -3704,6 +3812,18 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -4276,6 +4396,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -4560,6 +4692,18 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -5080,6 +5224,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -5326,6 +5482,18 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -5654,8 +5822,8 @@
             "params": 6979584000,
             "activeParams": 6979584000,
             "shareOfParams": 0.9638003598414254,
-            "flopsPerToken": 15032385536,
-            "shareOfFlops": 0.982860276977924,
+            "flopsPerToken": 15569256448,
+            "shareOfFlops": 0.9834415154325076,
             "activationBytes": 46204452864,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 536870912
@@ -5905,6 +6073,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -5929,8 +6109,8 @@
             "params": 6979584000,
             "activeParams": 6979584000,
             "shareOfParams": 0.9638003598414254,
-            "flopsPerToken": 15032385536,
-            "shareOfFlops": 0.982860276977924,
+            "flopsPerToken": 15569256448,
+            "shareOfFlops": 0.9834415154325076,
             "activationBytes": 46204452864,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 536870912
@@ -6038,7 +6218,7 @@
             "activeParams": 5637144576,
             "shareOfParams": 0.7784248990809395,
             "flopsPerToken": 11274289152,
-            "shareOfFlops": 0.737145207733443,
+            "shareOfFlops": 0.7121473042787124,
             "activationBytes": 32212254720,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -6107,7 +6287,7 @@
             "activeParams": 1879048192,
             "shareOfParams": 0.25947496636031314,
             "flopsPerToken": 3758096384,
-            "shareOfFlops": 0.245715069244481,
+            "shareOfFlops": 0.2373824347595708,
             "activationBytes": 7516192768,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -6166,7 +6346,7 @@
             "activeParams": 1879048192,
             "shareOfParams": 0.25947496636031314,
             "flopsPerToken": 3758096384,
-            "shareOfFlops": 0.245715069244481,
+            "shareOfFlops": 0.2373824347595708,
             "activationBytes": 7516192768,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -6225,7 +6405,7 @@
             "activeParams": 1879048192,
             "shareOfParams": 0.25947496636031314,
             "flopsPerToken": 3758096384,
-            "shareOfFlops": 0.245715069244481,
+            "shareOfFlops": 0.2373824347595708,
             "activationBytes": 0,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -6330,6 +6510,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -6354,8 +6546,8 @@
             "params": 1342177280,
             "activeParams": 1342177280,
             "shareOfParams": 0.18533926168593795,
-            "flopsPerToken": 3758096384,
-            "shareOfFlops": 0.245715069244481,
+            "flopsPerToken": 4294967296,
+            "shareOfFlops": 0.2712942111537952,
             "activationBytes": 9697230848,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 536870912
@@ -6429,7 +6621,7 @@
             "activeParams": 536870912,
             "shareOfParams": 0.07413570467437518,
             "flopsPerToken": 1073741824,
-            "shareOfFlops": 0.07020430549842314,
+            "shareOfFlops": 0.0678235527884488,
             "activationBytes": 0,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -6728,6 +6920,18 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -7155,6 +7359,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -7553,6 +7769,18 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -7980,6 +8208,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -8378,6 +8618,18 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -8805,6 +9057,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -9203,6 +9467,18 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -9630,6 +9906,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -10032,6 +10320,18 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -10469,6 +10769,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -10622,8 +10934,8 @@
             "params": 8324198400,
             "activeParams": 8324198400,
             "shareOfParams": 0.9007209723412036,
-            "flopsPerToken": 18761121792,
-            "shareOfFlops": 0.9109052031361369,
+            "flopsPerToken": 19113443328,
+            "shareOfFlops": 0.9124036440084092,
             "activationBytes": 60621324288,
             "cacheBytesPerToken": 172032,
             "cacheBytesPerSequence": 704643072
@@ -10888,6 +11200,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -10912,8 +11236,8 @@
             "params": 4162099200,
             "activeParams": 4162099200,
             "shareOfParams": 0.4503604861706018,
-            "flopsPerToken": 9028239360,
-            "shareOfFlops": 0.4383464005702067,
+            "flopsPerToken": 9380560896,
+            "shareOfFlops": 0.4477925718290119,
             "activationBytes": 30310662144,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 704643072
@@ -11173,6 +11497,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -11198,7 +11534,7 @@
             "activeParams": 4162099200,
             "shareOfParams": 0.4503604861706018,
             "flopsPerToken": 9732882432,
-            "shareOfFlops": 0.47255880256593014,
+            "shareOfFlops": 0.46461107217939734,
             "activationBytes": 30310662144,
             "cacheBytesPerToken": 172032,
             "cacheBytesPerSequence": 0
@@ -11316,7 +11652,7 @@
             "activeParams": 3236954112,
             "shareOfParams": 0.3502550413964782,
             "flopsPerToken": 6473908224,
-            "shareOfFlops": 0.3143264433357092,
+            "shareOfFlops": 0.3090399439383322,
             "activationBytes": 20963131392,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -11394,7 +11730,7 @@
             "activeParams": 3236954112,
             "shareOfParams": 0.3502550413964782,
             "flopsPerToken": 6473908224,
-            "shareOfFlops": 0.3143264433357092,
+            "shareOfFlops": 0.3090399439383322,
             "activationBytes": 20963131392,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -11463,7 +11799,7 @@
             "activeParams": 1078984704,
             "shareOfParams": 0.11675168046549272,
             "flopsPerToken": 2157969408,
-            "shareOfFlops": 0.10477548111190306,
+            "shareOfFlops": 0.10301331464611072,
             "activationBytes": 4932501504,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -11522,7 +11858,7 @@
             "activeParams": 1078984704,
             "shareOfParams": 0.11675168046549272,
             "flopsPerToken": 2157969408,
-            "shareOfFlops": 0.10477548111190306,
+            "shareOfFlops": 0.10301331464611072,
             "activationBytes": 4932501504,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -11581,7 +11917,7 @@
             "activeParams": 1078984704,
             "shareOfParams": 0.11675168046549272,
             "flopsPerToken": 2157969408,
-            "shareOfFlops": 0.10477548111190306,
+            "shareOfFlops": 0.10301331464611072,
             "activationBytes": 0,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -11631,8 +11967,8 @@
             "params": 24773913600,
             "activeParams": 24773913600,
             "shareOfParams": 0.9172348460847815,
-            "flopsPerToken": 50635735040,
-            "shareOfFlops": 0.9185907507241879,
+            "flopsPerToken": 51002736640,
+            "shareOfFlops": 0.9188860820472797,
             "activationBytes": 127905300480,
             "cacheBytesPerToken": 81920,
             "cacheBytesPerSequence": 419430400
@@ -11897,6 +12233,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -11921,8 +12269,8 @@
             "params": 4128985600,
             "activeParams": 4128985600,
             "shareOfParams": 0.15287247434746357,
-            "flopsPerToken": 8341422080,
-            "shareOfFlops": 0.15132303628102953,
+            "flopsPerToken": 8414822400,
+            "shareOfFlops": 0.15160486859435485,
             "activationBytes": 21317550080,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 83886080
@@ -12187,6 +12535,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -12211,8 +12571,8 @@
             "params": 4128985600,
             "activeParams": 4128985600,
             "shareOfParams": 0.15287247434746357,
-            "flopsPerToken": 8341422080,
-            "shareOfFlops": 0.15132303628102953,
+            "flopsPerToken": 8414822400,
+            "shareOfFlops": 0.15160486859435485,
             "activationBytes": 21317550080,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 83886080
@@ -12477,6 +12837,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -12501,8 +12873,8 @@
             "params": 4128985600,
             "activeParams": 4128985600,
             "shareOfParams": 0.15287247434746357,
-            "flopsPerToken": 8341422080,
-            "shareOfFlops": 0.15132303628102953,
+            "flopsPerToken": 8414822400,
+            "shareOfFlops": 0.15160486859435485,
             "activationBytes": 21317550080,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 83886080
@@ -12767,6 +13139,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -12791,8 +13175,8 @@
             "params": 4128985600,
             "activeParams": 4128985600,
             "shareOfParams": 0.15287247434746357,
-            "flopsPerToken": 8341422080,
-            "shareOfFlops": 0.15132303628102953,
+            "flopsPerToken": 8414822400,
+            "shareOfFlops": 0.15160486859435485,
             "activationBytes": 21317550080,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 83886080
@@ -13057,6 +13441,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -13081,8 +13477,8 @@
             "params": 4128985600,
             "activeParams": 4128985600,
             "shareOfParams": 0.15287247434746357,
-            "flopsPerToken": 8341422080,
-            "shareOfFlops": 0.15132303628102953,
+            "flopsPerToken": 8414822400,
+            "shareOfFlops": 0.15160486859435485,
             "activationBytes": 21317550080,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 83886080
@@ -13351,6 +13747,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -13376,7 +13784,7 @@
             "activeParams": 4128985600,
             "shareOfParams": 0.15287247434746357,
             "flopsPerToken": 8928624640,
-            "shareOfFlops": 0.1619755693190404,
+            "shareOfFlops": 0.1608617390755055,
             "activationBytes": 21317550080,
             "cacheBytesPerToken": 81920,
             "cacheBytesPerSequence": 0
@@ -13499,7 +13907,7 @@
             "activeParams": 3468165120,
             "shareOfParams": 0.12840611101670296,
             "flopsPerToken": 6936330240,
-            "shareOfFlops": 0.12583304651150348,
+            "shareOfFlops": 0.12496775149553362,
             "activationBytes": 14973665280,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -13813,6 +14221,18 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -14637,6 +15057,18 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -15473,6 +15905,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -16305,6 +16749,18 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -17402,6 +17858,18 @@
               null,
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",
@@ -19604,6 +20072,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -19953,6 +20433,18 @@
               "Bound the attention scores to this magnitude with tanh (Gemma 2)"
             ],
             [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -20254,6 +20746,18 @@
               "0",
               0,
               "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
               "value_embeddings",

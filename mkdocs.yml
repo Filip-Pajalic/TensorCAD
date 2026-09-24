@@ -93,6 +93,7 @@ nav:
       - Design rules: reference/design-rules.md
       - Analysis outputs: reference/analysis.md
       - The analysis maths: reference/analysis-math.md
+      - Attention expressions: reference/attention-expressions.md
       - Command line: reference/cli.md
   - Explanation:
       - Why schematic capture: explanation/why-schematic-capture.md

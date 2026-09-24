@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/tensorcad/core/analysis"
+	"github.com/tensorcad/core/attnexpr"
 	"github.com/tensorcad/core/catalog"
 	"github.com/tensorcad/core/infer"
 	"github.com/tensorcad/core/ir"
@@ -206,6 +207,99 @@ def fused_attention(q, k, v, window=0, softcap=0.0, causal=True, scale=None, ena
     return torch.softmax(scores + mask, dim=-1).to(v.dtype) @ v
 `
 
+// helperExpression is attention with the design's own mask or score
+// expressions, which is FlexAttention's shape: two small functions over a
+// score and its position, compiled into one fused kernel. The analysis counts
+// that kernel, so this uses it wherever it compiles, which is CUDA with
+// Triton, and everywhere else applies the same two functions to the whole
+// score matrix — the form a CPU verifies, profiles and exports, and the one
+// FlexAttention's own documentation defines it by.
+const helperExpression = `_FLEX = None
+_BLOCK_MASKS = {}
+_EXPRESSIONS_UNFUSED_SAID = False
+
+
+def _flex_attention():
+    """FlexAttention compiled once, with what builds its block mask, or False."""
+    global _FLEX
+    if _FLEX is None:
+        try:
+            from torch.nn.attention.flex_attention import create_block_mask, flex_attention
+        except ImportError:  # PyTorch before 2.5
+            _FLEX = False
+        else:
+            _FLEX = (torch.compile(flex_attention, dynamic=False), create_block_mask)
+    return _FLEX
+
+
+def _say_unfused(why):
+    global _EXPRESSIONS_UNFUSED_SAID
+    if not _EXPRESSIONS_UNFUSED_SAID:
+        _EXPRESSIONS_UNFUSED_SAID = True
+        import warnings
+
+        warnings.warn(
+            "attention with a mask or score expression is running unfused (" + why + "), which keeps "
+            "the score matrix the design's memory figures assume a fused kernel never builds",
+            stacklevel=3,
+        )
+
+
+def expression_attention(q, k, v, mask_mod=None, score_mod=None, mask_heads=False, mask_batch=False, scale=None):
+    """Attention whose scores the design's expressions mask or change.
+
+    mask_mod(b, h, q_idx, kv_idx) says whether a score counts, and
+    score_mod(score, b, h, q_idx, kv_idx) what it becomes before the softmax:
+    FlexAttention's own signatures. The design's analysis counts this as
+    FlexAttention runs it, one fused kernel that skips every block the mask
+    removes and changes each score inside, so the score matrix is never kept
+    for the backward pass. On CUDA it is that kernel, compiled on first use.
+
+    Anywhere else, or where it does not compile, the same two functions are
+    applied to the whole score matrix: every score, then the mask. A query the
+    mask leaves nothing to attend to gets zeros, as FlexAttention gives it.
+
+    q is (B, heads, T, head_dim); k and v may have fewer heads than q.
+    """
+    global _FLEX
+    if scale is None:
+        scale = q.shape[-1] ** -0.5
+    batch, heads, seq, _ = q.shape
+    keys = k.shape[-2]
+    grouped = k.shape[-3] != heads
+    if q.is_cuda and _flex_attention():
+        flex, create_block_mask = _FLEX
+        try:
+            block_mask = None
+            if mask_mod is not None:
+                key = (mask_mod, batch if mask_batch else None, heads if mask_heads else None, seq, keys, q.device)
+                block_mask = _BLOCK_MASKS.get(key)
+                if block_mask is None:
+                    block_mask = create_block_mask(mask_mod, key[1], key[2], seq, keys, device=q.device)
+                    _BLOCK_MASKS[key] = block_mask
+            return flex(q, k, v, score_mod=score_mod, block_mask=block_mask, scale=scale, enable_gqa=grouped)
+        except Exception as error:  # most often, no Triton to compile it with
+            _FLEX = False
+            _say_unfused("FlexAttention did not compile: " + type(error).__name__)
+    elif q.is_cuda:
+        _say_unfused("this PyTorch has no FlexAttention, which arrived in 2.5")
+
+    if grouped:
+        k = k.repeat_interleave(heads // k.shape[-3], dim=-3)
+        v = v.repeat_interleave(heads // v.shape[-3], dim=-3)
+    b = torch.arange(batch, device=q.device).view(-1, 1, 1, 1)
+    h = torch.arange(heads, device=q.device).view(1, -1, 1, 1)
+    q_idx = torch.arange(seq, device=q.device).view(1, 1, -1, 1)
+    kv_idx = torch.arange(keys, device=q.device).view(1, 1, 1, -1)
+    scores = (q @ k.transpose(-2, -1)) * scale
+    if score_mod is not None:
+        scores = score_mod(scores, b, h, q_idx, kv_idx)
+    if mask_mod is not None:
+        scores = scores.masked_fill(~mask_mod(b, h, q_idx, kv_idx), float("-inf"))
+    weights = torch.softmax(scores.float(), dim=-1).nan_to_num(0.0)
+    return weights.to(v.dtype) @ v
+`
+
 const helperShift = "def shift_sequence(x: torch.Tensor, by: int) -> torch.Tensor:\n" +
 	"    \"\"\"Move a sequence `by` positions earlier, zero-filling the end.\n" +
 	"\n" +
@@ -385,20 +479,54 @@ type ctx struct {
 	symbols  *ir.SymbolTable
 	warnings []string
 	// classes are the deduplicated classes, in dependency order.
-	classes        []emitted
-	byKey          map[string]string
-	usedNames      map[string]bool
-	needsRope      bool
-	needsFused     bool
-	needsShift     bool
-	needsSsd       bool
-	needsSelective bool
-	needsGdn       bool
-	moeDispatch    string
+	classes    []emitted
+	byKey      map[string]string
+	usedNames  map[string]bool
+	needsRope  bool
+	needsFused bool
+	// needsExpression is the FlexAttention helper, and attnFuncs are the
+	// mask and score functions it is handed, one per distinct expression.
+	needsExpression bool
+	attnFuncs       []string
+	attnNames       map[string]string
+	needsShift      bool
+	needsSsd        bool
+	needsSelective  bool
+	needsGdn        bool
+	moeDispatch     string
 }
 
 func (c *ctx) warn(format string, args ...any) {
 	c.warnings = append(c.warnings, fmt.Sprintf(format, args...))
+}
+
+// attentionFunction is the name of a module-level mask_mod or score_mod
+// computing an expression, emitting it the first time it is asked for. Two
+// layers with the same expression share one function, as they share a class.
+func (c *ctx) attentionFunction(kind string, n attnexpr.Node, heads float64) string {
+	body := attnexpr.Python(n, heads)
+	key := kind + "|" + body
+	if name, ok := c.attnNames[key]; ok {
+		return name
+	}
+	if c.attnNames == nil {
+		c.attnNames = map[string]string{}
+	}
+	count := 1
+	for k := range c.attnNames {
+		if strings.HasPrefix(k, kind+"|") {
+			count++
+		}
+	}
+	name := fmt.Sprintf("%s_mod_%d", kind, count)
+	c.attnNames[key] = name
+	signature := "b, h, q_idx, kv_idx"
+	if kind == "score" {
+		signature = "score, " + signature
+	}
+	c.attnFuncs = append(c.attnFuncs, fmt.Sprintf("def %s(%s):\n    \"\"\"%s\"\"\"\n    return %s\n",
+		name, signature, attnexpr.String(n), body))
+	return name
 }
 
 func (c *ctx) className(base string) string {
@@ -837,7 +965,30 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 			}
 			w := r.Num("window")
 			cap := r.Num("logit_softcap")
+			a := catalog.AttentionOf(r)
 			switch {
+			case a.Expressions():
+				// Causal, the window and the cap are folded into the two
+				// functions, so the kernel is told everything once.
+				c.needsExpression = true
+				args := []string{q, k, v}
+				if m := a.Mask(); m != nil {
+					args = append(args, "mask_mod="+c.attentionFunction("mask", m, a.Heads))
+					if attnexpr.Uses(m, "h") {
+						args = append(args, "mask_heads=True")
+					}
+					if attnexpr.Uses(m, "b") {
+						args = append(args, "mask_batch=True")
+					}
+				}
+				if s := a.Score(); s != nil {
+					args = append(args, "score_mod="+c.attentionFunction("score", s, a.Heads))
+				}
+				if scale != "" {
+					args = append(args, strings.TrimPrefix(scale, ", "))
+				}
+				out.forward = append(out.forward, fmt.Sprintf("%s = expression_attention(%s)",
+					outName("y"), strings.Join(args, ", ")))
 			case cap != 0 || w > 0:
 				// A window or a cap is what the plain kernel cannot skip or
 				// apply, so both go through the helper that finds one that can.
@@ -1237,6 +1388,12 @@ func GenerateTorch(doc *ir.Doc, options Options) *Generated {
 	}
 	if c.needsFused {
 		helpers = append(helpers, helperFused, "")
+	}
+	if c.needsExpression {
+		helpers = append(helpers, helperExpression, "")
+		for _, f := range c.attnFuncs {
+			helpers = append(helpers, f, "")
+		}
 	}
 	if c.needsShift {
 		helpers = append(helpers, helperShift, "")

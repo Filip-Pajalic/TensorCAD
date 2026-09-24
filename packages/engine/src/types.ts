@@ -149,7 +149,22 @@ export interface UserBlockDef {
 // The catalog
 // ---------------------------------------------------------------------------
 
-export type ParamKind = "int" | "num" | "bool" | "enum" | "str" | "pattern" | "obj";
+/**
+ * `mask` and `score` are attention expressions: which scores count, and what
+ * each becomes before the softmax. Text, like `str`, but compiled against the
+ * design's symbols, so what the resolved parameter holds is the expression as
+ * the engine understood it — symbols replaced by their values.
+ */
+export type ParamKind =
+  | "int"
+  | "num"
+  | "bool"
+  | "enum"
+  | "str"
+  | "pattern"
+  | "obj"
+  | "mask"
+  | "score";
 
 /** One declared parameter of a block. */
 export interface ParamSpec {
@@ -551,6 +566,38 @@ export interface Explanation {
   /** The primitives this block expands into, largest first. */
   breakdown: { path: string; type: string; params: number }[];
   notFound?: boolean;
+}
+
+/**
+ * One attention's mask, drawn the way FlexAttention's block mask sees it: the
+ * sequence cut into blocks along both sides, and for each block the share of
+ * its scores the mask keeps. Zero is skipped outright, one is computed without
+ * the mask, anything between is computed and then masked.
+ */
+export interface MaskView {
+  /** The block that was asked about. */
+  path: string;
+  /** The attention inside it that was drawn, or empty when there is none. */
+  attention: string;
+  found: boolean;
+  /** The sequence length it was drawn at. */
+  T: number;
+  /** Blocks along each side. */
+  cells: number;
+  /** Positions one block covers along each side. */
+  span: number;
+  /** Which head was drawn. */
+  head: number;
+  /** Whether the mask differs between heads. */
+  perHead: boolean;
+  /** Row-major: a query block per row, a key block per column. */
+  kept: number[];
+  /** The share of the whole score matrix kept, as the analysis counts it. */
+  density: number;
+  /** Every condition a score has to meet, causal and window included; empty when all count. */
+  mask: string;
+  /** What each score becomes, the cap included; empty when nothing. */
+  score: string;
 }
 
 // ---------------------------------------------------------------------------

@@ -46,6 +46,19 @@ func Ex(v any, fallback string) string {
 	return fallback
 }
 
+// withExpressions passes a block's attention expressions on to the block it
+// expands into, as the resolver understood them: with the design's symbols
+// already bound, and not at all when there are none, or when they did not
+// compile — this block has said so, and the one inside would say it again.
+func withExpressions(r *Resolved, params map[string]any) map[string]any {
+	for _, key := range []string{"mask", "score"} {
+		if text := r.Str(key); text != "" {
+			params[key] = text
+		}
+	}
+	return params
+}
+
 var (
 	atomRe   = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 	numberRe = regexp.MustCompile(`^\d+(?:\.\d+)?$`)
@@ -168,6 +181,8 @@ var gqaAttention = &BlockDef{
 		{"flash", pBool(true, "Assume a memory-efficient kernel, which never builds the score matrix")},
 		{"logit_softcap", ParamSpec{Type: ParamNum, Default: 0.0, HasDefault: true,
 			Doc: "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"}},
+		{"mask", maskSpec()},
+		{"score", scoreSpec()},
 		{"value_embeddings", pBool(false,
 			"Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)")},
 		{"output_gate", pBool(false,
@@ -277,13 +292,13 @@ func expandGQA(raw map[string]any, r *Resolved) Expansion {
 	}
 
 	nodes = append(nodes,
-		node("attn", "sdpa", map[string]any{
+		node("attn", "sdpa", withExpressions(r, map[string]any{
 			"heads": H, "kv_heads": KV, "head_dim": dh,
 			"causal":        r.Bool("causal"),
 			"window":        Ex(raw["window"], "0"),
 			"flash":         !isFalse(r.P["flash"]),
 			"logit_softcap": Ex(raw["logit_softcap"], "0"),
-		}),
+		})),
 		node("o_merge", "rearrange", map[string]any{
 			"from": fmt.Sprintf("B %s T %s", H, dh), "to": fmt.Sprintf("B T (%s %s)", H, dh)}),
 		node("o_proj", "linear", map[string]any{
@@ -905,6 +920,8 @@ var transformerBlock = &BlockDef{
 		{"rope", grouped(ropeSpec(), "Attention")},
 		{"logit_softcap", grouped(ParamSpec{Type: ParamNum, Default: 0.0, HasDefault: true,
 			Doc: "Bound the attention scores to this magnitude with tanh (Gemma 2)"}, "Attention")},
+		{"mask", when(grouped(maskSpec(), "Attention"), "attention", "gqa")},
+		{"score", when(grouped(scoreSpec(), "Attention"), "attention", "gqa")},
 		{"value_embeddings", when(grouped(pBool(false,
 			"Take a second embedding of the same tokens on `ve` and mix it into the values"), "Attention"),
 			"attention", "gqa")},
@@ -992,7 +1009,7 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 			"bias":     r.Bool("attn_bias"),
 		})
 	} else {
-		attnNode = node("attn", "gqa_attention", map[string]any{
+		attnNode = node("attn", "gqa_attention", withExpressions(r, map[string]any{
 			"d_model":          D,
 			"heads":            Ex(raw["heads"], "0"),
 			"kv_heads":         Ex(raw["kv_heads"], "0"),
@@ -1006,7 +1023,7 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 			"logit_softcap":    Ex(raw["logit_softcap"], "0"),
 			"value_embeddings": ve,
 			"output_gate":      r.Bool("output_gate"),
-		})
+		}))
 	}
 
 	nodes := []ir.NodeDef{

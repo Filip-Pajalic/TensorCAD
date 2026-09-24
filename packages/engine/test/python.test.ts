@@ -384,6 +384,109 @@ describe.skipIf(!available)("a windowed, softcapped design runs", () => {
 });
 
 /**
+ * A design with its own mask and score, as the inspector would write them.
+ *
+ * Llama 3 shrunk to a few hundred thousand parameters, so the grouped heads
+ * are still grouped, with a mask that reads the head and the design's symbols
+ * and ALiBi's distance penalty on the scores. What it checks is that the two
+ * functions the engine prints mean in PyTorch what the engine counted, and
+ * that the model they are part of is still one the runtime can verify.
+ */
+function withExpressions(): ReturnType<typeof scaleDesign>["doc"] {
+  const doc = scaleDesign(getPreset("llama-3-8b"), { targetParams: 200e3, vocab: 256 }).doc;
+  for (const [k, v] of [["L", 2], ["H", 4], ["Hkv", 2], ["dh", 16]] as const) {
+    (doc.symbols[k] as { value: number }).value = v;
+  }
+  const block = doc.graph.nodes.find((n) => n.id === "layers")!.graph!.nodes.find((n) => n.id === "block")!;
+  block.params = {
+    ...block.params,
+    causal: false,
+    mask: "kv <= q and (q - kv < 2 * dh or h == 0) or kv < 4",
+    score: "score - 2 ** (-8 * (h + 1) / heads) * abs(q - kv)",
+  };
+  return doc;
+}
+
+describe.skipIf(!available)("attention written as expressions", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+
+  it(
+    "means in PyTorch what FlexAttention takes it to mean",
+    () => {
+      const dir = mkdtempSync(join(tmpdir(), "tensorcad-expr-"));
+      try {
+        const files = generateTorch(withExpressions()).files;
+        for (const file of files) writeFileSync(join(dir, file.path), file.contents);
+        const probe = join(import.meta.dir, "expression_attention_probe.py");
+        const [cmd] = invocation;
+        const python = cmd === "tensorcad-runtime" ? "python" : cmd;
+        const result = spawnSync(python, [probe, join(dir, "model.py")], {
+          encoding: "utf8",
+          timeout: TIMEOUT_MS,
+          shell: process.platform === "win32",
+        });
+        const out = JSON.parse(result.stdout.trim().split(/\r?\n/).at(-1)!);
+        // One mask and one score for both layers: they are the same layer.
+        expect({ masks: out.masks, scores: out.scores }).toEqual({
+          masks: ["mask_mod_1"],
+          scores: ["score_mod_1"],
+        });
+        // Every pairing, with and without grouped heads, against FlexAttention.
+        expect(Object.keys(out.cases)).toHaveLength(6);
+        for (const [key, err] of Object.entries(out.cases as Record<string, number>)) {
+          expect({ key, close: err < 1e-5 }).toEqual({ key, close: true });
+        }
+        expect(out.empty_row).toEqual({ ours: 0, theirs: 0 });
+        expect(out.finite).toBe(true);
+        if (!out.cuda) {
+          console.warn("[python.test] no CUDA device; the compiled FlexAttention path was not exercised");
+          return;
+        }
+        // Compiled where Triton is, the fallback where it is not, and saying
+        // so when it is the fallback. Either gives the same attention.
+        expect(out.cuda_vs_cpu).toBeLessThan(1e-4);
+        expect(out.said_unfused).toBe(!out.flex_compiled);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+
+  it(
+    "verifies: the parameters, the FLOPs the profiler counts, the export",
+    () => {
+      const doc = withExpressions();
+      const dir = mkdtempSync(join(tmpdir(), "tensorcad-expr-"));
+      try {
+        const out = generateTorch(doc);
+        expect(out.warnings).toEqual([]);
+        for (const file of out.files) writeFileSync(join(dir, file.path), file.contents);
+        const full = runVerify(invocation, join(dir, "model.py"));
+        expect(full).not.toHaveProperty("spawnFailed");
+        const r = full as Verify;
+        expect({ ok: r.ok, matches: r.matches, forward: r.forward, export: r.export_ok }).toEqual({
+          ok: true,
+          matches: true,
+          forward: "ok",
+          export: true,
+        });
+        const analysis = analyze(doc, { T: 128, B: 2 });
+        expect(r.params).toBe(analysis.params.total);
+        // The eager form computes every score and then masks, which is what
+        // the profiler counts; the analysis counts what the mask keeps.
+        expect(r.flops! / (2 * 128)).toBe(analysis.flops.fwdTotalUnmasked);
+        expect(analysis.flops.fwdAttention).toBeLessThan(analysis.flops.fwdAttentionUnmasked / 2);
+        expect(analysis.flops.elementwise).toBeGreaterThan(0);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+});
+
+/**
  * Every preset, through `ast.parse`.
  *
  * Cheaper than the block above and answering a different question: not "does

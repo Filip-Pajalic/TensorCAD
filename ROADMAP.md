@@ -20,7 +20,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 | M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
-| M10 Attention variants | **Phase 1 done.** The analysis and the generated code now describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. The rest is proposed: open attention up the way FlexAttention does — a mask and a score expression on the fused primitive — rather than decomposing it, so the numbers stay kernel-aware. Writing the proposal found two places the analysis and the generated code already describe different kernels. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
+| M10 Attention variants | **Phases 1 and 2 done.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Presets that need the expressions, and the variants that are not a score, remain. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -321,7 +321,7 @@ can be copied to another machine; a trace of an earlier version of the design
 is loaded but said to be one. The browser suite reloads the page, opens only
 the design, and finds its values; with the shelf taken away, that check fails.
 
-### M10 — Attention variants · Phase 1 done
+### M10 — Attention variants · Phases 1 and 2 done
 
 The open question below, *how far to go op-level*, has a proposal:
 [Attention variants](docs/explanation/attention-variants.md). Attention stays one
@@ -353,7 +353,19 @@ kernel before anything is added.
    runtime's verification depends on. It is phase 2's problem, where it is
    needed.
 2. **Mask and score expressions** on `sdpa`, parsed, costed and printed by the
-   engine, edited in the inspector.
+   engine, edited in the inspector. *Done:* `mask` and `score` on `sdpa`,
+   `gqa_attention` and `transformer_block`, in a small language with Python's
+   operators over positions, the head and the design's symbols
+   ([reference](docs/reference/attention-expressions.md)). A mask is counted
+   by evaluating it; a score by its arithmetic. The inspector shows the
+   expression as the engine understood it and the block mask it makes at the
+   operating point. `SDPA-04` and `SDPA-05` catch a mask that keeps nothing or
+   leaves a query nothing. Generated as FlexAttention's `mask_mod` and
+   `score_mod`, compiled on CUDA and applied eagerly elsewhere, which a test
+   holds against `flex_attention` itself. Treating `causal` and `window` as the
+   masks they are found that a causal window was counted at half its width:
+   Gemma 2, Gemma 3 and Mistral's windowed layers are now counted at
+   `W - W²/2T` keys a query.
 3. **Presets that need them** — ALiBi, relative bias, gpt-oss.
 4. **Sinks, differential attention, and an eager block** for what is not a score.
 

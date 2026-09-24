@@ -152,6 +152,11 @@ jobs:
       - name: Generate the service bindings
         run: go run github.com/wailsapp/wails/v3/cmd/wails3 generate bindings -clean=true -ts -i
         working-directory: desktop
+      # Against the bindings just generated, so a Go method renamed or a field
+      # retyped is an error here rather than a call that fails in the window.
+      # Vite builds without typechecking, which is how ten errors sat here unseen.
+      - name: Type-check the window
+        run: bunx tsc --noEmit -p desktop/frontend/tsconfig.json
       # The window's assets are embedded into the Go binary with `go:embed`, so
       # the frontend has to build before the shell will compile at all.
       - name: Build the window

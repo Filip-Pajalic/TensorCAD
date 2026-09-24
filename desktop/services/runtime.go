@@ -17,7 +17,8 @@ import (
 )
 
 // RuntimeService runs the Python side of TensorCAD: verifying a generated model
-// against PyTorch, and training a scaled-down design on the local GPU.
+// against PyTorch, training a scaled-down design on the local GPU, and tracing
+// a small one to see what it computes.
 //
 // These are long jobs that print progress. Rather than block a call for
 // minutes, a job is started, given an id, and its output is emitted as events
@@ -180,33 +181,92 @@ func (s *RuntimeService) SmokeTrain(modelPath string, steps int, batch int, seq 
 	return s.start(args, filepath.Dir(modelPath))
 }
 
-// TraceStarted is a trace job, and where the trace will be once it is done.
-type TraceStarted struct {
+// DesignJob is a job run on the open design, and where its result will be.
+type DesignJob struct {
 	ID      string `json:"id"`
 	Command string `json:"command"`
-	Out     string `json:"out"`
+	// Out is the file the job leaves its result in, when it leaves one:
+	// a trace, a run record. Empty when the result is only what it prints.
+	Out string `json:"out"`
 }
 
-// Trace runs a design small enough to look at and records what it computes,
-// for the editor's volume view and walkthrough.
+// stage writes the generated model into a folder of this app's own, one per
+// design, and returns the folder and the model in it.
 //
-// The editor generates the model and hands the files over; they go into a
-// scratch folder of this service's own rather than anywhere the user chose,
-// because a trace is something to look at, not something to keep — the
-// runtime can make it again in seconds. When the job is done the frontend
-// reads the result with ReadTrace.
-func (s *RuntimeService) Trace(designName string, files []GeneratedFile) (*TraceStarted, error) {
+// Every design job runs from here rather than from wherever the user keeps
+// their work: what it leaves behind — a trace, a run log — is something to
+// look at, the editor reads it back as soon as the job ends, and the runtime
+// can make it again in seconds. Generate PyTorch… is for keeping a model.
+func stage(designName string, files []GeneratedFile) (dir string, model string, err error) {
 	if len(files) == 0 {
-		return nil, errors.New("nothing to trace: generate the model first")
+		return "", "", errors.New("nothing to run: generate the model first")
 	}
-	written, err := writeFiles(filepath.Join(traceRoot(), safeName(designName)), files)
+	written, err := writeFiles(filepath.Join(scratchRoot(), safeName(designName)), files)
+	if err != nil {
+		return "", "", err
+	}
+	model = filepath.Join(written.Directory, "model.py")
+	if _, err := os.Stat(model); err != nil {
+		return "", "", errors.New("the generated files have no model.py")
+	}
+	return written.Directory, model, nil
+}
+
+// VerifyDesign instantiates the open design's generated model in PyTorch and
+// checks its parameter count against the design's, runs a forward pass, counts
+// its FLOPs and tries to export it.
+func (s *RuntimeService) VerifyDesign(designName string, files []GeneratedFile) (*DesignJob, error) {
+	_, model, err := stage(designName, files)
 	if err != nil {
 		return nil, err
 	}
-	dir := written.Directory
-	model := filepath.Join(dir, "model.py")
-	if _, err := os.Stat(model); err != nil {
-		return nil, errors.New("the generated files have no model.py")
+	started, err := s.Verify(model, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+	return &DesignJob{ID: started.ID, Command: started.Command}, nil
+}
+
+// SmokeTrainDesign trains the open design briefly on the local GPU, or the CPU
+// when there is none, and leaves a run record the editor's Runs panel opens.
+//
+// It trains on a prepared corpus when the user has one in ~/.tensorcad/data
+// (`tensorcad-runtime data prepare --out ~/.tensorcad/data`), and otherwise on
+// the runtime's synthetic tokens; the record says which.
+func (s *RuntimeService) SmokeTrainDesign(designName string, files []GeneratedFile, steps int, batch int, seq int) (*DesignJob, error) {
+	dir, model, err := stage(designName, files)
+	if err != nil {
+		return nil, err
+	}
+	if steps <= 0 {
+		return nil, errors.New("a smoke run needs at least one step")
+	}
+	args := []string{"-m", "tensorcad_runtime", "smoke-train", model, "--steps", fmt.Sprint(steps), "--log-every", "10"}
+	if batch > 0 {
+		args = append(args, "--batch", fmt.Sprint(batch))
+	}
+	if seq > 0 {
+		args = append(args, "--seq", fmt.Sprint(seq))
+	}
+	if data := userData(); data != "" {
+		args = append(args, "--data", data)
+	}
+	started, err := s.start(args, dir)
+	if err != nil {
+		return nil, err
+	}
+	// The runtime names the record after the time it starts, so its path is
+	// only known from what it prints when it ends: `record_file`.
+	return &DesignJob{ID: started.ID, Command: started.Command}, nil
+}
+
+// Trace runs a design small enough to look at and records what it computes,
+// for the editor's volume view and walkthrough. When the job is done the
+// frontend reads the result with ReadResult.
+func (s *RuntimeService) Trace(designName string, files []GeneratedFile) (*DesignJob, error) {
+	dir, model, err := stage(designName, files)
+	if err != nil {
+		return nil, err
 	}
 	out := filepath.Join(dir, "trace.json")
 	// Last run's, which would otherwise be read if this one fails early.
@@ -215,28 +275,29 @@ func (s *RuntimeService) Trace(designName string, files []GeneratedFile) (*Trace
 	if err != nil {
 		return nil, err
 	}
-	return &TraceStarted{ID: started.ID, Command: started.Command, Out: out}, nil
+	return &DesignJob{ID: started.ID, Command: started.Command, Out: out}, nil
 }
 
-// maxTraceBytes is what ReadTrace will return. A trace of the largest design
+// maxResultBytes is what ReadResult will return. A trace of the largest design
 // the runtime agrees to trace, at the longest input, is well under it.
-const maxTraceBytes = 64 << 20
+const maxResultBytes = 64 << 20
 
-// ReadTrace returns a trace this service wrote, and nothing else: the path has
-// to be a trace.json under its own scratch folder. The frontend can reach this
-// with any string, so it is not a way to read an arbitrary file.
-func (s *RuntimeService) ReadTrace(path string) (string, error) {
+// ReadResult returns a JSON file a design job left behind — a trace, a run
+// record — and nothing else: the path has to be a .json under this app's own
+// scratch folder. The frontend can call this with any string, so it is not a
+// way to read an arbitrary file.
+func (s *RuntimeService) ReadResult(path string) (string, error) {
 	clean := filepath.Clean(path)
-	rel, err := filepath.Rel(traceRoot(), clean)
-	if err != nil || rel == "." || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) || filepath.Base(clean) != "trace.json" {
-		return "", fmt.Errorf("%s is not a trace this app made", path)
+	rel, err := filepath.Rel(scratchRoot(), clean)
+	if err != nil || rel == "." || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) || filepath.Ext(clean) != ".json" {
+		return "", fmt.Errorf("%s is not something a job of this app made", path)
 	}
 	info, err := os.Stat(clean)
 	if err != nil {
-		return "", fmt.Errorf("no trace was written: %s does not exist", clean)
+		return "", fmt.Errorf("the job wrote no result: %s does not exist", clean)
 	}
-	if info.Size() > maxTraceBytes {
-		return "", fmt.Errorf("the trace is %d bytes, more than the %d this reads", info.Size(), maxTraceBytes)
+	if info.Size() > maxResultBytes {
+		return "", fmt.Errorf("the result is %d bytes, more than the %d this reads", info.Size(), maxResultBytes)
 	}
 	data, err := os.ReadFile(clean)
 	if err != nil {
@@ -245,10 +306,23 @@ func (s *RuntimeService) ReadTrace(path string) (string, error) {
 	return string(data), nil
 }
 
-// traceRoot is where traces are made: a folder of this app's own under the
+// scratchRoot is where design jobs run: a folder of this app's own under the
 // system's temporary directory.
-func traceRoot() string {
-	return filepath.Join(os.TempDir(), "tensorcad-trace")
+func scratchRoot() string {
+	return filepath.Join(os.TempDir(), "tensorcad-desktop")
+}
+
+// userData is the prepared corpus a smoke run trains on, when there is one.
+func userData() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	dir := filepath.Join(home, ".tensorcad", "data")
+	if info, err := os.Stat(dir); err == nil && info.IsDir() {
+		return dir
+	}
+	return ""
 }
 
 // Cancel stops a running job.

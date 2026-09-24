@@ -46,6 +46,12 @@ export { captureView, applyView, openFromLocation } from "./state/session.js";
  * Load a trace, which ends in the same `loadTrace`.
  */
 export { addTrace, loadTrace, parseTrace, type TraceFile } from "./three/trace.js";
+/**
+ * Run records, for the Runs panel. Exported so the desktop shell can put a run
+ * it just made on the chart, through the same parser a file a person opened
+ * goes through.
+ */
+export { parseRun, useRuns, type RunRecord } from "./state/runs.js";
 export {
   COMMANDS,
   commandsIn,

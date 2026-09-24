@@ -4,7 +4,7 @@ Goal: a node-based CAD tool for designing neural network architectures at the pr
 
 Effort estimates assume one developer working with an AI coding assistant, part-time. They are ranges, not commitments.
 
-## Status as of 2026-09-23
+## Status as of 2026-09-24
 
 | Milestone | State |
 |---|---|
@@ -19,7 +19,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, named refusals, a definition editor, a selectable tensor, a feature timeline, an SVG export of the sheet and a volume view whose stages are named. Twenty passes, each with what was wrong and what replaced it, in `docs/explanation/interaction-design.md`. Every block and wire has a spoken name and the hierarchy can be walked by keyboard — Enter into a block, Escape back out onto it — and `bun run test:browser` drives the built editor in headless Chrome with real key events, in CI, because the unit suite has no browser to see what React Flow does with a key first. |
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
-| M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. |
+| M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -301,10 +301,17 @@ of the language boundary; the editor's registry and wording in unit tests; and
 File > Open then File > Load a trace in headless Chrome, with a design that is
 not nano-sort.
 
-Remaining: the desktop app's *Verify against PyTorch* and *Smoke train* menu
-items still only say what to do first; they could run the way *Trace this
-design* now does. And a trace is a file on disk or a thing in memory — there is
-nowhere to keep one beside the design it describes.
+Since done: the desktop app's *Verify against PyTorch* and *Smoke train*,
+which had only said what to do first, run the way *Trace this design* does.
+Verify answers in a sentence — PyTorch's count against the design's, whether a
+forward pass ran, whether it exports — and a smoke run puts its loss curve on
+the Runs chart. All three share one staging step and one reader, which returns
+only a JSON result a job of the app left in its own folder. The desktop
+window's TypeScript is now type-checked in CI; it had never been, and ten
+errors had collected there unseen.
+
+Remaining: a trace is a file on disk or a thing in memory — there is nowhere
+to keep one beside the design it describes.
 
 ## Sequencing and dependencies
 

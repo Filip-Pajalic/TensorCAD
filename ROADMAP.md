@@ -19,6 +19,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, named refusals, a definition editor, a selectable tensor, a feature timeline, an SVG export of the sheet and a volume view whose stages are named. Twenty passes, each with what was wrong and what replaced it, in `docs/explanation/interaction-design.md`. Every block and wire has a spoken name and the hierarchy can be walked by keyboard — Enter into a block, Escape back out onto it — and `bun run test:browser` drives the built editor in headless Chrome with real key events, in CI, because the unit suite has no browser to see what React Flow does with a key first. |
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
+| M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -263,13 +264,55 @@ in the volume view; the attention matrix shows which letters attended to which;
 and the walkthrough can name them. Anything larger than a trace covers still
 draws, honestly labelled as structure only.
 
+### M9 — Your own values · Done
+
+M8 put real numbers in the volume view for one design, made ahead of time and
+committed, because a static site cannot run Python. Every other design was
+drawn with decoration. The desktop app can run Python, and anybody with the
+runtime installed can run it from a terminal, so the missing pieces were a
+trace that works on a design other than the one it was written for, and a way
+into the editor for one that was not committed.
+
+1. **A trace of any small design.** `tensorcad-runtime trace` no longer reads
+   the design's symbol names, which are its author's choice. The vocabulary is
+   the token embedding's size; an attention block is anything holding the four
+   projections; its head layout is what the generated class says it was built
+   with. A design that can learn to sort in seconds is trained to; anything
+   else is run exactly as initialised and says so — `untrained`, in the legend,
+   in the picture's label and in every sentence the walkthrough adds, because an
+   untrained model's attention is close to even and a reader who did not know
+   would draw the wrong conclusion from it. Rotary embedding and grouped-query
+   attention are recomputed and checked, to 3e-8 on a small Llama. Retraced, the
+   committed nano-sort trace comes out identical.
+2. **Loading one.** File > Load a trace reads a trace file. It shows on the
+   design whose generated model it fingerprints and on nothing else, like the
+   committed one; a trace of another design is kept for when that design is
+   open, and the message says so rather than appearing to do nothing. When a
+   trace is shorter than the drawing — an untrained trace is 32 positions, and
+   most designs default to thousands — the legend says so and offers to draw it
+   at the trace's length.
+3. **Making one from the desktop app.** Design > Trace this design generates
+   the model, runs the trace in a scratch folder of the app's own, and loads the
+   result into the volume view. The shell reads back only a trace it wrote.
+
+Tested at each layer: the runtime against a rotary grouped-query design, with
+the fingerprint it writes compared against the engine's model on the other side
+of the language boundary; the editor's registry and wording in unit tests; and
+File > Open then File > Load a trace in headless Chrome, with a design that is
+not nano-sort.
+
+Remaining: the desktop app's *Verify against PyTorch* and *Smoke train* menu
+items still only say what to do first; they could run the way *Trace this
+design* now does. And a trace is a file on disk or a thing in memory — there is
+nowhere to keep one beside the design it describes.
+
 ## Sequencing and dependencies
 
 ```
 M0 Sketch ──► M1 Check ──► M2 Manufacture ──► M3 Agent ──► M4 Test bench
                                │                 │
                                └──► M5 Advanced parts (starts after M2, runs alongside M3/M4)
-                                                                 └──► M6 Ship ──► M7 Legibility ──► M8 Real values
+                                                                 └──► M6 Ship ──► M7 Legibility ──► M8 Real values ──► M9 Your own values
 ```
 
 M3 is deliberately short because the core is pure; the MCP server is a thin adapter. M5 is where most of the long-tail work lives and is driven by which architectures you want to learn next.

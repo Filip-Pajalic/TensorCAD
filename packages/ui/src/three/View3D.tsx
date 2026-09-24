@@ -1006,7 +1006,7 @@ export default function View3D(): React.ReactElement {
         // A canvas is one opaque element to a screen reader. What it shows is
         // what the sheet says in words, so this says what the picture adds.
         role="img"
-        aria-label={`Volume view of ${model.name}: ${model.blocksDrawn} blocks of ${shape.nHeads} attention heads, width ${shape.C}, drawn at their real proportions${trace && covered > 0 ? `, with the values of a trained run on ${trace.letters.join(" ")}` : ""}.`}
+        aria-label={`Volume view of ${model.name}: ${model.blocksDrawn} blocks of ${shape.nHeads} attention heads, width ${shape.C}, drawn at their real proportions${trace && covered > 0 ? `, with the real values of a run: ${trace.summary}` : ""}.`}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -1088,8 +1088,24 @@ export default function View3D(): React.ReactElement {
         <div>drag to orbit · shift-drag to pan · wheel to zoom · click a tensor to select it</div>
         {trace && covered > 0 ? (
           <div className="text-foreground">
-            real values: trained to sort, reading {trace.letters.join(" ")} · brighter is larger
+            real values: {trace.summary} · brighter is larger
             {covered < model.blocks.length && " · speckled cells are decoration"}
+          </div>
+        ) : trace && shape.T > trace.positions ? (
+          // A trace of this design is loaded, but it ran fewer positions than
+          // the drawing has. The model is causal, so a shorter drawing is
+          // exactly the start of the run; a longer one has positions nobody
+          // computed, and drawing none rather than some is the honest default.
+          <div className="pointer-events-auto text-foreground">
+            a trace of this design covers {trace.positions} positions and this is drawn at{" "}
+            {shape.T.toLocaleString("en-US")} ·{" "}
+            <button
+              type="button"
+              className="underline underline-offset-2 hover:text-primary"
+              onClick={() => useEditor.getState().setOperating({ T: trace.positions })}
+            >
+              draw it at {trace.positions}
+            </button>
           </div>
         ) : (
           <div>cell shading is decoration: a design has shapes, not weights</div>

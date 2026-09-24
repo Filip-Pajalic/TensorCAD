@@ -70,7 +70,13 @@ func (s *WorkspaceService) Write(directory string, designName string, files []Ge
 	if designName == "" {
 		designName = "design"
 	}
-	target := filepath.Join(directory, safeName(designName))
+	return writeFiles(filepath.Join(directory, safeName(designName)), files)
+}
+
+// writeFiles puts generated files into one folder, refusing any path that
+// climbs out of it. Shared by Write and by the runtime's scratch folder, so
+// both hold the same line.
+func writeFiles(target string, files []GeneratedFile) (*WriteResult, error) {
 	if err := os.MkdirAll(target, 0o755); err != nil {
 		return nil, fmt.Errorf("create %s: %w", target, err)
 	}

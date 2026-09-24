@@ -40,6 +40,7 @@ export const FILE_MENU: MenuNode[] = [
   item("file.save"),
   sep(),
   item("file.library"),
+  item("file.loadTrace"),
   sep(),
   item("file.export"),
 ];

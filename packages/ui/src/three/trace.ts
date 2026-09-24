@@ -6,10 +6,12 @@
  * input, with every weight and every activation recorded under the block path
  * the editor already uses. The volume view puts those numbers in its cells.
  *
- * There is one trace, for `nano-sort`, and it is committed. The editor is a
- * static site and the runtime is Python, so a trace can only be something that
- * was made ahead of time — `bun run trace` remakes it, deliberately, like the
- * goldens. It is loaded only when the volume view asks for it.
+ * One trace is committed, for `nano-sort`: the editor is a static site and the
+ * runtime is Python, so what it shows on its own can only have been made ahead
+ * of time — `bun run trace` remakes it, deliberately, like the goldens. Any
+ * other trace is *added*: a file `tensorcad-runtime trace` wrote, opened with
+ * File > Load a trace, or handed over by the desktop shell after it ran the
+ * runtime itself. Both kinds are loaded only when something asks for them.
  *
  * A trace describes the design it was made from and nothing else, so it is
  * shown only on a design that still generates the same `model.py`. That file
@@ -44,14 +46,24 @@ export interface TraceFile {
   model_sha256: string;
   params: number;
   symbols: Record<string, number>;
-  task: { name: "sort"; length: number; vocab: number; symbols: string[] };
-  training: { seed: number; steps: number; final_loss: number; held_out_accuracy: number };
+  /**
+   * What the model was run as. `sort` was trained until it sorted every
+   * held-out input; `untrained` is the model exactly as initialised, which is
+   * what a design whose vocabulary is too large to sort gets.
+   */
+  task: { name: "sort" | "untrained"; length: number | null; vocab: number; symbols: string[] };
+  training: {
+    seed: number;
+    steps: number;
+    final_loss: number | null;
+    held_out_accuracy: number | null;
+  };
   input: number[];
   sequence: number[];
-  answer: number[];
+  answer: number[] | null;
   predicted: number[];
   checks: {
-    sorted_correctly: boolean;
+    sorted_correctly: boolean | null;
     attention_max_abs_error: number | null;
     attention_note: string | null;
   };
@@ -141,9 +153,26 @@ export class Trace {
     return this.file.sequence.length;
   }
 
-  /** The input, as the task's own symbols. */
+  /** The input, as the task's own symbols: letters for sort, token ids otherwise. */
   get letters(): string[] {
     return this.file.sequence.map((t) => this.file.task.symbols[t] ?? String(t));
+  }
+
+  /** The model as initialised, never trained. Everything that shows it says so. */
+  get untrained(): boolean {
+    return this.file.task.name === "untrained";
+  }
+
+  /**
+   * One phrase for what these numbers are, for the legend, the picture's label
+   * and anywhere else that has room for a phrase. Long inputs are elided: the
+   * point is to say which run it is, not to print it.
+   */
+  get summary(): string {
+    const shown = this.letters.length > 12 ? [...this.letters.slice(0, 12), "\u2026"] : this.letters;
+    return this.untrained
+      ? `untrained, as initialised, on ${this.positions} token ids: ${shown.join(" ")}`
+      : `trained to sort, reading ${shown.join(" ")}`;
   }
 
   tensor(path: string, layer: number, what: string): Tensor | null {
@@ -264,6 +293,81 @@ const TRACES: Record<string, () => Promise<{ default: unknown }>> = {
 
 const loaded = new Map<string, Promise<Trace | null>>();
 
+/**
+ * Traces added while the editor runs, newest first. Kept in memory for the
+ * session: they are megabytes each, and a trace is cheap to make again.
+ */
+const added: Trace[] = [];
+const listeners = new Set<() => void>();
+
+/** Be told when a trace is added, so a view can look again. */
+export function subscribeTraces(fn: () => void): () => void {
+  listeners.add(fn);
+  return () => listeners.delete(fn);
+}
+
+/**
+ * Read a trace file, refusing one that is not a trace rather than letting it
+ * fail later as a picture of nothing.
+ */
+export function parseTrace(text: string): TraceFile {
+  let file: unknown;
+  try {
+    file = JSON.parse(text);
+  } catch (e) {
+    throw new Error(`not JSON: ${(e as Error).message}`);
+  }
+  const f = file as Partial<TraceFile> | null;
+  if (!f || typeof f !== "object") throw new Error("not a trace");
+  if (f.version !== 1) throw new Error(`a trace of version ${String(f.version)}, and this editor reads version 1`);
+  if (typeof f.model_sha256 !== "string" || !/^[0-9a-f]{64}$/.test(f.model_sha256)) {
+    throw new Error("no fingerprint of the model it was made from, so it cannot be matched to a design");
+  }
+  if (!f.weights || !f.activations || !Array.isArray(f.sequence) || !f.task) {
+    throw new Error("missing its weights, its activations or its input");
+  }
+  return f as TraceFile;
+}
+
+/**
+ * Add a trace. It shows on whatever open design generates the model it was
+ * made from, and on nothing else; a second trace of the same model replaces
+ * the first.
+ */
+export function addTrace(file: TraceFile): Trace {
+  const trace = new Trace(file);
+  const same = added.findIndex((t) => t.file.model_sha256 === file.model_sha256);
+  if (same >= 0) added.splice(same, 1);
+  added.unshift(trace);
+  for (const fn of listeners) fn();
+  return trace;
+}
+
+/**
+ * Load a trace file for the open design, and say what happened in one sentence.
+ *
+ * A trace of another model is still kept — it will show when that design is
+ * opened — but the sentence says it is not this one, because a load that
+ * silently changes nothing on screen reads as a load that failed.
+ */
+export async function loadTrace(text: string, doc: Doc): Promise<{ ok: boolean; message: string }> {
+  let file: TraceFile;
+  try {
+    file = parseTrace(text);
+  } catch (e) {
+    return { ok: false, message: `That is not a trace TensorCAD can read: ${(e as Error).message}.` };
+  }
+  const trace = addTrace(file);
+  const what = trace.untrained ? "untrained" : "trained to sort";
+  const matches = (await traceFor(doc)) === trace;
+  return {
+    ok: true,
+    message: matches
+      ? `Loaded a trace of ${file.design} (${what}). Open the volume view to see its values.`
+      : `Loaded a trace of ${file.design} (${what}), but the open design does not generate the model it was made from. It will show when that design is open.`,
+  };
+}
+
 function load(name: string): Promise<Trace | null> {
   let hit = loaded.get(name);
   if (!hit) {
@@ -296,16 +400,22 @@ export function modelSource(doc: Doc): string | null {
 /**
  * The trace of this design, if there is one and it still describes it.
  *
- * The name is only where to look. What decides is the generated model.
+ * An added trace first, since it was made on purpose and more recently; then
+ * the committed one, for which the name is only where to look. What decides,
+ * either way, is the generated model.
  */
 export async function traceFor(doc: Doc): Promise<Trace | null> {
   const name = doc.meta.name;
-  if (!name || !(name in TRACES)) return null;
-  const trace = await load(name);
-  if (!trace) return null;
+  const committed = name && name in TRACES;
+  if (added.length === 0 && !committed) return null;
   const source = modelSource(doc);
   if (source === null) return null;
-  return (await sha256(source)) === trace.file.model_sha256 ? trace : null;
+  const hash = await sha256(source);
+  const mine = added.find((t) => t.file.model_sha256 === hash);
+  if (mine) return mine;
+  if (!committed) return null;
+  const trace = await load(name);
+  return trace && trace.file.model_sha256 === hash ? trace : null;
 }
 
 /**
@@ -314,6 +424,9 @@ export async function traceFor(doc: Doc): Promise<Trace | null> {
  */
 export function useTrace(doc: Doc): Trace | null {
   const [trace, setTrace] = useState<Trace | null>(null);
+  // Bumped when a trace is added, so the design on screen is looked up again.
+  const [additions, setAdditions] = useState(0);
+  useEffect(() => subscribeTraces(() => setAdditions((n) => n + 1)), []);
   useEffect(() => {
     let live = true;
     traceFor(doc).then(
@@ -323,6 +436,6 @@ export function useTrace(doc: Doc): Trace | null {
     return () => {
       live = false;
     };
-  }, [doc]);
+  }, [doc, additions]);
   return trace;
 }

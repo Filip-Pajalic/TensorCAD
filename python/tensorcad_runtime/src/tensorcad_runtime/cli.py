@@ -110,10 +110,18 @@ def build_parser() -> argparse.ArgumentParser:
 
     # -- trace -------------------------------------------------------------
     trace = subparsers.add_parser(
-        "trace", help="train a tiny model on the sort task and record every value it computes"
+        "trace", help="run a tiny model on one input and record every value it computes"
     )
     trace.add_argument("model", help="path to a generated model.py, with its design beside it")
     trace.add_argument("--out", required=True, help="where to write the trace JSON")
+    trace.add_argument(
+        "--task",
+        default="auto",
+        choices=["auto", "sort", "untrained"],
+        help="train it to sort first, or record it as initialised (default: sort when it can learn it)",
+    )
+    trace.add_argument("--positions", type=int, default=None, help="input length for an untrained trace")
+    trace.add_argument("--max-params", type=int, default=1_000_000, help="refuse designs larger than this")
     trace.add_argument("--seed", type=int, default=1337, help="random seed")
     trace.add_argument("--max-steps", type=int, default=6000, help="give up training after this")
     trace.add_argument("--batch", type=int, default=64, help="batch size")
@@ -121,7 +129,7 @@ def build_parser() -> argparse.ArgumentParser:
     trace.add_argument(
         "--input",
         default=None,
-        help="the symbols to sort, as digits, e.g. 210102 (default: Bycroft's own example)",
+        help="the input as comma-separated token ids, e.g. 2,1,0,1,0,2 (default: seeded, or Bycroft's own example)",
     )
 
     # -- data --------------------------------------------------------------
@@ -216,11 +224,14 @@ def main(argv: list[str] | None = None) -> int:
 
             result = trace_model(
                 args.model,
+                task=args.task,
                 seed=args.seed,
                 max_steps=args.max_steps,
                 batch=args.batch,
                 lr=args.lr,
-                tokens=[int(c) for c in args.input] if args.input else None,
+                tokens=[int(c) for c in args.input.split(",")] if args.input else None,
+                positions=args.positions,
+                max_params=args.max_params,
                 progress=_progress,
             )
             out = Path(args.out)
@@ -228,13 +239,21 @@ def main(argv: list[str] | None = None) -> int:
             # Compact: the file is mostly base64, and indenting it buys nothing.
             out.write_text(json.dumps(result, separators=(",", ":")) + "\n", encoding="utf-8")
             checks = result["checks"]
-            ok = checks["sorted_correctly"] and not checks["attention_note"]
+            # A trained trace is only worth showing if the model learnt the task.
+            # Attention that could not be checked is left out and said so in
+            # `attention_note`; it does not make the rest of the trace wrong.
+            ok = result["task"]["name"] == "untrained" or bool(checks["sorted_correctly"])
+            what = (
+                f"{result['training']['steps']} steps, {result['training']['held_out_accuracy']:.1%} sorted"
+                if result["task"]["name"] == "sort"
+                else "untrained"
+            )
             _progress(
-                f"trace: {result['training']['steps']} steps, "
-                f"{result['training']['held_out_accuracy']:.1%} sorted, "
-                f"attention error {checks['attention_max_abs_error']}, "
+                f"trace: {what}, attention error {checks['attention_max_abs_error']}, "
                 f"{out.stat().st_size:,} bytes -> {out}"
             )
+            if checks["attention_note"]:
+                _progress(f"note: {checks['attention_note']}")
             # stdout carries the summary; the trace itself is in the file.
             summary = {k: v for k, v in result.items() if k not in ("weights", "activations", "attention")}
             return _emit({"ok": ok, "command": "trace", "out": str(out), **summary})

@@ -131,14 +131,25 @@ bun run python/fixtures/make-tiny-gpt2.ts
 tensorcad-runtime trace out/nano-sort/model.py --out trace.json
 ```
 
-Trains a design small enough to look at on minGPT's sorting task — read `n`
-symbols, write them back sorted — then runs one input through it and writes every
-weight and every activation to `--out`, keyed by the block paths the editor uses
-(`layers.0.block.attn.q_proj` becomes `layers/block/attn/q_proj`, layer 0). The
-task is read off the design: the vocabulary is its `V` and the context `Tmax`
-must be odd, `2n - 1` positions for the input and all but the last of the answer.
-Training stops at the first check where every held-out input is sorted; for
-`nano-sort` that is 250 steps and about four seconds on a CPU.
+Runs a design small enough to look at — a million parameters, by default —
+on one input and writes every weight and every activation to `--out`, keyed by
+the block paths the editor uses (`layers.0.block.attn.q_proj` becomes
+`layers/block/attn/q_proj`, layer 0). What it is run as, `--task`:
+
+- **`sort`**, minGPT's task: read `n` symbols, write them back sorted. A design
+  whose token embedding has 2 to 26 rows is trained on it until it sorts every
+  held-out input, then run on one; `n` comes from its context, `Tmax` or the
+  default `T`. For `nano-sort` that is 250 steps and about four seconds on a CPU.
+- **`untrained`**, for everything else: the model exactly as `init_weights()`
+  leaves it, on 32 seeded token ids (`--positions` for more, up to 256). Real
+  numbers, the ones the design computes on its first step, and labelled
+  untrained wherever the editor shows them.
+
+`auto`, the default, picks `sort` when the design can learn it. Nothing reads
+the design's symbol names: the vocabulary is the token embedding's size, an
+attention block is anything holding `q_proj`, `k_proj`, `v_proj` and `o_proj`,
+and its head layout is what the generated class's docstring says it was built
+with. A design with no token embedding is refused.
 
 Tensors are base64 little-endian float32 in PyTorch's own axis order. Only leaf
 modules are hooked, and an input that is some other module's output is recorded
@@ -148,10 +159,14 @@ Scaled dot-product attention never hands back its matrix, so the trace recompute
 it from the captured query and key, multiplies it by the captured values and
 holds the result against what the fused kernel fed the output projection. If
 they differ by more than `1e-4` the matrix is left out and `checks.attention_note`
-says why; `ok` on stdout is false unless the input was sorted and the attention
-checked. The summary carries `model_sha256`, the hash of the generated file, which
-is what the editor matches a trace to a design by.
+says why. Rotary embedding is a module of its own, so the scores are taken of its
+output when a design has one, and grouped key-value heads are repeated across the
+query heads that share them. `ok` on stdout is false only when a sort run failed
+to learn the task. The summary carries `model_sha256`, the hash of the generated
+file, which is what the editor matches a trace to a design by.
 
+To see one, open the design in the editor and use File > Load a trace; the desktop
+app's Design > Trace this design runs this and loads the result in one step.
 `bun run trace` regenerates the one trace the editor ships, for `nano-sort`.
 
 ## `data prepare`

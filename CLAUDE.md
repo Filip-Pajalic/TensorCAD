@@ -17,6 +17,7 @@ bun run scripts/codegen-demo.ts <preset>   # writes out/<preset>/model.py
 bun run scripts/scale-demo.ts        # shrink a design to a bench budget
 bun run packages/cli/src/index.ts mup <preset>   # the width ladder for a sweep
 bun run trace                        # retrain nano-sort and rewrite the committed trace (needs torch)
+python -m tensorcad_runtime trace out/<design>/model.py --out trace.json   # any small design, then File > Load a trace
 ```
 
 A stale `.wasm` is the one way to see an answer the source does not give. If you
@@ -144,11 +145,14 @@ Two cross-checks worth knowing:
   `app/theme.css` as `data-theme` tokens — a literal colour in a stylesheet or a component is
   a bug, because it will not switch themes.
   `three/trace.ts` is what a design *computes*, where everything else is what it
-  costs: a run of `nano-sort` recorded by `tensorcad-runtime trace` and committed
-  under `three/traces`. It is shown only on a design that still generates the
-  `model.py` it was made from, matched by that file's hash, because anything
-  cheaper — a name, the symbols, the parameter count — lets `gelu` swapped for
-  `relu` through. Each box in `model3d.ts` names the tensor it is a picture of as
+  costs: a run recorded by `tensorcad-runtime trace`. One is committed under
+  `three/traces`, for `nano-sort`; any other is *added* — File > Load a trace, or
+  the desktop shell's Design > Trace this design, both ending in `loadTrace` — and
+  kept in memory for the session. A trace is either trained to sort or
+  `untrained`, and everything that quotes one says which. It is shown only on a
+  design that still generates the `model.py` it was made from, matched by that
+  file's hash, because anything cheaper — a name, the symbols, the parameter
+  count — lets `gelu` swapped for `relu` through. Each box in `model3d.ts` names the tensor it is a picture of as
   a `CellSource` (a path, a layer, a role, which axis runs across); the view fills
   those from the trace and leaves the rest as decoration, and says which is which.
   `trace.test.ts` recomputes the input embedding and each head's output from the

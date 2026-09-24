@@ -12,6 +12,7 @@
 
 import { describe, expect, it } from "bun:test";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -230,6 +231,56 @@ describe.skipIf(!available)("tensorcad-runtime trace", () => {
         // An input that is another module's output is stored once.
         expect(trace.activations["layers.0.block.attn.k_proj:in"].same_as).toBe("layers.0.block.norm1:out");
         expect(trace.attention).toHaveLength(3);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+});
+
+describe.skipIf(!available)("tensorcad-runtime trace, on a design unlike nano-sort", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+
+  it(
+    "records an untrained run, recomputes rotary grouped-query attention, and fingerprints the model the engine generates",
+    () => {
+      // Rotary positions, four query heads sharing two key-value heads, a gated
+      // feed-forward and RMSNorm: every way a design can differ from nano-sort
+      // that the trace has to read off the model rather than assume.
+      const scaled = scaleDesign(getPreset("llama-3-8b"), { targetParams: 200e3, vocab: 256 });
+      const doc = scaled.doc;
+      for (const [k, v] of [["L", 2], ["H", 4], ["Hkv", 2], ["dh", 16]] as const) {
+        (doc.symbols[k] as { value: number }).value = v;
+      }
+      const dir = mkdtempSync(join(tmpdir(), "tensorcad-trace-"));
+      try {
+        const files = generateTorch(doc).files;
+        for (const file of files) writeFileSync(join(dir, file.path), file.contents);
+        const out = join(dir, "trace.json");
+        const [cmd, base] = invocation;
+        const result = spawnSync(cmd, [...base, "trace", join(dir, "model.py"), "--out", out], {
+          encoding: "utf8",
+          timeout: TIMEOUT_MS,
+          shell: process.platform === "win32",
+        });
+        const summary = JSON.parse(result.stdout.trim().split(/\r?\n/).at(-1)!);
+        expect({ ok: summary.ok, error: summary.error }).toEqual({ ok: true, error: undefined });
+        // A vocabulary of 256 is too many symbols to sort, so it is run as built.
+        expect(summary.task.name).toBe("untrained");
+        expect(summary.training.steps).toBe(0);
+        expect(summary.checks.attention_note).toBeNull();
+        expect(summary.checks.attention_max_abs_error).toBeLessThan(1e-4);
+
+        const trace = JSON.parse(readFileSync(out, "utf8"));
+        expect(trace.attention.map((a: { layer: number }) => a.layer)).toEqual([0, 1]);
+        // [heads, positions, positions], after the key-value heads were repeated.
+        expect(trace.attention[0].weights.shape).toEqual([4, 32, 32]);
+
+        // The fingerprint the editor matches a trace to a design by, computed
+        // on both sides of the language boundary from the same bytes.
+        const source = files.find((f) => f.path === "model.py")!.contents;
+        expect(trace.model_sha256).toBe(createHash("sha256").update(source, "utf8").digest("hex"));
       } finally {
         rmSync(dir, { recursive: true, force: true });
       }

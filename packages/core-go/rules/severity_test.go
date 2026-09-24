@@ -18,8 +18,8 @@ import (
 // design nobody can check.
 
 // gemmaWith is Gemma-2-9B, which softcaps its attention scores and therefore
-// carries two warnings about the fused kernel it cannot use, plus whatever the
-// document says those rules mean.
+// carries two notes about the kernel that needs — one per attention in its
+// repeating pair — plus whatever the document says those rules mean.
 func gemmaWith(t *testing.T, severities map[string]string) *rules.Report {
 	t.Helper()
 	doc, err := presets.Get("gemma-2-9b")
@@ -49,40 +49,43 @@ func countOf(r *rules.Report, rule string) int {
 	return n
 }
 
-func TestADocumentCanLowerARule(t *testing.T) {
+func TestADocumentCanChangeARule(t *testing.T) {
 	plain := gemmaWith(t, nil)
 	if got := countOf(plain, "SDPA-03"); got != 2 {
 		t.Fatalf("Gemma has %d softcap findings, expected 2", got)
 	}
-	if plain.Counts["warning"] < 2 {
-		t.Fatalf("they are not warnings: %v", plain.Counts)
+	for _, f := range plain.Findings {
+		if f.Rule == "SDPA-03" && f.Severity != "info" {
+			t.Fatalf("a softcap finding is %q before anything overrides it", f.Severity)
+		}
 	}
 	if len(plain.Overridden) != 0 {
 		t.Errorf("nothing was overridden, but the report says %+v", plain.Overridden)
 	}
 
-	lowered := gemmaWith(t, map[string]string{"SDPA-03": "info"})
-	if got := countOf(lowered, "SDPA-03"); got != 2 {
-		t.Errorf("lowering a rule dropped %d of its findings", 2-got)
+	// A design that wants to hear about it: the note becomes a warning, and
+	// the change is counted and recorded against the block it applies to.
+	changed := gemmaWith(t, map[string]string{"SDPA-03": "warning"})
+	if got := countOf(changed, "SDPA-03"); got != 2 {
+		t.Errorf("changing a rule dropped %d of its findings", 2-got)
 	}
-	for _, f := range lowered.Findings {
-		if f.Rule == "SDPA-03" && f.Severity != "info" {
-			t.Errorf("a lowered finding is still %q", f.Severity)
+	for _, f := range changed.Findings {
+		if f.Rule == "SDPA-03" && f.Severity != "warning" {
+			t.Errorf("a changed finding is still %q", f.Severity)
 		}
 	}
-	if lowered.Counts["warning"] != plain.Counts["warning"]-2 {
-		t.Errorf("warnings went from %d to %d, expected %d",
-			plain.Counts["warning"], lowered.Counts["warning"], plain.Counts["warning"]-2)
+	if changed.Counts["warning"] != plain.Counts["warning"]+2 || changed.Counts["info"] != plain.Counts["info"]-2 {
+		t.Errorf("counts went from %v to %v; two notes should have become warnings", plain.Counts, changed.Counts)
 	}
-	if len(lowered.Overridden) != 2 {
-		t.Errorf("%d overrides recorded, expected 2: %+v", len(lowered.Overridden), lowered.Overridden)
+	if len(changed.Overridden) != 2 {
+		t.Errorf("%d overrides recorded, expected 2: %+v", len(changed.Overridden), changed.Overridden)
 	}
-	for _, o := range lowered.Overridden {
-		if o.From != "warning" || o.To != "info" || o.Rule != "SDPA-03" {
+	for _, o := range changed.Overridden {
+		if o.From != "info" || o.To != "warning" || o.Rule != "SDPA-03" {
 			t.Errorf("recorded %+v", o)
 		}
 		if o.Path == "" {
-			t.Error("an override with no path; the block it silenced is the point")
+			t.Error("an override with no path; the block it applies to is the point")
 		}
 	}
 }
@@ -127,8 +130,8 @@ func TestAnUnreadableSeverityIsRefusedLoudly(t *testing.T) {
 		t.Errorf("%d findings survived an unreadable override, expected 2", got)
 	}
 	for _, f := range odd.Findings {
-		if f.Rule == "SDPA-03" && f.Severity != "warning" {
-			t.Errorf("the finding became %q", f.Severity)
+		if f.Rule == "SDPA-03" && f.Severity != "info" {
+			t.Errorf("the finding became %q; it should have kept its own severity", f.Severity)
 		}
 	}
 	if len(odd.Overridden) != 2 {

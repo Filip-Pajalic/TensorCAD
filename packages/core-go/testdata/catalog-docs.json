@@ -1409,7 +1409,7 @@
         [
           "logit_softcap",
           "num",
-          "Bound the attention scores to this magnitude with tanh; 0 leaves them alone. A fused kernel cannot do this, so a layer that caps runs eager.",
+          "Bound the attention scores to this magnitude with tanh; 0 leaves them alone. FlashAttention 2.6 and later caps inside the fused kernel; PyTorch's own scaled_dot_product_attention cannot.",
           null
         ]
       ]

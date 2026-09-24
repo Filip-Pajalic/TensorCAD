@@ -645,7 +645,7 @@ var Primitives = []*BlockDef{
 			{"flash", pBool(true, "Memory-efficient kernel that never materializes the score matrix")},
 			{"cache", pBool(true, "Whether this block owns the inference cache. Latent attention caches a compressed vector instead.")},
 			{"logit_softcap", ParamSpec{Type: ParamNum, Default: 0.0, HasDefault: true,
-				Doc: "Bound the attention scores to this magnitude with tanh; 0 leaves them alone. A fused kernel cannot do this, so a layer that caps runs eager."}},
+				Doc: "Bound the attention scores to this magnitude with tanh; 0 leaves them alone. FlashAttention 2.6 and later caps inside the fused kernel; PyTorch's own scaled_dot_product_attention cannot."}},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			v := "head_dim"
@@ -676,9 +676,10 @@ var Primitives = []*BlockDef{
 			unmasked := 4 * tEff * r.Num("heads") * r.Num("head_dim")
 			f := FlopsPerToken{FwdSeq: unmasked * causal, FwdSeqUnmasked: unmasked}
 			if r.Num("logit_softcap") != 0 {
-				// Over the whole score matrix, not half of it: capping forces
-				// the eager form, which computes every score and then masks.
-				f.Elementwise = softcapCost * tEff * r.Num("heads")
+				// On the scores the kernel computes: a fused one caps inside
+				// the blocks it does not skip, so the causal half and the
+				// window count here exactly as they do for the matmuls.
+				f.Elementwise = softcapCost * tEff * r.Num("heads") * causal
 			}
 			return f
 		},
@@ -695,9 +696,10 @@ var Primitives = []*BlockDef{
 				vDim = r.Num("head_dim")
 			}
 			output := r.Num("heads") * vDim * c.Bytes
-			if c.Flash && r.Bool("flash") && r.Num("logit_softcap") == 0 {
+			if c.Flash && r.Bool("flash") {
 				// A fused kernel keeps the output and the log-sum-exp
-				// statistics only.
+				// statistics only — with a cap as well, since FlashAttention
+				// 2.6 applies it inside the kernel.
 				return output + r.Num("heads")*4
 			}
 			// Otherwise the score matrix row and the softmax output are both
@@ -735,10 +737,13 @@ var Primitives = []*BlockDef{
 			}
 			if r.Num("logit_softcap") != 0 && r.Bool("flash") {
 				out = append(out, BlockFinding{
-					ID: "SDPA-03", Severity: "warning", Param: "logit_softcap",
-					Message: "capping the attention scores rules out a fused kernel, which never " +
-						"materializes them to cap. This layer is counted as eager attention, so " +
-						"the score matrix is held for the backward pass.",
+					ID: "SDPA-03", Severity: "info", Param: "logit_softcap",
+					Message: "capping the attention scores needs a kernel that caps inside it: " +
+						"FlashAttention 2.6 or later does, PyTorch's own scaled_dot_product_attention " +
+						"does not. This layer is counted as that fused kernel, and the generated model " +
+						"uses it when flash-attn is installed.",
+					Hint: "Without it the cap is computed eagerly and the score matrix is held for the " +
+						"backward pass, which is the memory the fused count leaves out.",
 				})
 			}
 			return out

@@ -20,7 +20,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 | M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
-| M10 Attention variants | **Proposed.** Open attention up the way FlexAttention does — a mask and a score expression on the fused primitive — rather than decomposing it, so the numbers stay kernel-aware. Writing the proposal found two places the analysis and the generated code already describe different kernels. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
+| M10 Attention variants | **Phase 1 done.** The analysis and the generated code now describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. The rest is proposed: open attention up the way FlexAttention does — a mask and a score expression on the fused primitive — rather than decomposing it, so the numbers stay kernel-aware. Writing the proposal found two places the analysis and the generated code already describe different kernels. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -143,7 +143,7 @@ Done:
 - Design diff, in the editor as `View > Compare` and on the command line: `diff(a, b)` and `tensorcad diff <a> <b>` report what moved structurally and what it cost, measuring both sides at one operating point so the attention terms are comparable. It was 202 lines in the command line where the editor could not reach it.
 - `gated_deltanet_block` and a `gated_delta_scan` primitive: linear attention with DeltaNet's write rule and Mamba-2's decay gate, so a layer of it caches nothing that grows with context — a matrix per head, fixed for the sequence, plus what the depthwise convolution remembers. The generated file carries a readable sequential reference that runs unmodified; swap it for `fla`'s chunked kernel to train.
 - `mtp_head` and a `shift` primitive: multi-token prediction as DeepSeek-V3 describes it — normalize the hidden state, normalize the embedding of the token ahead, join, project 2D down to D — then a transformer block and the model's own output head, which is shared and so costs a second pass over the vocabulary and no weights. Depth is stacking rather than a parameter.
-- Logit softcapping, on the output logits and on the attention scores. The one on the scores rules out a fused kernel — it never builds the matrix there is anything to cap — so a capped layer is counted as eager attention, which for Gemma-2-9B at 8k is 199 GiB of activations rather than 73.
+- Logit softcapping, on the output logits and on the attention scores. The one on the scores was counted as eager, on the belief that no fused kernel could cap — 199 GiB of activations for Gemma-2-9B at 8k. FlashAttention has capped inside the kernel since 2.6, so M10's first phase counts it fused, 73 GiB, and the generated model uses that kernel when it is installed.
 - Jamba-v0.1, reproducing 51,570,323,328 exactly, which needed Mamba-1: a `selective_scan` primitive and a `mamba_block` around it. Not a variant of the Mamba-2 block already here — Mamba-1 reads its timestep at a rank and projects it back up, and that matrix in the middle is one the other does not have. Two periods run at once in the stack, attention every eighth layer and a mixture every second, so the repeating unit is eight layers and thirty-two is four of them. Twenty-eight of the thirty-two hold no cache that grows with the sequence. Jamba also norms the timestep and both gates before the scan, which the original does not: [256], [16] and [16], and being 8,064 short across the model is how that was found. The emitted scan runs a real forward pass and exports cleanly.
 - Qwen3-Next-80B-A3B, reproducing 79,674,391,296 exactly — the first linear-attention hybrid, and the one the roadmap had been waiting on a settled config for. Three layers in four are gated DeltaNet, so only twelve of the forty-eight hold a cache that grows with the sequence. Building it against the real weights found three things the catalog had wrong or missing: a gated DeltaNet can have more value heads than key heads (Qwen3-Next has twice as many, which is most of why its input projection is 12,288 wide); its output norm is per head, [128], where the expansion made it as wide as every head together, though the block's own documented formula had said `v_head_dim` all along; and attention can gate its own output, which is why `q_proj` is [8192, 2048] rather than [4096, 2048]. A shared expert can be gated too, by a single learned direction — [1, 2048], 98,304 parameters across the model, and exactly the sort of row an estimate drops.
 - Gemma-3-27B, reproducing 27,009,346,304 exactly. Not from a figure on a card — the card says 27.4B, which includes a SigLIP vision tower this does not model — but from the model's own safetensors headers, read with a range request rather than a download. Checking the arithmetic against those headers group by group is how `qk_norm` is known to be on: the 15,872 it came up short is exactly sixty-two layers times two 128-wide norms. Five layers in six attend within a 1024-token window, so at 128k context the cache is 10.41 GiB where treating every layer as global would give 62.
@@ -321,7 +321,7 @@ can be copied to another machine; a trace of an earlier version of the design
 is loaded but said to be one. The browser suite reloads the page, opens only
 the design, and finds its values; with the shelf taken away, that check fails.
 
-### M10 — Attention variants · Proposed
+### M10 — Attention variants · Phase 1 done
 
 The open question below, *how far to go op-level*, has a proposal:
 [Attention variants](docs/explanation/attention-variants.md). Attention stays one
@@ -342,7 +342,16 @@ score under a dense mask. The analysis and the code must describe the same
 kernel before anything is added.
 
 1. **The numbers and the code agree** — softcap fused, windows block-sparse,
-   verified by the runtime.
+   verified by the runtime. *Done:* a window or a cap is generated as
+   `fused_attention`, which calls FlashAttention on CUDA in half precision when
+   it is installed and otherwise computes the same numbers the way it always
+   did, warning once on a GPU. `SDPA-03` is a note naming the kernel, and
+   Gemma-2-9B at 8k is counted at 72.9 GiB of activations, not 198.9.
+   FlexAttention could not be the target yet: uncompiled it is unfused, and on
+   Windows it does not compile at all, for want of a C++ compiler on the CPU
+   and of Triton on CUDA; PyTorch's FLOP counter also refuses it, which the
+   runtime's verification depends on. It is phase 2's problem, where it is
+   needed.
 2. **Mask and score expressions** on `sdpa`, parsed, costed and printed by the
    engine, edited in the inspector.
 3. **Presets that need them** — ALiBi, relative bias, gpt-oss.

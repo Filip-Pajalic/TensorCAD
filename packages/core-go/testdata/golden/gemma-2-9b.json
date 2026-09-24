@@ -992,14 +992,14 @@
     "issues": [
       {
         "path": "layers/global/attn/attn",
-        "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass.",
+        "message": "capping the attention scores needs a kernel that caps inside it: FlashAttention 2.6 or later does, PyTorch's own scaled_dot_product_attention does not. This layer is counted as that fused kernel, and the generated model uses it when flash-attn is installed.",
         "severity": "warning",
         "rule": "SDPA-03",
         "param": "logit_softcap"
       },
       {
         "path": "layers/local/attn/attn",
-        "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass.",
+        "message": "capping the attention scores needs a kernel that caps inside it: FlashAttention 2.6 or later does, PyTorch's own scaled_dot_product_attention does not. This layer is counted as that fused kernel, and the generated model uses it when flash-attn is installed.",
         "severity": "warning",
         "rule": "SDPA-03",
         "param": "logit_softcap"

@@ -1,6 +1,6 @@
 {
   "name": "@tensor-cad/ui",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Editor UI for TensorCAD: node canvas, inspector, symbols, analysis",
   "license": "MIT",
   "type": "module",

@@ -20,6 +20,7 @@ import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
 import { parseDoc } from "../state/serialize.js";
 import { mergeLibrary } from "../state/blocks.js";
+import { loadTrace } from "../three/trace.js";
 import { COMMAND_BY_ID, prettyShortcut, runCommand } from "../state/commands.js";
 import { Button } from "../ui/button.js";
 import { Input } from "../ui/input.js";
@@ -154,6 +155,25 @@ export default function Toolbar(): React.ReactElement {
           const file = e.target.files?.[0];
           if (file) load(file);
           e.target.value = "";
+        }}
+      />
+
+      <input
+        id="tensorcad-trace-input"
+        type="file"
+        accept=".json,application/json"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            void loadTrace(String(reader.result), useEditor.getState().doc).then(({ message }) =>
+              useEditor.getState().setStatus(message),
+            );
+          };
+          reader.readAsText(file);
         }}
       />
 

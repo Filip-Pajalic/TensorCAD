@@ -25,7 +25,7 @@ const { getPreset } = await import("../src/engine.js");
 const { derive } = await import("../src/state/derive.js");
 const { DEFAULT_OPERATING } = await import("../src/state/operating.js");
 const { buildModel3D } = await import("../src/three/model3d.js");
-const { cellsFor, modelSource, traceFor } = await import("../src/three/trace.js");
+const { addTrace, cellsFor, loadTrace, modelSource, parseTrace, traceFor } = await import("../src/three/trace.js");
 const { buildWalkthrough } = await import("../src/state/walkthrough.js");
 
 import type { Doc } from "@tensor-cad/engine";
@@ -176,5 +176,75 @@ describe("the walkthrough, with the run", () => {
     for (const step of quoted) {
       for (const p of step.body) expect(p).not.toMatch(/NaN|undefined|\$\{/);
     }
+  });
+});
+
+describe("a trace added while the editor runs", () => {
+  const committed = trace!.file;
+  const relu = structuredClone(doc);
+  const block = relu.graph.nodes.find((n) => n.id === "layers")!.graph!.nodes.find((n) => n.id === "block")!;
+  block.params = { ...block.params, act: "relu" };
+  relu.meta = { ...relu.meta, name: "nano-sort-relu" };
+
+  const hashOf = async (d: Doc): Promise<string> => {
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(modelSource(d)!));
+    return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  };
+
+  test("is refused when it is not a trace, and says why", () => {
+    expect(() => parseTrace("{ nope")).toThrow(/not JSON/);
+    expect(() => parseTrace(JSON.stringify({ version: 2 }))).toThrow(/version 2/);
+    expect(() => parseTrace(JSON.stringify({ ...committed, model_sha256: "x" }))).toThrow(/fingerprint/);
+  });
+
+  test("shows on the design whose model it was made from, and no other", async () => {
+    // The committed numbers relabelled as a run of the relu variant: the same
+    // shapes, so every box resolves, and a fingerprint only that design has.
+    const file = { ...structuredClone(committed), design: "nano-sort-relu", model_sha256: await hashOf(relu) };
+    expect(await traceFor(relu)).toBeNull();
+
+    const result = await loadTrace(JSON.stringify(file), relu);
+    expect(result.ok).toBe(true);
+    expect(result.message).toContain("Open the volume view");
+    expect((await traceFor(relu))?.file.design).toBe("nano-sort-relu");
+
+    // The committed design keeps its own.
+    expect((await traceFor(doc))?.file.design).toBe("nano-sort");
+  });
+
+  test("of another design is kept, and the message says it is not this one", async () => {
+    const other = { ...structuredClone(committed), design: "elsewhere", model_sha256: "0".repeat(64) };
+    const result = await loadTrace(JSON.stringify(other), doc);
+    expect(result.ok).toBe(true);
+    expect(result.message).toContain("does not generate the model it was made from");
+    expect((await traceFor(doc))?.file.design).toBe("nano-sort");
+  });
+
+  test("untrained, says so everywhere it is quoted, and invents nothing", async () => {
+    const untrained: typeof committed = {
+      ...structuredClone(committed),
+      design: "nano-sort-untrained",
+      task: { name: "untrained", length: null, vocab: 3, symbols: [] },
+      training: { seed: 1337, steps: 0, final_loss: null, held_out_accuracy: null },
+      answer: null,
+      checks: { ...committed.checks, sorted_correctly: null },
+    };
+    const t = addTrace(untrained);
+    expect(t.untrained).toBe(true);
+    expect(t.letters.slice(0, 3)).toEqual(["2", "1", "0"]);
+    expect(t.summary).toStartWith("untrained, as initialised, on 11 token ids");
+
+    // Only what the trace added: the design's own notes mention sorting, and
+    // that is the design talking, not the run.
+    const derived = derive(doc, DEFAULT_OPERATING);
+    const before = new Set(buildWalkthrough(doc, derived).flatMap((s) => s.body));
+    const said = buildWalkthrough(doc, derived, t)
+      .flatMap((s) => s.body)
+      .filter((p) => !before.has(p))
+      .join(" ");
+    expect(said).toContain("never been trained");
+    expect(said).toMatch(/against \d+% if it were exactly even/);
+    expect(said).toMatch(/against \d+% for an even spread over all 3/);
+    expect(said).not.toMatch(/sort|NaN|undefined|null/);
   });
 });

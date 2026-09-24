@@ -103,49 +103,91 @@ const pct = (v: number): string => `${Math.round(v * 100)}%`;
  * them there are. The canvas lights a step by its index, and that must not
  * move because a file finished loading.
  */
-function traced(trace: Trace, embedPath: string | undefined, attnPath: string | undefined, layers: number) {
+function traced(
+  trace: Trace,
+  embedPath: string | undefined,
+  attnPath: string | undefined,
+  headPath: string | undefined,
+  layers: number,
+) {
   const f = trace.file;
   const letters = trace.letters;
-  const input = f.input.map((t) => f.task.symbols[t]).join(" ");
-  const answer = f.answer.map((t) => f.task.symbols[t]).join(" ");
   const out: Partial<Record<"input" | "embed" | "attention" | "output", string>> = {};
+  const n = letters.length;
 
-  out.input =
-    `In the run the volume view shows, the input is ${input}: ${f.task.length} symbols to sort, followed by the model's own answer so far, ${letters.length} positions in all. ` +
-    `It was trained on nothing else for ${count(f.training.steps)} steps, and ` +
-    (f.training.held_out_accuracy === 1
-      ? "sorts every held-out input it was tested on."
-      : `sorts ${pct(f.training.held_out_accuracy)} of the held-out inputs it was tested on.`);
+  if (trace.untrained) {
+    out.input =
+      `In the run the volume view shows, this design has never been trained: the numbers are its weights exactly as it initialises them (seed ${f.training.seed}), ` +
+      `run on ${count(n)} random token ids. They are what it computes on its first step, and nothing it has learnt.`;
+  } else {
+    const input = f.input.map((t) => f.task.symbols[t]).join(" ");
+    const accuracy = f.training.held_out_accuracy ?? 0;
+    out.input =
+      `In the run the volume view shows, the input is ${input}: ${f.task.length} symbols to sort, followed by the model's own answer so far, ${n} positions in all. ` +
+      `It was trained on nothing else for ${count(f.training.steps)} steps, and ` +
+      (accuracy === 1
+        ? "sorts every held-out input it was tested on."
+        : `sorts ${pct(accuracy)} of the held-out inputs it was tested on.`);
+  }
 
   const table = embedPath ? trace.tensor(embedPath, -1, "weight") : null;
   if (table && table.shape.length === 2) {
     const dim = table.shape[1]!;
     const first = f.sequence[0]!;
     const row = [...table.data.subarray(first * dim, first * dim + 4)].map(num).join(", ");
-    out.embed = `Its first symbol, ${letters[0]}, is row ${first} of the table: ${row}, and ${dim - 4} more. In the volume view that is column ${first} of the token embedding; the input embedding beside it is that plus the first position's own row.`;
+    const which = trace.untrained ? `Its first token, id ${first},` : `Its first symbol, ${letters[0]},`;
+    out.embed = `${which} is row ${first} of the table: ${row}, and ${dim - 4} more. In the volume view that is column ${first} of the token embedding; the input embedding beside it is that plus the first position's own row.`;
   }
 
-  // The sharpest look any head takes while the model is writing its answer,
-  // in the last block, where attention has had the most to work with.
   const probs = attnPath ? trace.tensor(attnPath, layers - 1, "probs") : null;
   if (probs && probs.shape.length === 3) {
     const [H, T] = [probs.shape[0]!, probs.shape[1]!];
-    let best = { h: 0, q: 0, k: 0, p: -1 };
-    for (let h = 0; h < H; h++) {
-      for (let q = f.task.length - 1; q < T; q++) {
-        for (let k = 0; k <= q; k++) {
-          const p = probs.data[h * T * T + q * T + k]!;
-          if (p > best.p) best = { h, q, k, p };
+    if (trace.untrained) {
+      // Untrained attention is close to even, and saying so is the point: the
+      // last position, which can see all of them, and how far its largest
+      // share is from an exactly even one.
+      const q = T - 1;
+      let largest = 0;
+      for (let h = 0; h < H; h++) {
+        for (let k = 0; k <= q; k++) largest = Math.max(largest, probs.data[h * T * T + q * T + k]!);
+      }
+      out.attention =
+        `Untrained, attention has nothing to look for yet. In the last block the last position can see all ${count(T)}, and the largest share any head gives one of them is ${pct(largest)} — against ${pct(1 / T)} if it were exactly even. ` +
+        "Each row of an attention matrix in the volume view is one position deciding what to look at.";
+    } else {
+      // The sharpest look any head takes while the model is writing its
+      // answer, in the last block, where attention has had the most to work with.
+      const from = (f.task.length ?? 1) - 1;
+      let best = { h: 0, q: 0, k: 0, p: -1 };
+      for (let h = 0; h < H; h++) {
+        for (let q = from; q < T; q++) {
+          for (let k = 0; k <= q; k++) {
+            const p = probs.data[h * T * T + q * T + k]!;
+            if (p > best.p) best = { h, q, k, p };
+          }
         }
       }
+      out.attention =
+        `In the run the volume view shows, the sharpest look is in the last block: when the model is about to write its ${ordinal(best.q - from + 1)} answer symbol, head ${best.h + 1} puts ${pct(best.p)} of its attention on position ${best.k}, the ${letters[best.k]}. ` +
+        "Each row of an attention matrix in that view is one position deciding what to look at.";
     }
-    const writing = best.q - (f.task.length - 1);
-    out.attention =
-      `In the run the volume view shows, the sharpest look is in the last block: when the model is about to write its ${ordinal(writing + 1)} answer symbol, head ${best.h + 1} puts ${pct(best.p)} of its attention on position ${best.k}, the ${letters[best.k]}. ` +
-      "Each row of an attention matrix in that view is one position deciding what to look at.";
   }
 
-  out.output = `Reading ${input}, the traced model wrote ${answer}, one symbol at a time, each one the highest of its ${f.task.vocab} scores.`;
+  if (trace.untrained) {
+    // How close to a guess its first answer is: the highest probability at the
+    // last position, against an even spread over the vocabulary.
+    const logits = headPath ? trace.resolve({ path: headPath, layer: -1, role: "softmax", across: 0 }) : null;
+    if (logits && logits.shape.length === 2) {
+      const [T, V] = [logits.shape[0]!, logits.shape[1]!];
+      let top = 0;
+      for (let v = 0; v < V; v++) top = Math.max(top, logits.data[(T - 1) * V + v]!);
+      out.output = `Untrained, its scores say almost nothing: after the last position the likeliest next token gets ${pct(top)}, against ${pct(1 / V)} for an even spread over all ${count(V)}.`;
+    }
+  } else if (f.answer) {
+    const input = f.input.map((t) => f.task.symbols[t]).join(" ");
+    const answer = f.answer.map((t) => f.task.symbols[t]).join(" ");
+    out.output = `Reading ${input}, the traced model wrote ${answer}, one symbol at a time, each one the highest of its ${f.task.vocab} scores.`;
+  }
   return out;
 }
 
@@ -172,6 +214,7 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
         trace,
         firstOf(all, (f) => f.type === "embedding")?.path,
         firstOf(all, (f) => f.category === "attention")?.path,
+        firstOf(all, (f) => f.category === "head")?.path,
         sym.L ?? 1,
       )
     : {};

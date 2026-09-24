@@ -137,6 +137,7 @@ func buildMenu(app *application.App) {
 	design.Add("Run checks").SetAccelerator("F5").OnClick(command(app, "validate"))
 	design.Add("Verify against PyTorch").OnClick(command(app, "verify"))
 	design.Add("Smoke train…").OnClick(command(app, "smoke-train"))
+	design.Add("Trace this design").OnClick(command(app, "trace"))
 
 	help := menu.AddSubmenu("Help")
 	help.Add("Documentation").OnClick(func(*application.Context) {

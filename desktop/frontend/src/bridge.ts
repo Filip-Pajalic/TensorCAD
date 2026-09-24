@@ -12,6 +12,7 @@
 
 import { Events } from "@wailsio/runtime";
 import {
+  loadTrace,
   runCommand,
   setSystemTheme,
   setThemePreference,
@@ -85,6 +86,60 @@ async function generateCode(): Promise<void> {
   }
 }
 
+/** Trace jobs in flight, by job id, and where each will write its trace. */
+const tracing = new Map<string, string>();
+
+/**
+ * Run the open design and show what it computes.
+ *
+ * The one thing the browser build cannot do: it has no Python. The model is
+ * generated here, handed to the shell to run, and the trace it writes comes
+ * back through the same `loadTrace` a file opened with File > Load a trace
+ * goes through — so the two cannot disagree about which design it describes.
+ */
+async function traceDesign(): Promise<void> {
+  const { doc } = useEditor.getState();
+  const generated = generateTorch(doc);
+  try {
+    const started = await RuntimeService.Trace(
+      doc.meta.name,
+      generated.files.map((f) => ({ path: f.path, contents: f.contents })),
+    );
+    if (!started) return;
+    tracing.set(started.id, started.out);
+    useEditor.getState().setStatus(`Tracing ${doc.meta.name}: a small vocabulary is trained to sort first, which takes a few seconds`);
+  } catch (e) {
+    useEditor.getState().setStatus(`Could not start the trace: ${(e as Error).message}`);
+  }
+}
+
+async function traceFinished(id: string, exitCode: number, result: Record<string, unknown> | undefined): Promise<void> {
+  const out = tracing.get(id);
+  tracing.delete(id);
+  if (out === undefined) return;
+  const state = useEditor.getState();
+  if (exitCode !== 0) {
+    // The runtime says why in the object it prints last: too large, no token
+    // embedding, PyTorch missing.
+    const why = typeof result?.error === "string" ? result.error : `the runtime exited with ${exitCode}`;
+    state.setStatus(`Could not trace ${state.doc.meta.name}: ${why}`);
+    return;
+  }
+  try {
+    const { message } = await loadTrace(await RuntimeService.ReadTrace(out), state.doc);
+    state.setStatus(message);
+    // A trace is something to look at: go to where it is drawn, at a length
+    // it covers, and say that the sequence length moved if it did.
+    const positions = Array.isArray(result?.sequence) ? result.sequence.length : 0;
+    if (positions > 0 && (state.operating.T ?? Number.POSITIVE_INFINITY) > positions) {
+      state.setOperating({ T: positions });
+    }
+    state.setViewMode("volume");
+  } catch (e) {
+    state.setStatus(`The trace ran but could not be read: ${(e as Error).message}`);
+  }
+}
+
 /** Commands the native menu can send. The editor decides what each one means. */
 const COMMANDS: Record<string, () => void | Promise<void>> = {
   new: () => {
@@ -121,6 +176,7 @@ const COMMANDS: Record<string, () => void | Promise<void>> = {
   validate: () => runCommand("panel.rules"),
   verify: () => useEditor.getState().setStatus("Generate the model first, then verify it."),
   "smoke-train": () => useEditor.getState().setStatus("Generate the model first, then train it."),
+  trace: traceDesign,
 };
 
 /**
@@ -146,15 +202,17 @@ export function connect(): void {
     if (text) useEditor.getState().setStatus(text.slice(0, 160));
   });
 
-  Events.On("runtime:done", (event: { data: { exitCode: number; seconds: number } }) => {
+  // Typed by the event Go registers, so a field renamed there is an error here.
+  Events.On("runtime:done", (event) => {
+    // A trace reports for itself, with what it loaded rather than how long it took.
+    if (tracing.has(event.data.id)) {
+      void traceFinished(event.data.id, event.data.exitCode, event.data.result ?? undefined);
+      return;
+    }
     const { exitCode, seconds } = event.data;
     useEditor
       .getState()
-      .setStatus(
-        exitCode === 0
-          ? `Finished in ${seconds.toFixed(1)}s`
-          : `Job failed with exit code ${exitCode}`,
-      );
+      .setStatus(exitCode === 0 ? `Finished in ${seconds.toFixed(1)}s` : `Job failed with exit code ${exitCode}`);
   });
 
   // Report what the Python side can do, so the user learns it now rather than

@@ -180,6 +180,77 @@ func (s *RuntimeService) SmokeTrain(modelPath string, steps int, batch int, seq 
 	return s.start(args, filepath.Dir(modelPath))
 }
 
+// TraceStarted is a trace job, and where the trace will be once it is done.
+type TraceStarted struct {
+	ID      string `json:"id"`
+	Command string `json:"command"`
+	Out     string `json:"out"`
+}
+
+// Trace runs a design small enough to look at and records what it computes,
+// for the editor's volume view and walkthrough.
+//
+// The editor generates the model and hands the files over; they go into a
+// scratch folder of this service's own rather than anywhere the user chose,
+// because a trace is something to look at, not something to keep — the
+// runtime can make it again in seconds. When the job is done the frontend
+// reads the result with ReadTrace.
+func (s *RuntimeService) Trace(designName string, files []GeneratedFile) (*TraceStarted, error) {
+	if len(files) == 0 {
+		return nil, errors.New("nothing to trace: generate the model first")
+	}
+	written, err := writeFiles(filepath.Join(traceRoot(), safeName(designName)), files)
+	if err != nil {
+		return nil, err
+	}
+	dir := written.Directory
+	model := filepath.Join(dir, "model.py")
+	if _, err := os.Stat(model); err != nil {
+		return nil, errors.New("the generated files have no model.py")
+	}
+	out := filepath.Join(dir, "trace.json")
+	// Last run's, which would otherwise be read if this one fails early.
+	_ = os.Remove(out)
+	started, err := s.start([]string{"-m", "tensorcad_runtime", "trace", model, "--out", out}, dir)
+	if err != nil {
+		return nil, err
+	}
+	return &TraceStarted{ID: started.ID, Command: started.Command, Out: out}, nil
+}
+
+// maxTraceBytes is what ReadTrace will return. A trace of the largest design
+// the runtime agrees to trace, at the longest input, is well under it.
+const maxTraceBytes = 64 << 20
+
+// ReadTrace returns a trace this service wrote, and nothing else: the path has
+// to be a trace.json under its own scratch folder. The frontend can reach this
+// with any string, so it is not a way to read an arbitrary file.
+func (s *RuntimeService) ReadTrace(path string) (string, error) {
+	clean := filepath.Clean(path)
+	rel, err := filepath.Rel(traceRoot(), clean)
+	if err != nil || rel == "." || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) || filepath.Base(clean) != "trace.json" {
+		return "", fmt.Errorf("%s is not a trace this app made", path)
+	}
+	info, err := os.Stat(clean)
+	if err != nil {
+		return "", fmt.Errorf("no trace was written: %s does not exist", clean)
+	}
+	if info.Size() > maxTraceBytes {
+		return "", fmt.Errorf("the trace is %d bytes, more than the %d this reads", info.Size(), maxTraceBytes)
+	}
+	data, err := os.ReadFile(clean)
+	if err != nil {
+		return "", fmt.Errorf("read %s: %w", clean, err)
+	}
+	return string(data), nil
+}
+
+// traceRoot is where traces are made: a folder of this app's own under the
+// system's temporary directory.
+func traceRoot() string {
+	return filepath.Join(os.TempDir(), "tensorcad-trace")
+}
+
 // Cancel stops a running job.
 func (s *RuntimeService) Cancel(id string) error {
 	s.mu.Lock()

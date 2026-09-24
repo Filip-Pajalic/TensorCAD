@@ -38,6 +38,14 @@ export {
   type ViewState,
 } from "./state/storage.js";
 export { captureView, applyView, openFromLocation } from "./state/session.js";
+/**
+ * Traces: what a design computes, for the volume view and the walkthrough.
+ *
+ * Exported so a shell that can run the Python runtime — the desktop app — can
+ * hand over a trace it just made. A browser user loads one through File >
+ * Load a trace, which ends in the same `loadTrace`.
+ */
+export { addTrace, loadTrace, parseTrace, type TraceFile } from "./three/trace.js";
 export {
   COMMANDS,
   commandsIn,

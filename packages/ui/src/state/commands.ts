@@ -118,6 +118,13 @@ export const COMMANDS: Command[] = [
     run: () => document.getElementById("tensorcad-open-input")?.click(),
   },
   {
+    id: "file.loadTrace",
+    label: "Load a trace\u2026",
+    group: "file",
+    hint: "Real values for the volume view: a file `tensorcad-runtime trace` wrote for this design",
+    run: () => document.getElementById("tensorcad-trace-input")?.click(),
+  },
+  {
     id: "file.save",
     label: "Save a copy",
     group: "file",
@@ -670,7 +677,7 @@ function refocus(path: string | null): void {
   let tries = 0;
   const attempt = (): void => {
     const nodes = document.querySelectorAll<HTMLElement>(".react-flow__node");
-    const target = (path && [...nodes].find((n) => n.dataset.id === path)) || nodes[0];
+    const target = (path && Array.from(nodes).find((n) => n.dataset.id === path)) || nodes[0];
     target?.focus();
     if ((!target || document.activeElement !== target) && ++tries < 40) setTimeout(attempt, 25);
   };

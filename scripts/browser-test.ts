@@ -22,9 +22,12 @@
  * where a missing browser means the check silently stopped running.
  */
 
-import { rm } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { $ } from "bun";
+import { generateTorch, getPreset, loadEngine } from "@tensor-cad/engine/node";
 import { CHROME, Devtools, wait } from "./screenshots.js";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
@@ -49,6 +52,38 @@ const server = Bun.serve({
   },
 });
 const SITE = `http://localhost:${server.port}`;
+
+// --- a trace to load ----------------------------------------------------------
+
+/**
+ * A design that is not nano-sort, and a trace of it, as files on disk.
+ *
+ * The committed trace shows on nano-sort by itself, so loading it proves
+ * nothing about loading. nano-sort with a ReLU is a different model with the
+ * same shapes: the committed numbers relabelled with *its* fingerprint are a
+ * trace only that design matches, and every box still has a tensor to draw.
+ * Made here rather than committed, so the fingerprint follows the generator.
+ */
+await loadEngine();
+const fixtures = await mkdtemp(join(tmpdir(), "tensorcad-trace-load-"));
+const variant = structuredClone(getPreset("nano-sort"));
+variant.meta.name = "nano-sort-relu";
+const stack = variant.graph.nodes.find((n) => n.id === "layers")!;
+const inner = stack.graph!.nodes.find((n) => n.id === "block")!;
+inner.params = { ...inner.params, act: "relu" };
+const variantModel = generateTorch(variant).files.find((f) => f.path === "model.py")!.contents;
+const committedTrace = JSON.parse(await readFile(join(ROOT, "packages/ui/src/three/traces/nano-sort.json"), "utf8"));
+const DESIGN_FILE = join(fixtures, "nano-sort-relu.tensorcad.json");
+const TRACE_FILE = join(fixtures, "trace.json");
+await writeFile(DESIGN_FILE, JSON.stringify(variant, null, 2));
+await writeFile(
+  TRACE_FILE,
+  JSON.stringify({
+    ...committedTrace,
+    design: "nano-sort-relu",
+    model_sha256: createHash("sha256").update(variantModel, "utf8").digest("hex"),
+  }),
+);
 
 // --- the browser -------------------------------------------------------------
 
@@ -260,6 +295,27 @@ try {
     await until(`document.querySelector(".react-flow")`);
   });
 
+  await check("a trace loaded from a file shows on the design it was made from", async () => {
+    // Files as a person would give them: through the inputs File > Open and
+    // File > Load a trace click.
+    const setFile = async (input: string, path: string): Promise<void> => {
+      const { root } = await dt.send<{ root: { nodeId: number } }>("DOM.getDocument", { depth: 0 });
+      const { nodeId } = await dt.send<{ nodeId: number }>("DOM.querySelector", { nodeId: root.nodeId, selector: `#${input}` });
+      await dt.send("DOM.setFileInputFiles", { nodeId, files: [path] });
+    };
+    await setFile("tensorcad-open-input", DESIGN_FILE);
+    await until(`document.body.innerText.includes("nano-sort-relu")`);
+    await setFile("tensorcad-trace-input", TRACE_FILE);
+    // textContent, not innerText: the toolbar hides its status line until a
+    // whole sentence fits, and a narrow headless window may not have the room.
+    await until(`document.body.textContent.includes("Loaded a trace of nano-sort-relu") && document.body.textContent.includes("Open the volume view")`);
+    await page(`document.activeElement?.blur()`);
+    await key("V", 8); // Shift
+    await until(`[...document.querySelectorAll("div")].some((d) => d.textContent?.startsWith("real values"))`, 15_000);
+    await key("V", 8);
+    await until(`document.querySelector(".react-flow")`);
+  });
+
   await check("the walkthrough quotes the run", async () => {
     await page(`document.activeElement?.blur()`);
     await key("w");
@@ -277,6 +333,7 @@ try {
 } finally {
   browser.kill();
   server.stop();
+  await rm(fixtures, { recursive: true, force: true }).catch(() => {});
   await rm(profile, { recursive: true, force: true }).catch(() => {});
 }
 

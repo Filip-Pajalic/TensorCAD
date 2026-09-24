@@ -72,6 +72,7 @@ expression. They are listed here because the work deserves attribution:
 |---|---|---|
 | `gpt2-*` | [openai-community/gpt2](https://huggingface.co/openai-community/gpt2) | MIT |
 | `nanogpt` | [karpathy/nanoGPT](https://github.com/karpathy/nanoGPT) | MIT |
+| `bloom-7b1` | [bigscience/bloom-7b1](https://huggingface.co/bigscience/bloom-7b1) | BigScience RAIL License v1.0 |
 | `llama-*` | Meta Llama model cards | Llama Community License |
 | `mistral-7b` | [mistralai/Mistral-7B](https://huggingface.co/mistralai/Mistral-7B-v0.1) | Apache-2.0 |
 | `qwen*` | [QwenLM](https://huggingface.co/Qwen) | Apache-2.0 |

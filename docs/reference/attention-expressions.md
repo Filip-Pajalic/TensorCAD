@@ -84,7 +84,7 @@ what the preview under the field shows: every condition, and the whole score.
 | Chunked attention, as in Llama 4 | on | `floor(q / C) == floor(kv / C)` | |
 | Every fourth key | on | `(q - kv) % 4 == 0` | |
 | Half the heads global, half local | on | `h < heads / 2 or q - kv < W` | |
-| ALiBi | on | | `score - 2 ** (-8 * (h + 1) / heads) * (q - kv)` |
+| ALiBi, as `bloom-7b1` has it | on | | `score - 2 ** (-8 * (h + 1) / heads) * (q - kv)` |
 | Gemma 2's cap, written out | on | | `50 * tanh(score / 50)` |
 
 ## What the engine does with them

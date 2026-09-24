@@ -487,6 +487,69 @@ describe.skipIf(!available)("attention written as expressions", () => {
 });
 
 /**
+ * BLOOM, the first preset whose attention is an expression.
+ *
+ * Its ALiBi is written as a score, not a switch, so what the engine prints is
+ * all there is to say that the bias is BLOOM's. It is held against a
+ * transcription of Hugging Face's own `build_alibi_tensor`, and the model it is
+ * part of against PyTorch's count of its parameters and its FLOPs.
+ */
+describe.skipIf(!available)("bloom-7b1", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+
+  it(
+    "has the parameters and the FLOPs it says, and exports",
+    () => {
+      const { dir, model } = writePreset("bloom-7b1");
+      try {
+        const full = runVerify(invocation, model);
+        expect(full).not.toHaveProperty("spawnFailed");
+        const r = full as Verify;
+        // Seven billion parameters do not fit a forward pass in the runner's
+        // memory; the count, the FLOPs and the export are taken on the meta
+        // device, which is where the claim is.
+        expect({ ok: r.ok, matches: r.matches, params: r.params, export: r.export_ok }).toEqual({
+          ok: true,
+          matches: true,
+          params: 7_069_016_064,
+          export: true,
+        });
+        const flops = analyze(getPreset("bloom-7b1"), { T: 128, B: 2 }).flops;
+        expect(r.flops! / (2 * 128)).toBe(flops.fwdTotalUnmasked);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+
+  it(
+    "biases its scores the way BLOOM does",
+    () => {
+      const { dir, model } = writePreset("bloom-7b1");
+      try {
+        const [cmd] = invocation;
+        const python = cmd === "tensorcad-runtime" ? "python" : cmd;
+        const result = spawnSync(python, [join(import.meta.dir, "alibi_probe.py"), model, "32"], {
+          encoding: "utf8",
+          timeout: TIMEOUT_MS,
+          shell: process.platform === "win32",
+        });
+        const out = JSON.parse(result.stdout.trim().split(/\r?\n/).at(-1)!);
+        // BLOOM adds slope × key position, the design subtracts slope ×
+        // distance: the same bias up to a constant along each row, which is
+        // float32 rounding over values up to fifty, and the same weights.
+        expect(out.row_spread).toBeLessThan(1e-4);
+        expect(out.weights).toBeLessThan(1e-5);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+});
+
+/**
  * Every preset, through `ast.parse`.
  *
  * Cheaper than the block above and answering a different question: not "does

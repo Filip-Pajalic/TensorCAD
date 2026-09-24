@@ -70,8 +70,8 @@ Two cross-checks worth knowing:
   analysis; `packages/engine` is that module plus the TypeScript client that loads it. The
   editor, the command line, the MCP server and the desktop shell are all clients of the same
   module, so an answer cannot depend on where it was asked.
-- **`packages/core-go/testdata` is the specification.** A hundred and seven files saying what
-  the engine answers for all twenty-four presets: symbol tables, inferred shapes at two expansion
+- **`packages/core-go/testdata` is the specification.** A hundred and eleven files saying what
+  the engine answers for all twenty-five presets: symbol tables, inferred shapes at two expansion
   settings, the full analysis and the design-rule check at three operating points, every byte
   of a generated `model.py`, the prose of every block. `go run ./cmd/golden` rewrites them and
   nothing else does — never a test, which would pass whatever the engine did. They began as
@@ -88,7 +88,7 @@ Two cross-checks worth knowing:
   report objecting to every `null` it was not told to expect. Add to that list rather than
   papering over it in a client.
 - **A preset is a document, not a builder.** `packages/core-go/presets/data` holds the
-  library as twenty-four JSON files, embedded into the binary. There is no builder any more and
+  library as twenty-five JSON files, embedded into the binary. There is no builder any more and
   nothing generates them: a new preset is a file, and `meta.published` is what the tests hold
   it to.
 - `packages/engine` — the compiled module and the TypeScript that loads it.
@@ -257,7 +257,7 @@ Two cross-checks worth knowing:
    fails on a vendor name, a vendor's environment variable, a stateful Cloudflare binding or a
    privileged key's name; it runs in `test:all` and in CI before the tests, because what it
    guards against is a commit rather than a behaviour.
-10. **Presets are the regression suite.** Every preset carries `meta.published` and the tests assert the analysis reproduces it. Twenty-one of twenty-four match to the parameter; the other three — `qwen3-30b-a3b`, `qwen3-235b-a22b` and `deepseek-v3` — are checked against rounded vendor figures with an explicit `tolerance`. Not all of them are language models. `ijepa-vit-h14` is a vision transformer with bidirectional attention and no vocabulary (`presets/jepa.ts`), and `alexnet` is a convolutional classifier whose tensors are `B C H W` rather than a sequence (`presets/convnet.ts`). A convnet's token is one image, so `T` is 1 and every per-token figure reads as per-image; its FLOPs match `torch.utils.flop_counter` exactly, there being no causal mask to disagree about. Everything downstream treats all three kinds identically.
+10. **Presets are the regression suite.** Every preset carries `meta.published` and the tests assert the analysis reproduces it. Twenty-two of twenty-five match to the parameter; the other three — `qwen3-30b-a3b`, `qwen3-235b-a22b` and `deepseek-v3` — are checked against rounded vendor figures with an explicit `tolerance`. Not all of them are language models. `ijepa-vit-h14` is a vision transformer with bidirectional attention and no vocabulary (`presets/jepa.ts`), and `alexnet` is a convolutional classifier whose tensors are `B C H W` rather than a sequence (`presets/convnet.ts`). A convnet's token is one image, so `T` is 1 and every per-token figure reads as per-image; its FLOPs match `torch.utils.flop_counter` exactly, there being no causal mask to disagree about. Everything downstream treats all three kinds identically.
 
 ## When adding a block
 

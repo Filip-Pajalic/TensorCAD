@@ -4939,6 +4939,827 @@
       ]
     },
     {
+      "preset": "bloom-7b1",
+      "blocks": [
+        {
+          "path": "layers",
+          "type": "repeat",
+          "kind": "container",
+          "docs": {
+            "name": "stack",
+            "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
+          },
+          "copies": {
+            "total": 1,
+            "active": 1
+          },
+          "params": [
+            [
+              "count",
+              "L",
+              30,
+              "How many times the subgraph is stacked"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "B T D"
+            },
+            "out": {
+              "x": "B T D"
+            }
+          },
+          "contributes": {
+            "params": 6041395200,
+            "activeParams": 6041395200,
+            "shareOfParams": 0.8546302830979109,
+            "flopsPerToken": 12582912000,
+            "shareOfFlops": 0.8595988538681948,
+            "activationBytes": 8564244480,
+            "cacheBytesPerToken": 491520,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/mlp/up",
+              "type": "linear",
+              "params": 2013757440
+            },
+            {
+              "path": "layers/block/mlp/down",
+              "type": "linear",
+              "params": 2013388800
+            },
+            {
+              "path": "layers/block/attn/q_proj",
+              "type": "linear",
+              "params": 503439360
+            },
+            {
+              "path": "layers/block/attn/k_proj",
+              "type": "linear",
+              "params": 503439360
+            },
+            {
+              "path": "layers/block/attn/v_proj",
+              "type": "linear",
+              "params": 503439360
+            },
+            {
+              "path": "layers/block/attn/o_proj",
+              "type": "linear",
+              "params": 503439360
+            },
+            {
+              "path": "layers/block/norm1",
+              "type": "layernorm",
+              "params": 245760
+            },
+            {
+              "path": "layers/block/norm2",
+              "type": "layernorm",
+              "params": 245760
+            }
+          ]
+        },
+        {
+          "path": "layers/block",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "name": "transformer block",
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 30,
+            "active": 30
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              4096,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              32,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "Hkv",
+              32,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              128,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              16384,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, or DeepSeek's latent attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "layernorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              false,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "dense",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              null,
+              0,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              null,
+              1,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              null,
+              0,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "gelu_tanh",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              true,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              true,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              false,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              null,
+              0,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              null,
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              "score - 2 ** (-8 * (h + 1) / heads) * (q - kv)",
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 6041395200,
+            "activeParams": 6041395200,
+            "shareOfParams": 0.8546302830979109,
+            "flopsPerToken": 12582912000,
+            "shareOfFlops": 0.8595988538681948,
+            "activationBytes": 8564244480,
+            "cacheBytesPerToken": 491520,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/mlp/up",
+              "type": "linear",
+              "params": 2013757440
+            },
+            {
+              "path": "layers/block/mlp/down",
+              "type": "linear",
+              "params": 2013388800
+            },
+            {
+              "path": "layers/block/attn/q_proj",
+              "type": "linear",
+              "params": 503439360
+            },
+            {
+              "path": "layers/block/attn/k_proj",
+              "type": "linear",
+              "params": 503439360
+            },
+            {
+              "path": "layers/block/attn/v_proj",
+              "type": "linear",
+              "params": 503439360
+            },
+            {
+              "path": "layers/block/attn/o_proj",
+              "type": "linear",
+              "params": 503439360
+            },
+            {
+              "path": "layers/block/norm1",
+              "type": "layernorm",
+              "params": 245760
+            },
+            {
+              "path": "layers/block/norm2",
+              "type": "layernorm",
+              "params": 245760
+            }
+          ]
+        },
+        {
+          "path": "layers/block/mlp",
+          "type": "dense_mlp",
+          "kind": "composite",
+          "docs": {
+            "name": "feed-forward",
+            "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
+            "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
+          },
+          "copies": {
+            "total": 30,
+            "active": 30
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              4096,
+              "Width of the residual stream"
+            ],
+            [
+              "hidden",
+              "F",
+              16384,
+              "Width in the middle, where the nonlinearity is"
+            ],
+            [
+              "act",
+              null,
+              "gelu_tanh",
+              "Which nonlinearity"
+            ],
+            [
+              "bias",
+              null,
+              true,
+              "Learn a constant on each projection"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 4027146240,
+            "activeParams": 4027146240,
+            "shareOfParams": 0.569689784764931,
+            "flopsPerToken": 8053063680,
+            "shareOfFlops": 0.5501432664756447,
+            "activationBytes": 4529848320,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/mlp/up",
+              "type": "linear",
+              "params": 2013757440
+            },
+            {
+              "path": "layers/block/mlp/down",
+              "type": "linear",
+              "params": 2013388800
+            }
+          ]
+        },
+        {
+          "path": "layers/block/attn",
+          "type": "gqa_attention",
+          "kind": "composite",
+          "docs": {
+            "name": "grouped-query attention",
+            "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
+            "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
+            "refs": [
+              "https://arxiv.org/abs/2305.13245"
+            ]
+          },
+          "copies": {
+            "total": 30,
+            "active": 30
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              4096,
+              "Residual stream width"
+            ],
+            [
+              "heads",
+              "H",
+              32,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "Hkv",
+              32,
+              "Key/value heads. Equal to heads gives MHA, 1 gives MQA"
+            ],
+            [
+              "head_dim",
+              "dh",
+              128,
+              "Width of one head; query and key heads share it"
+            ],
+            [
+              "bias",
+              null,
+              true,
+              "Bias on the q/k/v/o projections"
+            ],
+            [
+              "o_bias",
+              null,
+              null,
+              "Override the output-projection bias (Qwen2.5 has qkv bias only)"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Mask out every position after the current one"
+            ],
+            [
+              "window",
+              "0",
+              0,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "qk_norm",
+              null,
+              false,
+              "RMSNorm on the query and key heads (Qwen3, Gemma 3)"
+            ],
+            [
+              "rope",
+              null,
+              null,
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "flash",
+              null,
+              true,
+              "Assume a memory-efficient kernel, which never builds the score matrix"
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              "score - 2 ** (-8 * (h + 1) / heads) * (q - kv)",
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 2013757440,
+            "activeParams": 2013757440,
+            "shareOfParams": 0.2848709667326058,
+            "flopsPerToken": 4529848320,
+            "shareOfFlops": 0.30945558739255014,
+            "activationBytes": 3027763200,
+            "cacheBytesPerToken": 491520,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/attn/q_proj",
+              "type": "linear",
+              "params": 503439360
+            },
+            {
+              "path": "layers/block/attn/k_proj",
+              "type": "linear",
+              "params": 503439360
+            },
+            {
+              "path": "layers/block/attn/v_proj",
+              "type": "linear",
+              "params": 503439360
+            },
+            {
+              "path": "layers/block/attn/o_proj",
+              "type": "linear",
+              "params": 503439360
+            }
+          ]
+        },
+        {
+          "path": "layers/block/mlp/up",
+          "type": "linear",
+          "kind": "primitive",
+          "docs": {
+            "name": "linear",
+            "summary": "Dense projection.",
+            "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
+          },
+          "copies": {
+            "total": 30,
+            "active": 30
+          },
+          "params": [
+            [
+              "in_features",
+              "D",
+              4096,
+              "Width in"
+            ],
+            [
+              "out_features",
+              "F",
+              16384,
+              "Width out"
+            ],
+            [
+              "bias",
+              null,
+              true,
+              "Learn a per-output constant as well as the matrix"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... in_features"
+            },
+            "out": {
+              "y": "... out_features"
+            }
+          },
+          "contributes": {
+            "params": 2013757440,
+            "activeParams": 2013757440,
+            "shareOfParams": 0.2848709667326058,
+            "flopsPerToken": 4026531840,
+            "shareOfFlops": 0.27507163323782235,
+            "activationBytes": 2013265920,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/mlp/up",
+              "type": "linear",
+              "params": 2013757440
+            }
+          ]
+        },
+        {
+          "path": "layers/block/mlp/down",
+          "type": "linear",
+          "kind": "primitive",
+          "docs": {
+            "name": "linear",
+            "summary": "Dense projection.",
+            "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
+          },
+          "copies": {
+            "total": 30,
+            "active": 30
+          },
+          "params": [
+            [
+              "in_features",
+              "F",
+              16384,
+              "Width in"
+            ],
+            [
+              "out_features",
+              "D",
+              4096,
+              "Width out"
+            ],
+            [
+              "bias",
+              null,
+              true,
+              "Learn a per-output constant as well as the matrix"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... in_features"
+            },
+            "out": {
+              "y": "... out_features"
+            }
+          },
+          "contributes": {
+            "params": 2013388800,
+            "activeParams": 2013388800,
+            "shareOfParams": 0.2848188180323252,
+            "flopsPerToken": 4026531840,
+            "shareOfFlops": 0.27507163323782235,
+            "activationBytes": 0,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/mlp/down",
+              "type": "linear",
+              "params": 2013388800
+            }
+          ]
+        },
+        {
+          "path": "embed",
+          "type": "embedding",
+          "kind": "primitive",
+          "docs": {
+            "name": "token embedding",
+            "summary": "Token embedding table.",
+            "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
+          },
+          "copies": {
+            "total": 1,
+            "active": 1
+          },
+          "params": [
+            [
+              "vocab",
+              "V",
+              250880,
+              "Vocabulary size"
+            ],
+            [
+              "dim",
+              "D",
+              4096,
+              "Embedding width"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "ids": "..."
+            },
+            "out": {
+              "y": "... dim"
+            }
+          },
+          "contributes": {
+            "params": 1027604480,
+            "activeParams": 1027604480,
+            "shareOfParams": 0.1453673991820766,
+            "flopsPerToken": 0,
+            "shareOfFlops": 0,
+            "activationBytes": 16777216,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "embed",
+              "type": "embedding",
+              "params": 1027604480
+            }
+          ]
+        },
+        {
+          "path": "layers/block/attn/q_proj",
+          "type": "linear",
+          "kind": "primitive",
+          "docs": {
+            "name": "linear",
+            "summary": "Dense projection.",
+            "formula": "params = in*out (+out with bias); FLOPs/token = 2*in*out; saves its input for the weight gradient"
+          },
+          "copies": {
+            "total": 30,
+            "active": 30
+          },
+          "params": [
+            [
+              "in_features",
+              "D",
+              4096,
+              "Width in"
+            ],
+            [
+              "out_features",
+              "H*dh",
+              4096,
+              "Width out"
+            ],
+            [
+              "bias",
+              null,
+              true,
+              "Learn a per-output constant as well as the matrix"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... in_features"
+            },
+            "out": {
+              "y": "... out_features"
+            }
+          },
+          "contributes": {
+            "params": 503439360,
+            "activeParams": 503439360,
+            "shareOfParams": 0.07121774168315145,
+            "flopsPerToken": 1006632960,
+            "shareOfFlops": 0.06876790830945559,
+            "activationBytes": 0,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/block/attn/q_proj",
+              "type": "linear",
+              "params": 503439360
+            }
+          ]
+        }
+      ]
+    },
+    {
       "preset": "llama-2-7b",
       "blocks": [
         {

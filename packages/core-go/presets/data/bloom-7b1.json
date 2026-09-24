@@ -1,0 +1,200 @@
+{
+  "version": 1,
+  "meta": {
+    "name": "bloom-7b1",
+    "family": "bloom",
+    "notes": "BigScience's BLOOM at 7.1B, and the library's first model without positions of any kind. Attention is ALiBi: every score is penalised in proportion to how far back its key is, by a slope per head that halves every four heads, 2^(-8(h+1)/32) — written here as the attention's score expression rather than as a switch. BLOOM adds slope times the key's position rather than times the distance; the two differ by a constant along each query's row, which the softmax cannot see. Biases on every projection, a tanh GELU, a LayerNorm straight after the embedding (8,192 parameters), and a tied head over a 250,880-token vocabulary, so the embedding alone is 1.03B of the 7.07B. ALiBi was chosen so that a model trained at 2,048 tokens degrades gracefully past it, which is also why there is no maximum position to declare.",
+    "published": {
+      "params": 7069016064,
+      "source": "https://huggingface.co/bigscience/bloom-7b1"
+    }
+  },
+  "symbols": {
+    "B": {
+      "kind": "runtime",
+      "default": 1,
+      "doc": "Batch size"
+    },
+    "T": {
+      "kind": "runtime",
+      "default": 2048,
+      "doc": "Sequence length in tokens"
+    },
+    "L": {
+      "kind": "design",
+      "value": 30,
+      "doc": "Number of transformer layers"
+    },
+    "D": {
+      "kind": "design",
+      "value": 4096,
+      "doc": "Residual stream width (d_model)"
+    },
+    "H": {
+      "kind": "design",
+      "value": 32,
+      "doc": "Query heads"
+    },
+    "Hkv": {
+      "kind": "design",
+      "value": 32,
+      "doc": "Key/value heads"
+    },
+    "dh": {
+      "kind": "design",
+      "value": "D/H",
+      "doc": "Head dimension"
+    },
+    "F": {
+      "kind": "design",
+      "value": "4*D",
+      "doc": "Feed-forward hidden width"
+    },
+    "V": {
+      "kind": "design",
+      "value": 250880,
+      "doc": "Vocabulary size"
+    }
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "tokens",
+        "type": "input",
+        "params": {
+          "shape": "B T",
+          "dtype": "int64"
+        }
+      },
+      {
+        "id": "embed",
+        "type": "embedding",
+        "params": {
+          "vocab": "V",
+          "dim": "D"
+        }
+      },
+      {
+        "id": "embed_norm",
+        "type": "layernorm",
+        "label": "embedding norm",
+        "params": {
+          "dim": "D",
+          "bias": true
+        }
+      },
+      {
+        "id": "layers",
+        "type": "repeat",
+        "label": "Transformer block x30",
+        "params": {
+          "count": "L"
+        },
+        "graph": {
+          "nodes": [
+            {
+              "id": "_in",
+              "type": "boundary_in",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            },
+            {
+              "id": "block",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "Hkv",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "layernorm",
+                "norm_bias": true,
+                "post_norm": false,
+                "mlp": "dense",
+                "act": "gelu_tanh",
+                "attn_bias": true,
+                "attn_o_bias": null,
+                "mlp_bias": true,
+                "qk_norm": false,
+                "causal": true,
+                "window": 0,
+                "rope": null,
+                "score": "score - 2 ** (-8 * (h + 1) / heads) * (q - kv)"
+              }
+            },
+            {
+              "id": "_out",
+              "type": "boundary_out",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            }
+          ],
+          "edges": [
+            [
+              "_in:x",
+              "block:x"
+            ],
+            [
+              "block:y",
+              "_out:x"
+            ]
+          ]
+        }
+      },
+      {
+        "id": "final_norm",
+        "type": "layernorm",
+        "params": {
+          "dim": "D",
+          "bias": true
+        }
+      },
+      {
+        "id": "head",
+        "type": "lm_head",
+        "params": {
+          "vocab": "V",
+          "dim": "D",
+          "tied": true
+        }
+      },
+      {
+        "id": "logits",
+        "type": "output"
+      }
+    ],
+    "edges": [
+      [
+        "tokens:x",
+        "embed:ids"
+      ],
+      [
+        "embed:y",
+        "embed_norm:x"
+      ],
+      [
+        "embed_norm:y",
+        "layers:x"
+      ],
+      [
+        "layers:x",
+        "final_norm:x"
+      ],
+      [
+        "final_norm:y",
+        "head:x"
+      ],
+      [
+        "head:y",
+        "logits:x"
+      ]
+    ]
+  },
+  "ui": {}
+}

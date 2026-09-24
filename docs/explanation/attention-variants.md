@@ -1,7 +1,8 @@
 # Attention variants: what to open up, and how far
 
-*A proposal for M10. Nothing here is built yet; the point of writing it first is
-that the choice decides what every attention estimate in the tool means.*
+*A proposal for M10. Phase 1 is built; the rest is not. The point of writing it
+first was that the choice decides what every attention estimate in the tool
+means.*
 
 The roadmap has carried one open question since M2:
 
@@ -192,13 +193,21 @@ analysis and the generated code currently disagree.
 
 ## The phases
 
-1. **Make the numbers and the code agree.** Before anything is added. Softcapping
-   counted as fused and generated as `flex_attention` with a `score_mod`; windowed
-   attention generated with a block mask instead of a dense one. `SDPA-03` becomes
-   a note about which kernels support it rather than a warning that none does;
-   Gemma 2's notes are corrected; the goldens are rewritten deliberately and the
-   difference explained. The runtime's verify and trace hold the new code against
-   the eager form. Gemma 2's activations at 8k fall from 198.9 GiB to about 73.
+1. **Make the numbers and the code agree.** Before anything is added.
+   *Done*, with FlashAttention rather than FlexAttention as the kernel — see
+   below. A window or a cap is generated as a `fused_attention` helper that calls
+   `flash_attn_func` with `window_size` and `softcap` on CUDA in half precision
+   when flash-attn is installed, and otherwise computes exactly what the code
+   computed before, saying once on a GPU that it is running unfused. The cap is
+   counted inside the fused kernel, over the scores it computes. `SDPA-03` is a
+   note naming the kernel; Gemma 2's notes are corrected; three models'
+   generated code and Gemma 2's analysis and findings changed in the goldens.
+   Gemma 2's activations at 8k fall from 198.9 GiB to 72.9. On a CPU, where
+   verification runs, the generated model is the one it was: the same
+   parameters, the same FLOPs against the profiler, and it still exports. The
+   fused branch is checked against the unfused one on a GPU, with a stand-in
+   for FlashAttention written from its documented contract, since flash-attn
+   does not install on Windows.
 2. **The two expressions.** A small grammar the engine parses, evaluates for
    density and cost, and prints as Python; the inspector edits them, with the
    block mask drawn beside the expression, and design rules for one that does not
@@ -217,11 +226,14 @@ typed into the inspector changes the cost it should.
 
 ## What this leaves open
 
-- **Whether FlexAttention is a stable enough target.** It shipped as a prototype
-  in PyTorch 2.5, and its announcement listed grouped-query attention as coming.
-  The runtime here runs 2.11; phase 1 starts by finding out what that version
-  supports, with FlashAttention's `softcap` and `window_size` as the fallback for
-  the two variants phase 1 needs.
+- **Whether FlexAttention is a stable enough target.** Phase 1 found out, on
+  PyTorch 2.11. Grouped-query attention works and the numbers match. But it is
+  only fused when compiled, and compiling it needs a C++ compiler on the CPU and
+  Triton on CUDA — neither available on Windows — and PyTorch's FLOP counter
+  refuses it, which the runtime's verification depends on. So phase 1 used
+  FlashAttention's `softcap` and `window_size`, as planned for this case, and
+  phase 2 has to decide how a design that needs an arbitrary `score_mod` is
+  generated, verified and counted where FlexAttention cannot compile.
 - **Block granularity.** A kernel computes whole blocks, 128 positions a side by
   default, so a mask that keeps a sliver of a block costs the whole block.
   Counting the kept fraction element by element undercounts by up to one block a

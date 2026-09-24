@@ -121,35 +121,90 @@ const helperRope = `class RotaryEmbedding(nn.Module):
         return torch.cat([x1 * cos - x2 * sin, x1 * sin + x2 * cos], dim=-1)
 `
 
-const helperWindow = "def sliding_window_mask(seq: int, window: int, device, dtype) -> torch.Tensor:\n" +
-	"    \"\"\"Causal mask that also forbids attending further back than `window` tokens.\"\"\"\n" +
-	"    i = torch.arange(seq, device=device)\n" +
-	"    allowed = (i[:, None] >= i[None, :]) & (i[:, None] - i[None, :] < window)\n" +
-	"    mask = torch.zeros(seq, seq, device=device, dtype=dtype)\n" +
-	"    return mask.masked_fill(~allowed, float(\"-inf\"))\n"
+// helperFused is attention with a sliding window, a cap on the scores, or
+// both. The analysis counts these as one fused kernel that skips the key blocks
+// outside the window and caps inside the kernel, so this uses that kernel —
+// FlashAttention 2.6 or later — wherever it can, and computes the same numbers
+// the long way everywhere else, saying so once on a GPU, where the difference
+// is memory somebody is paying for.
+//
+// The long way is what the generated code did before, exactly: a window alone
+// through F.scaled_dot_product_attention with an additive mask, a cap through
+// the eager form. So verification on a CPU — the parameter count, the FLOP
+// count against the profiler, the export — sees the same model it always did.
+const helperFused = `try:
+    from flash_attn import flash_attn_func as _flash_attn_func
+except ImportError:  # an optional install, and only ever on CUDA
+    _flash_attn_func = None
 
-const helperSoftcap = "def softcap_attention(q, k, v, cap, mask=None, scale=None, enable_gqa=False):\n" +
-	"    \"\"\"Attention whose scores are bounded to +/-cap by a tanh.\n" +
-	"\n" +
-	"    Not `F.scaled_dot_product_attention`: the cap applies to the score matrix,\n" +
-	"    and a fused kernel never materializes one. This is the eager form, and it\n" +
-	"    costs the memory the fused kernel would have saved.\n" +
-	"    \"\"\"\n" +
-	"    if enable_gqa and k.shape[-3] != q.shape[-3]:\n" +
-	"        k = k.repeat_interleave(q.shape[-3] // k.shape[-3], dim=-3)\n" +
-	"        v = v.repeat_interleave(q.shape[-3] // v.shape[-3], dim=-3)\n" +
-	"    if scale is None:\n" +
-	"        scale = q.shape[-1] ** -0.5\n" +
-	"    scores = torch.tanh((q @ k.transpose(-2, -1)) * scale / cap) * cap\n" +
-	"    if mask is not None:\n" +
-	"        scores = scores + mask\n" +
-	"    return torch.softmax(scores, dim=-1).to(v.dtype) @ v\n"
+_UNFUSED_SAID = False
 
-const helperCausal = "def causal_mask(seq: int, device, dtype) -> torch.Tensor:\n" +
-	"    \"\"\"Additive mask forbidding a token from attending to anything after it.\"\"\"\n" +
-	"    i = torch.arange(seq, device=device)\n" +
-	"    mask = torch.zeros(seq, seq, device=device, dtype=dtype)\n" +
-	"    return mask.masked_fill(i[:, None] < i[None, :], float(\"-inf\"))\n"
+
+def fused_attention(q, k, v, window=0, softcap=0.0, causal=True, scale=None, enable_gqa=False):
+    """Attention with a sliding window, a cap on the scores, or both.
+
+    The design's analysis counts this as one fused kernel: it skips the keys
+    outside the window and applies the cap inside the kernel, so the score
+    matrix is never kept for the backward pass. FlashAttention, 2.6 or later,
+    is that kernel, and it is used whenever it can be: on CUDA, in half
+    precision, with flash_attn installed.
+
+    Anywhere else the same numbers are computed the long way: every score,
+    then the mask. A window alone still goes through a memory-efficient kernel;
+    a cap is computed eagerly and keeps the score matrix. Either way it is more
+    than the analysis counts, which is said once when it happens on a GPU.
+
+    q is (B, heads, T, head_dim); k and v may have fewer heads than q.
+    """
+    if scale is None:
+        scale = q.shape[-1] ** -0.5
+    if (
+        _flash_attn_func is not None
+        and q.is_cuda
+        and q.dtype in (torch.float16, torch.bfloat16)
+        and v.shape[-1] == q.shape[-1]
+    ):
+        # FlashAttention takes (B, T, heads, head_dim), repeats grouped key and
+        # value heads itself, and counts a window as how far back and forward
+        # a query may look: back window - 1, forward nothing.
+        y = _flash_attn_func(
+            q.transpose(1, 2),
+            k.transpose(1, 2),
+            v.transpose(1, 2),
+            softmax_scale=scale,
+            causal=causal,
+            window_size=(window - 1, 0) if window > 0 else (-1, -1),
+            softcap=softcap,
+        )
+        return y.transpose(1, 2)
+
+    global _UNFUSED_SAID
+    if q.is_cuda and not _UNFUSED_SAID:
+        _UNFUSED_SAID = True
+        import warnings
+
+        warnings.warn(
+            "attention with a window or a score cap is running unfused: install flash-attn 2.6 or "
+            "later for the kernel the design's memory and FLOP figures assume",
+            stacklevel=2,
+        )
+
+    seq = q.shape[-2]
+    i = torch.arange(seq, device=q.device)
+    allowed = torch.ones(seq, seq, dtype=torch.bool, device=q.device)
+    if causal:
+        allowed = allowed & (i[:, None] >= i[None, :])
+    if window > 0:
+        allowed = allowed & (i[:, None] - i[None, :] < window)
+    mask = torch.zeros(seq, seq, device=q.device, dtype=q.dtype).masked_fill(~allowed, float("-inf"))
+    if not softcap:
+        return F.scaled_dot_product_attention(q, k, v, attn_mask=mask, scale=scale, enable_gqa=enable_gqa)
+    if enable_gqa and k.shape[-3] != q.shape[-3]:
+        k = k.repeat_interleave(q.shape[-3] // k.shape[-3], dim=-3)
+        v = v.repeat_interleave(q.shape[-3] // v.shape[-3], dim=-3)
+    scores = torch.tanh((q @ k.transpose(-2, -1)) * scale / softcap) * softcap
+    return torch.softmax(scores + mask, dim=-1).to(v.dtype) @ v
+`
 
 const helperShift = "def shift_sequence(x: torch.Tensor, by: int) -> torch.Tensor:\n" +
 	"    \"\"\"Move a sequence `by` positions earlier, zero-filling the end.\n" +
@@ -334,10 +389,8 @@ type ctx struct {
 	byKey          map[string]string
 	usedNames      map[string]bool
 	needsRope      bool
-	needsWindow    bool
-	needsSoftcap   bool
+	needsFused     bool
 	needsShift     bool
-	needsCausal    bool
 	needsSsd       bool
 	needsSelective bool
 	needsGdn       bool
@@ -785,41 +838,28 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 			w := r.Num("window")
 			cap := r.Num("logit_softcap")
 			switch {
-			case cap != 0:
-				// A cap on the scores rules the fused kernel out, so the mask
-				// has to be built here rather than left to `is_causal`.
-				c.needsSoftcap = true
-				mask := "None"
-				switch {
-				case w > 0:
-					c.needsWindow = true
-					out.forward = append(out.forward, fmt.Sprintf(
-						"%s_mask = sliding_window_mask(%s.shape[-2], %s, %s.device, %s.dtype)",
-						outName("y"), q, pyNum(w), q, q))
-					mask = outName("y") + "_mask"
-				case r.Bool("causal"):
-					c.needsCausal = true
-					out.forward = append(out.forward, fmt.Sprintf(
-						"%s_mask = causal_mask(%s.shape[-2], %s.device, %s.dtype)",
-						outName("y"), q, q, q))
-					mask = outName("y") + "_mask"
+			case cap != 0 || w > 0:
+				// A window or a cap is what the plain kernel cannot skip or
+				// apply, so both go through the helper that finds one that can.
+				c.needsFused = true
+				args := []string{q, k, v}
+				if w > 0 {
+					args = append(args, "window="+pyNum(w))
 				}
-				capScale := "None"
+				if cap != 0 {
+					args = append(args, "softcap="+pyNum(cap))
+				}
+				if w == 0 {
+					args = append(args, "causal="+pyBool(p["causal"]))
+				}
 				if scale != "" {
-					capScale = strings.TrimPrefix(scale, ", scale=")
+					args = append(args, strings.TrimPrefix(scale, ", "))
 				}
-				out.forward = append(out.forward, fmt.Sprintf(
-					"%s = softcap_attention(%s, %s, %s, %s, mask=%s, scale=%s, enable_gqa=%s)",
-					outName("y"), q, k, v, pyNum(cap), mask, capScale,
-					pyBool(gqa != "")))
-			case w > 0:
-				c.needsWindow = true
-				out.forward = append(out.forward, fmt.Sprintf(
-					"%s_mask = sliding_window_mask(%s.shape[-2], %s, %s.device, %s.dtype)",
-					outName("y"), q, pyNum(w), q, q))
-				out.forward = append(out.forward, fmt.Sprintf(
-					"%s = F.scaled_dot_product_attention(%s, %s, %s, attn_mask=%s_mask%s%s)",
-					outName("y"), q, k, v, outName("y"), gqa, scale))
+				if gqa != "" {
+					args = append(args, "enable_gqa=True")
+				}
+				out.forward = append(out.forward, fmt.Sprintf("%s = fused_attention(%s)",
+					outName("y"), strings.Join(args, ", ")))
 			default:
 				out.forward = append(out.forward, fmt.Sprintf(
 					"%s = F.scaled_dot_product_attention(%s, %s, %s, is_causal=%s%s%s)",
@@ -1195,14 +1235,8 @@ func GenerateTorch(doc *ir.Doc, options Options) *Generated {
 	if c.needsRope {
 		helpers = append(helpers, helperRope, "")
 	}
-	if c.needsWindow {
-		helpers = append(helpers, helperWindow, "")
-	}
-	if c.needsCausal {
-		helpers = append(helpers, helperCausal, "")
-	}
-	if c.needsSoftcap {
-		helpers = append(helpers, helperSoftcap, "")
+	if c.needsFused {
+		helpers = append(helpers, helperFused, "")
 	}
 	if c.needsShift {
 		helpers = append(helpers, helperShift, "")

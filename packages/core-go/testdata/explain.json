@@ -10624,7 +10624,7 @@
             "shareOfParams": 0.9007209723412036,
             "flopsPerToken": 18761121792,
             "shareOfFlops": 0.9109052031361369,
-            "activationBytes": 195890774016,
+            "activationBytes": 60621324288,
             "cacheBytesPerToken": 172032,
             "cacheBytesPerSequence": 704643072
           },
@@ -10914,7 +10914,7 @@
             "shareOfParams": 0.4503604861706018,
             "flopsPerToken": 9028239360,
             "shareOfFlops": 0.4383464005702067,
-            "activationBytes": 75396808704,
+            "activationBytes": 30310662144,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 704643072
           },
@@ -11199,7 +11199,7 @@
             "shareOfParams": 0.4503604861706018,
             "flopsPerToken": 9732882432,
             "shareOfFlops": 0.47255880256593014,
-            "activationBytes": 120493965312,
+            "activationBytes": 30310662144,
             "cacheBytesPerToken": 172032,
             "cacheBytesPerSequence": 0
           },

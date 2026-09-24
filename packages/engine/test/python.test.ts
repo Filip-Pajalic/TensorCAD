@@ -190,9 +190,10 @@ describe.skipIf(!available)("tensorcad-runtime verify", () => {
  *
  * GPT-2 exercises none of those. This one is Gemma 2 shrunk to twenty million
  * parameters, which keeps every structural feature — local and global layers in
- * one repeat, a tanh on the attention scores that rules out the fused kernel,
- * and a tanh on the logits — and drops only the widths. If the emitted eager
- * attention were wrong, this is where it would show.
+ * one repeat, a tanh on the attention scores, and a tanh on the logits — and
+ * drops only the widths. On a CPU, where this runs, the generated attention
+ * takes its unfused path, which is the one the profiler and the export see;
+ * if that path were wrong, this is where it would show.
  */
 describe.skipIf(!available)("tensorcad-runtime trace", () => {
   const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
@@ -281,6 +282,62 @@ describe.skipIf(!available)("tensorcad-runtime trace, on a design unlike nano-so
         // on both sides of the language boundary from the same bytes.
         const source = files.find((f) => f.path === "model.py")!.contents;
         expect(trace.model_sha256).toBe(createHash("sha256").update(source, "utf8").digest("hex"));
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+});
+
+describe.skipIf(!available)("the fused attention the generated code reaches for", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+
+  it(
+    "gives what the fallback gives, when FlashAttention is there to call",
+    () => {
+      // flash-attn is not installable everywhere this runs, so the kernel is a
+      // stand-in written from FlashAttention's documented contract, not from
+      // the helper: what it checks is that the helper hands the real kernel the
+      // right layout, window, cap, scale and heads. On a GPU only, because the
+      // helper only takes the fused path on one.
+      const scaled = scaleDesign(getPreset("gemma-2-9b"), { targetParams: 20e6, vocab: 256 });
+      const doc = scaled.doc;
+      // A window shorter than the sequence the check runs, or it never bites.
+      (doc.symbols.W as { value: number }).value = 16;
+      const dir = mkdtempSync(join(tmpdir(), "tensorcad-fused-"));
+      try {
+        const files = generateTorch(doc).files;
+        for (const file of files) writeFileSync(join(dir, file.path), file.contents);
+        const cls = /^class (\w+)\(nn\.Module\)/gm;
+        const model = files.find((f) => f.path === "model.py")!.contents;
+        const name = [...model.matchAll(cls)].at(-1)![1]!;
+        // The probe is a file of its own beside this one: Python full of quotes
+        // and backslashes does not survive being a string in TypeScript intact.
+        const probe = join(import.meta.dir, "fused_attention_probe.py");
+        const [cmd] = invocation;
+        const python = cmd === "tensorcad-runtime" ? "python" : cmd;
+        const result = spawnSync(python, [probe, join(dir, "model.py"), name], {
+          encoding: "utf8",
+          timeout: TIMEOUT_MS,
+          shell: process.platform === "win32",
+        });
+        const out = JSON.parse(result.stdout.trim().split(/\r?\n/).at(-1)!);
+        if (!out.cuda) {
+          console.warn("[python.test] no CUDA device; the fused attention path was not exercised");
+          return;
+        }
+        // bf16 against the same attention in float32, relative to its size:
+        // rounding is a few thousandths; one key too many in a window of 16, or
+        // the cap applied before the scale, is several hundredths.
+        for (const [key, err] of Object.entries(out.worst as Record<string, number>)) {
+          expect({ key, close: err < 1e-2 }).toEqual({ key, close: true });
+        }
+        const layers = Number((doc.symbols.L as { value: number }).value);
+        expect(out.model_calls).toBe(layers);
+        // Half the layers windowed, half global: back W - 1, forward nothing.
+        expect(out.model_windows).toEqual([[-1, -1], [15, 0]]);
+        expect(out.finite).toBe(true);
       } finally {
         rmSync(dir, { recursive: true, force: true });
       }

@@ -6,35 +6,31 @@
       "ok": true,
       "counts": {
         "error": 0,
-        "info": 1,
-        "warning": 3
+        "info": 2,
+        "warning": 1
       },
       "findings": [
         {
           "rule": "training-fits",
           "severity": "warning",
-          "message": "Training needs about 336.57 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 17.21 GiB, gradients 17.21 GiB, optimizer 103.28 GiB, activations 198.86 GiB.",
-          "hint": "Activations dominate. Turn on activation recomputation, or reduce the micro-batch."
+          "message": "Training needs about 210.59 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 17.21 GiB, gradients 17.21 GiB, optimizer 103.28 GiB, activations 72.88 GiB.",
+          "hint": "Model state dominates. Raise the ZeRO stage from 0 to 3, or increase tensor parallelism."
         },
         {
           "rule": "SDPA-03",
-          "severity": "warning",
+          "severity": "info",
           "path": "layers/global/attn/attn",
           "param": "logit_softcap",
-          "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass."
+          "message": "capping the attention scores needs a kernel that caps inside it: FlashAttention 2.6 or later does, PyTorch's own scaled_dot_product_attention does not. This layer is counted as that fused kernel, and the generated model uses it when flash-attn is installed.",
+          "hint": "Without it the cap is computed eagerly and the score matrix is held for the backward pass, which is the memory the fused count leaves out."
         },
         {
           "rule": "SDPA-03",
-          "severity": "warning",
+          "severity": "info",
           "path": "layers/local/attn/attn",
           "param": "logit_softcap",
-          "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass."
-        },
-        {
-          "rule": "recompute-hint",
-          "severity": "info",
-          "message": "Activations are 59% of the training footprint at batch 1 and 8192 tokens.",
-          "hint": "Full recomputation trades about 33% more compute for most of that memory."
+          "message": "capping the attention scores needs a kernel that caps inside it: FlashAttention 2.6 or later does, PyTorch's own scaled_dot_product_attention does not. This layer is counted as that fused kernel, and the generated model uses it when flash-attn is installed.",
+          "hint": "Without it the cap is computed eagerly and the score matrix is held for the backward pass, which is the memory the fused count leaves out."
         }
       ]
     },
@@ -43,24 +39,10 @@
       "ok": true,
       "counts": {
         "error": 0,
-        "info": 2,
-        "warning": 2
+        "info": 4,
+        "warning": 0
       },
       "findings": [
-        {
-          "rule": "SDPA-03",
-          "severity": "warning",
-          "path": "layers/global/attn/attn",
-          "param": "logit_softcap",
-          "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass."
-        },
-        {
-          "rule": "SDPA-03",
-          "severity": "warning",
-          "path": "layers/local/attn/attn",
-          "param": "logit_softcap",
-          "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass."
-        },
         {
           "rule": "logits-memory",
           "severity": "info",
@@ -72,6 +54,22 @@
           "severity": "info",
           "message": "15000B tokens is 90.1x the compute-optimal budget of 166B. Heavily over-trained, in the range of small models trained on very large corpora.",
           "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        },
+        {
+          "rule": "SDPA-03",
+          "severity": "info",
+          "path": "layers/global/attn/attn",
+          "param": "logit_softcap",
+          "message": "capping the attention scores needs a kernel that caps inside it: FlashAttention 2.6 or later does, PyTorch's own scaled_dot_product_attention does not. This layer is counted as that fused kernel, and the generated model uses it when flash-attn is installed.",
+          "hint": "Without it the cap is computed eagerly and the score matrix is held for the backward pass, which is the memory the fused count leaves out."
+        },
+        {
+          "rule": "SDPA-03",
+          "severity": "info",
+          "path": "layers/local/attn/attn",
+          "param": "logit_softcap",
+          "message": "capping the attention scores needs a kernel that caps inside it: FlashAttention 2.6 or later does, PyTorch's own scaled_dot_product_attention does not. This layer is counted as that fused kernel, and the generated model uses it when flash-attn is installed.",
+          "hint": "Without it the cap is computed eagerly and the score matrix is held for the backward pass, which is the memory the fused count leaves out."
         }
       ]
     },
@@ -80,29 +78,31 @@
       "ok": true,
       "counts": {
         "error": 0,
-        "info": 0,
-        "warning": 3
+        "info": 2,
+        "warning": 1
       },
       "findings": [
         {
           "rule": "training-fits",
           "severity": "warning",
-          "message": "Training needs about 933.15 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 17.21 GiB, gradients 17.21 GiB, optimizer 103.28 GiB, activations 795.44 GiB.",
+          "message": "Training needs about 429.23 GiB per GPU but H100 SXM (80 GB) has 80.00 GiB. Weights 17.21 GiB, gradients 17.21 GiB, optimizer 103.28 GiB, activations 291.52 GiB.",
           "hint": "Activations dominate. Turn on activation recomputation, or reduce the micro-batch."
         },
         {
           "rule": "SDPA-03",
-          "severity": "warning",
+          "severity": "info",
           "path": "layers/global/attn/attn",
           "param": "logit_softcap",
-          "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass."
+          "message": "capping the attention scores needs a kernel that caps inside it: FlashAttention 2.6 or later does, PyTorch's own scaled_dot_product_attention does not. This layer is counted as that fused kernel, and the generated model uses it when flash-attn is installed.",
+          "hint": "Without it the cap is computed eagerly and the score matrix is held for the backward pass, which is the memory the fused count leaves out."
         },
         {
           "rule": "SDPA-03",
-          "severity": "warning",
+          "severity": "info",
           "path": "layers/local/attn/attn",
           "param": "logit_softcap",
-          "message": "capping the attention scores rules out a fused kernel, which never materializes them to cap. This layer is counted as eager attention, so the score matrix is held for the backward pass."
+          "message": "capping the attention scores needs a kernel that caps inside it: FlashAttention 2.6 or later does, PyTorch's own scaled_dot_product_attention does not. This layer is counted as that fused kernel, and the generated model uses it when flash-attn is installed.",
+          "hint": "Without it the cap is computed eagerly and the score matrix is held for the backward pass, which is the memory the fused count leaves out."
         }
       ]
     }

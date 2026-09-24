@@ -239,7 +239,10 @@ analysis and the generated code currently disagree.
    and what is computed from them, and nothing else.
 3. **Presets that need it.** Models with a published parameter count to regress
    against: an ALiBi model (BLOOM or MPT), a relative-bias model (T5), and gpt-oss,
-   which uses both sinks and banded attention.
+   which uses both sinks and banded attention. *The ALiBi model is done:*
+   `bloom-7b1`, whose only sense of order is a score expression, reproduces its
+   published count exactly, and its bias is checked against Hugging Face's own
+   construction of it.
 4. **The three that are not a score.** Sinks as a parameter, differential attention
    as two blocks and a primitive, and the eager block with its rule.
 

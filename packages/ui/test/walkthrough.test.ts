@@ -2,7 +2,7 @@
  * The walkthrough, over every design in the library.
  *
  * The claim it makes is that it narrates *this* design rather than a recorded
- * one, so the test is the same claim: build it for all twenty-four presets and
+ * one, so the test is the same claim: build it for every preset in the library and
  * check that nothing it says is made up. That means three things —
  *
  *   - every block a step names is a block that exists, or the canvas would be
@@ -116,6 +116,14 @@ describe("a step exists because the design has the block", () => {
   test("a hybrid is told about both", () => {
     const ids = stepsFor(getPreset("nemotron-h-8b")).map((s) => s.id);
     expect(ids).toContain("ssm");
+  });
+
+  test("a design whose sense of order is in its scores is told where", () => {
+    // BLOOM has no position embedding and no rotation: ALiBi is a score
+    // expression on the attention, and that is the step's block.
+    const positions = stepsFor(getPreset("bloom-7b1")).find((s) => s.id === "positions");
+    expect(positions?.paths).toEqual(["layers/block/attn/attn"]);
+    expect(positions?.body.join(" ")).toContain("score - 2 ** (-8 * (h + 1) / heads) * (q - kv)");
   });
 });
 

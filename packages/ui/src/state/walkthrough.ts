@@ -2,7 +2,7 @@
  * The walkthrough: the design explaining itself, a stage at a time.
  *
  * Brendan Bycroft's LLM visualisation has ten hand-written phases against one
- * model. Twenty-four presets cannot each have ten, and do not need to: what
+ * model. Twenty-five presets cannot each have ten, and do not need to: what
  * differs between them is which *kinds* of stage they have, not what a stage
  * is. An embedding is an embedding in a 124k-parameter sorter and in a 671B
  * mixture of experts, and the sentence that explains one explains the other
@@ -294,6 +294,12 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
   // -------------------------------------------------------------- positions
   const pos = firstOf(all, (f) => f.type === "pos_embedding");
   const rope = firstOf(all, (f) => f.type === "rope");
+  // A score expression that reads both positions is a bias on distance —
+  // ALiBi, most often — which is where such a design keeps its sense of order.
+  const distance = firstOf(all, (f) => {
+    const score = f.type === "sdpa" ? f.resolved?.p.score : undefined;
+    return typeof score === "string" && /\bq\b/.test(score) && /\bkv\b/.test(score);
+  });
   if (pos) {
     push(
       "positions",
@@ -314,6 +320,17 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
       ],
       [rope.path],
       3,
+    );
+  } else if (distance) {
+    push(
+      "positions",
+      "And where it sits",
+      [
+        "Attention sees a set, not a sequence. This design adds nothing to the vectors at all: instead each attention score is docked in proportion to how far back its key is, so a token attends less to what is further away.",
+        `The attention's score expression says exactly how: ${String(distance.resolved?.p.score)}. Nothing is stored for it, and nothing caps the length, which is why such a design degrades gracefully past the sequences it trained on rather than failing.`,
+      ],
+      [distance.path],
+      distance.depth,
     );
   }
 

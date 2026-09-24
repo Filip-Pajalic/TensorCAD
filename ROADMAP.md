@@ -8,7 +8,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 
 | Milestone | State |
 |---|---|
-| M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 24 presets, exact parameter match on 21 of them. |
+| M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 25 presets, exact parameter match on 22 of them. |
 | M1 Check (design rules, full analysis) | **Done.** 19 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
 | M2 Manufacture (PyTorch codegen, verification) | **Done.** Every generated model's parameter count matches PyTorch exactly, and the FLOPs estimate matches a profiler once the causal mask is accounted for. |
 | M3 Agent (MCP server, CLI) | **Done.** 19 MCP tools over stdio, 9 CLI commands, and the live editor bridge: an agent's edits land on the canvas as it makes them and the human's come back. |
@@ -20,7 +20,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 | M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
-| M10 Attention variants | **Phases 1 and 2 done.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Presets that need the expressions, and the variants that are not a score, remain. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
+| M10 Attention variants | **Phases 1 and 2 done.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Phase 3 has begun: BLOOM-7b1 is the first preset whose attention is an expression, its ALiBi reproducing both the published parameter count and the bias BLOOM builds. gpt-oss and T5, and the variants that are not a score, remain. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -30,7 +30,7 @@ settings, the full analysis and the design-rule check at three operating points,
 and the generated PyTorch byte for byte. `go run ./cmd/golden` rewrites those
 files, deliberately and never as part of a test.
 
-24 presets, 21 matching their published parameter count exactly and 3 within a
+25 presets, 22 matching their published parameter count exactly and 3 within a
 stated tolerance, and every one of them confirmed against PyTorch 2.11 by
 instantiating the generated model. Not all are language models:
 `ijepa-vit-h14` is a vision transformer and `alexnet` a convolutional
@@ -366,7 +366,15 @@ kernel before anything is added.
    masks they are found that a causal window was counted at half its width:
    Gemma 2, Gemma 3 and Mistral's windowed layers are now counted at
    `W - W²/2T` keys a query.
-3. **Presets that need them** — ALiBi, relative bias, gpt-oss.
+3. **Presets that need them** — ALiBi, relative bias, gpt-oss. *ALiBi done:*
+   `bloom-7b1`, with no positions of any kind, its ALiBi written as the score
+   expression `score - 2 ** (-8 * (h + 1) / heads) * (q - kv)`. It reproduces
+   the 7,069,016,064 parameters Hugging Face reports, in the analysis and in
+   PyTorch, and its FLOPs match the profiler's. The bias is held against a
+   transcription of Hugging Face's own `build_alibi_tensor`: BLOOM adds slope ×
+   key position rather than slope × distance, which differs by a constant along
+   each row, and the weights agree to 1e-6. MPT-7B was the other candidate; its
+   original repository is no longer public.
 4. **Sinks, differential attention, and an eager block** for what is not a score.
 
 ## Sequencing and dependencies

@@ -1,11 +1,11 @@
 # Add a preset
 
-A preset is an assertion about a real model, so it has to be checkable. The
-twenty of them are the regression suite.
+A preset is an assertion about a real model, so it has to be checkable. Together
+they are the regression suite.
 
 ## Write the document
 
-The library is `packages/core-go/presets/data`: twenty-four JSON documents and an
+The library is `packages/core-go/presets/data`: twenty-five JSON documents and an
 `index.json` listing them, embedded into the binary by `go:embed`. There is no
 builder to go through — a preset is a document in exactly the format the editor
 saves, and the format `import` writes.

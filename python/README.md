@@ -192,6 +192,27 @@ of multi-token "words", so repeated n-grams give a model real signal) and record
 `smoke-train` reads `python/data/` by default (`--data`), preferring a real corpus
 over the synthetic one, and synthesizes in memory if the directory is empty.
 
+## From the desktop app
+
+The desktop app's Design menu runs these on the open design, with the Python
+it finds on `PATH` — which needs this package and PyTorch installed there:
+
+| Menu item | Runs | What comes back |
+|---|---|---|
+| Verify against PyTorch | `verify` | One sentence: PyTorch's parameter count against the design's, whether a forward pass ran, whether it exports. |
+| Smoke train | `smoke-train --steps 200` at the readout's sequence length, capped at 256 | The run on the Runs chart, beside any others. Refused above 300M parameters; shrink the design with the Ladder first. |
+| Trace this design | `trace` | Its real values in the volume view. |
+
+Each generates the model into a folder of the app's own under the system's
+temporary directory, one per design, and runs there. A smoke run trains on a
+corpus prepared into `~/.tensorcad/data` when there is one —
+
+```bash
+tensorcad-runtime data prepare --out ~/.tensorcad/data
+```
+
+— and on the deterministic synthetic tokens otherwise, and says which.
+
 ## As a library
 
 ```python

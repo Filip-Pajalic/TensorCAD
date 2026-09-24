@@ -7,13 +7,13 @@ import (
 	"testing"
 )
 
-// The frontend can call ReadTrace with any string, so what it will read is
-// the thing to hold down: a trace.json this service wrote, under its own
+// The frontend can call ReadResult with any string, so what it will read is
+// the thing to hold down: a JSON result a job of this app left under its own
 // scratch folder, and nothing else on the disk.
-func TestReadTraceReadsOnlyItsOwnTraces(t *testing.T) {
+func TestReadResultReadsOnlyWhatItsJobsMade(t *testing.T) {
 	s := &RuntimeService{}
 
-	dir := filepath.Join(traceRoot(), "readtrace-test")
+	dir := filepath.Join(scratchRoot(), "readresult-test")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -26,9 +26,20 @@ func TestReadTraceReadsOnlyItsOwnTraces(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err := s.ReadTrace(filepath.Join(dir, "trace.json"))
+	got, err := s.ReadResult(filepath.Join(dir, "trace.json"))
 	if err != nil || got != want {
 		t.Fatalf("its own trace: got %q, %v", got, err)
+	}
+	// A run record, in the folder smoke-train writes to, is a result too.
+	if err := os.MkdirAll(filepath.Join(dir, "runs"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	record := filepath.Join(dir, "runs", "run.json")
+	if err := os.WriteFile(record, []byte(want), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := s.ReadResult(record); err != nil || got != want {
+		t.Fatalf("its own run record: got %q, %v", got, err)
 	}
 
 	outside := filepath.Join(t.TempDir(), "trace.json")
@@ -38,11 +49,12 @@ func TestReadTraceReadsOnlyItsOwnTraces(t *testing.T) {
 	for name, path := range map[string]string{
 		"another file beside it":         filepath.Join(dir, "model.py"),
 		"a trace outside its folder":     outside,
-		"a climb out of the folder":      filepath.Join(traceRoot(), "..", "trace.json"),
-		"the folder itself":              traceRoot(),
-		"a trace that was never written": filepath.Join(traceRoot(), "nobody", "trace.json"),
+		"a climb out of the folder":      filepath.Join(scratchRoot(), "..", "trace.json"),
+		"the folder itself":              scratchRoot(),
+		"a trace that was never written": filepath.Join(scratchRoot(), "nobody", "trace.json"),
+		"the step log beside the record": filepath.Join(dir, "runs", "run.jsonl"),
 	} {
-		if _, err := s.ReadTrace(path); err == nil {
+		if _, err := s.ReadResult(path); err == nil {
 			t.Errorf("%s: read %s, which it should have refused", name, path)
 		}
 	}

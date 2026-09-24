@@ -3,7 +3,12 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "noEmit": true,
-    "types": []
+    "types": [],
+    // The editor's own: it is compiled as part of this build, and without
+    // DOM.Iterable a spread NodeList in it does not typecheck here.
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "bindings/**/*.ts"]
+  // The editor's ambient declarations too, `elkjs.d.ts` among them, or its
+  // imports are checked against types it deliberately narrows.
+  "include": ["src/**/*.ts", "src/**/*.tsx", "bindings/**/*.ts", "../../packages/ui/src/**/*.d.ts"]
 }

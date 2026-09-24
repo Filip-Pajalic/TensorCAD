@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strings"
 
+	"github.com/tensorcad/core/attnexpr"
 	"github.com/tensorcad/core/ir"
 	"github.com/tensorcad/core/shapes"
 )
@@ -120,9 +122,53 @@ func ResolveNodeParams(def *BlockDef, raw map[string]any, symbols *ir.SymbolTabl
 			}
 		case ParamObj:
 			out.P[key] = value
+		case ParamMask, ParamScore:
+			resolveExpression(out, key, spec.Type, value, symbols)
 		}
 	}
 	return out
+}
+
+// resolveExpression compiles an attention expression against the design's
+// symbols and keeps it in the form it was understood in: every symbol replaced
+// by its value, every constant folded, and only the parentheses it needs. That
+// is what the analysis evaluates and the generated code prints, so it is what
+// a reader is shown as the evaluated value.
+//
+// Nothing is stored for an empty expression, or for one that did not compile:
+// a composite passes on what it resolved, and an error reported here would
+// otherwise be reported again by every block it expands into.
+//
+// B and T are left out. They carry a default in the symbol table, but a mask
+// that read T would be evaluated at that default rather than at the length it
+// runs at, and the analysis measures it at the operating point's.
+func resolveExpression(out *Resolved, key string, kind ParamKind, value any, symbols *ir.SymbolTable) {
+	text, ok := value.(string)
+	if value != nil && !ok {
+		out.Errors = append(out.Errors, fmt.Sprintf("Parameter %q should be an expression", key))
+		return
+	}
+	if strings.TrimSpace(text) == "" {
+		return
+	}
+	want := attnexpr.Mask
+	if kind == ParamScore {
+		want = attnexpr.Score
+	}
+	values := map[string]float64{}
+	if symbols != nil {
+		for name, v := range symbols.Values {
+			if !symbols.Runtime[name] {
+				values[name] = v
+			}
+		}
+	}
+	n, err := attnexpr.Compile(text, want, values)
+	if err != nil {
+		out.Errors = append(out.Errors, fmt.Sprintf("Parameter %q: %s", key, err))
+		return
+	}
+	out.P[key] = attnexpr.String(n)
 }
 
 func resolveNumeric(out *Resolved, key string, spec ParamSpec, value any, ctx shapes.EvalCtx) {

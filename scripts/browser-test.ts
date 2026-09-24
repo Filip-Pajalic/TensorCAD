@@ -363,6 +363,50 @@ try {
     await key("Escape");
   });
 
+  await check("a mask typed into the inspector changes what attention costs", async () => {
+    // The walkthrough sets how far the sheet is unfolded whenever the design
+    // changes, and takes the selection with it; it is not what is being
+    // checked, so it is closed.
+    await page(`document.querySelector(".wt__shut")?.click()`);
+    await until(`!document.querySelector(".wt")`);
+    await page(`document.activeElement?.blur()`);
+    if ((await nodes()).length !== 7) {
+      await key("[");
+      await key("[");
+    }
+    await until(`document.querySelectorAll(".react-flow__node").length === 7`);
+    await focusNode("Transformer block");
+    await key("Enter");
+    await key("Enter");
+    await until(`(document.activeElement?.getAttribute("aria-label") || "").startsWith("_in")`);
+    await focusNode("block,");
+    await key("Enter");
+    await until(`document.querySelector("[data-testid=mask-preview]")`);
+
+    const attention = `[...document.querySelectorAll("tr")].find((r) => r.cells[0]?.textContent.startsWith("forward, attention"))?.cells[1].textContent`;
+    const density = `document.querySelector("[data-testid=mask-density]")?.textContent`;
+    // nano-sort is eleven positions long: causal keeps 5.5 keys a query,
+    // 3 layers × 4 × 5.5 × 3 heads × 16 wide.
+    expect("causal attention", await page(attention), "3.17 kFLOP");
+    expect("causal density", await page(density), "50.0%");
+
+    // Written over a design symbol, which the field then shows resolved.
+    const field = `[...document.querySelectorAll(".param")].find((p) => p.querySelector(".param__name")?.textContent === "mask")?.querySelector("input")`;
+    await page(`(${field}).focus(), (${field}).select()`);
+    await dt.send("Input.insertText", { text: "q - kv < L - 1" });
+    await key("Enter");
+    await until(`document.body.textContent.includes("= q - kv < 2")`);
+    // Now a query sees itself and the one before: 21 of the 66 scores causal
+    // keeps, so 5.5 × 21 / 66 = 1.75 keys.
+    await until(`${attention} === "1.01 kFLOP"`);
+    expect("masked density", await page(density), "15.9%");
+    expect(
+      "the mask as the kernel is given it",
+      await page(`[...document.querySelectorAll("[data-testid=mask-preview] .mask__expr")].map((e) => e.textContent)`),
+      ["kv <= q and q - kv < 2"],
+    );
+  });
+
   await check("nothing threw, and nothing was logged as an error", async () => {
     expect("errors", errors, []);
   });

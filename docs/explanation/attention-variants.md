@@ -1,8 +1,9 @@
 # Attention variants: what to open up, and how far
 
-*A proposal for M10. Phase 1 is built; the rest is not. The point of writing it
-first was that the choice decides what every attention estimate in the tool
-means.*
+*A proposal for M10. Phases 1 and 2 are built; the rest is not. The point of
+writing it first was that the choice decides what every attention estimate in
+the tool means. The language the two expressions are written in is
+[its own reference page](../reference/attention-expressions.md).*
 
 The roadmap has carried one open question since M2:
 
@@ -71,6 +72,13 @@ does. The generated code builds a dense `T×T` mask and passes it to
 At 8k context Gemma 2's local layers are counted at 4,096 keys a query, 2,048
 on average once the causal half is skipped; the generated model computes all
 8,192 for every query and masks what it should not have computed.
+
+*Phase 2 found that the 2,048 was wrong too.* Halving for causal is right for
+full attention and wrong inside a window, which already only looks back: a
+query at position `q` keeps `min(q + 1, W)` keys, which averages
+`W - W²/2T` — 3,072 at 8k, not 2,048. Writing the window out as a mask and
+measuring it is what showed it, because the two spellings of the same layer
+disagreed.
 
 Whatever M10 does has to close this gap, not widen it: the numbers are only
 worth reading if they describe the model the tool hands over.
@@ -212,7 +220,23 @@ analysis and the generated code currently disagree.
    density and cost, and prints as Python; the inspector edits them, with the
    block mask drawn beside the expression, and design rules for one that does not
    parse, masks everything, or reads something the kernel cannot. `causal` and
-   `window` become sugar for the masks they are.
+   `window` become sugar for the masks they are. *Done.* `mask` and `score` are
+   parameters on `sdpa`, `gqa_attention` and `transformer_block`, in a language
+   with Python's operators and precedence over `q`, `kv`, `h`, `b`, `heads`,
+   `score` and the design's symbols. A mask is counted by evaluating it —
+   stratified, seeded, so it is reproducible — as a share of what causal and the
+   window leave; a score expression by its arithmetic over the scores the mask
+   keeps. `SDPA-04` and `SDPA-05` catch a mask that keeps nothing or leaves a
+   query with nothing. Each expression is generated as a FlexAttention
+   `mask_mod` or `score_mod`, with the switches folded in, and run through
+   compiled `flex_attention` on CUDA or, anywhere it cannot compile, applied
+   eagerly to the whole score matrix — the form verification uses, and one a
+   test holds against `flex_attention` itself. Making the switches sugar is
+   what corrected the window count above: a causal window of 1,024 at 8k is now
+   counted at 960 keys a query, where it was 512. The unmasked figure, the one
+   a profiler reproduces, now counts the whole sequence for a windowed layer as
+   the profiler does. Both move Gemma 2, Gemma 3 and Mistral's attention FLOPs
+   and what is computed from them, and nothing else.
 3. **Presets that need it.** Models with a published parameter count to regress
    against: an ALiBi model (BLOOM or MPT), a relative-bias model (T5), and gpt-oss,
    which uses both sinks and banded attention.
@@ -231,14 +255,20 @@ typed into the inspector changes the cost it should.
   only fused when compiled, and compiling it needs a C++ compiler on the CPU and
   Triton on CUDA — neither available on Windows — and PyTorch's FLOP counter
   refuses it, which the runtime's verification depends on. So phase 1 used
-  FlashAttention's `softcap` and `window_size`, as planned for this case, and
-  phase 2 has to decide how a design that needs an arbitrary `score_mod` is
-  generated, verified and counted where FlexAttention cannot compile.
+  FlashAttention's `softcap` and `window_size`. Phase 2's answer for the
+  expressions is to generate them as plain functions both forms can call:
+  compiled `flex_attention` where it compiles, and the same functions over
+  broadcast position grids everywhere else. Verification and the profiler see
+  the second; the analysis counts the first; and a test holds the second
+  against uncompiled `flex_attention`, to the last bit.
 - **Block granularity.** A kernel computes whole blocks, 128 positions a side by
   default, so a mask that keeps a sliver of a block costs the whole block.
   Counting the kept fraction element by element undercounts by up to one block a
   row; counting it at the kernel's block size is what the kernel does. The
   second is right, and it makes the block size part of the operating point.
+  Phase 2 counts the share element by element and *draws* the blocks: the
+  preview under the mask shades each block by what it keeps, so a mask that
+  keeps a sliver of every block is visible as one even where its count is not.
 - **Inference.** Paged attention and decoding cost are unchanged by this; a mask
   that depends on a runtime input, like document ids, makes the cache question
   per-request, which the KV-cache figures would have to say.

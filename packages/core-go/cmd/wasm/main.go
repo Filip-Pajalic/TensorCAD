@@ -19,6 +19,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"syscall/js"
 
 	"github.com/tensorcad/core/analysis"
@@ -52,7 +53,10 @@ func main() {
 		"infer":   wrap(2, inferShapes),
 		"explain": wrap(3, explainOne),
 		// The whole model at once, for the panel that lists every block.
-		"explainAll":    wrap(2, explainAll),
+		"explainAll": wrap(2, explainAll),
+		// One attention's mask, drawn as the kernel's block mask sees it, at
+		// the operating point's sequence length.
+		"attentionMask": wrap(4, attentionMask),
 		"generateTorch": wrap(2, generateTorch),
 		"scale":         wrap(2, scaleDesign),
 		// The same design at several widths, with what to multiply the
@@ -318,6 +322,22 @@ func explainOne(args []string) (string, error) {
 		return "", err
 	}
 	return encode(e)
+}
+
+func attentionMask(args []string) (string, error) {
+	doc, err := decodeDoc(args[0])
+	if err != nil {
+		return "", err
+	}
+	opts, err := decodeOptions(args[2])
+	if err != nil {
+		return "", err
+	}
+	head, err := strconv.ParseFloat(args[3], 64)
+	if err != nil {
+		head = 0
+	}
+	return encode(explain.Mask(doc, args[1], opts, head))
 }
 
 func explainAll(args []string) (string, error) {

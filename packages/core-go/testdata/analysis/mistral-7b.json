@@ -124,13 +124,13 @@
       },
       "flops": {
         "fwdDense": 14220787712,
-        "fwdAttention": 1073741824,
-        "fwdAttentionUnmasked": 2147483648,
-        "fwdTotal": 15294529536,
-        "fwdTotalUnmasked": 16368271360,
+        "fwdAttention": 1610612736,
+        "fwdAttentionUnmasked": 4294967296,
+        "fwdTotal": 15831400448,
+        "fwdTotalUnmasked": 18515755008,
         "elementwise": 5062656,
-        "trainPerToken": 45883588608,
-        "attentionShare": 0.07020430549842314,
+        "trainPerToken": 47494201344,
+        "attentionShare": 0.1017353291826732,
         "ruleOfThumb2N": 14221320192,
         "ruleOfThumb6N": 42663960576,
         "byPath": [
@@ -140,7 +140,7 @@
           ],
           [
             "layers/block/attn/attn",
-            1073741824
+            1610612736
           ],
           [
             "layers/block/attn/k_proj",
@@ -174,7 +174,7 @@
         "byCategory": [
           [
             "attention",
-            1073741824
+            1610612736
           ],
           [
             "head",
@@ -359,20 +359,20 @@
         "decodeBytesPerStep": 15020335104,
         "decodeWeightBytes": 14483464192,
         "residentWeightBytes": 14483464192,
-        "decodeFlopsPerStep": 15294529536,
+        "decodeFlopsPerStep": 15831400448,
         "decodeSecondsPerStep": 0.004483682120597015,
         "decodeTokensPerSecond": 223.0309761270157,
         "memoryBound": true,
-        "prefillSeconds": 0.31671583912768453,
+        "prefillSeconds": 0.32783324689083926,
         "notes": [
           "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
         ]
       },
       "cost": {
-        "totalFlops": 6.525252051523716e+21,
-        "gpuHours": 4581.825112012496,
-        "wallClockHours": 4581.825112012496,
-        "dollars": 11454.56278003124,
+        "totalFlops": 6.754302445763407e+21,
+        "gpuHours": 4742.6570369645315,
+        "wallClockHours": 4742.6570369645315,
+        "dollars": 11856.642592411328,
         "tokens": 142213201920,
         "mfu": 0.4
       },
@@ -531,13 +531,13 @@
       },
       "flops": {
         "fwdDense": 14220787712,
-        "fwdAttention": 1073741824,
-        "fwdAttentionUnmasked": 2147483648,
-        "fwdTotal": 15294529536,
-        "fwdTotalUnmasked": 16368271360,
+        "fwdAttention": 1610612736,
+        "fwdAttentionUnmasked": 4294967296,
+        "fwdTotal": 15831400448,
+        "fwdTotalUnmasked": 18515755008,
         "elementwise": 5062656,
-        "trainPerToken": 61178118144,
-        "attentionShare": 0.07020430549842314,
+        "trainPerToken": 63325601792,
+        "attentionShare": 0.1017353291826732,
         "ruleOfThumb2N": 14221320192,
         "ruleOfThumb6N": 42663960576,
         "byPath": [
@@ -547,7 +547,7 @@
           ],
           [
             "layers/block/attn/attn",
-            1073741824
+            1610612736
           ],
           [
             "layers/block/attn/k_proj",
@@ -581,7 +581,7 @@
         "byCategory": [
           [
             "attention",
-            1073741824
+            1610612736
           ],
           [
             "head",
@@ -669,20 +669,20 @@
         "decodeBytesPerStep": 15831666688,
         "decodeWeightBytes": 7241732096,
         "residentWeightBytes": 7241732096,
-        "decodeFlopsPerStep": 489424945152,
+        "decodeFlopsPerStep": 506604814336,
         "decodeSecondsPerStep": 0.004725870653134328,
         "decodeTokensPerSecond": 6771.23906867335,
         "memoryBound": true,
-        "prefillSeconds": 5.064892812891844,
+        "prefillSeconds": 5.242681454068358,
         "notes": [
           "Decoding is memory-bound at batch 32. It stays that way until the batch passes this device's ridge point of about 591 FLOP per byte."
         ]
       },
       "cost": {
-        "totalFlops": 9.1767177216e+23,
-        "gpuHours": 322017.2127337039,
-        "wallClockHours": 5031.518948964123,
-        "dollars": 805043.0318342597,
+        "totalFlops": 9.4988402688e+23,
+        "gpuHours": 333320.7101229577,
+        "wallClockHours": 5208.136095671214,
+        "dollars": 833301.7753073943,
         "tokens": 15000000000000,
         "mfu": 0.4
       },
@@ -841,13 +841,13 @@
       },
       "flops": {
         "fwdDense": 14220787712,
-        "fwdAttention": 1073741824,
-        "fwdAttentionUnmasked": 2147483648,
-        "fwdTotal": 15294529536,
-        "fwdTotalUnmasked": 16368271360,
+        "fwdAttention": 1610612736,
+        "fwdAttentionUnmasked": 4294967296,
+        "fwdTotal": 15831400448,
+        "fwdTotalUnmasked": 18515755008,
         "elementwise": 5062656,
-        "trainPerToken": 45883588608,
-        "attentionShare": 0.07020430549842314,
+        "trainPerToken": 47494201344,
+        "attentionShare": 0.1017353291826732,
         "ruleOfThumb2N": 14221320192,
         "ruleOfThumb6N": 42663960576,
         "byPath": [
@@ -857,7 +857,7 @@
           ],
           [
             "layers/block/attn/attn",
-            1073741824
+            1610612736
           ],
           [
             "layers/block/attn/k_proj",
@@ -891,7 +891,7 @@
         "byCategory": [
           [
             "attention",
-            1073741824
+            1610612736
           ],
           [
             "head",
@@ -1078,20 +1078,20 @@
         "decodeBytesPerStep": 14751899648,
         "decodeWeightBytes": 14483464192,
         "residentWeightBytes": 14483464192,
-        "decodeFlopsPerStep": 15294529536,
+        "decodeFlopsPerStep": 15831400448,
         "decodeSecondsPerStep": 0.0044035521337313435,
         "decodeTokensPerSecond": 227.08939729360065,
         "memoryBound": true,
-        "prefillSeconds": 0.31671583912768453,
+        "prefillSeconds": 0.32783324689083926,
         "notes": [
           "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
         ]
       },
       "cost": {
-        "totalFlops": 6.525252051523716e+21,
-        "gpuHours": 4581.825112012496,
-        "wallClockHours": 572.728139001562,
-        "dollars": 11454.56278003124,
+        "totalFlops": 6.754302445763407e+21,
+        "gpuHours": 4742.6570369645315,
+        "wallClockHours": 592.8321296205664,
+        "dollars": 11856.642592411328,
         "tokens": 142213201920,
         "mfu": 0.4
       },

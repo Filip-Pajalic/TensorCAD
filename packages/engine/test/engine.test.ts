@@ -356,6 +356,42 @@ describe("the compiled engine", () => {
     expect(flat.ports["embed"].out.y.shape).toBe("... dim");
   });
 
+  it("draws an attention's mask through the boundary", () => {
+    const doc = engine.preset("nano-sort");
+    // A block with attention inside it answers through that attention, at the
+    // design's own length: eleven positions, one a block.
+    const causal = engine.attentionMask(doc, "layers/block");
+    expect({
+      attention: causal.attention,
+      found: causal.found,
+      cells: causal.cells,
+      kept: causal.kept.length,
+      density: causal.density,
+      mask: causal.mask,
+      score: causal.score,
+    }).toEqual({
+      attention: "layers/block/attn/attn",
+      found: true,
+      cells: 11,
+      kept: 121,
+      density: 0.5,
+      mask: "kv <= q",
+      score: "",
+    });
+    // The diagonal is kept, the block above it is not.
+    expect([causal.kept[0], causal.kept[1], causal.kept[11]]).toEqual([1, 0, 1]);
+    // At the operating point's length rather than the design's.
+    expect(engine.attentionMask(doc, "layers/block", { T: 4096 }).cells).toBe(32);
+
+    // A block with no attention says so with an empty grid, not a null one.
+    const none = engine.attentionMask(doc, "embed");
+    expect({ found: none.found, kept: none.kept, attention: none.attention }).toEqual({
+      found: false,
+      kept: [],
+      attention: "",
+    });
+  });
+
   it("explains a block the same way", () => {
     const file = golden<{ cases: { preset: string; blocks: ExplainedBlock[] }[] }>("explain.json");
     for (const one of file.cases) {

@@ -1811,6 +1811,50 @@ select.field {
   color: var(--error);
 }
 
+/* An attention mask as the kernel's block mask sees it: empty blocks are
+   skipped, full ones computed without the mask, the rest computed and masked. */
+.mask {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 6px 0 0;
+}
+
+.mask__grid {
+  flex: none;
+  border: 1px solid var(--border);
+}
+
+.mask__paper {
+  fill: var(--bg-input);
+}
+
+.mask__full,
+.mask__partial {
+  fill: var(--accent);
+}
+
+.mask__caption {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.4;
+}
+
+.mask__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mask__expr {
+  color: var(--text-dim);
+  word-break: break-word;
+}
+
 /* -------------------------------------------------------------- tables --- */
 
 .table {

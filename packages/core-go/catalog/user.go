@@ -132,6 +132,7 @@ func portsOfRaw(side map[string]json.RawMessage) map[string]PortSpec {
 var paramKinds = map[string]ParamKind{
 	"int": ParamInt, "num": ParamNum, "bool": ParamBool,
 	"enum": ParamEnum, "str": ParamStr, "pattern": ParamPattern, "obj": ParamObj,
+	"mask": ParamMask, "score": ParamScore,
 }
 
 // compileUserBlock turns a definition written as data into a catalog entry.

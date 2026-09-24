@@ -220,16 +220,7 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 	inferenceDtype := orString(options.InferenceDtype, dtype)
 	kvDtype := orString(options.KvDtype, inferenceDtype)
 
-	t := 2048.0
-	if v, ok := symbols.Values["T"]; ok {
-		t = v
-	}
-	t = orDefault(options.T, t)
-	b := 1.0
-	if v, ok := symbols.Values["B"]; ok {
-		b = v
-	}
-	b = orDefault(options.B, b)
+	t, b := Sequence(symbols, options)
 
 	parallel := options.Parallel.apply(DefaultParallel)
 	recompute := orString(options.Recompute, "none")
@@ -339,4 +330,20 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 		Chinchilla: chinchilla,
 		Errors:     errors,
 	}, nil
+}
+
+// Sequence is the sequence length and batch a design is measured at: what the
+// operating point says, or the defaults of the design's own T and B.
+func Sequence(symbols *ir.SymbolTable, options Options) (T, B float64) {
+	T = 2048.0
+	if v, ok := symbols.Values["T"]; ok {
+		T = v
+	}
+	T = orDefault(options.T, T)
+	B = 1.0
+	if v, ok := symbols.Values["B"]; ok {
+		B = v
+	}
+	B = orDefault(options.B, B)
+	return T, B
 }

@@ -310,8 +310,15 @@ only a JSON result a job of the app left in its own folder. The desktop
 window's TypeScript is now type-checked in CI; it had never been, and ten
 errors had collected there unseen.
 
-Remaining: a trace is a file on disk or a thing in memory — there is nowhere
-to keep one beside the design it describes.
+Since done too: a trace outlasts the session. The editor keeps the last eight
+it has seen on a shelf in the browser's own storage, keyed by the fingerprint it
+is matched by, so a design opened again shows its values with nothing to load —
+in a tab, the hosted editor and the desktop window alike. The desktop also keeps
+one beside the design file, `<name>.trace.json`, written when it is made and
+when the design is saved and read back when the design is opened, so the pair
+can be copied to another machine; a trace of an earlier version of the design
+is loaded but said to be one. The browser suite reloads the page, opens only
+the design, and finds its values; with the shelf taken away, that check fails.
 
 ## Sequencing and dependencies
 

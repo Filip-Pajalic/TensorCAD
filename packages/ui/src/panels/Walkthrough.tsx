@@ -23,7 +23,9 @@ export default function Walkthrough(): React.ReactElement | null {
   const { derived } = useLevel();
 
   // The run of this design, if there is one: its steps then quote real numbers.
-  const trace = useTrace(doc);
+  // Looked up only while the walkthrough is open, because finding one means
+  // generating the model and fingerprinting it, and this is mounted all along.
+  const trace = useTrace(at === null ? null : doc);
   const steps = useMemo(() => buildWalkthrough(doc, derived, trace), [doc, derived, trace]);
 
   const step = at === null ? null : steps[Math.min(at, steps.length - 1)];

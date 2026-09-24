@@ -176,6 +176,69 @@ func (s *DesignService) Save(path string, contents string, suggestedName string)
 	return path, nil
 }
 
+// TraceExtension is what a design's trace is saved as, beside the design:
+// `gpt.tensorcad.json` keeps its values in `gpt.trace.json`.
+const TraceExtension = ".trace.json"
+
+// maxTraceBytes is the largest trace ReadTrace returns. The runtime refuses to
+// trace anything that would come near it.
+const maxTraceBytes = 64 << 20
+
+// tracePath is where a design's trace is kept: the same folder and name, so the
+// two are copied, sent and archived together.
+func tracePath(designPath string) (string, error) {
+	if !strings.HasSuffix(strings.ToLower(designPath), DesignExtension) {
+		return "", fmt.Errorf("%s is not a design file", filepath.Base(designPath))
+	}
+	return designPath[:len(designPath)-len(DesignExtension)] + TraceExtension, nil
+}
+
+// ReadTrace returns the trace kept beside a design, or an empty string when
+// there is none — which is the usual case, not an error.
+func (s *DesignService) ReadTrace(designPath string) (string, error) {
+	path, err := tracePath(designPath)
+	if err != nil {
+		return "", err
+	}
+	info, err := os.Stat(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return "", nil
+	}
+	if err != nil {
+		return "", fmt.Errorf("stat %s: %w", path, err)
+	}
+	if info.Size() > maxTraceBytes {
+		return "", fmt.Errorf("%s is %d bytes, more than the %d this reads", filepath.Base(path), info.Size(), maxTraceBytes)
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("read %s: %w", path, err)
+	}
+	return string(data), nil
+}
+
+// SaveTrace keeps a trace beside the design it describes, replacing any that
+// was there. Written the way Save writes a design, so an interrupted save
+// never leaves half a trace for the next open to choke on.
+func (s *DesignService) SaveTrace(designPath string, trace string) (string, error) {
+	path, err := tracePath(designPath)
+	if err != nil {
+		return "", err
+	}
+	if strings.TrimSpace(trace) == "" {
+		return "", errors.New("refusing to write an empty trace")
+	}
+	tmp := path + ".tmp"
+	if err := os.WriteFile(tmp, []byte(trace), 0o644); err != nil {
+		return "", fmt.Errorf("write %s: %w", path, err)
+	}
+	if err := os.Rename(tmp, path); err != nil {
+		_ = os.Remove(tmp)
+		return "", fmt.Errorf("replace %s: %w", path, err)
+	}
+	return path, nil
+}
+
 // Recent returns the recent designs, most recently opened first, each flagged
 // if it has since been moved or deleted.
 func (s *DesignService) Recent() []RecentEntry {

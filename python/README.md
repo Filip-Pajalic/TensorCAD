@@ -213,6 +213,13 @@ tensorcad-runtime data prepare --out ~/.tensorcad/data
 
 — and on the deterministic synthetic tokens otherwise, and says which.
 
+A trace is kept beside the design it describes when the design has a file:
+`gpt.tensorcad.json` keeps its values in `gpt.trace.json`, written when the trace
+is made and when the design is saved, and read back when it is opened. Copy the
+two together and the values come with the design. The editor also remembers
+the last eight traces it has seen, in the browser's own storage, so a design
+opened again shows its values in the browser build and the hosted editor too.
+
 ## As a library
 
 ```python

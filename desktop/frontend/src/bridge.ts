@@ -14,6 +14,7 @@ import { Events } from "@wailsio/runtime";
 import {
   loadTrace,
   parseRun,
+  traceFor,
   runCommand,
   setSystemTheme,
   setThemePreference,
@@ -49,7 +50,47 @@ async function openDesign(): Promise<void> {
     currentPath = file.path;
   } catch (e) {
     useEditor.getState().setStatus(`Could not read ${file.name}: ${(e as Error).message}`);
+    return;
   }
+  await openTraceBeside(file.path, file.name);
+}
+
+/**
+ * The trace kept beside a design, loaded with it.
+ *
+ * A design and its trace are two files so that either can be looked at on its
+ * own, and one folder so that they travel together. A trace of an earlier
+ * version of the design is still loaded — it will show if the design is put
+ * back — but the status says it is not this one, because a volume view that
+ * silently shows no values after an open reads as a trace that was lost.
+ */
+async function openTraceBeside(designPath: string, name: string): Promise<void> {
+  const state = useEditor.getState();
+  try {
+    const text = await DesignService.ReadTrace(designPath);
+    if (!text) return;
+    const { ok, matches } = await loadTrace(text, state.doc);
+    if (!ok) state.setStatus(`Opened ${name}. The trace beside it could not be read.`);
+    else if (matches) state.setStatus(`Opened ${name}, with the trace kept beside it.`);
+    else state.setStatus(`Opened ${name}. The trace beside it is of an earlier version of the design; trace it again to see its values.`);
+  } catch (e) {
+    state.setStatus(`Opened ${name}. Its trace could not be read: ${(e as Error).message}`);
+  }
+}
+
+/**
+ * Keep the open design's trace beside it, if it has one of its own.
+ *
+ * Not the committed nano-sort trace — every copy of the editor has that — and
+ * nothing when the design has changed since it was traced, because a trace
+ * written beside a design it does not describe is one the next open has to
+ * explain away. Returns whether one was written.
+ */
+async function saveTraceBeside(designPath: string): Promise<boolean> {
+  const trace = await traceFor(useEditor.getState().doc);
+  if (!trace || trace.committed) return false;
+  await DesignService.SaveTrace(designPath, JSON.stringify(trace.file));
+  return true;
 }
 
 async function saveDesign(askWhere: boolean): Promise<void> {
@@ -59,7 +100,8 @@ async function saveDesign(askWhere: boolean): Promise<void> {
     const written = await DesignService.Save(path, serializeDoc(doc), doc.meta.name);
     if (!written) return; // cancelled
     currentPath = written;
-    useEditor.getState().setStatus(`Saved to ${written}`);
+    const withTrace = await saveTraceBeside(written).catch(() => false);
+    useEditor.getState().setStatus(`Saved to ${written}${withTrace ? ", with its trace beside it" : ""}`);
   } catch (e) {
     useEditor.getState().setStatus(`Could not save: ${(e as Error).message}`);
   }
@@ -234,8 +276,19 @@ async function traceDesign(): Promise<void> {
         return;
       }
       try {
-        const { message } = await loadTrace(await RuntimeService.ReadResult(out), state.doc);
-        state.setStatus(message);
+        const text = await RuntimeService.ReadResult(out);
+        const { message, matches } = await loadTrace(text, state.doc);
+        // Beside the design, when it has a file: the next open brings it back
+        // on any machine the pair is copied to, not just in this window.
+        let kept = "";
+        if (matches && currentPath) {
+          try {
+            kept = ` Kept beside ${await DesignService.SaveTrace(currentPath, text)}.`;
+          } catch (e) {
+            kept = ` It could not be kept beside the design: ${(e as Error).message}.`;
+          }
+        }
+        state.setStatus(message + kept);
         // A trace is something to look at: go to where it is drawn, at a
         // length it covers.
         const positions = Array.isArray(result?.sequence) ? result.sequence.length : 0;

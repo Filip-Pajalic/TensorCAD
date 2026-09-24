@@ -20,6 +20,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 | M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
+| M10 Attention variants | **Proposed.** Open attention up the way FlexAttention does — a mask and a score expression on the fused primitive — rather than decomposing it, so the numbers stay kernel-aware. Writing the proposal found two places the analysis and the generated code already describe different kernels. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -320,13 +321,40 @@ can be copied to another machine; a trace of an earlier version of the design
 is loaded but said to be one. The browser suite reloads the page, opens only
 the design, and finds its values; with the shelf taken away, that check fails.
 
+### M10 — Attention variants · Proposed
+
+The open question below, *how far to go op-level*, has a proposal:
+[Attention variants](docs/explanation/attention-variants.md). Attention stays one
+fused primitive, and a design says what it does to each score and which scores
+count, as two small expressions — the shape PyTorch's FlexAttention takes and
+compiles to a fused kernel. That covers ALiBi, relative position bias, prefix-LM,
+document masking and softcapping without giving up the memory accounting that
+makes the attention figures worth reading; sinks and differential attention get
+a parameter and a primitive, and talking heads, which genuinely needs the score
+matrix, gets an explicitly eager block.
+
+Its first phase is a correction rather than a feature. Softcapping is counted as
+eager because no fused kernel was thought to support it — FlashAttention has
+since 2.6 — so Gemma-2-9B at 8k is counted at 198.9 GiB of activations where a
+fused kernel keeps 72.9. And windowed attention is counted as a kernel that
+skips the blocks outside the window while the generated code computes every
+score under a dense mask. The analysis and the code must describe the same
+kernel before anything is added.
+
+1. **The numbers and the code agree** — softcap fused, windows block-sparse,
+   verified by the runtime.
+2. **Mask and score expressions** on `sdpa`, parsed, costed and printed by the
+   engine, edited in the inspector.
+3. **Presets that need them** — ALiBi, relative bias, gpt-oss.
+4. **Sinks, differential attention, and an eager block** for what is not a score.
+
 ## Sequencing and dependencies
 
 ```
 M0 Sketch ──► M1 Check ──► M2 Manufacture ──► M3 Agent ──► M4 Test bench
                                │                 │
                                └──► M5 Advanced parts (starts after M2, runs alongside M3/M4)
-                                                                 └──► M6 Ship ──► M7 Legibility ──► M8 Real values ──► M9 Your own values
+                                                                 └──► M6 Ship ──► M7 Legibility ──► M8 Real values ──► M9 Your own values ──► M10 Attention variants
 ```
 
 M3 is deliberately short because the core is pure; the MCP server is a thin adapter. M5 is where most of the long-tail work lives and is driven by which architectures you want to learn next.
@@ -334,6 +362,6 @@ M3 is deliberately short because the core is pure; the MCP server is a thin adap
 ## Open questions
 
 - ~~**Bun vs Node for the MCP binary**~~ Settled: developed with Bun, published for Node. `build:dist` installs the packed tarballs into an empty directory and starts the server under Node before anything is uploaded.
-- **How far to go op-level**: the plan keeps `sdpa` and `ssd_scan` as primitives rather than decomposing to matmul/softmax. Decomposing further would let users invent new attention cores but makes the FLOP/memory model kernel-unaware. Revisit after M2.
+- **How far to go op-level**: the plan keeps `sdpa` and `ssd_scan` as primitives rather than decomposing to matmul/softmax. Decomposing further would let users invent new attention cores but makes the FLOP/memory model kernel-unaware. *Proposed answer, M10:* keep the fused primitive and give it a mask and a score expression, FlexAttention-style; decompose only in one explicitly eager block. See [Attention variants](docs/explanation/attention-variants.md).
 - **Python dependency footprint**: `fla` and `mamba_ssm` need CUDA builds; keep them optional extras so the core runtime installs cleanly on CPU.
 - **Tiny-track dataset**: FineWeb-Edu sample (closer to real pretraining) vs TinyStories (faster signal). Start with a 100M-token FineWeb-Edu shard.

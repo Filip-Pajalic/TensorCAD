@@ -11,7 +11,9 @@
  * of time — `bun run trace` remakes it, deliberately, like the goldens. Any
  * other trace is *added*: a file `tensorcad-runtime trace` wrote, opened with
  * File > Load a trace, or handed over by the desktop shell after it ran the
- * runtime itself. Both kinds are loaded only when something asks for them.
+ * runtime itself. An added trace is kept on the shelf in `trace-shelf.ts`, so
+ * the design finds it again next time without anything being loaded. Both
+ * kinds are loaded only when something asks for them.
  *
  * A trace describes the design it was made from and nothing else, so it is
  * shown only on a design that still generates the same `model.py`. That file
@@ -24,6 +26,7 @@
 import { useEffect, useState } from "react";
 import type { Doc } from "@tensor-cad/engine";
 import { generateTorch } from "../engine.js";
+import { traceShelf } from "./trace-shelf.js";
 
 interface Encoded {
   shape: number[];
@@ -130,11 +133,17 @@ const key = (path: string, layer: number | null, what: string): string => `${pat
 /** A trace, indexed by what the view asks for. */
 export class Trace {
   readonly file: TraceFile;
+  /**
+   * Shipped with the editor rather than added. It is never shelved or written
+   * beside a design: every copy of the editor already has it.
+   */
+  readonly committed: boolean;
   private readonly entries = new Map<string, Encoded>();
   private readonly decoded = new Map<string, Tensor>();
 
-  constructor(file: TraceFile) {
+  constructor(file: TraceFile, committed = false) {
     this.file = file;
+    this.committed = committed;
     for (const w of Object.values(file.weights)) {
       if (w.shape && w.data && w.param) this.entries.set(key(w.path, w.layer, w.param), w as Encoded);
     }
@@ -294,11 +303,25 @@ const TRACES: Record<string, () => Promise<{ default: unknown }>> = {
 const loaded = new Map<string, Promise<Trace | null>>();
 
 /**
- * Traces added while the editor runs, newest first. Kept in memory for the
- * session: they are megabytes each, and a trace is cheap to make again.
+ * Traces added while the editor runs, newest first, and any taken back off the
+ * shelf since. The shelf is where they outlast the session; this is what
+ * saves reading it again on every edit.
  */
 const added: Trace[] = [];
 const listeners = new Set<() => void>();
+
+/**
+ * Whether the shelf may hold anything. Asked once, then kept up to date by
+ * what is put on it, so a design is only generated and fingerprinted to look
+ * it up when there is something to find.
+ */
+let shelved: Promise<boolean> | null = null;
+function anythingShelved(): Promise<boolean> {
+  shelved ??= traceShelf()
+    .count()
+    .then((n) => n > 0, () => false);
+  return shelved;
+}
 
 /** Be told when a trace is added, so a view can look again. */
 export function subscribeTraces(fn: () => void): () => void {
@@ -334,12 +357,26 @@ export function parseTrace(text: string): TraceFile {
  * made from, and on nothing else; a second trace of the same model replaces
  * the first.
  */
-export function addTrace(file: TraceFile): Trace {
-  const trace = new Trace(file);
-  const same = added.findIndex((t) => t.file.model_sha256 === file.model_sha256);
+export function addTrace(file: TraceFile, text?: string): Trace {
+  const trace = remember(new Trace(file));
+  // Onto the shelf too, so the design finds it next time. The text it came
+  // as when there is one: re-serialising megabytes to store what was just
+  // parsed from them is work for nothing.
+  shelved = Promise.resolve(true);
+  traceShelf()
+    .put(file.model_sha256, text ?? JSON.stringify(file))
+    .catch(() => {
+      // A full or refused store: the trace stays for this session, as before.
+    });
+  for (const fn of listeners) fn();
+  return trace;
+}
+
+/** Keep a trace in memory, newest first, one per model. */
+function remember(trace: Trace): Trace {
+  const same = added.findIndex((t) => t.file.model_sha256 === trace.file.model_sha256);
   if (same >= 0) added.splice(same, 1);
   added.unshift(trace);
-  for (const fn of listeners) fn();
   return trace;
 }
 
@@ -350,18 +387,22 @@ export function addTrace(file: TraceFile): Trace {
  * opened — but the sentence says it is not this one, because a load that
  * silently changes nothing on screen reads as a load that failed.
  */
-export async function loadTrace(text: string, doc: Doc): Promise<{ ok: boolean; message: string }> {
+export async function loadTrace(
+  text: string,
+  doc: Doc,
+): Promise<{ ok: boolean; matches: boolean; message: string }> {
   let file: TraceFile;
   try {
     file = parseTrace(text);
   } catch (e) {
-    return { ok: false, message: `That is not a trace TensorCAD can read: ${(e as Error).message}.` };
+    return { ok: false, matches: false, message: `That is not a trace TensorCAD can read: ${(e as Error).message}.` };
   }
-  const trace = addTrace(file);
+  const trace = addTrace(file, text);
   const what = trace.untrained ? "untrained" : "trained to sort";
   const matches = (await traceFor(doc)) === trace;
   return {
     ok: true,
+    matches,
     message: matches
       ? `Loaded a trace of ${file.design} (${what}). Open the volume view to see its values.`
       : `Loaded a trace of ${file.design} (${what}), but the open design does not generate the model it was made from. It will show when that design is open.`,
@@ -374,7 +415,7 @@ function load(name: string): Promise<Trace | null> {
     const get = TRACES[name];
     hit = get
       ? get().then(
-          (m) => new Trace(m.default as TraceFile),
+          (m) => new Trace(m.default as TraceFile, true),
           () => null,
         )
       : Promise.resolve(null);
@@ -401,18 +442,32 @@ export function modelSource(doc: Doc): string | null {
  * The trace of this design, if there is one and it still describes it.
  *
  * An added trace first, since it was made on purpose and more recently; then
- * the committed one, for which the name is only where to look. What decides,
- * either way, is the generated model.
+ * one kept on the shelf from an earlier visit; then the committed one, for
+ * which the name is only where to look. What decides, every time, is the
+ * generated model.
  */
-export async function traceFor(doc: Doc): Promise<Trace | null> {
+export async function traceFor(doc: Doc | null): Promise<Trace | null> {
+  if (!doc) return null;
   const name = doc.meta.name;
   const committed = name && name in TRACES;
-  if (added.length === 0 && !committed) return null;
+  // Generating and fingerprinting the model is the cost of looking; there is
+  // no point paying it on every edit when there is nothing to find.
+  if (added.length === 0 && !committed && !(await anythingShelved())) return null;
   const source = modelSource(doc);
   if (source === null) return null;
   const hash = await sha256(source);
   const mine = added.find((t) => t.file.model_sha256 === hash);
   if (mine) return mine;
+  const kept = await traceShelf()
+    .get(hash)
+    .catch(() => null);
+  if (kept) {
+    try {
+      return remember(new Trace(parseTrace(kept)));
+    } catch {
+      // Something unreadable on the shelf is as good as nothing there.
+    }
+  }
   if (!committed) return null;
   const trace = await load(name);
   return trace && trace.file.model_sha256 === hash ? trace : null;
@@ -422,7 +477,7 @@ export async function traceFor(doc: Doc): Promise<Trace | null> {
  * The open design's trace, for a component: null until it has loaded, and null
  * for good on a design it does not describe.
  */
-export function useTrace(doc: Doc): Trace | null {
+export function useTrace(doc: Doc | null): Trace | null {
   const [trace, setTrace] = useState<Trace | null>(null);
   // Bumped when a trace is added, so the design on screen is looked up again.
   const [additions, setAdditions] = useState(0);

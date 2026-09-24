@@ -148,7 +148,10 @@ Two cross-checks worth knowing:
   costs: a run recorded by `tensorcad-runtime trace`. One is committed under
   `three/traces`, for `nano-sort`; any other is *added* — File > Load a trace, or
   the desktop shell's Design > Trace this design, both ending in `loadTrace` — and
-  kept in memory for the session. A trace is either trained to sort or
+  kept on the shelf in `three/trace-shelf.ts`: IndexedDB, keyed by the same model
+  fingerprint, the most recent eight, so a design opened again finds its trace
+  with nothing loaded. The desktop also writes it beside the design file, as
+  `<name>.trace.json`, so the pair travels. A trace is either trained to sort or
   `untrained`, and everything that quotes one says which. It is shown only on a
   design that still generates the `model.py` it was made from, matched by that
   file's hash, because anything cheaper — a name, the symbols, the parameter

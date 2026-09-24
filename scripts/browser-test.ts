@@ -112,13 +112,25 @@ const browser = Bun.spawn(
     "--headless=new",
     "--disable-gpu",
     "--no-sandbox",
+    // A CI runner's /dev/shm is small, and Chrome that runs out of it there
+    // crashes at start without a word. Temporary files instead.
+    "--disable-dev-shm-usage",
     `--remote-debugging-port=${PORT}`,
     `--user-data-dir=${profile}`,
     "--window-size=1440,900",
     "about:blank",
   ],
-  { stdout: "ignore", stderr: "ignore" },
+  // Kept rather than ignored, so a Chrome that never starts can say why.
+  { stdout: "ignore", stderr: "pipe" },
 );
+
+// Drained as it comes, keeping only the tail: a pipe nobody reads fills, and a
+// Chrome blocked writing to it stops answering halfway through the checks.
+let chromeSaid = "";
+void (async () => {
+  const text = new TextDecoder();
+  for await (const chunk of browser.stderr) chromeSaid = (chromeSaid + text.decode(chunk)).slice(-4000);
+})().catch(() => {});
 
 /** Keys by the name the page sees, with what the protocol needs to send them. */
 const KEYS: Record<string, { code: string; vk: number; text?: string }> = {
@@ -154,14 +166,24 @@ function expect(what: string, actual: unknown, want: unknown): void {
 
 try {
   let target: { webSocketDebuggerUrl: string } | undefined;
-  for (let i = 0; i < 60 && !target; i++) {
+  // A minute, not fifteen seconds: a first start with a fresh profile on a
+  // busy runner has taken longer than that, and the cost of waiting is only
+  // paid when it is slow.
+  for (let i = 0; i < 240 && !target && browser.exitCode === null; i++) {
     await wait(250);
     target = await fetch(`http://127.0.0.1:${PORT}/json/list`)
       .then((r) => r.json() as Promise<{ type: string; webSocketDebuggerUrl: string }[]>)
       .then((list) => list.find((t) => t.type === "page"))
       .catch(() => undefined);
   }
-  if (!target) throw new Error("Chrome never opened its debugging port");
+  if (!target) {
+    browser.kill();
+    const said = chromeSaid.trim().split("\n").slice(-15).join("\n");
+    throw new Error(
+      `Chrome never opened its debugging port${browser.exitCode !== null ? ` (it exited with ${browser.exitCode})` : ""}` +
+        (said ? `. It said:\n${said}` : ""),
+    );
+  }
 
   const dt = await Devtools.connect(target.webSocketDebuggerUrl);
   const errors: string[] = [];
@@ -295,14 +317,16 @@ try {
     await until(`document.querySelector(".react-flow")`);
   });
 
+  // Files as a person would give them: through the inputs File > Open and
+  // File > Load a trace click.
+  const setFile = async (input: string, path: string): Promise<void> => {
+    const { root } = await dt.send<{ root: { nodeId: number } }>("DOM.getDocument", { depth: 0 });
+    const { nodeId } = await dt.send<{ nodeId: number }>("DOM.querySelector", { nodeId: root.nodeId, selector: `#${input}` });
+    await dt.send("DOM.setFileInputFiles", { nodeId, files: [path] });
+  };
+  const realValues = `[...document.querySelectorAll("div")].some((d) => d.textContent?.startsWith("real values"))`;
+
   await check("a trace loaded from a file shows on the design it was made from", async () => {
-    // Files as a person would give them: through the inputs File > Open and
-    // File > Load a trace click.
-    const setFile = async (input: string, path: string): Promise<void> => {
-      const { root } = await dt.send<{ root: { nodeId: number } }>("DOM.getDocument", { depth: 0 });
-      const { nodeId } = await dt.send<{ nodeId: number }>("DOM.querySelector", { nodeId: root.nodeId, selector: `#${input}` });
-      await dt.send("DOM.setFileInputFiles", { nodeId, files: [path] });
-    };
     await setFile("tensorcad-open-input", DESIGN_FILE);
     await until(`document.body.innerText.includes("nano-sort-relu")`);
     await setFile("tensorcad-trace-input", TRACE_FILE);
@@ -311,7 +335,21 @@ try {
     await until(`document.body.textContent.includes("Loaded a trace of nano-sort-relu") && document.body.textContent.includes("Open the volume view")`);
     await page(`document.activeElement?.blur()`);
     await key("V", 8); // Shift
-    await until(`[...document.querySelectorAll("div")].some((d) => d.textContent?.startsWith("real values"))`, 15_000);
+    await until(realValues, 15_000);
+    await key("V", 8);
+    await until(`document.querySelector(".react-flow")`);
+  });
+
+  await check("and is still there after a reload, with only the design opened again", async () => {
+    // The trace went onto the shelf when it was loaded. A new page has nothing
+    // in memory; opening the design is all it is given.
+    await dt.send("Page.navigate", { url: SITE });
+    await until(`[...document.querySelectorAll(".react-flow__node")].some((n) => getComputedStyle(n).visibility === "visible")`, 30_000);
+    await setFile("tensorcad-open-input", DESIGN_FILE);
+    await until(`document.body.innerText.includes("nano-sort-relu")`);
+    await page(`document.activeElement?.blur()`);
+    await key("V", 8);
+    await until(realValues, 15_000);
     await key("V", 8);
     await until(`document.querySelector(".react-flow")`);
   });

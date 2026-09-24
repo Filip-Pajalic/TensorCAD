@@ -78,3 +78,40 @@ func TestWriteFilesStaysInsideItsFolder(t *testing.T) {
 		t.Fatalf("wrote %v", result.Written)
 	}
 }
+
+// A design's trace lives beside it under the same name, and only a design
+// file has one: anything else is refused rather than guessed at.
+func TestTraceIsKeptBesideItsDesign(t *testing.T) {
+	s := &DesignService{}
+	dir := t.TempDir()
+	design := filepath.Join(dir, "gpt.tensorcad.json")
+
+	if got, err := s.ReadTrace(design); err != nil || got != "" {
+		t.Fatalf("no trace yet: got %q, %v", got, err)
+	}
+	written, err := s.SaveTrace(design, `{"version":1}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if written != filepath.Join(dir, "gpt.trace.json") {
+		t.Fatalf("wrote %s, not beside the design", written)
+	}
+	if got, err := s.ReadTrace(design); err != nil || got != `{"version":1}` {
+		t.Fatalf("read back %q, %v", got, err)
+	}
+	if _, err := os.Stat(written + ".tmp"); !os.IsNotExist(err) {
+		t.Fatal("left its temporary file behind")
+	}
+
+	for _, notADesign := range []string{filepath.Join(dir, "notes.txt"), filepath.Join(dir, "gpt.trace.json")} {
+		if _, err := s.ReadTrace(notADesign); err == nil {
+			t.Errorf("read a trace for %s, which is not a design", notADesign)
+		}
+		if _, err := s.SaveTrace(notADesign, "{}"); err == nil {
+			t.Errorf("wrote a trace for %s, which is not a design", notADesign)
+		}
+	}
+	if _, err := s.SaveTrace(design, "  "); err == nil {
+		t.Error("wrote an empty trace")
+	}
+}

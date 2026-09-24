@@ -27,6 +27,9 @@ const { DEFAULT_OPERATING } = await import("../src/state/operating.js");
 const { buildModel3D } = await import("../src/three/model3d.js");
 const { addTrace, cellsFor, loadTrace, modelSource, parseTrace, traceFor } = await import("../src/three/trace.js");
 const { buildWalkthrough } = await import("../src/state/walkthrough.js");
+const { KEEP, memoryShelf, setTraceShelf, traceShelf } = await import("../src/three/trace-shelf.js");
+/** The committed trace's contents, as they came out of the file. */
+const committedFile = () => (trace as NonNullable<typeof trace>).file;
 
 import type { Doc } from "@tensor-cad/engine";
 import type { Blk } from "../src/three/model3d.js";
@@ -246,5 +249,57 @@ describe("a trace added while the editor runs", () => {
     expect(said).toMatch(/against \d+% if it were exactly even/);
     expect(said).toMatch(/against \d+% for an even spread over all 3/);
     expect(said).not.toMatch(/sort|NaN|undefined|null/);
+  });
+});
+
+describe("the shelf a trace is kept on between visits", () => {
+  const hashOf = async (d: Doc): Promise<string> => {
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(modelSource(d)!));
+    return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  };
+  const variant = (act: string): Doc => {
+    const d = structuredClone(doc);
+    const block = d.graph.nodes.find((n) => n.id === "layers")!.graph!.nodes.find((n) => n.id === "block")!;
+    block.params = { ...block.params, act };
+    d.meta = { ...d.meta, name: `nano-sort-${act}` };
+    return d;
+  };
+
+  test("keeps the most recent few, and taking one counts as using it", async () => {
+    const shelf = memoryShelf();
+    for (let i = 0; i < KEEP; i++) await shelf.put(`h${i}`, `t${i}`);
+    expect(await shelf.get("h0")).toBe("t0");
+    await shelf.put("new", "t");
+    expect(await shelf.count()).toBe(KEEP);
+    // h1 was the least recently used once h0 had been taken.
+    expect(await shelf.get("h1")).toBeNull();
+    expect(await shelf.get("h0")).toBe("t0");
+  });
+
+  test("gives a design back a trace that is only on the shelf, as after a reload", async () => {
+    setTraceShelf(memoryShelf());
+    const silu = variant("silu");
+    expect(await traceFor(silu)).toBeNull();
+    const text = JSON.stringify({ ...structuredClone(committedFile()), design: "nano-sort-silu", model_sha256: await hashOf(silu) });
+    // Put there directly, as an earlier visit would have: nothing in memory knows of it.
+    await traceShelf().put(await hashOf(silu), text);
+    expect((await traceFor(silu))?.file.design).toBe("nano-sort-silu");
+  });
+
+  test("treats something unreadable on the shelf as nothing there", async () => {
+    setTraceShelf(memoryShelf());
+    const tanh = variant("tanh");
+    await traceShelf().put(await hashOf(tanh), "{ not a trace");
+    expect(await traceFor(tanh)).toBeNull();
+  });
+
+  test("never holds the committed trace, which every copy of the editor has", async () => {
+    // The committed one as the file first found it, before any test here added
+    // another under nano-sort's own fingerprint.
+    expect(trace!.committed).toBe(true);
+    const shelf = memoryShelf();
+    setTraceShelf(shelf);
+    await traceFor(doc);
+    expect(await shelf.count()).toBe(0);
   });
 });

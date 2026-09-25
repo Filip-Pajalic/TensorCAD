@@ -20,7 +20,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 | M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
-| M10 Attention variants | **Phases 1 and 2 done; 3 and 4 under way.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Phase 3 is two thirds done: BLOOM-7b1's ALiBi is a score expression and gpt-oss-20b brings attention sinks, both reproducing their published parameter counts exactly and both held against Hugging Face's own construction of what they add. T5, differential attention and the eager block remain. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
+| M10 Attention variants | **Phases 1 and 2 done; 3 and 4 under way.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Phase 3 is two thirds done: BLOOM-7b1's ALiBi is a score expression and gpt-oss-20b brings attention sinks, both reproducing their published parameter counts exactly and both held against Hugging Face's own construction of what they add. Differential attention is two fused attentions and a combine, held against Microsoft's reference. T5 and the eager block remain. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -387,7 +387,16 @@ kernel before anything is added.
    way, as one more column in the softmax, which is Hugging Face's form; a test
    holds the two against each other and against a transcription of Hugging
    Face's gpt-oss attention. The scaler, asked to shrink a design that repeats a
-   pair of layers, now keeps the pairs whole.
+   pair of layers, now keeps the pairs whole. *Differential attention done:*
+   `diff_attention`, and `attention: diff` on `transformer_block` — two fused
+   attentions over shared values, a `diff_combine` that owns lambda's four
+   vectors, a per-head RMSNorm and a `scale`, which is `softmax(Q1K1)V −
+   λ·softmax(Q2K2)V` by linearity, so the memory is still the fused kernel's.
+   There is no released model to regress against, so the arithmetic is pinned
+   by tests, and the generated module is held against a transcription of
+   Microsoft's reference given the same weights, to 3.6e-7. Building it found
+   that `sdpa` counted the value product at the key width: DeepSeek-V3's
+   attention FLOPs were a sixth too high, and now match the profiler.
 
 ## Sequencing and dependencies
 

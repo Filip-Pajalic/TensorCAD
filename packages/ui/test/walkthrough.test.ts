@@ -118,6 +118,14 @@ describe("a step exists because the design has the block", () => {
     expect(ids).toContain("ssm");
   });
 
+  test("a differential design is told what the second map is for", () => {
+    const doc = structuredClone(getPreset("gpt2-small"));
+    const block = doc.graph.nodes.find((n) => n.id === "layers")!.graph!.nodes.find((n) => n.id === "block")!;
+    block.params = { ...block.params, attention: "diff" };
+    const attention = stepsFor(doc).find((s) => s.id === "attention");
+    expect(attention?.body.join(" ")).toContain("two attention maps over the same values");
+  });
+
   test("a design with sinks is told what they are for", () => {
     const attention = stepsFor(getPreset("gpt-oss-20b")).find((s) => s.id === "attention");
     expect(attention?.body.join(" ")).toContain("Each head also has a sink");

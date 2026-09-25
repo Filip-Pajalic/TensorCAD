@@ -589,6 +589,61 @@ var Primitives = []*BlockDef{
 		},
 	},
 	{
+		Kind: "primitive", Type: "diff_combine", Category: "attention",
+		Params: ParamList{
+			{"heads", pInt(1, "Heads, each a pair of attention maps")},
+			{"head_dim", pInt(1, "Width of one of a pair's query and key heads, which is the width of the vectors lambda is made from")},
+			{"dim", pInt(1, "Width of a value head, twice head_dim in the paper")},
+			{"lambda_init", pNum(0.8, "Where lambda starts, and what it is reparameterised around. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer); one value here holds for every copy in a stack")},
+		},
+		Ports: Ports{
+			In: map[string]PortSpec{
+				"a": Port("B heads T dim"),
+				// The map that is subtracted, arriving from the side.
+				"b": {Shape: "B heads T dim", Anchor: "side"},
+			},
+			Out: map[string]PortSpec{"y": Port("B heads T dim")},
+		},
+		// Four vectors: lambda = exp(q1.k1) - exp(q2.k2) + lambda_init.
+		ParamCount: func(r *Resolved) float64 { return 4 * r.Num("head_dim") },
+		Flops: func(r *Resolved, _ AnalysisCtx) FlopsPerToken {
+			// A multiply and a subtract per element of every head.
+			return FlopsPerToken{Elementwise: 2 * r.Num("heads") * r.Num("dim")}
+		},
+		// d/dlambda is -b; a needs nothing kept.
+		Retains: func(*Resolved) []string { return []string{"b"} },
+		Docs: BlockDocs{
+			Name: "differential combine",
+			Summary: "One attention's output minus lambda times another's, which is differential " +
+				"attention by linearity: softmax(Q1K1)V - lambda softmax(Q2K2)V is two fused attentions " +
+				"and this, so the score matrix is still never kept.",
+			Formula: "y = a - lambda*b, lambda = exp(lq1.lk1) - exp(lq2.lk2) + lambda_init; params = 4*head_dim",
+			Refs:    []string{"https://arxiv.org/abs/2410.05258"},
+		},
+	},
+	{
+		Kind: "primitive", Type: "scale", Category: "elementwise",
+		Params: ParamList{
+			{"dim", pInt(1, "Width of the last axis")},
+			{"by", pNum(1, "The constant every element is multiplied by")},
+		},
+		Ports: Ports{
+			In:  map[string]PortSpec{"x": Port("... dim")},
+			Out: map[string]PortSpec{"y": Port("... dim")},
+		},
+		ParamCount: noParams,
+		Flops: func(r *Resolved, _ AnalysisCtx) FlopsPerToken {
+			return FlopsPerToken{Elementwise: r.Num("dim")}
+		},
+		// A constant's gradient needs nothing kept.
+		Retains: noRetains,
+		Docs: BlockDocs{
+			Name:    "scale",
+			Summary: "Multiplies a tensor by a constant, which nothing learns.",
+			Formula: "y = by * x; no parameters",
+		},
+	},
+	{
 		Kind: "primitive", Type: "mul", Category: "elementwise",
 		Params: ParamList{
 			{"dim", pInt(1, "Width of both operands, for the elementwise cost")},
@@ -678,6 +733,9 @@ var Primitives = []*BlockDef{
 			{"mask", maskSpec()},
 			{"score", scoreSpec()},
 			{"sinks", sinksSpec()},
+			{"shared_values", ParamSpec{Type: ParamBool, Default: nil, HasDefault: true,
+				Doc: "The values are another attention's, which caches them: this one caches its keys alone. " +
+					"Differential attention's second map reads the first one's values. Unset is no."}},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			v := "head_dim"
@@ -708,7 +766,15 @@ var Primitives = []*BlockDef{
 			// A profiler counts the operator as if nothing were masked, since
 			// its shape does not depend on the mask.
 			keys := a.KeysPerQuery(c.T, c.B)
-			perKey := 4 * r.Num("heads") * r.Num("head_dim")
+			// The scores are head_dim wide and the weighted sum of values is
+			// v_head_dim wide, a multiply-accumulate each. Counting both at
+			// head_dim overcounted latent attention, whose values are
+			// narrower than its keys, by a fifth.
+			vDim := r.Num("v_head_dim")
+			if vDim == 0 {
+				vDim = r.Num("head_dim")
+			}
+			perKey := 2 * r.Num("heads") * (r.Num("head_dim") + vDim)
 			f := FlopsPerToken{FwdSeq: perKey * keys, FwdSeqUnmasked: perKey * c.T}
 			if s := a.Score(); s != nil {
 				// On the scores the kernel computes: a fused one changes them
@@ -720,10 +786,6 @@ var Primitives = []*BlockDef{
 			if a.Sinks {
 				// The sink joins the denominator after the kernel: each output
 				// is rescaled by sigmoid(lse - sink), one multiply an element.
-				vDim := r.Num("v_head_dim")
-				if vDim == 0 {
-					vDim = r.Num("head_dim")
-				}
 				f.Elementwise += r.Num("heads") * vDim
 			}
 			return f
@@ -760,6 +822,9 @@ var Primitives = []*BlockDef{
 				vDim = r.Num("head_dim")
 			}
 			perTokenFull := r.Num("kv_heads") * (r.Num("head_dim") + vDim) * c.Bytes
+			if r.Bool("shared_values") {
+				perTokenFull = r.Num("kv_heads") * r.Num("head_dim") * c.Bytes
+			}
 			if w := r.Num("window"); w > 0 {
 				return StateBytes{PerSequence: perTokenFull * w}
 			}
@@ -801,7 +866,7 @@ var Primitives = []*BlockDef{
 		Docs: BlockDocs{
 			Name:    "scaled dot-product attention",
 			Summary: "Scaled dot-product attention core. Covers MHA, GQA and MQA through kv_heads.",
-			Formula: "FLOPs/token = 4*keys*heads*head_dim, keys = T/2 causal, W - W^2/2T in a causal window of W, times the share a mask keeps; KV cache = 2*kv_heads*head_dim*bytes per token",
+			Formula: "FLOPs/token = 2*keys*heads*(head_dim + v_head_dim), keys = T/2 causal, W - W^2/2T in a causal window of W, times the share a mask keeps; KV cache = kv_heads*(head_dim + v_head_dim)*bytes per token",
 			Refs:    []string{"https://arxiv.org/abs/2305.13245", "https://arxiv.org/abs/2205.14135"},
 		},
 	},

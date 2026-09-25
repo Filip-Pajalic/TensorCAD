@@ -1009,6 +1009,7 @@
         "heads": 32,
         "kv_heads": 8,
         "logit_softcap": 0,
+        "shared_values": null,
         "sinks": null,
         "v_head_dim": 0,
         "window": 0
@@ -1065,6 +1066,7 @@
         "heads": 32,
         "kv_heads": 8,
         "logit_softcap": 0,
+        "shared_values": null,
         "sinks": null,
         "v_head_dim": 0,
         "window": 0
@@ -1121,6 +1123,7 @@
         "heads": 32,
         "kv_heads": 8,
         "logit_softcap": 0,
+        "shared_values": null,
         "sinks": null,
         "v_head_dim": 0,
         "window": 4096
@@ -1176,6 +1179,7 @@
         "heads": 32,
         "kv_heads": 7,
         "logit_softcap": 0,
+        "shared_values": null,
         "sinks": null,
         "v_head_dim": 0,
         "window": 0
@@ -1234,6 +1238,7 @@
         "heads": 32,
         "kv_heads": 8,
         "logit_softcap": 0,
+        "shared_values": null,
         "sinks": null,
         "v_head_dim": 0,
         "window": 0
@@ -2047,6 +2052,195 @@
         "SSD-01: heads (128) times head_dim (65) must equal d_inner (8192)",
         "SSD-02: heads (128) must be divisible by groups (7)"
       ]
+    },
+    {
+      "type": "sdpa",
+      "params": {
+        "head_dim": 64,
+        "heads": 16,
+        "kv_heads": 16,
+        "v_head_dim": 128
+      },
+      "resolved": {
+        "cache": true,
+        "causal": true,
+        "flash": true,
+        "head_dim": 64,
+        "heads": 16,
+        "kv_heads": 16,
+        "logit_softcap": 0,
+        "shared_values": null,
+        "sinks": null,
+        "v_head_dim": 128,
+        "window": 0
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "k": "B kv_heads T head_dim",
+          "q": "B heads T head_dim",
+          "v": "B kv_heads T v_head_dim"
+        },
+        "out": {
+          "y": "B heads T v_head_dim"
+        },
+        "anchors": {
+          "k": "flow/real",
+          "q": "flow/real",
+          "v": "flow/real"
+        }
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 12582912,
+        "fwdSeqUnmasked": 25165824
+      },
+      "retains": [
+        "q",
+        "k",
+        "v"
+      ],
+      "extraActivationBytes": 4160,
+      "stateBytes": {
+        "perSeq": 0,
+        "perToken": 6144
+      },
+      "constraints": []
+    },
+    {
+      "type": "sdpa",
+      "params": {
+        "head_dim": 64,
+        "heads": 16,
+        "kv_heads": 16,
+        "shared_values": true,
+        "v_head_dim": 128
+      },
+      "resolved": {
+        "cache": true,
+        "causal": true,
+        "flash": true,
+        "head_dim": 64,
+        "heads": 16,
+        "kv_heads": 16,
+        "logit_softcap": 0,
+        "shared_values": true,
+        "sinks": null,
+        "v_head_dim": 128,
+        "window": 0
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "k": "B kv_heads T head_dim",
+          "q": "B heads T head_dim",
+          "v": "B kv_heads T v_head_dim"
+        },
+        "out": {
+          "y": "B heads T v_head_dim"
+        },
+        "anchors": {
+          "k": "flow/real",
+          "q": "flow/real",
+          "v": "flow/real"
+        }
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 12582912,
+        "fwdSeqUnmasked": 25165824
+      },
+      "retains": [
+        "q",
+        "k",
+        "v"
+      ],
+      "extraActivationBytes": 4160,
+      "stateBytes": {
+        "perSeq": 0,
+        "perToken": 2048
+      },
+      "constraints": []
+    },
+    {
+      "type": "diff_combine",
+      "params": {
+        "dim": 128,
+        "head_dim": 64,
+        "heads": 16
+      },
+      "resolved": {
+        "dim": 128,
+        "head_dim": 64,
+        "heads": 16,
+        "lambda_init": 0.8
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "a": "B heads T dim",
+          "b": "B heads T dim"
+        },
+        "out": {
+          "y": "B heads T dim"
+        },
+        "anchors": {
+          "b": "side/inherit"
+        }
+      },
+      "portError": "",
+      "paramCount": 256,
+      "flops": {
+        "elementwise": 4096,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
+      },
+      "retains": [
+        "b"
+      ],
+      "extraActivationBytes": null,
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "scale",
+      "params": {
+        "by": 0.2,
+        "dim": 128
+      },
+      "resolved": {
+        "by": 0.2,
+        "dim": 128
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "... dim"
+        },
+        "out": {
+          "y": "... dim"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "elementwise": 128,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
+      },
+      "retains": [],
+      "extraActivationBytes": null,
+      "stateBytes": null,
+      "constraints": []
     }
   ]
 }

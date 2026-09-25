@@ -780,6 +780,27 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 				outName("y"), attr, inputVar(node.ID, "a"), attr, inputVar(node.ID, "b")))
 			set("y", outName("y"))
 
+		case "diff_combine":
+			// lambda's four vectors in one parameter: q1, k1, q2, k2. Drawn
+			// from a narrow normal as the paper's are, not zeros: at zero the
+			// dot products have no gradient and lambda never leaves its
+			// starting value.
+			d := pyValue(p["head_dim"])
+			out.init = append(out.init, fmt.Sprintf(
+				"self.%s = nn.Parameter(torch.randn(4, %s) * 0.1)", attr, d))
+			lambda := outName("lambda")
+			out.forward = append(out.forward,
+				fmt.Sprintf("%s = torch.exp((self.%s[0] * self.%s[1]).sum().float()) - torch.exp((self.%s[2] * self.%s[3]).sum().float()) + %s",
+					lambda, attr, attr, attr, attr, pyValue(p["lambda_init"])),
+				fmt.Sprintf("%s = %s - %s.to(%s.dtype) * %s",
+					outName("y"), inputVar(node.ID, "a"), lambda, inputVar(node.ID, "a"), inputVar(node.ID, "b")))
+			set("y", outName("y"))
+
+		case "scale":
+			out.forward = append(out.forward, fmt.Sprintf("%s = %s * %s",
+				outName("y"), inputVar(node.ID, "x"), pyValue(p["by"])))
+			set("y", outName("y"))
+
 		case "flatten2d":
 			out.forward = append(out.forward, fmt.Sprintf("%s = torch.flatten(%s, 1)",
 				outName("y"), inputVar(node.ID, "x")))

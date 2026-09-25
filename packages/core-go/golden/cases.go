@@ -170,6 +170,13 @@ var Primitives = []BlockCase{
 		"state": 128.0, "groups": 8.0, "xbc_width": 10240.0}},
 	{"ssd_scan", map[string]any{"d_inner": 8192.0, "heads": 128.0, "head_dim": 65.0,
 		"state": 128.0, "groups": 7.0, "xbc_width": 10240.0}},
+	// Values twice as wide as keys, as differential attention has them, and
+	// the second map that caches only its keys.
+	{"sdpa", map[string]any{"heads": 16.0, "kv_heads": 16.0, "head_dim": 64.0, "v_head_dim": 128.0}},
+	{"sdpa", map[string]any{"heads": 16.0, "kv_heads": 16.0, "head_dim": 64.0, "v_head_dim": 128.0,
+		"shared_values": true}},
+	{"diff_combine", map[string]any{"heads": 16.0, "head_dim": 64.0, "dim": 128.0}},
+	{"scale", map[string]any{"dim": 128.0, "by": 0.2}},
 }
 
 // Composites are pinned as the subgraph they stand for, node for node.
@@ -222,6 +229,10 @@ var Composites = []BlockCase{
 	{"transformer_block", map[string]any{"d_model": 7168.0, "heads": 128.0, "kv_heads": 128.0,
 		"head_dim": 128.0, "ffn_hidden": 18432.0, "attention": "mla", "q_lora": 1536.0,
 		"kv_lora": 512.0, "nope_dim": 128.0, "rope_dim": 64.0, "v_dim": 128.0}},
+	{"diff_attention", map[string]any{"d_model": "D", "heads": "H", "kv_heads": "Hkv", "head_dim": "dh",
+		"rope": map[string]any{"theta": 10000.0}}},
+	{"transformer_block", map[string]any{"d_model": "D", "heads": "H", "kv_heads": "Hkv",
+		"head_dim": "dh", "ffn_hidden": "F", "attention": "diff", "lambda_init": 0.5}},
 }
 
 func f(v float64) *float64 { return &v }

@@ -251,6 +251,17 @@ analysis and the generated code currently disagree.
    returns — the output times `sigmoid(lse - sink)` — so they need no kernel of
    their own; the unfused form is one more column in the softmax, and the two
    are held against each other and against Hugging Face's gpt-oss attention.
+   *Differential attention is done*, as two blocks and two small primitives:
+   `diff_attention` draws two query and two key projections, one value
+   projection twice as wide, two fused attentions over those values, and
+   `diff_combine`, which owns lambda and takes the second output from the first,
+   then a per-head RMSNorm and a constant `scale`. The reference implementation
+   materialises both score matrices; this never does, and a test gives both the
+   same weights and finds the same numbers. Two things the reference does are
+   not carried: `lambda_init` is one value per block, where the paper schedules
+   it by depth, and with grouped keys the reference pairs query heads with key
+   heads in an interleaved order that this does not reproduce — the same
+   parameters and FLOPs, a different pairing.
 
 **Done when** Gemma 2's attention is generated fused and counted fused and a
 profiler agrees with both; a windowed model's FLOPs match what its generated code

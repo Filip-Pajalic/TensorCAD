@@ -145,7 +145,7 @@ func scalingOf(rope map[string]any) any {
 }
 
 // Composites is every block that is an arrangement rather than a formula.
-var Composites = []*BlockDef{gqaAttention, gatedMlp, denseMlp, mlaAttention, moeLayer, mambaBlock, mamba2Block, transformerBlock, mtpHeadComposite, gatedDeltanetBlock}
+var Composites = []*BlockDef{gqaAttention, diffAttention, gatedMlp, denseMlp, mlaAttention, moeLayer, mambaBlock, mamba2Block, transformerBlock, mtpHeadComposite, gatedDeltanetBlock}
 
 // Containers carry the multipliers that make sparsity and stacking work.
 var Containers = []*BlockDef{moeExperts, repeatContainer}
@@ -223,6 +223,135 @@ var gqaAttention = &BlockDef{
 		Formula: "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
 		Refs:    []string{"https://arxiv.org/abs/2305.13245"},
 	},
+}
+
+// diffAttention is DIFF Transformer's differential attention: each head the
+// difference of two attention maps over the same values, so noise that both
+// maps put on irrelevant tokens cancels.
+//
+// It is drawn as two ordinary attentions and a combine rather than as a new
+// kernel, because softmax(Q1K1)V - lambda softmax(Q2K2)V is exactly that by
+// linearity. Each is the fused primitive, so the memory is still the fused
+// kernel's; the reference implementation materialises both score matrices and
+// subtracts them, which is the same numbers at the eager cost.
+var diffAttention = &BlockDef{
+	Kind: "composite", Type: "diff_attention", Category: "attention",
+	Params: ParamList{
+		{"d_model", pInt(1, "Residual stream width")},
+		{"heads", pInt(1, "Differential heads: half a baseline transformer's, each a pair of maps")},
+		{"kv_heads", pInt(1, "Key/value heads. Equal to heads gives multi-head attention")},
+		{"head_dim", pInt(1, "Width of each of a pair's query and key heads; a value head is twice it")},
+		{"bias", pBool(false, "Bias on the projections")},
+		{"causal", pBool(true, "Mask out every position after the current one")},
+		{"rope", ropeSpec()},
+		{"flash", pBool(true, "Assume a memory-efficient kernel for each of the two maps")},
+		{"lambda_init", pNum(0.8, "Where lambda starts. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer); one value here holds for every copy in a stack")},
+	},
+	PortsFn: func(r *Resolved) Ports {
+		return Ports{In: map[string]PortSpec{"x": Port("... d_model")}, Out: map[string]PortSpec{"y": Port("... d_model")}}
+	},
+	Constraints: func(r *Resolved) []BlockFinding {
+		if int(r.Num("heads"))%int(r.Num("kv_heads")) == 0 {
+			return nil
+		}
+		return []BlockFinding{{
+			ID: "ATTN-01", Severity: "error", Param: "kv_heads",
+			Message: fmt.Sprintf("heads (%s) must be divisible by kv_heads (%s)",
+				num(r.Num("heads")), num(r.Num("kv_heads"))),
+		}}
+	},
+	Docs: BlockDocs{
+		Name: "differential attention",
+		Summary: "Each head is one attention map minus lambda times another over the same values, " +
+			"normalised per head: noise both maps put on irrelevant context cancels. Two fused " +
+			"attentions and a combine, by linearity.",
+		Formula: "params = d_model*heads*2*head_dim (q) + 2*d_model*kv_heads*head_dim (k) + d_model*kv_heads*2*head_dim (v) + heads*2*head_dim*d_model (o) + 4*head_dim (lambda) + 2*head_dim (norm)",
+		Refs:    []string{"https://arxiv.org/abs/2410.05258"},
+	},
+}
+
+func expandDiff(raw map[string]any, r *Resolved) Expansion {
+	D := Ex(raw["d_model"], "0")
+	H := Ex(raw["heads"], "0")
+	KV := Ex(raw["kv_heads"], "0")
+	dh := Ex(raw["head_dim"], "0")
+	// A value head is a pair's two query widths side by side.
+	DV := "(2*" + dh + ")"
+	lambda := Ex(raw["lambda_init"], "0.8")
+	bias := r.Bool("bias")
+	rope, hasRope := ropeOf(r)
+	inNode, outNode := streamBoundary(D)
+
+	proj := func(id, width string) ir.NodeDef {
+		return node(id, "linear", map[string]any{"in_features": D, "out_features": width, "bias": bias})
+	}
+	heads := func(id, n, w string) ir.NodeDef {
+		return node(id, "rearrange", map[string]any{
+			"from": fmt.Sprintf("B T (%s %s)", n, w), "to": fmt.Sprintf("B %s T %s", n, w)})
+	}
+	attention := func(id string, shared bool) ir.NodeDef {
+		p := map[string]any{
+			"heads": H, "kv_heads": KV, "head_dim": dh, "v_head_dim": DV,
+			"causal": r.Bool("causal"),
+			"flash":  !isFalse(r.P["flash"]),
+		}
+		if shared {
+			p["shared_values"] = true
+		}
+		return node(id, "sdpa", p)
+	}
+
+	// Two query and two key projections rather than one of each split in
+	// half: the same weights, and the drawing reads as the equation does,
+	// [Q1; Q2] = X W_Q.
+	nodes := []ir.NodeDef{
+		inNode,
+		proj("q1_proj", H+"*"+dh), proj("q2_proj", H+"*"+dh),
+		proj("k1_proj", KV+"*"+dh), proj("k2_proj", KV+"*"+dh),
+		proj("v_proj", KV+"*"+DV),
+		heads("q1_heads", H, dh), heads("q2_heads", H, dh),
+		heads("k1_heads", KV, dh), heads("k2_heads", KV, dh),
+		heads("v_heads", KV, DV),
+	}
+	edges := []ir.Edge{}
+	for _, p := range []string{"q1", "q2", "k1", "k2", "v"} {
+		edges = append(edges, edge("_in:x", p+"_proj:x"), edge(p+"_proj:y", p+"_heads:x"))
+	}
+	tails := map[string]string{"q1": "q1_heads:y", "q2": "q2_heads:y", "k1": "k1_heads:y", "k2": "k2_heads:y"}
+	if hasRope {
+		theta, scaling := thetaOf(rope), scalingOf(rope)
+		for _, p := range []string{"q1", "q2", "k1", "k2"} {
+			n := H
+			if p[0] == 'k' {
+				n = KV
+			}
+			nodes = append(nodes, node("rope_"+p, "rope", map[string]any{
+				"heads": n, "head_dim": dh, "theta": theta, "scaling": scaling}))
+			edges = append(edges, edge(tails[p], "rope_"+p+":x"))
+			tails[p] = "rope_" + p + ":y"
+		}
+	}
+
+	nodes = append(nodes,
+		attention("attn1", false),
+		// The second map reads the first one's values, so only its keys are
+		// its own to cache.
+		attention("attn2", true),
+		node("combine", "diff_combine", map[string]any{
+			"heads": H, "head_dim": dh, "dim": DV, "lambda_init": lambda}),
+		node("subln", "rmsnorm", map[string]any{"dim": DV}),
+		node("rescale", "scale", map[string]any{"dim": DV, "by": "1-" + lambda}),
+		node("o_merge", "rearrange", map[string]any{
+			"from": fmt.Sprintf("B %s T %s", H, DV), "to": fmt.Sprintf("B T (%s %s)", H, DV)}),
+		node("o_proj", "linear", map[string]any{"in_features": H + "*" + DV, "out_features": D, "bias": bias}),
+		outNode)
+	edges = append(edges,
+		edge(tails["q1"], "attn1:q"), edge(tails["k1"], "attn1:k"), edge("v_heads:y", "attn1:v"),
+		edge(tails["q2"], "attn2:q"), edge(tails["k2"], "attn2:k"), edge("v_heads:y", "attn2:v"),
+		edge("attn1:y", "combine:a"), edge("attn2:y", "combine:b"),
+		edge("combine:y", "subln:x"), edge("subln:y", "rescale:x"),
+		edge("rescale:y", "o_merge:x"), edge("o_merge:y", "o_proj:x"), edge("o_proj:y", "_out:y"))
+	return Expansion{Nodes: nodes, Edges: edges}
 }
 
 func expandGQA(raw map[string]any, r *Resolved) Expansion {
@@ -897,7 +1026,7 @@ var transformerBlock = &BlockDef{
 		{"kv_heads", when(grouped(pInt(1, "Key/value heads; fewer than the query heads is grouped-query attention"), "Attention"), "attention", "gqa")},
 		{"head_dim", when(grouped(pInt(1, "Width of one head"), "Attention"), "attention", "gqa")},
 		{"ffn_hidden", when(grouped(pInt(1, "Width in the middle of the feed-forward"), "Feed-forward"), "mlp", "gated", "dense")},
-		{"attention", grouped(pEnum([]string{"gqa", "mla"}, "gqa", "Grouped-query attention, or DeepSeek's latent attention"), "Attention")},
+		{"attention", grouped(pEnum([]string{"gqa", "mla", "diff"}, "gqa", "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"), "Attention")},
 		{"q_lora", when(grouped(pIntD(0, 0, "Latent attention: compressed query width"), "Attention"), "attention", "mla")},
 		{"kv_lora", when(grouped(pIntD(0, 0, "Latent attention: cached latent width"), "Attention"), "attention", "mla")},
 		{"nope_dim", when(grouped(pIntD(0, 0, "Per-head width without position"), "Attention"), "attention", "mla")},
@@ -930,6 +1059,9 @@ var transformerBlock = &BlockDef{
 		{"mask", when(grouped(maskSpec(), "Attention"), "attention", "gqa")},
 		{"score", when(grouped(scoreSpec(), "Attention"), "attention", "gqa")},
 		{"sinks", when(grouped(sinksSpec(), "Attention"), "attention", "gqa")},
+		{"lambda_init", when(grouped(ParamSpec{Type: ParamNum, Default: nil, HasDefault: true,
+			Doc: "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by " +
+				"depth, 0.8 - 0.6*exp(-0.3*layer)"}, "Attention"), "attention", "diff")},
 		{"value_embeddings", when(grouped(pBool(false,
 			"Take a second embedding of the same tokens on `ve` and mix it into the values"), "Attention"),
 			"attention", "gqa")},
@@ -1003,7 +1135,18 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 	}
 
 	var attnNode ir.NodeDef
-	if r.Str("attention") == "mla" {
+	if r.Str("attention") == "diff" {
+		attnNode = node("attn", "diff_attention", map[string]any{
+			"d_model":     D,
+			"heads":       Ex(raw["heads"], "0"),
+			"kv_heads":    Ex(raw["kv_heads"], "0"),
+			"head_dim":    Ex(raw["head_dim"], "0"),
+			"bias":        r.Bool("attn_bias"),
+			"causal":      r.Bool("causal"),
+			"rope":        r.P["rope"],
+			"lambda_init": Ex(raw["lambda_init"], "0.8"),
+		})
+	} else if r.Str("attention") == "mla" {
 		attnNode = node("attn", "mla_attention", map[string]any{
 			"d_model":  D,
 			"heads":    Ex(raw["heads"], "0"),
@@ -1235,6 +1378,8 @@ func Expand(def *BlockDef, raw map[string]any, r *Resolved) (Expansion, bool) {
 	switch def.Type {
 	case "gqa_attention":
 		return expandGQA(full, r), true
+	case "diff_attention":
+		return expandDiff(full, r), true
 	case "gated_mlp":
 		return expandGatedMlp(full, r), true
 	case "dense_mlp":

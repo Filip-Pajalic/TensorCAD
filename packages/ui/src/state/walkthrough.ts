@@ -384,6 +384,9 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
         attn.type === "diff_attention"
           ? "Each of these heads is two attention maps over the same values, one taken away from the other, scaled by a learned lambda. Whatever both maps put on tokens that do not matter cancels, which is the point: less attention wasted on context that is only there."
           : null,
+        p.written_out === true || p.talking_heads === true
+          ? `This attention is written out rather than fused: each head's whole matrix of scores is computed, kept and passed along like any other tensor${p.talking_heads === true ? ", because talking heads mixes every head's matrix into every other's, which needs them all at once" : ""}. That is the memory a fused kernel exists to save, and the design rules say how much it is here.`
+          : null,
         p.sinks === true
           ? `Each head also has a sink: one learned score that sits beside the keys in every softmax, so a token that finds nothing worth attending to can put its attention there instead of spreading it thin. It is ${count(heads)} parameters, and it is why a head can stay quiet.`
           : null,

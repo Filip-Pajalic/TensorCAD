@@ -730,6 +730,83 @@ describe.skipIf(!available)("differential attention", () => {
 });
 
 /**
+ * Attention written out, with talking heads.
+ *
+ * The one place a design keeps its score matrix on purpose. At the identity
+ * the generated block is plain attention and has to agree with PyTorch's fused
+ * kernel; with the mixes learned it has to agree with the paper's own einsum
+ * form; and the model it is part of has to have the parameters and FLOPs the
+ * analysis says, every score counted since an eager matmul skips none.
+ */
+describe.skipIf(!available)("talking heads, written out", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+
+  const talking = (): ReturnType<typeof getPreset> => {
+    const doc = structuredClone(getPreset("nano-sort"));
+    const block = doc.graph.nodes.find((n) => n.id === "layers")!.graph!.nodes.find((n) => n.id === "block")!;
+    block.params = { ...block.params, talking_heads: true };
+    return doc;
+  };
+
+  it(
+    "is plain attention at the identity and the paper's with the mixes learned",
+    () => {
+      const dir = mkdtempSync(join(tmpdir(), "tensorcad-talk-"));
+      try {
+        const out = generateTorch(talking());
+        expect(out.warnings).toEqual([]);
+        for (const file of out.files) writeFileSync(join(dir, file.path), file.contents);
+        const [cmd] = invocation;
+        const python = cmd === "tensorcad-runtime" ? "python" : cmd;
+        const result = spawnSync(
+          python,
+          [join(import.meta.dir, "talking_heads_probe.py"), join(dir, "model.py"), "16"],
+          { encoding: "utf8", timeout: TIMEOUT_MS, shell: process.platform === "win32" },
+        );
+        const probe = JSON.parse(result.stdout.trim().split(/\r?\n/).at(-1)!);
+        expect(probe.heads).toBe(3);
+        expect(probe.identity_vs_sdpa).toBeLessThan(1e-5);
+        expect(probe.mixed_vs_paper / probe.scale).toBeLessThan(1e-5);
+        // And the mixing changes the answer, or the second check proved nothing.
+        expect(probe.mixing_matters).toBeGreaterThan(1e-2);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+
+  it(
+    "has the parameters and the FLOPs it says, and exports",
+    () => {
+      const doc = talking();
+      const dir = mkdtempSync(join(tmpdir(), "tensorcad-talk-"));
+      try {
+        for (const file of generateTorch(doc).files) writeFileSync(join(dir, file.path), file.contents);
+        const full = runVerify(invocation, join(dir, "model.py"), ["--seq", "11"]);
+        expect(full).not.toHaveProperty("spawnFailed");
+        const r = full as Verify;
+        expect({ ok: r.ok, matches: r.matches, forward: r.forward, export: r.export_ok }).toEqual({
+          ok: true,
+          matches: true,
+          forward: "ok",
+          export: true,
+        });
+        const analysis = analyze(doc, { T: 11, B: 2 });
+        expect(r.params).toBe(analysis.params.total);
+        // Written out, the attention is counted as the profiler counts it:
+        // every score, masked or not.
+        expect(r.flops! / (2 * 11)).toBe(analysis.flops.fwdTotalUnmasked);
+        expect(analysis.flops.fwdTotal).toBe(analysis.flops.fwdTotalUnmasked);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+});
+
+/**
  * Every preset, through `ast.parse`.
  *
  * Cheaper than the block above and answering a different question: not "does

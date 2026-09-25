@@ -59,11 +59,32 @@ func withExpressions(r *Resolved, params map[string]any) map[string]any {
 			params[key] = text
 		}
 	}
-	if r.Bool("sinks") {
-		params["sinks"] = true
+	for _, key := range []string{"sinks", "written_out", "talking_heads"} {
+		if r.Bool(key) {
+			params[key] = true
+		}
 	}
 	return params
 }
+
+// writtenOutSpec and talkingHeadsSpec switch an attention to the eager block.
+// Unset rather than false, like sinks, so a design that never mentions them
+// generates exactly the code it did.
+func writtenOutSpec() ParamSpec {
+	return ParamSpec{Type: ParamBool, Default: nil, HasDefault: true,
+		Doc: "Compute the attention written out rather than fused: the score matrix a tensor, kept for " +
+			"the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."}
+}
+
+func talkingHeadsSpec() ParamSpec {
+	return ParamSpec{Type: ParamBool, Default: nil, HasDefault: true,
+		Doc: "Mix the attention maps across heads, before the softmax and after it, with two learned " +
+			"heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."}
+}
+
+// writtenOut is whether an attention is the eager block: asked for, or implied
+// by talking heads, which cannot be anything else.
+func writtenOut(r *Resolved) bool { return r.Bool("written_out") || r.Bool("talking_heads") }
 
 var (
 	atomRe   = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
@@ -145,7 +166,7 @@ func scalingOf(rope map[string]any) any {
 }
 
 // Composites is every block that is an arrangement rather than a formula.
-var Composites = []*BlockDef{gqaAttention, diffAttention, gatedMlp, denseMlp, mlaAttention, moeLayer, mambaBlock, mamba2Block, transformerBlock, mtpHeadComposite, gatedDeltanetBlock}
+var Composites = []*BlockDef{gqaAttention, diffAttention, eagerAttention, gatedMlp, denseMlp, mlaAttention, moeLayer, mambaBlock, mamba2Block, transformerBlock, mtpHeadComposite, gatedDeltanetBlock}
 
 // Containers carry the multipliers that make sparsity and stacking work.
 var Containers = []*BlockDef{moeExperts, repeatContainer}
@@ -190,6 +211,8 @@ var gqaAttention = &BlockDef{
 		{"mask", maskSpec()},
 		{"score", scoreSpec()},
 		{"sinks", sinksSpec()},
+		{"written_out", writtenOutSpec()},
+		{"talking_heads", talkingHeadsSpec()},
 		{"value_embeddings", pBool(false,
 			"Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)")},
 		{"output_gate", pBool(false,
@@ -207,15 +230,42 @@ var gqaAttention = &BlockDef{
 		return Ports{In: in, Out: map[string]PortSpec{"y": Port("... d_model")}}
 	},
 	Constraints: func(r *Resolved) []BlockFinding {
-		if int(r.Num("heads"))%int(r.Num("kv_heads")) == 0 {
-			return nil
+		var out []BlockFinding
+		if int(r.Num("heads"))%int(r.Num("kv_heads")) != 0 {
+			out = append(out, BlockFinding{
+				ID: "ATTN-01", Severity: "error", Param: "kv_heads",
+				Message: fmt.Sprintf("heads (%s) must be divisible by kv_heads (%s)",
+					num(r.Num("heads")), num(r.Num("kv_heads"))),
+				Hint: "Grouped-query attention shares one key/value head across a whole group of query heads, so the groups have to come out even.",
+			})
 		}
-		return []BlockFinding{{
-			ID: "ATTN-01", Severity: "error", Param: "kv_heads",
-			Message: fmt.Sprintf("heads (%s) must be divisible by kv_heads (%s)",
-				num(r.Num("heads")), num(r.Num("kv_heads"))),
-			Hint: "Grouped-query attention shares one key/value head across a whole group of query heads, so the groups have to come out even.",
-		}}
+		if writtenOut(r) {
+			var lost []string
+			if r.Num("window") > 0 {
+				lost = append(lost, "window")
+			}
+			if r.Num("logit_softcap") != 0 {
+				lost = append(lost, "logit_softcap")
+			}
+			for _, key := range []string{"mask", "score"} {
+				if r.Str(key) != "" {
+					lost = append(lost, key)
+				}
+			}
+			if r.Bool("sinks") {
+				lost = append(lost, "sinks")
+			}
+			if len(lost) > 0 {
+				out = append(out, BlockFinding{
+					ID: "ATTN-02", Severity: "error", Param: lost[0],
+					Message: "The written-out attention is causal attention and nothing else: " +
+						strings.Join(lost, ", ") + " would be dropped.",
+					Hint: "Those are the fused kernel's. Write the attention out only for what needs the " +
+						"whole score matrix, such as talking heads.",
+				})
+			}
+		}
+		return out
 	},
 	Docs: BlockDocs{
 		Name:    "grouped-query attention",
@@ -354,6 +404,83 @@ func expandDiff(raw map[string]any, r *Resolved) Expansion {
 	return Expansion{Nodes: nodes, Edges: edges}
 }
 
+// eagerAttention is attention written out: the score matrix computed, kept and
+// passed along like any other tensor. It is the one place a design reaches for
+// it on purpose, for what needs every head's whole matrix at once — talking
+// heads — and it is labelled as what it costs: the score matrix is T long twice
+// over, and a rule says how much that is at the operating point.
+var eagerAttention = &BlockDef{
+	Kind: "composite", Type: "eager_attention", Category: "attention",
+	Params: ParamList{
+		{"heads", pInt(1, "Query heads")},
+		{"kv_heads", pInt(1, "Key/value heads")},
+		{"head_dim", pInt(1, "Width of a query/key head")},
+		{"v_head_dim", pIntD(0, 0, "Width of a value head; 0 means the same as head_dim")},
+		{"causal", pBool(true, "Mask out every position after the current one")},
+		{"talking_heads", pBool(false, "Mix the maps across heads before the softmax and again after it (Shazeer et al. 2020)")},
+	},
+	PortsFn: func(r *Resolved) Ports {
+		v := "head_dim"
+		if r.Num("v_head_dim") != 0 {
+			v = "v_head_dim"
+		}
+		return Ports{
+			In: map[string]PortSpec{
+				"q": {Shape: "B heads T head_dim", Dtype: "real", Anchor: "flow"},
+				"k": {Shape: "B kv_heads T head_dim", Dtype: "real", Anchor: "flow"},
+				"v": {Shape: "B kv_heads T " + v, Dtype: "real", Anchor: "flow"},
+			},
+			Out: map[string]PortSpec{"y": Port("B heads T " + v)},
+		}
+	},
+	Docs: BlockDocs{
+		Name: "attention, written out",
+		Summary: "Scores, softmax and weighted values as separate steps, the score matrix a tensor " +
+			"between them. For what needs the whole matrix: talking heads. Everything a single score " +
+			"or its position decides belongs on the fused kernel as a mask or a score expression.",
+		Formula: "activations = B*heads*T*T per score matrix kept, which the fused kernel never keeps",
+		Refs:    []string{"https://arxiv.org/abs/2003.02436"},
+	},
+}
+
+func expandEager(raw map[string]any, r *Resolved) Expansion {
+	H := Ex(raw["heads"], "0")
+	KV := Ex(raw["kv_heads"], "0")
+	dh := Ex(raw["head_dim"], "0")
+	dv := dh
+	if r.Num("v_head_dim") != 0 {
+		dv = Ex(raw["v_head_dim"], "0")
+	}
+	inNode, outNode := boundary(
+		map[string]any{
+			"q": fmt.Sprintf("B %s T %s", H, dh),
+			"k": fmt.Sprintf("B %s T %s", KV, dh),
+			"v": fmt.Sprintf("B %s T %s", KV, dv),
+		},
+		map[string]any{"y": fmt.Sprintf("B %s T %s", H, dv)},
+	)
+	nodes := []ir.NodeDef{
+		inNode,
+		node("scores", "attn_scores", map[string]any{"heads": H, "kv_heads": KV, "head_dim": dh}),
+		node("softmax", "attn_softmax", map[string]any{"heads": H, "causal": r.Bool("causal")}),
+		node("values", "attn_values", map[string]any{"heads": H, "kv_heads": KV, "v_head_dim": dv}),
+		outNode,
+	}
+	edges := []ir.Edge{edge("_in:q", "scores:q"), edge("_in:k", "scores:k"), edge("_in:v", "values:v")}
+	if r.Bool("talking_heads") {
+		nodes = append(nodes,
+			node("mix_logits", "head_mix", map[string]any{"heads": H}),
+			node("mix_weights", "head_mix", map[string]any{"heads": H}))
+		edges = append(edges,
+			edge("scores:y", "mix_logits:x"), edge("mix_logits:y", "softmax:x"),
+			edge("softmax:y", "mix_weights:x"), edge("mix_weights:y", "values:p"))
+	} else {
+		edges = append(edges, edge("scores:y", "softmax:x"), edge("softmax:y", "values:p"))
+	}
+	edges = append(edges, edge("values:y", "_out:y"))
+	return Expansion{Nodes: nodes, Edges: edges}
+}
+
 func expandGQA(raw map[string]any, r *Resolved) Expansion {
 	D := Ex(raw["d_model"], "0")
 	H := Ex(raw["heads"], "0")
@@ -427,14 +554,22 @@ func expandGQA(raw map[string]any, r *Resolved) Expansion {
 		qTail, kTail = "rope_q:y", "rope_k:y"
 	}
 
-	nodes = append(nodes,
-		node("attn", "sdpa", withExpressions(r, map[string]any{
+	attn := node("attn", "sdpa", withExpressions(r, map[string]any{
+		"heads": H, "kv_heads": KV, "head_dim": dh,
+		"causal":        r.Bool("causal"),
+		"window":        Ex(raw["window"], "0"),
+		"flash":         !isFalse(r.P["flash"]),
+		"logit_softcap": Ex(raw["logit_softcap"], "0"),
+	}))
+	if writtenOut(r) {
+		attn = node("attn", "eager_attention", map[string]any{
 			"heads": H, "kv_heads": KV, "head_dim": dh,
 			"causal":        r.Bool("causal"),
-			"window":        Ex(raw["window"], "0"),
-			"flash":         !isFalse(r.P["flash"]),
-			"logit_softcap": Ex(raw["logit_softcap"], "0"),
-		})),
+			"talking_heads": r.Bool("talking_heads"),
+		})
+	}
+	nodes = append(nodes,
+		attn,
 		node("o_merge", "rearrange", map[string]any{
 			"from": fmt.Sprintf("B %s T %s", H, dh), "to": fmt.Sprintf("B T (%s %s)", H, dh)}),
 		node("o_proj", "linear", map[string]any{
@@ -1059,6 +1194,8 @@ var transformerBlock = &BlockDef{
 		{"mask", when(grouped(maskSpec(), "Attention"), "attention", "gqa")},
 		{"score", when(grouped(scoreSpec(), "Attention"), "attention", "gqa")},
 		{"sinks", when(grouped(sinksSpec(), "Attention"), "attention", "gqa")},
+		{"written_out", when(grouped(writtenOutSpec(), "Attention"), "attention", "gqa")},
+		{"talking_heads", when(grouped(talkingHeadsSpec(), "Attention"), "attention", "gqa")},
 		{"lambda_init", when(grouped(ParamSpec{Type: ParamNum, Default: nil, HasDefault: true,
 			Doc: "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by " +
 				"depth, 0.8 - 0.6*exp(-0.3*layer)"}, "Attention"), "attention", "diff")},
@@ -1380,6 +1517,8 @@ func Expand(def *BlockDef, raw map[string]any, r *Resolved) (Expansion, bool) {
 		return expandGQA(full, r), true
 	case "diff_attention":
 		return expandDiff(full, r), true
+	case "eager_attention":
+		return expandEager(full, r), true
 	case "gated_mlp":
 		return expandGatedMlp(full, r), true
 	case "dense_mlp":

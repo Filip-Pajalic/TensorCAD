@@ -4068,6 +4068,355 @@
         ]
       ],
       "constraints": []
+    },
+    {
+      "type": "eager_attention",
+      "params": {
+        "head_dim": "dh",
+        "heads": "H",
+        "kv_heads": "Hkv"
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "k": "B Hkv T dh",
+              "q": "B H T dh",
+              "v": "B Hkv T dh"
+            }
+          }
+        },
+        {
+          "id": "scores",
+          "type": "attn_scores",
+          "params": {
+            "head_dim": "dh",
+            "heads": "H",
+            "kv_heads": "Hkv"
+          }
+        },
+        {
+          "id": "softmax",
+          "type": "attn_softmax",
+          "params": {
+            "causal": true,
+            "heads": "H"
+          }
+        },
+        {
+          "id": "values",
+          "type": "attn_values",
+          "params": {
+            "heads": "H",
+            "kv_heads": "Hkv",
+            "v_head_dim": "dh"
+          }
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "B H T dh"
+            }
+          }
+        }
+      ],
+      "edges": [
+        [
+          "_in:q",
+          "scores:q"
+        ],
+        [
+          "_in:k",
+          "scores:k"
+        ],
+        [
+          "_in:v",
+          "values:v"
+        ],
+        [
+          "scores:y",
+          "softmax:x"
+        ],
+        [
+          "softmax:y",
+          "values:p"
+        ],
+        [
+          "values:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "eager_attention",
+      "params": {
+        "head_dim": "dh",
+        "heads": "H",
+        "kv_heads": "Hkv",
+        "talking_heads": true
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "k": "B Hkv T dh",
+              "q": "B H T dh",
+              "v": "B Hkv T dh"
+            }
+          }
+        },
+        {
+          "id": "scores",
+          "type": "attn_scores",
+          "params": {
+            "head_dim": "dh",
+            "heads": "H",
+            "kv_heads": "Hkv"
+          }
+        },
+        {
+          "id": "softmax",
+          "type": "attn_softmax",
+          "params": {
+            "causal": true,
+            "heads": "H"
+          }
+        },
+        {
+          "id": "values",
+          "type": "attn_values",
+          "params": {
+            "heads": "H",
+            "kv_heads": "Hkv",
+            "v_head_dim": "dh"
+          }
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "B H T dh"
+            }
+          }
+        },
+        {
+          "id": "mix_logits",
+          "type": "head_mix",
+          "params": {
+            "heads": "H"
+          }
+        },
+        {
+          "id": "mix_weights",
+          "type": "head_mix",
+          "params": {
+            "heads": "H"
+          }
+        }
+      ],
+      "edges": [
+        [
+          "_in:q",
+          "scores:q"
+        ],
+        [
+          "_in:k",
+          "scores:k"
+        ],
+        [
+          "_in:v",
+          "values:v"
+        ],
+        [
+          "scores:y",
+          "mix_logits:x"
+        ],
+        [
+          "mix_logits:y",
+          "softmax:x"
+        ],
+        [
+          "softmax:y",
+          "mix_weights:x"
+        ],
+        [
+          "mix_weights:y",
+          "values:p"
+        ],
+        [
+          "values:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "gqa_attention",
+      "params": {
+        "d_model": "D",
+        "head_dim": "dh",
+        "heads": "H",
+        "kv_heads": "Hkv",
+        "talking_heads": true
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "x": "... D"
+            }
+          }
+        },
+        {
+          "id": "q_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "D",
+            "out_features": "H*dh"
+          }
+        },
+        {
+          "id": "k_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "D",
+            "out_features": "Hkv*dh"
+          }
+        },
+        {
+          "id": "v_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "D",
+            "out_features": "Hkv*dh"
+          }
+        },
+        {
+          "id": "q_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (H dh)",
+            "to": "B H T dh"
+          }
+        },
+        {
+          "id": "k_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (Hkv dh)",
+            "to": "B Hkv T dh"
+          }
+        },
+        {
+          "id": "v_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (Hkv dh)",
+            "to": "B Hkv T dh"
+          }
+        },
+        {
+          "id": "attn",
+          "type": "eager_attention",
+          "params": {
+            "causal": true,
+            "head_dim": "dh",
+            "heads": "H",
+            "kv_heads": "Hkv",
+            "talking_heads": true
+          }
+        },
+        {
+          "id": "o_merge",
+          "type": "rearrange",
+          "params": {
+            "from": "B H T dh",
+            "to": "B T (H dh)"
+          }
+        },
+        {
+          "id": "o_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "H*dh",
+            "out_features": "D"
+          }
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          }
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "q_proj:x"
+        ],
+        [
+          "_in:x",
+          "k_proj:x"
+        ],
+        [
+          "_in:x",
+          "v_proj:x"
+        ],
+        [
+          "q_proj:y",
+          "q_heads:x"
+        ],
+        [
+          "k_proj:y",
+          "k_heads:x"
+        ],
+        [
+          "v_proj:y",
+          "v_heads:x"
+        ],
+        [
+          "q_heads:y",
+          "attn:q"
+        ],
+        [
+          "k_heads:y",
+          "attn:k"
+        ],
+        [
+          "v_heads:y",
+          "attn:v"
+        ],
+        [
+          "attn:y",
+          "o_merge:x"
+        ],
+        [
+          "o_merge:y",
+          "o_proj:x"
+        ],
+        [
+          "o_proj:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
     }
   ]
 }

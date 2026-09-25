@@ -1,6 +1,6 @@
 # Design rules
 
-Nineteen checks, run on every edit. `validate(doc, options)` returns the analysis
+Twenty checks, run on every edit. `validate(doc, options)` returns the analysis
 with its findings attached; the CLI's `validate` exits 1 on any error.
 
 Each finding carries a severity — `error`, `warning` or `info` — and the path of
@@ -26,6 +26,7 @@ the block it is about.
 | `tensor-core-multiples` | A width is not a multiple that tensor cores like, so the hardware runs below peak. |
 | `vocab-padding` | The vocabulary is not padded to a friendly multiple. nanoGPT pads 50,257 to 50,304 for exactly this reason. |
 | `window-vs-context` | A sliding window is declared wider than the context it slides over. |
+| `eager-attention` | An attention is [written out](attention-expressions.md) rather than fused, and says how much its score matrices keep for the backward pass at the operating point. They grow with the square of the context, and a fused kernel keeps none of them. |
 | `attention-share` | Attention dominates the FLOPs, which at long context means the design is spending its time in the wrong place. |
 | `recompute-hint` | Activation memory would fall a long way under recomputation. |
 

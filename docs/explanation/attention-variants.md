@@ -1,6 +1,6 @@
 # Attention variants: what to open up, and how far
 
-*A proposal for M10. Phases 1 and 2 are built, and most of 3 and 4; the rest is not. The point of
+*A proposal for M10. Phases 1, 2 and 4 are built, and two thirds of 3; T5 is not. The point of
 writing it first was that the choice decides what every attention estimate in
 the tool means. The language the two expressions are written in is
 [its own reference page](../reference/attention-expressions.md).*
@@ -261,7 +261,22 @@ analysis and the generated code currently disagree.
    not carried: `lambda_init` is one value per block, where the paper schedules
    it by depth, and with grouped keys the reference pairs query heads with key
    heads in an interleaved order that this does not reproduce — the same
-   parameters and FLOPs, a different pairing.
+   parameters and FLOPs, a different pairing. *And the eager block is done:*
+   `eager_attention`, "attention, written out" — `attn_scores`, `attn_softmax`
+   and `attn_values` as separate primitives, the score matrix a tensor between
+   them, and `head_mix` for talking heads, a learned heads-by-heads matrix before
+   the softmax and another after it. An attention opts in with `written_out` or
+   `talking_heads`, both unset by default and neither on any preset. What it
+   costs is said three ways: every score is counted, masked or not, because an
+   eager matmul skips nothing; the matrices it keeps are counted as activations,
+   which needed the memory model to learn that a tensor can be as long as the
+   sequence twice; and the `eager-attention` rule states the bytes at the
+   operating point — 288 MiB for GPT-2 small at 1,024 tokens, 864 MiB with
+   talking heads. A window, a cap, a mask, a score or sinks on a written-out
+   attention is refused rather than dropped (`ATTN-02`): those are the fused
+   kernel's. At the identity the generated talking-heads block agrees with
+   PyTorch's fused attention, and with the mixes learned it agrees with the
+   paper's own formulation exactly.
 
 **Done when** Gemma 2's attention is generated fused and counted fused and a
 profiler agrees with both; a windowed model's FLOPs match what its generated code

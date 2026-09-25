@@ -31,7 +31,8 @@ const COMMANDS: Record<string, { run: (args: Args) => number; usage: string; blu
     usage:
       "analyze <file|preset> [--T n] [--B n] [--hardware id] [--gpus n] [--tokens n]\n" +
       "                       [--optimizer k] [--recompute none|selective|full] [--zero 0..3]\n" +
-      "                       [--tp n] [--dp n] [--dtype bf16] [--concurrency n] [--json]",
+      "                       [--tp n] [--dp n] [--dtype bf16] [--concurrency n] [--S n]\n" +
+      "                       [--pack mean] [--pack-spread c] [--json]",
     blurb: "parameters, FLOPs, KV cache, memory, throughput, cost, Chinchilla",
   },
   codegen: {

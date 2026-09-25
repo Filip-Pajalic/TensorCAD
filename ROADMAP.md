@@ -9,7 +9,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | Milestone | State |
 |---|---|
 | M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 28 presets, exact parameter match on 25 of them. |
-| M1 Check (design rules, full analysis) | **Done.** 20 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
+| M1 Check (design rules, full analysis) | **Done.** 21 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
 | M2 Manufacture (PyTorch codegen, verification) | **Done.** Every generated model's parameter count matches PyTorch exactly, and the FLOPs estimate matches a profiler once the causal mask is accounted for. |
 | M3 Agent (MCP server, CLI) | **Done.** 19 MCP tools over stdio, 9 CLI commands, and the live editor bridge: an agent's edits land on the canvas as it makes them and the human's come back. |
 | M4 Test bench | **Done.** `tensorcad-runtime smoke-train` trains a scaled design on the local GPU and writes a run record; the editor's `Runs` tab opens several and draws their loss curves on one chart, naming anything that makes the comparison unfair. |
@@ -22,7 +22,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
 | M10 Attention variants | **Done.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. BLOOM-7b1's ALiBi is a score expression and gpt-oss-20b brings attention sinks, both reproducing their published parameter counts exactly and both held against Hugging Face's own construction of what they add. Differential attention is two fused attentions and a combine, held against Microsoft's reference, and attention can be written out on purpose, with talking heads, at a cost a rule states. T5's relative bias came last, through M11's second sequence. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
 | M11 Encoder–decoder | **Done.** A second sequence, and cross-attention to it, so T5 can be drawn and M10 can close: a source length `S` beside `T`, each block counted at the tokens of its own stream, cross-attention, a repeat that hands every layer the same tensor, and expressions that read a tensor — T5's shared relative-bias table, which is Hugging Face's to the bit and learns through FlexAttention. `t5-small` and `flan-t5-base` reproduce their published counts exactly and compute what Hugging Face's T5 computes, weight for weight. Every decoder-only number is held unchanged. [docs/explanation/encoder-decoder.md](docs/explanation/encoder-decoder.md). |
-| M12 Packed sequences | **Proposed.** Pretraining packs documents into one sequence and masks attention between them, which cuts Llama-3-8B's attention at 8k by eight times, and the engine assumes a sequence is one document. A documents input a mask can read, packing as a condition of training with a length distribution rather than a length, and a block mask built per batch. [docs/explanation/packed-sequences.md](docs/explanation/packed-sequences.md). |
+| M12 Packed sequences | **Phase 1 done.** Pretraining packs documents into one sequence and masks attention between them, which cuts Llama-3-8B's attention at 8k by eight times, and the engine assumes a sequence is one document. A documents input a mask can read, packing as a condition of training with a length distribution rather than a length, and a block mask built per batch. Phase 1 measures it: Llama-3-8B with its document mask at 8k in rows of 1,024-token documents keeps 491 keys a query, not 4,096, and trains 11% cheaper, while serving does not move. [docs/explanation/packed-sequences.md](docs/explanation/packed-sequences.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -479,7 +479,7 @@ matches Hugging Face's construction of it, a profiler agrees with a small
 encoder–decoder's FLOPs, and every decoder-only golden is unchanged. M10 then
 closes.
 
-### M12 — Packed sequences · Proposed
+### M12 — Packed sequences · Phase 1 done
 
 Pretraining concatenates documents to fill the sequence, and Llama 3 masks
 attention between them. The engine assumes a training sequence is one
@@ -494,7 +494,16 @@ condition of training:
    documents of mean length `μ` and spread `c`. The mask is still counted by
    evaluating it, with a packing drawn for each sampled row. Packing moves the
    training figures and not the serving ones. With packing off, every golden
-   is unchanged.
+   is unchanged. *Done:* a documents `role` on `input`; `packing` in the
+   engine, `--pack` on the command line, and `packing` on the MCP tools;
+   `flops.packed`, which the training cost is counted from; and a `documents`
+   rule that follows the wire back to an input that says it holds documents.
+   A row cut from a stream begins inside a document, so fixed 1,024-token
+   documents at 8k keep 491.1 keys a query rather than 512, and that is what
+   the analysis is held to. The sampler is within half a percent for fixed
+   lengths and about two for spread-out ones, measured over 1,024 rows with
+   keys banded back from each query. No analysis, rules or codegen golden
+   moved.
 2. **Generated and verified** — the mask as a factory over the documents, one
    block mask per forward pass rather than one cached per step, and a test that
    one document's tokens move no other document's outputs. FlexAttention's own

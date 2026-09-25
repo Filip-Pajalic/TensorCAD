@@ -1,0 +1,217 @@
+{
+  "version": 1,
+  "meta": {
+    "name": "nano-sort-packed",
+    "notes": "nano-sort with every layer keeping packed documents apart: the documents input and the mask that reads it."
+  },
+  "symbols": {
+    "B": {
+      "default": 1,
+      "doc": "Batch size",
+      "kind": "runtime"
+    },
+    "T": {
+      "default": 11,
+      "doc": "Sequence length in tokens",
+      "kind": "runtime"
+    },
+    "L": {
+      "doc": "Number of transformer layers",
+      "kind": "design",
+      "value": 3
+    },
+    "D": {
+      "doc": "Residual stream width (d_model)",
+      "kind": "design",
+      "value": 48
+    },
+    "H": {
+      "doc": "Query heads",
+      "kind": "design",
+      "value": 3
+    },
+    "Hkv": {
+      "doc": "Key/value heads",
+      "kind": "design",
+      "value": 3
+    },
+    "dh": {
+      "doc": "Head dimension",
+      "kind": "design",
+      "value": 16
+    },
+    "F": {
+      "doc": "Feed-forward hidden width",
+      "kind": "design",
+      "value": "4*D"
+    },
+    "V": {
+      "doc": "Vocabulary size: three symbols, A, B and C",
+      "kind": "design",
+      "value": 3
+    },
+    "Tmax": {
+      "doc": "Maximum position index: six to read and five to write",
+      "kind": "design",
+      "value": 11
+    }
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "tokens",
+        "type": "input",
+        "params": {
+          "dtype": "int64",
+          "shape": "B T"
+        }
+      },
+      {
+        "id": "embed",
+        "type": "embedding",
+        "params": {
+          "dim": "D",
+          "vocab": "V"
+        }
+      },
+      {
+        "id": "pos",
+        "type": "pos_embedding",
+        "params": {
+          "dim": "D",
+          "max_seq": "Tmax"
+        }
+      },
+      {
+        "id": "layers",
+        "type": "repeat",
+        "params": {
+          "count": "L"
+        },
+        "graph": {
+          "nodes": [
+            {
+              "id": "_in",
+              "type": "boundary_in",
+              "params": {
+                "ports": {
+                  "x": "B T D",
+                  "doc": "B T"
+                }
+              }
+            },
+            {
+              "id": "block",
+              "type": "transformer_block",
+              "params": {
+                "act": "gelu",
+                "attn_bias": true,
+                "attn_o_bias": null,
+                "causal": true,
+                "d_model": "D",
+                "ffn_hidden": "F",
+                "head_dim": "dh",
+                "heads": "H",
+                "kv_heads": "Hkv",
+                "mlp": "dense",
+                "mlp_bias": true,
+                "norm": "layernorm",
+                "norm_bias": true,
+                "post_norm": false,
+                "qk_norm": false,
+                "rope": null,
+                "window": 0,
+                "mask": "doc(b, q) == doc(b, kv)"
+              }
+            },
+            {
+              "id": "_out",
+              "type": "boundary_out",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            }
+          ],
+          "edges": [
+            [
+              "_in:x",
+              "block:x"
+            ],
+            [
+              "block:y",
+              "_out:x"
+            ],
+            [
+              "_in:doc",
+              "block:doc"
+            ]
+          ]
+        },
+        "label": "Transformer block x3"
+      },
+      {
+        "id": "final_norm",
+        "type": "layernorm",
+        "params": {
+          "bias": true,
+          "dim": "D"
+        }
+      },
+      {
+        "id": "head",
+        "type": "lm_head",
+        "params": {
+          "dim": "D",
+          "tied": false,
+          "vocab": "V"
+        }
+      },
+      {
+        "id": "logits",
+        "type": "output"
+      },
+      {
+        "id": "docs",
+        "type": "input",
+        "params": {
+          "shape": "B T",
+          "dtype": "int64",
+          "role": "documents"
+        }
+      }
+    ],
+    "edges": [
+      [
+        "tokens:x",
+        "embed:ids"
+      ],
+      [
+        "embed:y",
+        "pos:x"
+      ],
+      [
+        "pos:y",
+        "layers:x"
+      ],
+      [
+        "layers:x",
+        "final_norm:x"
+      ],
+      [
+        "final_norm:y",
+        "head:x"
+      ],
+      [
+        "head:y",
+        "logits:x"
+      ],
+      [
+        "docs:x",
+        "layers:doc"
+      ]
+    ]
+  },
+  "ui": {}
+}

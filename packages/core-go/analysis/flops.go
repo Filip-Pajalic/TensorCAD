@@ -46,6 +46,20 @@ type FlopsResult struct {
 	// FwdPerExample is one training example's forward pass, every stream's
 	// tokens, for a design with two.
 	FwdPerExample float64 `json:"fwdPerExample,omitempty"`
+	// Packed is training under the operating point's packing, for a design
+	// whose mask keeps documents apart; absent otherwise. Everything above is
+	// one document a row, which is what serving is, and the training cost is
+	// counted from this.
+	Packed *PackedFlops `json:"packed,omitempty"`
+}
+
+// PackedFlops is the forward and training work per token when training rows
+// are packed with documents and attention is kept within each.
+type PackedFlops struct {
+	FwdAttention   float64 `json:"fwdAttention"`
+	FwdTotal       float64 `json:"fwdTotal"`
+	TrainPerToken  float64 `json:"trainPerToken"`
+	AttentionShare float64 `json:"attentionShare"`
 }
 
 // FlopsOptions is the operating point FLOPs are counted at.

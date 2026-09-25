@@ -1126,7 +1126,21 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 					args = append(args, fmt.Sprintf("sinks=self.%s_sinks", attr))
 				}
 				if m := a.Mask(); m != nil {
-					args = append(args, "mask_mod="+c.attentionFunction("mask", m, a.Heads))
+					fn := c.attentionFunction("mask", m, a.Heads)
+					// A mask that reads the documents is a factory, as a score
+					// that reads a table is: called with this batch's documents.
+					if tables := attnexpr.Tables(m); len(tables) > 0 {
+						vars := make([]string, len(tables))
+						for i, name := range tables {
+							vars[i] = inputVar(node.ID, name)
+						}
+						fn += "(" + strings.Join(vars, ", ") + ")"
+						c.warn("%s: the mask reads %s, each batch's documents. The model keeps them apart, "+
+							"but on CUDA it builds and keeps a new block mask on every call; building one per "+
+							"batch and sharing it between layers is the next phase of packed sequences.",
+							path, strings.Join(tables, ", "))
+					}
+					args = append(args, "mask_mod="+fn)
 					if attnexpr.Uses(m, "h") {
 						args = append(args, "mask_heads=True")
 					}

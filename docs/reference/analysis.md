@@ -20,6 +20,7 @@ Conditions the design is measured under, never properties of it:
 | `sharding` | ZeRO stage, tensor and pipeline parallel degree |
 | `recompute` | `none` / `selective` / `full` |
 | `tokens` | Training token budget, for cost and Chinchilla |
+| `packing` | Training rows packed with documents, `{ mean, spread }`: the mean length in tokens and the coefficient of variation, 0 for fixed lengths and 1 for exponential. Absent is one document a row |
 
 ## `params`
 
@@ -49,6 +50,12 @@ Per token, unless stated.
 | `ruleOfThumb2N` / `ruleOfThumb6N` | The usual approximations, for comparison |
 | `perStream` | A design with two sequences only: each one's forward pass per token of its own, `S` then `T` |
 | `fwdPerExample` | A design with two sequences only: one example's forward pass, both sequences' tokens |
+| `packed` | Training under the operating point's `packing`, for a design whose mask keeps documents apart: `fwdAttention`, `fwdTotal`, `trainPerToken` and `attentionShare` |
+
+With a `packing`, every figure above except `packed` is still one document a
+row, which is what serving is. `packed` is training, and the training time and
+cost are counted from it. It is present only when a mask reads the documents,
+because a packing changes nothing else.
 
 For a design with a second sequence every per-token figure above is per
 *target* token: the source's blocks are measured at `S`, and their share is

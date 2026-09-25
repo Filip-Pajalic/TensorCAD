@@ -20,7 +20,7 @@ They are on `sdpa`, on `gqa_attention`, and on `transformer_block` when its
 | `b` | The sequence's index in the batch |
 | `heads` | How many query heads the attention has; a constant once the expression is on a block |
 | `score` | The score, already scaled — in `score` only |
-| `name(i, j, ...)` | A tensor wired into the attention's input `name`, read at those indices — in `score` only; see [Tables](#tables) |
+| `name(i, j, ...)` | A tensor wired into the attention's input `name`, read at those indices; see [Tables](#tables). A mask reads only a documents input, as `name(b, q)`: see [Documents](#documents) |
 | anything else | A symbol of the design, replaced by its value |
 
 `B` and `T` are not available. They carry a default in the symbol table, but a
@@ -116,6 +116,25 @@ and neither is `floor` of it, which PyTorch keeps as a float — and one outside
 the table is not checked. A mask cannot read a table: a mask's share is
 measured by evaluating it, and a table's values are the model's.
 
+## Documents
+
+A mask can read one kind of tensor: each position's document, when training
+rows are packed with several documents and attention is kept within each.
+
+```
+doc(b, q) == doc(b, kv)
+```
+
+`doc` is an input on the attention, `B T` integers, wired from an `input` whose
+`role` is `documents`. It is read at a row and a position, which is why it takes
+two indices. Anything else a mask might read is refused: a mask is counted by
+evaluating it, and the engine can make up a packing but not a learned table.
+
+Without a packing in the operating point, a row is one document and the mask
+keeps everything causal does, so a design costs what it did before the mask was
+written. With one, the mask is measured over rows cut from a stream of
+documents drawn from it. See [Packed sequences](../explanation/packed-sequences.md).
+
 ## How they combine with the switches
 
 A score counts only if it passes `causal` (`kv <= q`), `window` (`q - kv < W`)
@@ -137,6 +156,7 @@ what the preview under the field shows: every condition, and the whole score.
 | ALiBi, as `bloom-7b1` has it | on | | `score - 2 ** (-8 * (h + 1) / heads) * (q - kv)` |
 | Gemma 2's cap, written out | on | | `50 * tanh(score / 50)` |
 | T5's relative bias, in an encoder | off | | `score + rel(t5_bucket(kv - q, 32, 128, true), h)` |
+| Packed documents kept apart, as Llama 3 trained | on | `doc(b, q) == doc(b, kv)` | |
 
 ## What the engine does with them
 
@@ -209,11 +229,9 @@ quietly dropped.
 
 ## What they cannot say yet
 
-- **Tables in a mask.** A score can read a tensor and a mask cannot, since a
-  mask is counted by evaluating it.
-- **Inputs at run time.** Document masking needs each position's document id,
-  which is an input, not a position. [Packed sequences](../explanation/packed-sequences.md)
-  proposes how.
+- **Other tensors in a mask.** A mask reads the documents and nothing else,
+  since a mask is counted by evaluating it and the documents are the one tensor
+  the engine can make up.
 - **The cache.** A mask that bounds how far back a query looks does not shrink
   the KV-cache estimate; `window` does, and is what to use for a sliding window.
 - **Block granularity.** A kernel computes whole blocks, so a mask that keeps a

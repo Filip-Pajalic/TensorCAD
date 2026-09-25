@@ -176,7 +176,11 @@ type operatingPoint struct {
 	MFU              *float64 `json:"mfu"`
 	DecodeEfficiency *float64 `json:"decodeEfficiency"`
 	Concurrency      *float64 `json:"concurrency"`
-	Parallel         *struct {
+	Packing          *struct {
+		Mean   *float64 `json:"mean"`
+		Spread *float64 `json:"spread"`
+	} `json:"packing"`
+	Parallel *struct {
 		DP               *float64 `json:"dp"`
 		TP               *float64 `json:"tp"`
 		PP               *float64 `json:"pp"`
@@ -201,6 +205,15 @@ func decodeOptions(text string) (analysis.Options, error) {
 		Optimizer: o.Optimizer, Recompute: o.Recompute, Flash: o.Flash,
 		Tokens: o.Tokens, MFU: o.MFU,
 		DecodeEfficiency: o.DecodeEfficiency, Concurrency: o.Concurrency,
+	}
+	if o.Packing != nil {
+		if o.Packing.Mean == nil {
+			return analysis.Options{}, fmt.Errorf("a packing needs a mean document length, packing.mean")
+		}
+		out.Packing = &catalog.Packing{Mean: *o.Packing.Mean}
+		if o.Packing.Spread != nil {
+			out.Packing.Spread = *o.Packing.Spread
+		}
 	}
 	if o.Parallel != nil {
 		out.Parallel = &analysis.PartialParallel{

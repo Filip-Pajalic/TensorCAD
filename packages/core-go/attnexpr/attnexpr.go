@@ -843,9 +843,10 @@ func Compile(src string, kind Kind, symbols map[string]float64) (Node, error) {
 		return nil, err
 	}
 	n = Fold(n)
-	if tables := Tables(n); len(tables) > 0 && kind == Mask {
-		return nil, fmt.Errorf("%s is not a function this knows (%s), and a mask cannot read a tensor yet: "+
-			"what it keeps would depend on data the engine does not have", tables[0], strings.Join(funcNames(), ", "))
+	if kind == Mask {
+		if err := documentReads(n); err != nil {
+			return nil, err
+		}
 	}
 	if err := constantBuckets(n); err != nil {
 		return nil, err
@@ -864,6 +865,35 @@ func Compile(src string, kind Kind, symbols map[string]float64) (Node, error) {
 		}
 	}
 	return n, nil
+}
+
+// documentReads insists that a mask reads a tensor the one way the engine can
+// make one up: a document index for each position of each row, read as
+// doc(b, q). A mask is counted by evaluating it, so what it reads has to be
+// something the analysis can draw; a learned table is the model's and cannot
+// be, which is why a score may read any tensor and a mask only this one.
+func documentReads(n Node) error {
+	var err error
+	var walk func(Node)
+	walk = func(n Node) {
+		switch x := n.(type) {
+		case Unary:
+			walk(x.X)
+		case Binary:
+			walk(x.X)
+			walk(x.Y)
+		case Call:
+			if IsTable(x.Fn) && len(x.Args) != 2 && err == nil {
+				err = fmt.Errorf("%s is not a function this knows (%s). A mask can read only a documents "+
+					"input, at a row and a position: %s(b, q)", x.Fn, strings.Join(funcNames(), ", "), x.Fn)
+			}
+			for _, a := range x.Args {
+				walk(a)
+			}
+		}
+	}
+	walk(n)
+	return err
 }
 
 // constantBuckets insists that t5_bucket's shape — how many buckets, how far,
@@ -903,6 +933,10 @@ func constantBuckets(n Node) error {
 // Env is one point an expression is evaluated at.
 type Env struct {
 	Q, KV, H, B, Heads, Score float64
+	// Table answers a tensor read, when the caller has something to answer
+	// with: a packing it drew, for a mask that reads the documents. Without
+	// it a read is NaN, which no comparison is true of.
+	Table func(name string, at []float64) float64
 }
 
 // Eval evaluates a checked expression. A mask gives 1 for true and 0 for false.
@@ -953,13 +987,17 @@ func Eval(n Node, e Env) float64 {
 			}
 			return Eval(x.Args[2], e)
 		}
-		// A tensor's values are the model's, not the engine's.
-		if IsTable(x.Fn) {
+		// A tensor's values are the model's, not the engine's, unless the
+		// caller drew some.
+		if IsTable(x.Fn) && e.Table == nil {
 			return math.NaN()
 		}
 		vals := make([]float64, len(x.Args))
 		for i, a := range x.Args {
 			vals[i] = Eval(a, e)
+		}
+		if IsTable(x.Fn) {
+			return e.Table(x.Fn, vals)
 		}
 		return call(x.Fn, vals)
 	}

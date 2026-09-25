@@ -977,6 +977,15 @@
             "bf16",
             "fp32"
           ]
+        ],
+        [
+          "role",
+          "enum",
+          "What the input is: the tokens, or which document each position belongs to, for a mask that keeps packed documents apart",
+          [
+            "tokens",
+            "documents"
+          ]
         ]
       ]
     },

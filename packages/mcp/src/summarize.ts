@@ -507,6 +507,7 @@ export function analysisJson(a: AnalysisResult): Record<string, unknown> {
       tokens_were_defaulted: o.tokensWereDefaulted,
       mfu: o.mfu,
       concurrency: o.concurrency,
+      ...(o.packing ? { packing: { ...o.packing } } : {}),
     },
     params: {
       total: a.params.total,
@@ -531,6 +532,16 @@ export function analysisJson(a: AnalysisResult): Record<string, unknown> {
         ? {
             per_stream: a.flops.perStream.map((s) => ({ symbol: s.symbol, length: s.length, fwd: n(s.fwd) })),
             fwd_per_example: n(a.flops.fwdPerExample ?? 0),
+          }
+        : {}),
+      ...(a.flops.packed
+        ? {
+            packed: {
+              fwd_attention: n(a.flops.packed.fwdAttention),
+              fwd_total: n(a.flops.packed.fwdTotal),
+              train_per_token: n(a.flops.packed.trainPerToken),
+              attention_share: n(a.flops.packed.attentionShare),
+            },
           }
         : {}),
     },
@@ -593,6 +604,12 @@ export function analysisText(a: AnalysisResult): string {
       `${formatCount(a.params.nonEmbedding)} non-embedding`,
     `flops/token     ${formatFlops(a.flops.fwdTotal)} forward, ${formatFlops(a.flops.trainPerToken)} training; ` +
       `attention ${(a.flops.attentionShare * 100).toFixed(1)}%`,
+    ...(a.flops.packed && o.packing
+      ? [
+          `packed          ${formatFlops(a.flops.packed.trainPerToken)} training in documents of ${o.packing.mean} ` +
+            `tokens (spread ${o.packing.spread}); attention ${(a.flops.packed.attentionShare * 100).toFixed(1)}%`,
+        ]
+      : []),
     `kv cache        ${formatBytes(a.kv.bytesPerToken)}/token, ` +
       `${formatBytes(a.kv.bytesPerToken * o.T + a.kv.bytesPerSequenceFixed)} at T=${o.T}`,
     `train memory    ${formatBytes(a.memory.train.perGpu.total)} per GPU ` +

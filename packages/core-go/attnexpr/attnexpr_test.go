@@ -282,3 +282,32 @@ func TestAScoreReadsATable(t *testing.T) {
 		t.Errorf("evaluated a table to %v", v)
 	}
 }
+
+// A mask may read the documents, at a row and a position, and nothing else:
+// what it reads has to be something the analysis can make up to count it.
+func TestAMaskReadsTheDocuments(t *testing.T) {
+	n := compile(t, "doc(b, q) == doc(b, kv)", Mask, nil)
+	if got := Python(n, 8); got != "doc[b, q_idx] == doc[b, kv_idx]" {
+		t.Errorf("python %q", got)
+	}
+	// Unknown to the engine unless the caller drew a packing.
+	if v := Eval(n, Env{Q: 3, KV: 1}); v != 0 {
+		t.Errorf("with no packing a read is NaN, and NaN equals nothing: %v", v)
+	}
+	docs := [][]float64{{0, 0, 1, 1}}
+	env := Env{Table: func(_ string, at []float64) float64 { return docs[int(at[0])][int(at[1])] }}
+	for _, c := range []struct {
+		q, kv float64
+		want  float64
+	}{{1, 0, 1}, {2, 1, 0}, {3, 2, 1}} {
+		env.Q, env.KV = c.q, c.kv
+		if got := Eval(n, env); got != c.want {
+			t.Errorf("q %v kv %v: %v", c.q, c.kv, got)
+		}
+	}
+	for _, src := range []string{"doc(q) == doc(kv)", "rel(q, kv, h) > 0"} {
+		if _, err := Compile(src, Mask, nil); err == nil || !strings.Contains(err.Error(), "only a documents input") {
+			t.Errorf("%q: %v", src, err)
+		}
+	}
+}

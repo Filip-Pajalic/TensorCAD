@@ -1,6 +1,7 @@
 package analysis
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/tensorcad/core/catalog"
@@ -49,6 +50,9 @@ type Options struct {
 	DecodeEfficiency *float64
 	// Concurrency is the number of concurrent sequences when serving.
 	Concurrency *float64
+	// Packing is how training rows are filled, for a design whose mask keeps
+	// documents apart. Nil is one document a row, which is what serving is.
+	Packing *catalog.Packing
 }
 
 // PartialParallel overrides part of the default parallel plan.
@@ -108,6 +112,8 @@ type ResolvedOptions struct {
 	MFU               float64          `json:"mfu"`
 	DecodeEfficiency  float64          `json:"decodeEfficiency"`
 	Concurrency       float64          `json:"concurrency"`
+	// Packing is present only when the operating point gave one.
+	Packing *catalog.Packing `json:"packing,omitempty"`
 }
 
 // Result is every number the editor, the CLI and the MCP server report.
@@ -203,6 +209,16 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
+	if p := options.Packing; p != nil {
+		if !(p.Mean >= 1) {
+			return nil, fmt.Errorf("a packing's documents have to be at least one token long on average, not %s",
+				JSNumber(p.Mean))
+		}
+		if !(p.Spread >= 0) {
+			return nil, fmt.Errorf("a packing's spread is a coefficient of variation, zero or more, not %s",
+				JSNumber(p.Spread))
+		}
+	}
 
 	symbols := pre.Symbols
 	if symbols == nil {
@@ -264,6 +280,28 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 	})
 	kv := CountKvCache(flat, cacheCtx, streams)
 
+	// Training under the packing, when there is one and a mask it changes:
+	// the same count with every row drawn from it. Everything else stays one
+	// document a row, which is what a request is.
+	trainFlops := flops.TrainPerToken
+	if options.Packing != nil && keepsDocumentsApart(flat) {
+		packedCtx := trainCtx
+		packedCtx.Packing = options.Packing
+		p := CountFlops(flat, FlopsOptions{
+			Ctx:                packedCtx,
+			Recompute:          recompute,
+			NonEmbeddingActive: params.NonEmbeddingActive,
+			Streams:            streams,
+		})
+		flops.Packed = &PackedFlops{
+			FwdAttention:   p.FwdAttention,
+			FwdTotal:       p.FwdTotal,
+			TrainPerToken:  p.TrainPerToken,
+			AttentionShare: p.AttentionShare,
+		}
+		trainFlops = p.TrainPerToken
+	}
+
 	memory := AnalyzeMemory(flat, MemoryOptions{
 		Ctx:                 trainCtx,
 		Optimizer:           optimizer,
@@ -302,7 +340,7 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 	})
 
 	cost := AnalyzeCost(CostOptions{
-		TrainFlopsPerToken: flops.TrainPerToken,
+		TrainFlopsPerToken: trainFlops,
 		Tokens:             tokens,
 		GPUs:               orDefault(options.GPUs, 1),
 		Peak:               peak,
@@ -334,6 +372,7 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 			Parallel: parallel, Optimizer: optimizer, Recompute: recompute,
 			Flash: flash, Tokens: tokens, TokensWereDefault: tokensWereDefault,
 			MFU: mfu, DecodeEfficiency: decodeEfficiency, Concurrency: concurrency,
+			Packing: options.Packing,
 		},
 		Symbols:    symbols,
 		Infer:      shapeInfo,
@@ -348,6 +387,18 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 		Chinchilla: chinchilla,
 		Errors:     errors,
 	}, nil
+}
+
+// keepsDocumentsApart is whether any attention's mask reads the documents,
+// which is the one thing a packing changes the cost of.
+func keepsDocumentsApart(flat *FlatResult) bool {
+	for i := range flat.Nodes {
+		node := &flat.Nodes[i]
+		if node.Type == "sdpa" && catalog.AttentionOf(node.Resolved).Documents {
+			return true
+		}
+	}
+	return false
 }
 
 // Sequence is the sequence length and batch a design is measured at: what the

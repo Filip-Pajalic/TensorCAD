@@ -1001,6 +1001,110 @@ describe.skipIf(!available)("T5", () => {
 });
 
 /**
+ * Packed documents kept apart, M12's second phase: llama-3-8b scaled to two
+ * million parameters, with every layer's attention reading each position's
+ * document. The runtime makes up a packing for the documents input, as a
+ * pretraining pipeline would, and the model verifies on it. The probe holds
+ * the rest against PyTorch's own code: one document's tokens move no other
+ * document's outputs, flex_attention given the model's mask computes what the
+ * eager form does, the block mask is built once a batch, and over many rows of
+ * the runtime's packing the scores kept and the blocks create_block_mask says
+ * a kernel computes are the engine's two figures.
+ */
+describe.skipIf(!available)("packed documents", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+  const T = 512;
+  const design = (): ReturnType<typeof getPreset> => {
+    const doc = structuredClone(scaleDesign(getPreset("llama-3-8b"), { targetParams: 2e6, vocab: 256 }).doc);
+    doc.graph.nodes.push({ id: "docs", type: "input", params: { shape: "B T", dtype: "int64", role: "documents" } });
+    doc.graph.edges.push(["docs:x", "layers:doc"]);
+    const stack = doc.graph.nodes.find((n) => n.id === "layers")!;
+    for (const n of stack.graph!.nodes) {
+      if (n.id === "_in") (n.params!.ports as Record<string, string>).doc = "B T";
+      if (n.id === "block") n.params!.mask = "doc(b, q) == doc(b, kv)";
+    }
+    stack.graph!.edges.push(["_in:doc", "block:doc"]);
+    return doc;
+  };
+  const write = (): { dir: string; model: string } => {
+    const dir = mkdtempSync(join(tmpdir(), "tensorcad-packed-"));
+    const out = generateTorch(design());
+    expect(out.warnings).toEqual([]);
+    for (const file of out.files) writeFileSync(join(dir, file.path), file.contents);
+    return { dir, model: join(dir, "model.py") };
+  };
+
+  it(
+    "has the parameters and the FLOPs it says, runs on a made-up packing, and exports",
+    () => {
+      const { dir, model } = write();
+      try {
+        const full = runVerify(invocation, model, ["--seq", "256"]);
+        expect(full).not.toHaveProperty("spawnFailed");
+        const r = full as Verify & { inputs?: Record<string, number[]> };
+        expect({ ok: r.ok, matches: r.matches, forward: r.forward, export: r.export_ok }).toEqual({
+          ok: true,
+          matches: true,
+          forward: "ok",
+          export: true,
+        });
+        expect(r.inputs).toEqual({ tokens: [2, 256], docs: [2, 256] });
+        const analysis = analyze(design(), { T: 256, B: 2 });
+        expect(r.params).toBe(analysis.params.total);
+        expect(r.flops! / (2 * 256)).toBe(analysis.flops.fwdTotalUnmasked);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+
+  for (const [mean, spread, keptWithin] of [
+    [96, 0, 0.02],
+    [96, 1, 0.04],
+  ] as const) {
+    it(
+      `keeps documents apart, builds a block mask once a batch, and costs what the engine says (mean ${mean}, spread ${spread})`,
+      () => {
+        const { dir, model } = write();
+        try {
+          const one = analyze(design(), { T });
+          const packed = analyze(design(), { T, packing: { mean, spread } }).flops.packed!;
+          // The engine's figures as keys a query: causal attention is T/2.
+          const perKey = one.flops.fwdAttention / (T / 2);
+          const kept = packed.fwdAttention / perKey;
+          const blocks = packed.fwdAttentionBlocks / perKey;
+          const [cmd] = invocation;
+          const python = cmd === "tensorcad-runtime" ? "python" : cmd;
+          const result = spawnSync(
+            python,
+            [join(import.meta.dir, "documents_probe.py"), model, `${T}`, `${mean}`, `${spread}`, `${kept}`, `${blocks}`],
+            { encoding: "utf8", timeout: TIMEOUT_MS, shell: process.platform === "win32" },
+          );
+          const out = JSON.parse(result.stdout.trim().split(/\r?\n/).at(-1)!);
+          expect(out).toMatchObject({
+            other_documents_moved: 0,
+            other_rows_moved: 0,
+            flex_vs_eager: 0,
+            layers_share_one: true,
+            next_batch_rebuilds: true,
+            edited_documents_rebuild: true,
+            one_kept_per_mask: true,
+            block_size: 128,
+          });
+          expect(out.own_document_moved).toBeGreaterThan(0);
+          expect(Math.abs(out.kept_vs_engine)).toBeLessThan(keptWithin);
+          expect(Math.abs(out.blocks_vs_engine)).toBeLessThan(0.02);
+        } finally {
+          rmSync(dir, { recursive: true, force: true });
+        }
+      },
+      TIMEOUT_MS,
+    );
+  }
+});
+
+/**
  * Every preset, through `ast.parse`.
  *
  * Cheaper than the block above and answering a different question: not "does

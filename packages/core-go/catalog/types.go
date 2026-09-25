@@ -251,6 +251,11 @@ type FlopsPerToken struct {
 	FwdSeq float64
 	// FwdSeqUnmasked is the same term counted as a profiler counts it.
 	FwdSeqUnmasked float64
+	// FwdSeqBlocks is the same term as a block-sparse kernel computes it,
+	// every block with a score it keeps computed whole, where that differs
+	// enough to say: a mask that keeps packed documents apart. Zero means
+	// FwdSeq.
+	FwdSeqBlocks float64
 }
 
 // AnalysisCtx is the operating point a formula is evaluated under.

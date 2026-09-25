@@ -112,6 +112,12 @@ func TestPackingIsTrainingOnly(t *testing.T) {
 	if got := res.Cost.GpuHours / one.Cost.GpuHours; math.Abs(got-p.TrainPerToken/one.Flops.TrainPerToken) > 1e-12 {
 		t.Errorf("GPU-hours moved by %v", got)
 	}
+	// FlexAttention computes whole blocks, and 1,024-token documents cut a
+	// stream's rows through blocks at every boundary: 1.37 times the scores
+	// kept, exactly, for fixed lengths at every phase.
+	if ratio := p.FwdAttentionBlocks / p.FwdAttention; math.Abs(ratio-1.37) > 0.03 {
+		t.Errorf("the kernel computes %.3fx the scores kept", ratio)
+	}
 	if res.Options.Packing == nil || res.Options.Packing.Mean != 1024 {
 		t.Error("the report does not say what it assumed")
 	}

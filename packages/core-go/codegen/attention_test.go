@@ -158,8 +158,9 @@ func TestAScoreReadsItsTableThroughAFactory(t *testing.T) {
 
 // A mask that keeps documents apart reads them the way a score reads a table:
 // through a factory the attention calls with this batch's documents, indexed
-// by row and position. Until the block mask is built once per batch, the
-// generated model says what it does on CUDA instead.
+// by row and position. The factory marks what it returns with what it read,
+// which is how the block mask is built once for a batch and shared by every
+// layer rather than built by each.
 func TestAMaskReadsTheDocumentsThroughAFactory(t *testing.T) {
 	doc := withAttention(t, "nano-sort", map[string]any{"mask": "doc(b, q) == doc(b, kv)"})
 	doc.Graph.Nodes = append(doc.Graph.Nodes, ir.NodeDef{ID: "docs", Type: "input",
@@ -182,12 +183,14 @@ func TestAMaskReadsTheDocumentsThroughAFactory(t *testing.T) {
 		"def mask_mod_1(doc):",
 		"return (kv_idx <= q_idx) & (doc[b, q_idx] == doc[b, kv_idx])",
 		"mask_mod=mask_mod_1(doc), mask_batch=True",
+		"    mask_mod.reads = (doc,)\n    return mask_mod\n",
+		"def _block_mask(create_block_mask, mask_mod, batch, heads, seq, keys, device):",
 	} {
 		if !strings.Contains(model, want) {
 			t.Errorf("missing: %s", want)
 		}
 	}
-	if len(out.Warnings) != 1 || !strings.Contains(out.Warnings[0], "each batch's documents") {
+	if len(out.Warnings) != 0 {
 		t.Errorf("warnings: %v", out.Warnings)
 	}
 }

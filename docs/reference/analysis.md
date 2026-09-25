@@ -50,7 +50,7 @@ Per token, unless stated.
 | `ruleOfThumb2N` / `ruleOfThumb6N` | The usual approximations, for comparison |
 | `perStream` | A design with two sequences only: each one's forward pass per token of its own, `S` then `T` |
 | `fwdPerExample` | A design with two sequences only: one example's forward pass, both sequences' tokens |
-| `packed` | Training under the operating point's `packing`, for a design whose mask keeps documents apart: `fwdAttention`, `fwdTotal`, `trainPerToken` and `attentionShare` |
+| `packed` | Training under the operating point's `packing`, for a design whose mask keeps documents apart: `fwdAttention`, `fwdTotal`, `trainPerToken` and `attentionShare`, and `fwdAttentionBlocks`, the attention as a block-sparse kernel computes it, every 128 × 128 block holding a kept score computed whole |
 
 With a `packing`, every figure above except `packed` is still one document a
 row, which is what serving is. `packed` is training, and the training time and

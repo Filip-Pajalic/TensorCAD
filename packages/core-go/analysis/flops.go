@@ -51,6 +51,9 @@ type FlopsResult struct {
 	// one document a row, which is what serving is, and the training cost is
 	// counted from this.
 	Packed *PackedFlops `json:"packed,omitempty"`
+	// FwdAttentionBlocks is FwdAttention as a block-sparse kernel computes it,
+	// for the packed pass to report.
+	FwdAttentionBlocks float64 `json:"-"`
 }
 
 // PackedFlops is the forward and training work per token when training rows
@@ -60,6 +63,11 @@ type PackedFlops struct {
 	FwdTotal       float64 `json:"fwdTotal"`
 	TrainPerToken  float64 `json:"trainPerToken"`
 	AttentionShare float64 `json:"attentionShare"`
+	// FwdAttentionBlocks is the attention as FlexAttention computes it: every
+	// 128-by-128 block holding a score the mask keeps, computed whole. Short
+	// documents cut many blocks, and this is how much more than the scores
+	// kept that costs.
+	FwdAttentionBlocks float64 `json:"fwdAttentionBlocks"`
 }
 
 // FlopsOptions is the operating point FLOPs are counted at.
@@ -110,6 +118,11 @@ func CountFlops(flat *FlatResult, opts FlopsOptions) *FlopsResult {
 			unmasked = per.FwdSeq
 		}
 		seqUnmasked := unmasked * node.ActiveMultiplier * spread
+		blocks := per.FwdSeqBlocks
+		if blocks == 0 {
+			blocks = per.FwdSeq
+		}
+		res.FwdAttentionBlocks += blocks * node.ActiveMultiplier * spread
 		elem := per.Elementwise * node.ActiveMultiplier * spread
 		stream := "T"
 		if streams.OnSource(node.Path) {

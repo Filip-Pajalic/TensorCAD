@@ -337,14 +337,15 @@ def input_spec_from_design(
 
 def input_specs_from_design(
     design: dict[str, Any] | None, batch: int, seq: int, source: int | None = None
-) -> list[tuple[str, list[int], str, list[str]]] | None:
+) -> list[tuple[str, list[int], str, list[str], str]] | None:
     """Every input the model takes, in the order the design lists them.
 
     A language model has one, token ids. An encoder-decoder has two, the
     source and the target, and the generated model takes each by its input
-    block's name. Each comes back with its name, its dims, its dtype and its
-    atom names — ``S`` being the source length, ``source`` here, which defaults
-    to the design's own ``S`` and then to ``seq``.
+    block's name; so does one that keeps packed documents apart, its tokens and
+    its documents. Each comes back with its name, its dims, its dtype, its atom
+    names — ``S`` being the source length, ``source`` here, which defaults to
+    the design's own ``S`` and then to ``seq`` — and its role.
 
     Returns None when there is at most one input, so a design with one goes on
     through exactly the path it always did.
@@ -361,7 +362,7 @@ def input_specs_from_design(
     values["B"] = batch
     values["T"] = seq
     values["S"] = source if source is not None else int(values.get("S") or seq)
-    specs: list[tuple[str, list[int], str, list[str]]] = []
+    specs: list[tuple[str, list[int], str, list[str], str]] = []
     for node in inputs:
         params = node.get("params") or {}
         pattern = str(params.get("shape") or "B T").split()
@@ -374,7 +375,9 @@ def input_specs_from_design(
                 dims.append(int(float(atom)))
             except ValueError:
                 return None
-        specs.append((str(node.get("id")), dims, str(params.get("dtype") or "int64"), pattern))
+        specs.append(
+            (str(node.get("id")), dims, str(params.get("dtype") or "int64"), pattern, str(params.get("role") or "tokens"))
+        )
     return specs
 
 

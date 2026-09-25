@@ -541,6 +541,7 @@ export function analysisJson(a: AnalysisResult): Record<string, unknown> {
               fwd_total: n(a.flops.packed.fwdTotal),
               train_per_token: n(a.flops.packed.trainPerToken),
               attention_share: n(a.flops.packed.attentionShare),
+              fwd_attention_blocks: n(a.flops.packed.fwdAttentionBlocks),
             },
           }
         : {}),
@@ -607,7 +608,8 @@ export function analysisText(a: AnalysisResult): string {
     ...(a.flops.packed && o.packing
       ? [
           `packed          ${formatFlops(a.flops.packed.trainPerToken)} training in documents of ${o.packing.mean} ` +
-            `tokens (spread ${o.packing.spread}); attention ${(a.flops.packed.attentionShare * 100).toFixed(1)}%`,
+            `tokens (spread ${o.packing.spread}); attention ${(a.flops.packed.attentionShare * 100).toFixed(1)}%, ` +
+            `${(a.flops.packed.fwdAttentionBlocks / a.flops.packed.fwdAttention).toFixed(2)}x that in whole blocks`,
         ]
       : []),
     `kv cache        ${formatBytes(a.kv.bytesPerToken)}/token, ` +

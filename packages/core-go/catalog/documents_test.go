@@ -187,3 +187,52 @@ func TestGammaQuantile(t *testing.T) {
 		t.Errorf("median of an exponential: %v, want %v", got, want)
 	}
 }
+
+// Fixed documents at every phase, counted as a kernel counts them: the
+// diagonal block always, and an earlier block whenever one document reaches
+// from inside it to inside this one. Returned as keys a query.
+func exactBlocksFixed(T, L float64) float64 {
+	blocks := int(math.Ceil(T / kernelBlock))
+	sum := 0.0
+	for phase := 0.0; phase < L; phase++ {
+		doc := func(pos float64) float64 { return math.Floor((pos + phase) / L) }
+		for i := 0; i < blocks; i++ {
+			first := doc(float64(i) * kernelBlock)
+			computed := kernelBlock
+			for j := 0; j < i; j++ {
+				if doc(float64(j+1)*kernelBlock-1) == first {
+					computed += kernelBlock
+				}
+			}
+			sum += float64(computed)
+		}
+	}
+	return sum / L / float64(blocks)
+}
+
+// What FlexAttention computes for a mask that keeps documents apart: whole
+// blocks, so a boundary through a block costs the part the mask throws away.
+// Documents that start on block boundaries would cost 1.12x the scores kept
+// at 1,024 tokens and 1.49x at 256; a stream starts them anywhere, and the
+// exact counts are 1.37x and 2.48x.
+func TestTheKernelComputesWholeBlocks(t *testing.T) {
+	def, r := sdpaWith(t, map[string]any{"causal": true, "mask": documentMask})
+	a := AttentionOf(r)
+	for _, c := range []struct{ T, L, ratio float64 }{{8192, 1024, 1.37}, {8192, 256, 2.48}, {4096, 300, 0}} {
+		want := exactBlocksFixed(c.T, c.L)
+		got := a.KernelKeys(c.T, Packing{Mean: c.L})
+		near(t, "blocks", got, want, 0.02)
+		kept := keysPacked(t, c.T, &Packing{Mean: c.L})
+		if c.ratio > 0 && math.Abs(got/kept-c.ratio) > 0.05 {
+			t.Errorf("fixed %v at %v: the kernel computes %.2fx the scores kept", c.L, c.T, got/kept)
+		}
+	}
+	// And the flops carry it, for the packed training to report.
+	f := def.Flops(r, AnalysisCtx{T: 8192, B: 1, Bytes: 2, Flash: true, Packing: &Packing{Mean: 256}})
+	if f.FwdSeqBlocks <= f.FwdSeq {
+		t.Errorf("blocks %v against scores %v", f.FwdSeqBlocks, f.FwdSeq)
+	}
+	if g := def.Flops(r, AnalysisCtx{T: 8192, B: 1, Bytes: 2, Flash: true}); g.FwdSeqBlocks != 0 {
+		t.Error("a block figure with no packing")
+	}
+}

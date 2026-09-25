@@ -235,6 +235,7 @@ type shareKey struct {
 	usesH, usesB bool
 	probe        int
 	pack         Packing
+	kernel       bool
 }
 
 var (
@@ -392,6 +393,107 @@ func (a Attention) keptShare(T, B float64, pack *Packing) float64 {
 	remember(shareCache, key, share)
 	cacheMu.Unlock()
 	return share
+}
+
+// kernelBlock is the side of the square of scores a block-sparse kernel
+// computes or skips whole: FlexAttention's default, and FlashAttention's.
+const kernelBlock = 128
+
+// KernelKeys is how many keys a query's block of the score matrix computes,
+// on average over the packing, for a mask that reads the documents: every
+// 128-by-128 block holding a score the mask keeps is computed whole, masked
+// scores and all, which is what FlexAttention's block mask does. Where a
+// document boundary cuts through blocks, that is more than the scores kept.
+//
+// Whether a block holds a kept score is asked of the whole block at once,
+// over the ranges of positions it covers, rather than of its sixteen thousand
+// scores one by one. For a mask of documents and positions that is exact;
+// for anything else it can only count a block the kernel would skip, never
+// miss one it computes.
+func (a Attention) KernelKeys(T float64, pack Packing) float64 {
+	m := a.Mask()
+	if m == nil || !(T >= 1) {
+		return a.structuredKeys(T)
+	}
+	key := shareKey{mask: attnexpr.String(m), T: T, heads: a.Heads, pack: pack, kernel: true}
+	cacheMu.Lock()
+	if v, ok := shareCache[key]; ok {
+		cacheMu.Unlock()
+		return v
+	}
+	cacheMu.Unlock()
+
+	g := seed(key.mask + "|blocks")
+	p := drawPacking(T, pack, &g)
+	blocks := int(math.Ceil(T / kernelBlock))
+	width := func(j int) float64 { return math.Min(kernelBlock, T-float64(j)*kernelBlock) }
+	usesH := attnexpr.Uses(m, "h")
+	var computed, sampled float64
+	for r := range p.starts {
+		box := attnexpr.Box{B: attnexpr.Span{Lo: float64(r), Hi: float64(r)}, Heads: a.Heads, Table: p.documentSpan}
+		for _, i := range spread(float64(blocks), kernelQueryBlocks, &g) {
+			qi := int(i)
+			box.Q = attnexpr.Span{Lo: i * kernelBlock, Hi: i*kernelBlock + width(qi) - 1}
+			if usesH {
+				h := math.Floor(g.next() * a.Heads)
+				box.H = attnexpr.Span{Lo: h, Hi: h}
+			}
+			possible := func(j int) float64 {
+				box.KV = attnexpr.Span{Lo: float64(j) * kernelBlock, Hi: float64(j)*kernelBlock + width(j) - 1}
+				if ok, _ := attnexpr.Possible(m, box); ok {
+					return width(j)
+				}
+				return 0
+			}
+			computed += bandedBlocks(qi, -1, blocks, possible, &g) + bandedBlocks(qi+1, 1, blocks, possible, &g)
+			sampled++
+		}
+	}
+	keys := 0.0
+	if sampled > 0 {
+		keys = computed / sampled
+	}
+	cacheMu.Lock()
+	remember(shareCache, key, keys)
+	cacheMu.Unlock()
+	return keys
+}
+
+// kernelQueryBlocks is how many query blocks of each packed row are asked
+// about: four, across 1,024 rows.
+const kernelQueryBlocks = 4
+
+// bandedBlocks adds up what the blocks from `from` onward, stepping by `dir`,
+// contribute, from every block in the first bands and two of each band
+// beyond, the bands doubling in width going away from the diagonal.
+func bandedBlocks(from, dir, blocks int, value func(j int) float64, g *splitmix) float64 {
+	total := 0.0
+	near, width := 0, 1
+	for {
+		start := from + dir*near
+		if start < 0 || start >= blocks {
+			return total
+		}
+		n := width
+		if left := blocks - start; dir > 0 && n > left {
+			n = left
+		}
+		if dir < 0 && n > start+1 {
+			n = start + 1
+		}
+		if n <= 2 {
+			for k := 0; k < n; k++ {
+				total += value(start + dir*k)
+			}
+		} else {
+			step := float64(n) / 2
+			for k := 0; k < 2; k++ {
+				total += value(start+dir*int(math.Floor((float64(k)+g.next())*step))) * step
+			}
+		}
+		near += n
+		width *= 2
+	}
 }
 
 // bandedKeys estimates how many of the keys lo to hi a mask keeps, from a few
@@ -722,6 +824,28 @@ func (p packing) document(_ string, at []float64) float64 {
 	}
 	s := p.starts[int(row)]
 	return float64(sort.SearchFloat64s(s, pos+0.5))
+}
+
+// documentSpan answers a documents read over a range of positions: the first
+// and last documents in it, since a row's document index never falls.
+func (p packing) documentSpan(_ string, at []attnexpr.Span) attnexpr.Span {
+	unknown := attnexpr.Span{Lo: math.Inf(-1), Hi: math.Inf(1)}
+	if len(at) != 2 || at[0].Lo != at[0].Hi {
+		return unknown
+	}
+	row := at[0].Lo
+	if row < 0 || int(row) >= len(p.starts) || row != math.Floor(row) {
+		return unknown
+	}
+	lo, hi := math.Max(0, at[1].Lo), math.Min(p.T-1, at[1].Hi)
+	if hi < lo {
+		return unknown
+	}
+	s := p.starts[int(row)]
+	return attnexpr.Span{
+		Lo: float64(sort.SearchFloat64s(s, math.Floor(lo)+0.5)),
+		Hi: float64(sort.SearchFloat64s(s, math.Floor(hi)+0.5)),
+	}
 }
 
 // drawPacking lays documents end to end in a circle and cuts rows out of it.

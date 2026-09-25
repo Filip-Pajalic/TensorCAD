@@ -255,7 +255,16 @@ export const AnalysisOutput = z.object({
       .describe("For a design with two sequences: each one's forward pass per token of its own. The figures above are then per target token."),
     fwd_per_example: num().optional().describe("One example's forward pass, every sequence's tokens; two sequences only."),
     packed: z
-      .object({ fwd_attention: num(), fwd_total: num(), train_per_token: num(), attention_share: num() })
+      .object({
+        fwd_attention: num(),
+        fwd_total: num(),
+        train_per_token: num(),
+        attention_share: num(),
+        fwd_attention_blocks: num().describe(
+          "The attention as a block-sparse kernel computes it, whole 128-token blocks: more than fwd_attention " +
+            "wherever document boundaries cut through blocks.",
+        ),
+      })
       .optional()
       .describe(
         "Training under the packing, for a design whose mask keeps documents apart. The figures above are " +

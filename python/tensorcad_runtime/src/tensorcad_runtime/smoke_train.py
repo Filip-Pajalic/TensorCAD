@@ -28,6 +28,7 @@ from .loader import (
     vocab_from_design,
     vocab_from_model,
 )
+from .packing import several_inputs
 
 __all__ = ["smoke_train"]
 
@@ -121,6 +122,14 @@ def smoke_train(
     warnings: list[str] = []
     info = ModelFile(model_path)
     design = read_design(info)
+    several = several_inputs(design)
+    if several:
+        # The loop feeds token ids and nothing else: an encoder-decoder's
+        # source and target, or a packed row's documents, would have to come
+        # from the data, and this corpus is one stream of tokens.
+        raise ValueError(
+            f"this design takes {len(several)} inputs ({', '.join(several)}), and smoke-train feeds token ids alone"
+        )
 
     torch.manual_seed(seed)
     np.random.seed(seed % (2**32))

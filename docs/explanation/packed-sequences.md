@@ -1,6 +1,6 @@
 # Packed sequences: a mask that reads the batch
 
-*A proposal for M12. Phases 1 and 2 are built; the rest is not. It was written first,
+*A proposal for M12. Phases 1, 2 and 3 are built; the editor is not. It was written first,
 as M10's and M11's were, because it decides what the training figures mean.
 Before it, they counted the attention of one document filling the whole
 sequence. Pretraining is rarely run that way.*
@@ -177,6 +177,8 @@ packed example. FlashAttention's variable-length kernel then treats every
 example as its own sequence. The same belongs here: a `positions` role on
 `input`, read by `rope` in place of the index. It changes what the model
 computes and not what it costs, so it comes after the cost is right.
+*Phase 3 found that a rotation under a document mask does not need it, and a
+learned position table does; see below.*
 
 ### The editor
 
@@ -290,6 +292,37 @@ says what the mask is for.
        against 128-token blocks.
 3. **Positions that restart.** The `positions` role and `rope` reading it, held
    against Hugging Face's flattening collator.
+
+   *Done.*
+   - **What was added.** A `positions` role on `input`, and `positions` on
+     `rope`, `gqa_attention` and `transformer_block`, which carry a `pos` input
+     down to both rotations. Generated code turns by it through a helper of
+     its own, so a design that rotates by the index generates exactly what it
+     did. `ROPE-02` refuses positions on an attention with no rope to turn.
+   - **The rule.** The phase 1 `documents` rule became `input-roles`, which
+     also follows a rotation's positions back to an input that says it holds
+     them.
+   - **The runtime.** It draws the positions of the same packing it draws
+     documents from, and `positions_of` is exactly the collator's
+     `position_ids` for whole examples.
+   - **The cost.** Nothing: restarting the positions changes no count.
+
+   What building it found is that the proposal had the reason slightly wrong.
+   A rotary model under a document mask needs no positions that restart. Its
+   attention sees only the distance between two tokens of one document, and
+   the distance is the same whichever number either of them starts from. The
+   probe packs a row as the collator does and runs it three ways. Held
+   against each document run alone:
+
+   | Positions | Rotary | Learned (`pos_embedding`) |
+   |---|---:|---:|
+   | Restarting | 6e-7 | 8e-7 |
+   | Counted straight through | 7e-7 | **1.25**, on outputs of 1.9 |
+
+   So `pos_embedding` takes `positions` too: a learned table is looked up by
+   the position itself, and there restarting is the whole difference. For
+   rotary positions it is precision. Counted from 131,072 rather than zero, a
+   document's outputs differ by 7e-5 in float32, and by 4e-4 from a million.
 4. **The editor and the rules.**
    - The packing control, the sampled preview and the walkthrough.
    - Two rules: packing without a document mask, and documents short enough

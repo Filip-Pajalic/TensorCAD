@@ -39,6 +39,19 @@ func maskSpec() ParamSpec {
 // sinksSpec is a learned score per head that every query can attend to instead
 // of any key. Unset rather than false by default, so a design that never
 // mentions it resolves, documents and generates exactly as it did before.
+// positionsSpec rotates by positions a design wires in rather than by the
+// index. Unset, so a design that never mentions it expands and generates
+// exactly as it did.
+func positionsSpec() ParamSpec {
+	return ParamSpec{Type: ParamBool, Default: nil, HasDefault: true,
+		Doc: "Rotate by the positions wired to pos rather than by each token's index: its place in its " +
+			"own document, for rows packed with several. Unset rotates by the index."}
+}
+
+// positionsPort is where those positions arrive.
+var positionsPort = PortSpec{Shape: "B T", Anchor: "side", Dtype: "int",
+	Doc: "Each token's place in its own document, which the rotation turns by"}
+
 // attnScaleSpec is what an attention's scores are multiplied by, on the blocks
 // that carry it down to sdpa. Unset, like sinks, so a design that never
 // mentions it expands into exactly the graph it always did.
@@ -152,9 +165,10 @@ var Primitives = []*BlockDef{
 		Params: ParamList{
 			{"shape", pPattern("B T", "Shape pattern of the model input")},
 			{"dtype", pEnum([]string{"int64", "int32", "bf16", "fp32"}, "int64", "What the tensor holds; token ids are integers, everything else is not")},
-			{"role", pEnum([]string{"tokens", "documents"}, "tokens",
-				"What the input is: the tokens, or which document each position belongs to, for a mask "+
-					"that keeps packed documents apart")},
+			{"role", pEnum([]string{"tokens", "documents", "positions"}, "tokens",
+				"What the input is: the tokens; which document each position belongs to, for a mask that "+
+					"keeps packed documents apart; or each position's place in its own document, for a "+
+					"rotation that starts again at every one")},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			s := r.Str("shape")
@@ -228,8 +242,18 @@ var Primitives = []*BlockDef{
 		Params: ParamList{
 			{"max_seq", pInt(1, "Maximum position index")},
 			{"dim", pInt(1, "Width of each position's vector, matching the stream it is added to")},
+			{"positions", ParamSpec{Type: ParamBool, Default: nil, HasDefault: true,
+				Doc: "Look up the positions wired to pos rather than each token's index: its place in its own " +
+					"document, for rows packed with several. Unset looks up the index."}},
 		},
-		Ports:      Ports{In: map[string]PortSpec{"x": Port("... dim")}, Out: map[string]PortSpec{"y": Port("... dim")}},
+		PortsFn: func(r *Resolved) Ports {
+			in := map[string]PortSpec{"x": Port("... dim")}
+			if r.Bool("positions") {
+				in["pos"] = PortSpec{Shape: "B T", Anchor: "side", Dtype: "int",
+					Doc: "Each token's place in its own document, whose vector is added"}
+			}
+			return Ports{In: in, Out: map[string]PortSpec{"y": Port("... dim")}}
+		},
 		ParamCount: func(r *Resolved) float64 { return r.Num("max_seq") * r.Num("dim") },
 		Flops: func(r *Resolved, _ AnalysisCtx) FlopsPerToken {
 			return FlopsPerToken{Elementwise: r.Num("dim")}
@@ -849,11 +873,15 @@ var Primitives = []*BlockDef{
 			{"head_dim", pInt(2, "Width of one head; the rotation pairs its dimensions")},
 			{"theta", pNum(10000, "Base of the frequency ladder; a larger one reaches further before wrapping")},
 			{"scaling", pObj(nil, "Optional RoPE scaling spec (linear, NTK, YaRN)")},
+			{"positions", positionsSpec()},
 		},
-		Ports: Ports{
-			In: map[string]PortSpec{"x": Port("B heads T head_dim")},
+		PortsFn: func(r *Resolved) Ports {
+			in := map[string]PortSpec{"x": Port("B heads T head_dim")}
+			if r.Bool("positions") {
+				in["pos"] = positionsPort
+			}
 			// An accessory beside the line rather than a stage on it.
-			Out: map[string]PortSpec{"y": {Shape: "B heads T head_dim", Anchor: "side"}},
+			return Ports{In: in, Out: map[string]PortSpec{"y": {Shape: "B heads T head_dim", Anchor: "side"}}}
 		},
 		ParamCount: noParams,
 		Flops: func(r *Resolved, _ AnalysisCtx) FlopsPerToken {

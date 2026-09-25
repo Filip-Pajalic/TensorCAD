@@ -194,3 +194,37 @@ func TestAMaskReadsTheDocumentsThroughAFactory(t *testing.T) {
 		t.Errorf("warnings: %v", out.Warnings)
 	}
 }
+
+// A rotation that restarts at every document is turned by the positions the
+// model is given, through a helper of its own, so a design that rotates by
+// the index generates exactly what it did.
+func TestARotationTurnsByThePositionsItIsGiven(t *testing.T) {
+	doc := withAttention(t, "llama-3-8b", map[string]any{"positions": true})
+	doc.Graph.Nodes = append(doc.Graph.Nodes, ir.NodeDef{ID: "pos", Type: "input",
+		Params: map[string]any{"shape": "B T", "dtype": "int64", "role": "positions"}})
+	doc.Graph.Edges = append(doc.Graph.Edges, ir.Edge{"pos:x", "layers:pos"})
+	for i := range doc.Graph.Nodes {
+		if stack := &doc.Graph.Nodes[i]; stack.ID == "layers" {
+			for j := range stack.Graph.Nodes {
+				if n := &stack.Graph.Nodes[j]; n.ID == "_in" {
+					n.Params["ports"].(map[string]any)["pos"] = "B T"
+				}
+			}
+			stack.Graph.Edges = append(stack.Graph.Edges, ir.Edge{"_in:pos", "block:pos"})
+		}
+	}
+	model := modelOf(t, doc)
+	for _, want := range []string{
+		"def rotary_at(rope, x, positions):",
+		"rope_q_y = rotary_at(self.rope_q, q_heads_y, pos)",
+		"rope_k_y = rotary_at(self.rope_k, k_heads_y, pos)",
+		"def forward(self, tokens, pos):",
+	} {
+		if !strings.Contains(model, want) {
+			t.Errorf("missing: %s", want)
+		}
+	}
+	if strings.Contains(modelOf(t, presets.MustGet("llama-3-8b")), "rotary_at") {
+		t.Error("a design that rotates by the index has the helper for positions")
+	}
+}

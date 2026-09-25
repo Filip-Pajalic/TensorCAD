@@ -67,8 +67,11 @@ A container node carries a `graph`, entered through `boundary_in` and
 
 An `input` holds token ids unless its `role` says otherwise. `"role":
 "documents"` is each position's document, `B T` integers, for a mask that keeps
-packed documents apart: `doc(b, q) == doc(b, kv)`. The `documents` design rule
-follows what reaches such a mask back to an input with that role.
+packed documents apart: `doc(b, q) == doc(b, kv)`. `"role": "positions"` is each
+token's place in its own document, counted from zero at each one, for a `rope`,
+`gqa_attention`, `transformer_block` or `pos_embedding` whose `positions` is
+set: it turns or looks up by those rather than by the index. The `input-roles`
+design rule follows what reaches either back to an input with the right role.
 
 ## `defs`
 

@@ -16,7 +16,7 @@ import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { analyze, generateTorch, getPreset, loadEngine, PRESET_NAMES, scaleDesign } from "../src/node.js";
+import { analyze, generateTorch, getPreset, loadEngine, PRESET_NAMES, scaleDesign, validate } from "../src/node.js";
 
 await loadEngine();
 
@@ -1095,6 +1095,95 @@ describe.skipIf(!available)("packed documents", () => {
           expect(out.own_document_moved).toBeGreaterThan(0);
           expect(Math.abs(out.kept_vs_engine)).toBeLessThan(keptWithin);
           expect(Math.abs(out.blocks_vs_engine)).toBeLessThan(0.02);
+        } finally {
+          rmSync(dir, { recursive: true, force: true });
+        }
+      },
+      TIMEOUT_MS,
+    );
+  }
+});
+
+/**
+ * Positions that restart at every document, M12's third phase. A row is packed
+ * the way Hugging Face's DataCollatorWithFlattening packs one, and with its
+ * documents kept apart the row has to compute what each document computes
+ * alone. For rotary positions that holds whether the positions restart or not,
+ * because attention sees only the distance between two tokens of a document;
+ * for learned ones it holds only when they restart, because a position vector
+ * is looked up by the position itself. The runtime's positions are the
+ * collator's, and verify runs on its made-up documents and positions together.
+ */
+describe.skipIf(!available)("positions that restart", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+  const packed = (preset: string, learned: boolean): ReturnType<typeof getPreset> => {
+    const doc = structuredClone(scaleDesign(getPreset(preset), { targetParams: 2e6, vocab: 256 }).doc);
+    doc.graph.nodes.push({ id: "docs", type: "input", params: { shape: "B T", dtype: "int64", role: "documents" } });
+    doc.graph.nodes.push({ id: "positions", type: "input", params: { shape: "B T", dtype: "int64", role: "positions" } });
+    doc.graph.edges.push(["docs:x", "layers:doc"]);
+    const stack = doc.graph.nodes.find((n) => n.id === "layers")!;
+    for (const n of stack.graph!.nodes) {
+      const ports = n.params?.ports as Record<string, string> | undefined;
+      if (n.id === "_in" && ports) {
+        ports.doc = "B T";
+        if (!learned) ports.pos = "B T";
+      }
+      if (n.id === "block") {
+        n.params!.mask = "doc(b, q) == doc(b, kv)";
+        if (!learned) n.params!.positions = true;
+      }
+    }
+    stack.graph!.edges.push(["_in:doc", "block:doc"]);
+    if (learned) {
+      const table = doc.graph.nodes.find((n) => n.type === "pos_embedding")!;
+      table.params!.positions = true;
+      doc.graph.edges.push(["positions:x", `${table.id}:pos`]);
+    } else {
+      stack.graph!.edges.push(["_in:pos", "block:pos"]);
+      doc.graph.edges.push(["positions:x", "layers:pos"]);
+    }
+    return doc;
+  };
+
+  for (const [preset, learned] of [
+    ["llama-3-8b", false],
+    ["gpt2-small", true],
+  ] as const) {
+    it(
+      `${learned ? "learned" : "rotary"} positions: a packed row computes what its documents compute alone, and verifies`,
+      () => {
+        const dir = mkdtempSync(join(tmpdir(), "tensorcad-positions-"));
+        try {
+          const doc = packed(preset, learned);
+          const out = generateTorch(doc);
+          expect(out.warnings).toEqual([]);
+          expect(validate(doc, {}).findings.filter((f) => f.severity === "error")).toEqual([]);
+          for (const file of out.files) writeFileSync(join(dir, file.path), file.contents);
+          const model = join(dir, "model.py");
+
+          const [cmd] = invocation;
+          const python = cmd === "tensorcad-runtime" ? "python" : cmd;
+          const result = spawnSync(python, [join(import.meta.dir, "positions_probe.py"), model, "256"], {
+            encoding: "utf8",
+            timeout: TIMEOUT_MS,
+            shell: process.platform === "win32",
+          });
+          const probe = JSON.parse(result.stdout.trim().split(/\r?\n/).at(-1)!);
+          expect(probe.matches_collator).toBe(true);
+          expect(probe.restarted_vs_alone / probe.scale).toBeLessThan(1e-5);
+          if (learned) expect(probe.continued_vs_alone / probe.scale).toBeGreaterThan(0.1);
+          else expect(probe.continued_vs_alone / probe.scale).toBeLessThan(1e-5);
+
+          const full = runVerify(invocation, model, ["--seq", "128"]);
+          expect(full).not.toHaveProperty("spawnFailed");
+          const r = full as Verify & { inputs?: Record<string, number[]> };
+          expect({ ok: r.ok, matches: r.matches, forward: r.forward, export: r.export_ok }).toEqual({
+            ok: true,
+            matches: true,
+            forward: "ok",
+            export: true,
+          });
+          expect(Object.keys(r.inputs!).sort()).toEqual(["docs", "positions", "tokens"]);
         } finally {
           rmSync(dir, { recursive: true, force: true });
         }

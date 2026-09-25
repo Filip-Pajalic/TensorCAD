@@ -930,6 +930,12 @@
           "num",
           "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1",
           null
+        ],
+        [
+          "positions",
+          "bool",
+          "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index.",
+          null
         ]
       ]
     },
@@ -981,10 +987,11 @@
         [
           "role",
           "enum",
-          "What the input is: the tokens, or which document each position belongs to, for a mask that keeps packed documents apart",
+          "What the input is: the tokens; which document each position belongs to, for a mask that keeps packed documents apart; or each position's place in its own document, for a rotation that starts again at every one",
           [
             "tokens",
-            "documents"
+            "documents",
+            "positions"
           ]
         ]
       ]
@@ -1604,6 +1611,12 @@
           "int",
           "Width of each position's vector, matching the stream it is added to",
           null
+        ],
+        [
+          "positions",
+          "bool",
+          "Look up the positions wired to pos rather than each token's index: its place in its own document, for rows packed with several. Unset looks up the index.",
+          null
         ]
       ]
     },
@@ -1734,6 +1747,12 @@
           "scaling",
           "obj",
           "Optional RoPE scaling spec (linear, NTK, YaRN)",
+          null
+        ],
+        [
+          "positions",
+          "bool",
+          "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index.",
           null
         ]
       ]
@@ -2310,6 +2329,12 @@
           "norm_eps",
           "num",
           "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6",
+          null
+        ],
+        [
+          "positions",
+          "bool",
+          "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index.",
           null
         ]
       ]

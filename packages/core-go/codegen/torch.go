@@ -122,6 +122,23 @@ const helperRope = `class RotaryEmbedding(nn.Module):
         return torch.cat([x1 * cos - x2 * sin, x1 * sin + x2 * cos], dim=-1)
 `
 
+// helperRopeAt is the same rotation turned by positions a design wires in,
+// for a row packed with several documents: each token's place in its own.
+// Apart from RotaryEmbedding, so a design that rotates by the index generates
+// exactly what it did.
+const helperRopeAt = `def rotary_at(rope, x, positions):
+    """RotaryEmbedding's rotation, turned by the positions given rather than the index.
+
+    positions is (B, T): each token's place in its own document, for a row
+    packed with several, so that every document is rotated as it would be alone.
+    """
+    freqs = positions.to(torch.float32)[..., None] * rope.inv_freq.to(x.device)
+    cos = freqs.cos().to(x.dtype)[:, None, :, :]
+    sin = freqs.sin().to(x.dtype)[:, None, :, :]
+    x1, x2 = x[..., : rope.head_dim // 2], x[..., rope.head_dim // 2 :]
+    return torch.cat([x1 * cos - x2 * sin, x1 * sin + x2 * cos], dim=-1)
+`
+
 // helperFused is attention with a sliding window, a cap on the scores, or
 // both. The analysis counts these as one fused kernel that skips the key blocks
 // outside the window and caps inside the kernel, so this uses that kernel —
@@ -560,11 +577,13 @@ type ctx struct {
 	symbols  *ir.SymbolTable
 	warnings []string
 	// classes are the deduplicated classes, in dependency order.
-	classes    []emitted
-	byKey      map[string]string
-	usedNames  map[string]bool
-	needsRope  bool
-	needsFused bool
+	classes   []emitted
+	byKey     map[string]string
+	usedNames map[string]bool
+	needsRope bool
+	// needsRopeAt is a rotation turned by positions wired in.
+	needsRopeAt bool
+	needsFused  bool
 	// inputArgs names the model's arguments when it has more than one input:
 	// each input node's own name.
 	inputArgs map[string]string
@@ -819,9 +838,15 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 			out.init = append(out.init, fmt.Sprintf("self.%s = nn.Embedding(%s, %s)",
 				attr, pyValue(p["max_seq"]), pyValue(p["dim"])))
 			src := inputVar(node.ID, "x")
-			out.forward = append(out.forward, fmt.Sprintf(
-				"%s = %s + self.%s(torch.arange(%s.shape[1], device=%s.device))",
-				outName("y"), src, attr, src, src))
+			if r.Bool("positions") {
+				// Each token's place in its own document, for a packed row.
+				out.forward = append(out.forward, fmt.Sprintf("%s = %s + self.%s(%s)",
+					outName("y"), src, attr, inputVar(node.ID, "pos")))
+			} else {
+				out.forward = append(out.forward, fmt.Sprintf(
+					"%s = %s + self.%s(torch.arange(%s.shape[1], device=%s.device))",
+					outName("y"), src, attr, src, src))
+			}
 			set("y", outName("y"))
 
 		case "conv2d":
@@ -1023,8 +1048,14 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 			c.needsRope = true
 			out.init = append(out.init, fmt.Sprintf("self.%s = RotaryEmbedding(%s, theta=%s)",
 				attr, pyValue(p["head_dim"]), pyValue(p["theta"])))
-			out.forward = append(out.forward, fmt.Sprintf("%s = self.%s(%s)",
-				outName("y"), attr, inputVar(node.ID, "x")))
+			if r.Bool("positions") {
+				c.needsRopeAt = true
+				out.forward = append(out.forward, fmt.Sprintf("%s = rotary_at(self.%s, %s, %s)",
+					outName("y"), attr, inputVar(node.ID, "x"), inputVar(node.ID, "pos")))
+			} else {
+				out.forward = append(out.forward, fmt.Sprintf("%s = self.%s(%s)",
+					outName("y"), attr, inputVar(node.ID, "x")))
+			}
 			set("y", outName("y"))
 
 		case "conv1d":
@@ -1624,6 +1655,9 @@ func GenerateTorch(doc *ir.Doc, options Options) *Generated {
 	var helpers []string
 	if c.needsRope {
 		helpers = append(helpers, helperRope, "")
+	}
+	if c.needsRopeAt {
+		helpers = append(helpers, helperRopeAt, "")
 	}
 	if c.needsFused {
 		helpers = append(helpers, helperFused, "")

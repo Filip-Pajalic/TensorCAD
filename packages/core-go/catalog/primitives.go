@@ -622,6 +622,123 @@ var Primitives = []*BlockDef{
 		},
 	},
 	{
+		Kind: "primitive", Type: "attn_scores", Category: "attention",
+		Params: ParamList{
+			{"heads", pInt(1, "Query heads")},
+			{"kv_heads", pInt(1, "Key heads; fewer than heads shares each key across a group of queries")},
+			{"head_dim", pInt(1, "Width of a query and a key head")},
+		},
+		Ports: Ports{
+			In: map[string]PortSpec{
+				"q": {Shape: "B heads T head_dim", Dtype: "real", Anchor: "flow"},
+				"k": {Shape: "B kv_heads T head_dim", Dtype: "real", Anchor: "flow"},
+			},
+			Out: map[string]PortSpec{"y": Port("B heads T T")},
+		},
+		ParamCount: noParams,
+		Flops: func(r *Resolved, c AnalysisCtx) FlopsPerToken {
+			// Every score, the masked ones too: an eager matmul does not know
+			// which of them the softmax will throw away.
+			f := 2 * c.T * r.Num("heads") * r.Num("head_dim")
+			return FlopsPerToken{FwdSeq: f, FwdSeqUnmasked: f}
+		},
+		Retains: func(*Resolved) []string { return []string{"q", "k"} },
+		// The keys are what a cache holds for this half of attention.
+		StateBytes: func(r *Resolved, c AnalysisCtx) StateBytes {
+			return StateBytes{PerToken: r.Num("kv_heads") * r.Num("head_dim") * c.Bytes}
+		},
+		Docs: BlockDocs{
+			Name: "attention scores",
+			Summary: "Every query against every key: the score matrix, written out. A fused kernel " +
+				"computes it a block at a time and keeps none of it; this keeps all of it.",
+			Formula: "FLOPs/token = 2*T*heads*head_dim, every score whether or not it is masked; output B*heads*T*T",
+			Refs:    []string{"https://arxiv.org/abs/1706.03762"},
+		},
+	},
+	{
+		Kind: "primitive", Type: "attn_softmax", Category: "attention",
+		Params: ParamList{
+			{"heads", pInt(1, "Heads, each a T by T matrix of scores")},
+			{"causal", pBool(true, "Mask out every key after the query before the softmax")},
+		},
+		Ports: Ports{
+			In:  map[string]PortSpec{"x": Port("B heads T T")},
+			Out: map[string]PortSpec{"y": Port("B heads T T")},
+		},
+		ParamCount: noParams,
+		Flops: func(r *Resolved, c AnalysisCtx) FlopsPerToken {
+			// A maximum, a subtraction, an exponential, a sum and a division
+			// per score.
+			return FlopsPerToken{Elementwise: 5 * r.Num("heads") * c.T}
+		},
+		// Its backward pass needs its output, which whatever reads it next
+		// keeps; its input it does not need.
+		Retains: noRetains,
+		Docs: BlockDocs{
+			Name:    "softmax over keys",
+			Summary: "Turns each query's row of scores into weights that sum to one, after masking the future out.",
+			Formula: "y = softmax(mask(x)) over the last axis; no parameters",
+		},
+	},
+	{
+		Kind: "primitive", Type: "head_mix", Category: "attention",
+		Params: ParamList{
+			{"heads", pInt(1, "Heads mixed into as many heads")},
+		},
+		Ports: Ports{
+			In:  map[string]PortSpec{"x": Port("B heads T T")},
+			Out: map[string]PortSpec{"y": Port("B heads T T")},
+		},
+		ParamCount: func(r *Resolved) float64 { return r.Num("heads") * r.Num("heads") },
+		Flops: func(r *Resolved, c AnalysisCtx) FlopsPerToken {
+			// Every head's score is a weighted sum of every head's, for each
+			// of a query's T keys: a matmul that grows with the sequence.
+			f := 2 * r.Num("heads") * r.Num("heads") * c.T
+			return FlopsPerToken{FwdSeq: f, FwdSeqUnmasked: f}
+		},
+		Retains: func(*Resolved) []string { return []string{"x"} },
+		Docs: BlockDocs{
+			Name: "talking heads",
+			Summary: "Mixes the attention maps across heads with a learned heads by heads matrix: " +
+				"each head's score for a query and key becomes a weighted sum of every head's. " +
+				"Before the softmax it mixes logits, after it weights. It needs every head's " +
+				"whole matrix at once, which is why it cannot be fused.",
+			Formula: "y[g] = sum_h W[h, g] * x[h]; params = heads^2; FLOPs/token = 2*heads^2*T",
+			Refs:    []string{"https://arxiv.org/abs/2003.02436"},
+		},
+	},
+	{
+		Kind: "primitive", Type: "attn_values", Category: "attention",
+		Params: ParamList{
+			{"heads", pInt(1, "Query heads")},
+			{"kv_heads", pInt(1, "Value heads; fewer than heads shares each across a group")},
+			{"v_head_dim", pInt(1, "Width of a value head")},
+		},
+		Ports: Ports{
+			In: map[string]PortSpec{
+				"p": {Shape: "B heads T T", Dtype: "real", Anchor: "flow"},
+				"v": {Shape: "B kv_heads T v_head_dim", Dtype: "real", Anchor: "flow"},
+			},
+			Out: map[string]PortSpec{"y": Port("B heads T v_head_dim")},
+		},
+		ParamCount: noParams,
+		Flops: func(r *Resolved, c AnalysisCtx) FlopsPerToken {
+			f := 2 * c.T * r.Num("heads") * r.Num("v_head_dim")
+			return FlopsPerToken{FwdSeq: f, FwdSeqUnmasked: f}
+		},
+		// The weights are needed for the values' gradient and the values for
+		// the weights'.
+		Retains: func(*Resolved) []string { return []string{"p", "v"} },
+		StateBytes: func(r *Resolved, c AnalysisCtx) StateBytes {
+			return StateBytes{PerToken: r.Num("kv_heads") * r.Num("v_head_dim") * c.Bytes}
+		},
+		Docs: BlockDocs{
+			Name:    "weighted values",
+			Summary: "Each query's weights times the values: the second matmul of attention, written out.",
+			Formula: "y = p @ v; FLOPs/token = 2*T*heads*v_head_dim",
+		},
+	},
+	{
 		Kind: "primitive", Type: "scale", Category: "elementwise",
 		Params: ParamList{
 			{"dim", pInt(1, "Width of the last axis")},

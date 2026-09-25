@@ -235,7 +235,10 @@ Two cross-checks worth knowing:
    read it. It is *reported* both ways: `activationsByPath` per block and `activationsByTensor`
    per producing pin. The two agree row for row in a plain transformer and diverge wherever a
    block fans out — Nemotron-H's `split` holds 290 MiB across three pins, 128, 160 and 2 — which
-   is why clicking a wire in the editor can answer a question clicking a block cannot.
+   is why clicking a wire in the editor can answer a question clicking a block cannot. A tensor's
+   size per token is taken with `T` at one and multiplied by the tokens, except where `T`
+   appears twice: a written-out score matrix, `B heads T T`, is `T` times larger per token, and
+   `sequenceExcess` in `analysis/memory.go` is what says so.
 6. **`B` and `T` are reserved runtime symbols.** They stay indeterminate through shape checking, so a mismatch is a real polynomial difference.
 7. **A configuration is a view of the design; the operating point is a view of the measurement.**
    `doc.configurations` are named sets of symbol values and `doc.active` says which is in

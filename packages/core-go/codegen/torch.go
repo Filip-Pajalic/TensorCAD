@@ -796,6 +796,44 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 					outName("y"), inputVar(node.ID, "a"), lambda, inputVar(node.ID, "a"), inputVar(node.ID, "b")))
 			set("y", outName("y"))
 
+		case "attn_scores", "attn_values":
+			// Grouped keys and values are repeated out to the query heads, which
+			// is what an eager matmul has to do and a fused kernel does not.
+			var left, right string
+			if node.Type == "attn_scores" {
+				left, right = inputVar(node.ID, "q"), inputVar(node.ID, "k")
+			} else {
+				left, right = inputVar(node.ID, "p"), inputVar(node.ID, "v")
+			}
+			if h, kv := r.Num("heads"), r.Num("kv_heads"); kv > 0 && h != kv {
+				right = fmt.Sprintf("%s.repeat_interleave(%s, dim=1)", right, pyNum(h/kv))
+			}
+			if node.Type == "attn_scores" {
+				out.forward = append(out.forward, fmt.Sprintf("%s = (%s @ %s.transpose(-2, -1)) * %s",
+					outName("y"), left, right, jsToPrecision(1/math.Sqrt(r.Num("head_dim")), 12)))
+			} else {
+				out.forward = append(out.forward, fmt.Sprintf("%s = %s @ %s", outName("y"), left, right))
+			}
+			set("y", outName("y"))
+
+		case "attn_softmax":
+			x := inputVar(node.ID, "x")
+			if r.Bool("causal") {
+				x = fmt.Sprintf("%s.masked_fill(torch.ones(%s.shape[-2], %s.shape[-1], dtype=torch.bool, device=%s.device).triu(1), float(\"-inf\"))",
+					x, x, x, x)
+			}
+			out.forward = append(out.forward, fmt.Sprintf("%s = torch.softmax(%s.float(), dim=-1).to(%s.dtype)",
+				outName("y"), x, inputVar(node.ID, "x")))
+			set("y", outName("y"))
+
+		case "head_mix":
+			// The identity to begin with: talking heads starts as plain
+			// attention and learns to talk.
+			out.init = append(out.init, fmt.Sprintf("self.%s = nn.Parameter(torch.eye(%s))", attr, pyValue(p["heads"])))
+			out.forward = append(out.forward, fmt.Sprintf("%s = torch.einsum(\"bhqk,hg->bgqk\", %s, self.%s)",
+				outName("y"), inputVar(node.ID, "x"), attr))
+			set("y", outName("y"))
+
 		case "scale":
 			out.forward = append(out.forward, fmt.Sprintf("%s = %s * %s",
 				outName("y"), inputVar(node.ID, "x"), pyValue(p["by"])))

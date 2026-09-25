@@ -50,6 +50,89 @@
       ]
     },
     {
+      "type": "attn_scores",
+      "kind": "primitive",
+      "category": "attention",
+      "name": "attention scores",
+      "summary": "Every query against every key: the score matrix, written out. A fused kernel computes it a block at a time and keeps none of it; this keeps all of it.",
+      "formula": "FLOPs/token = 2*T*heads*head_dim, every score whether or not it is masked; output B*heads*T*T",
+      "refs": [
+        "https://arxiv.org/abs/1706.03762"
+      ],
+      "params": [
+        [
+          "heads",
+          "int",
+          "Query heads",
+          null
+        ],
+        [
+          "kv_heads",
+          "int",
+          "Key heads; fewer than heads shares each key across a group of queries",
+          null
+        ],
+        [
+          "head_dim",
+          "int",
+          "Width of a query and a key head",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "attn_softmax",
+      "kind": "primitive",
+      "category": "attention",
+      "name": "softmax over keys",
+      "summary": "Turns each query's row of scores into weights that sum to one, after masking the future out.",
+      "formula": "y = softmax(mask(x)) over the last axis; no parameters",
+      "refs": [],
+      "params": [
+        [
+          "heads",
+          "int",
+          "Heads, each a T by T matrix of scores",
+          null
+        ],
+        [
+          "causal",
+          "bool",
+          "Mask out every key after the query before the softmax",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "attn_values",
+      "kind": "primitive",
+      "category": "attention",
+      "name": "weighted values",
+      "summary": "Each query's weights times the values: the second matmul of attention, written out.",
+      "formula": "y = p @ v; FLOPs/token = 2*T*heads*v_head_dim",
+      "refs": [],
+      "params": [
+        [
+          "heads",
+          "int",
+          "Query heads",
+          null
+        ],
+        [
+          "kv_heads",
+          "int",
+          "Value heads; fewer than heads shares each across a group",
+          null
+        ],
+        [
+          "v_head_dim",
+          "int",
+          "Width of a value head",
+          null
+        ]
+      ]
+    },
+    {
       "type": "boundary_in",
       "kind": "primitive",
       "category": "io",
@@ -364,6 +447,55 @@
           "lambda_init",
           "num",
           "Where lambda starts, and what it is reparameterised around. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer); one value here holds for every copy in a stack",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "eager_attention",
+      "kind": "composite",
+      "category": "attention",
+      "name": "attention, written out",
+      "summary": "Scores, softmax and weighted values as separate steps, the score matrix a tensor between them. For what needs the whole matrix: talking heads. Everything a single score or its position decides belongs on the fused kernel as a mask or a score expression.",
+      "formula": "activations = B*heads*T*T per score matrix kept, which the fused kernel never keeps",
+      "refs": [
+        "https://arxiv.org/abs/2003.02436"
+      ],
+      "params": [
+        [
+          "heads",
+          "int",
+          "Query heads",
+          null
+        ],
+        [
+          "kv_heads",
+          "int",
+          "Key/value heads",
+          null
+        ],
+        [
+          "head_dim",
+          "int",
+          "Width of a query/key head",
+          null
+        ],
+        [
+          "v_head_dim",
+          "int",
+          "Width of a value head; 0 means the same as head_dim",
+          null
+        ],
+        [
+          "causal",
+          "bool",
+          "Mask out every position after the current one",
+          null
+        ],
+        [
+          "talking_heads",
+          "bool",
+          "Mix the maps across heads before the softmax and again after it (Shazeer et al. 2020)",
           null
         ]
       ]
@@ -703,6 +835,18 @@
           null
         ],
         [
+          "written_out",
+          "bool",
+          "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused.",
+          null
+        ],
+        [
+          "talking_heads",
+          "bool",
+          "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on.",
+          null
+        ],
+        [
           "value_embeddings",
           "bool",
           "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)",
@@ -712,6 +856,25 @@
           "output_gate",
           "bool",
           "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "head_mix",
+      "kind": "primitive",
+      "category": "attention",
+      "name": "talking heads",
+      "summary": "Mixes the attention maps across heads with a learned heads by heads matrix: each head's score for a query and key becomes a weighted sum of every head's. Before the softmax it mixes logits, after it weights. It needs every head's whole matrix at once, which is why it cannot be fused.",
+      "formula": "y[g] = sum_h W[h, g] * x[h]; params = heads^2; FLOPs/token = 2*heads^2*T",
+      "refs": [
+        "https://arxiv.org/abs/2003.02436"
+      ],
+      "params": [
+        [
+          "heads",
+          "int",
+          "Heads mixed into as many heads",
           null
         ]
       ]
@@ -1980,6 +2143,18 @@
           "sinks",
           "bool",
           "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none.",
+          null
+        ],
+        [
+          "written_out",
+          "bool",
+          "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused.",
+          null
+        ],
+        [
+          "talking_heads",
+          "bool",
+          "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on.",
           null
         ],
         [

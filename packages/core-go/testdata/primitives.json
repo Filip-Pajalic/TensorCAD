@@ -2241,6 +2241,161 @@
       "extraActivationBytes": null,
       "stateBytes": null,
       "constraints": []
+    },
+    {
+      "type": "attn_scores",
+      "params": {
+        "head_dim": 128,
+        "heads": 32,
+        "kv_heads": 8
+      },
+      "resolved": {
+        "head_dim": 128,
+        "heads": 32,
+        "kv_heads": 8
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "k": "B kv_heads T head_dim",
+          "q": "B heads T head_dim"
+        },
+        "out": {
+          "y": "B heads T T"
+        },
+        "anchors": {
+          "k": "flow/real",
+          "q": "flow/real"
+        }
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 33554432,
+        "fwdSeqUnmasked": 33554432
+      },
+      "retains": [
+        "q",
+        "k"
+      ],
+      "extraActivationBytes": null,
+      "stateBytes": {
+        "perSeq": 0,
+        "perToken": 2048
+      },
+      "constraints": []
+    },
+    {
+      "type": "attn_softmax",
+      "params": {
+        "heads": 32
+      },
+      "resolved": {
+        "causal": true,
+        "heads": 32
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "B heads T T"
+        },
+        "out": {
+          "y": "B heads T T"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "elementwise": 655360,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
+      },
+      "retains": [],
+      "extraActivationBytes": null,
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "head_mix",
+      "params": {
+        "heads": 32
+      },
+      "resolved": {
+        "heads": 32
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "x": "B heads T T"
+        },
+        "out": {
+          "y": "B heads T T"
+        },
+        "anchors": {}
+      },
+      "portError": "",
+      "paramCount": 1024,
+      "flops": {
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 8388608,
+        "fwdSeqUnmasked": 8388608
+      },
+      "retains": [
+        "x"
+      ],
+      "extraActivationBytes": null,
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "attn_values",
+      "params": {
+        "heads": 32,
+        "kv_heads": 8,
+        "v_head_dim": 128
+      },
+      "resolved": {
+        "heads": 32,
+        "kv_heads": 8,
+        "v_head_dim": 128
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "p": "B heads T T",
+          "v": "B kv_heads T v_head_dim"
+        },
+        "out": {
+          "y": "B heads T v_head_dim"
+        },
+        "anchors": {
+          "p": "flow/real",
+          "v": "flow/real"
+        }
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 33554432,
+        "fwdSeqUnmasked": 33554432
+      },
+      "retains": [
+        "p",
+        "v"
+      ],
+      "extraActivationBytes": null,
+      "stateBytes": {
+        "perSeq": 0,
+        "perToken": 2048
+      },
+      "constraints": []
     }
   ]
 }

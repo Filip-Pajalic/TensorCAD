@@ -126,6 +126,15 @@ describe("a step exists because the design has the block", () => {
     expect(attention?.body.join(" ")).toContain("two attention maps over the same values");
   });
 
+  test("a design that writes its attention out is told what that keeps", () => {
+    const doc = structuredClone(getPreset("gpt2-small"));
+    const block = doc.graph.nodes.find((n) => n.id === "layers")!.graph!.nodes.find((n) => n.id === "block")!;
+    block.params = { ...block.params, talking_heads: true };
+    const attention = stepsFor(doc).find((s) => s.id === "attention");
+    expect(attention?.body.join(" ")).toContain("written out rather than fused");
+    expect(attention?.body.join(" ")).toContain("talking heads");
+  });
+
   test("a design with sinks is told what they are for", () => {
     const attention = stepsFor(getPreset("gpt-oss-20b")).find((s) => s.id === "attention");
     expect(attention?.body.join(" ")).toContain("Each head also has a sink");

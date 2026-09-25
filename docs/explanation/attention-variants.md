@@ -1,6 +1,7 @@
 # Attention variants: what to open up, and how far
 
-*A proposal for M10. Phases 1, 2 and 4 are built, and two thirds of 3; T5 is not. The point of
+*A proposal for M10. Phases 1, 2 and 4 are built, and two thirds of 3; T5 is not,
+and waits on [a second sequence](encoder-decoder.md), which is M11. The point of
 writing it first was that the choice decides what every attention estimate in
 the tool means. The language the two expressions are written in is
 [its own reference page](../reference/attention-expressions.md).*

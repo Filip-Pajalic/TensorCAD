@@ -21,6 +21,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 | M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
 | M10 Attention variants | **Phases 1, 2 and 4 done; phase 3 two thirds done.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Phase 3 is two thirds done: BLOOM-7b1's ALiBi is a score expression and gpt-oss-20b brings attention sinks, both reproducing their published parameter counts exactly and both held against Hugging Face's own construction of what they add. Differential attention is two fused attentions and a combine, held against Microsoft's reference, and attention can be written out on purpose, with talking heads, at a cost a rule states. Only T5 remains, and it wants a milestone of its own. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
+| M11 Encoder–decoder | **Proposed.** A second sequence, so T5 can be drawn and M10 can close: a source length `S` beside `T`, each block counted at the tokens of its own stream, cross-attention, a repeat that hands every layer the same tensor, and expressions that read a tensor — T5's shared relative-bias table. Every decoder-only number is held unchanged. [docs/explanation/encoder-decoder.md](docs/explanation/encoder-decoder.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -407,13 +408,42 @@ kernel before anything is added.
    learned. That finishes phase 4; T5, which needs encoder–decoder support and
    a learned table inside a score, is left for a milestone of its own.
 
+### M11 — Encoder–decoder · Proposed
+
+M10's finishing line includes a relative-bias preset, and the relative-bias
+model is T5, an encoder–decoder. The engine assumes one sequence in five
+places: two runtime symbols, `B` and `T`; per token meaning per token of the
+one stream; attention's keys as long as its queries; a repeat that carries
+every input from one layer to the next; and expressions that read positions
+but no tensors. The proposal, [Encoder–decoder](docs/explanation/encoder-decoder.md),
+adds a second sequence without changing what any existing number means:
+
+1. **The second sequence** — `S` beside `T`, the operating point's source
+   length, and each block counted at the tokens of the stream it runs on.
+   Every golden unchanged is the test.
+2. **Cross-attention** — `sdpa` with keys `S` long, not causal, and a cache
+   computed once per request; a repeat's *broadcast* inputs, which every layer
+   reads unchanged; `scale` on `sdpa`, since T5's attention is unscaled; and
+   generated code and verification with two inputs.
+3. **Tensors in expressions** — a score reading a port by name,
+   `score + rel(t5_bucket(kv - q, 32, 128, true), h)`, with the table owned by a
+   `position_bias` block outside the stack and FlexAttention capturing it. The
+   same mechanism is what document masking will want.
+4. **The presets** — `t5-small` (60,506,624; its checkpoint holds 256 more, a
+   table the model never reads) and `flan-t5-base` (247,577,856), exact.
+
+**Done when** both presets reproduce in the analysis and in PyTorch, their bias
+matches Hugging Face's construction of it, a profiler agrees with a small
+encoder–decoder's FLOPs, and every decoder-only golden is unchanged. M10 then
+closes.
+
 ## Sequencing and dependencies
 
 ```
 M0 Sketch ──► M1 Check ──► M2 Manufacture ──► M3 Agent ──► M4 Test bench
                                │                 │
                                └──► M5 Advanced parts (starts after M2, runs alongside M3/M4)
-                                                                 └──► M6 Ship ──► M7 Legibility ──► M8 Real values ──► M9 Your own values ──► M10 Attention variants
+                                                                 └──► M6 Ship ──► M7 Legibility ──► M8 Real values ──► M9 Your own values ──► M10 Attention variants ──► M11 Encoder–decoder
 ```
 
 M3 is deliberately short because the core is pure; the MCP server is a thin adapter. M5 is where most of the long-tail work lives and is driven by which architectures you want to learn next.

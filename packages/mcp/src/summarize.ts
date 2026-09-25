@@ -495,6 +495,8 @@ export function analysisJson(a: AnalysisResult): Record<string, unknown> {
     options: {
       T: o.T,
       B: o.B,
+      // The source length, only for a design with a second sequence.
+      ...(o.S !== undefined ? { S: o.S } : {}),
       dtype: o.dtype,
       hardware: o.hardware.id,
       gpus: o.gpus,
@@ -523,6 +525,14 @@ export function analysisJson(a: AnalysisResult): Record<string, unknown> {
       elementwise: n(a.flops.elementwise),
       train_per_token: n(a.flops.trainPerToken),
       attention_share: n(a.flops.attentionShare),
+      // Two sequences: each one's forward pass per token of its own, and one
+      // example's. The figures above are then per target token.
+      ...(a.flops.perStream
+        ? {
+            per_stream: a.flops.perStream.map((s) => ({ symbol: s.symbol, length: s.length, fwd: n(s.fwd) })),
+            fwd_per_example: n(a.flops.fwdPerExample ?? 0),
+          }
+        : {}),
     },
     kv: {
       bytes_per_token: n(a.kv.bytesPerToken),

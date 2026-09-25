@@ -101,7 +101,10 @@ export default function Operating(): React.ReactElement {
   const reset = useEditor((s) => s.resetOperating);
   // With no override the analysis falls back to the design's own T; showing it
   // as the placeholder is how the field says what blank means.
-  const effectiveT = useDerived().analysis.options.T;
+  const options = useDerived().analysis.options;
+  const effectiveT = options.T;
+  // Only a design with a second sequence has a source length to set.
+  const effectiveS = options.S;
   const dp = Math.max(1, Math.floor(o.gpus / Math.max(1, o.tp * o.pp)));
   const [open, setOpen] = useState(() => {
     try {
@@ -125,6 +128,7 @@ export default function Operating(): React.ReactElement {
   const summary = [
     `B${o.B}`,
     `T${effectiveT.toLocaleString("en-US")}`,
+    ...(effectiveS !== undefined ? [`S${effectiveS.toLocaleString("en-US")}`] : []),
     o.dtype,
     HARDWARE_BY_ID[o.hardware]?.name.replace(/ \(.*\)$/, "") ?? o.hardware,
     `${o.gpus}×`,
@@ -173,6 +177,30 @@ export default function Operating(): React.ReactElement {
             }}
           />
         </label>
+        {effectiveS !== undefined && (
+          <label
+            className="op__field"
+            title="Source length: the second sequence, which the encoder runs along. Blank follows the design's own S."
+          >
+            <span className="op__label">source</span>
+            <input
+              className="field field--num"
+              type="number"
+              min={1}
+              placeholder={String(effectiveS)}
+              value={o.S ?? ""}
+              spellCheck={false}
+              aria-label="source length"
+              onKeyDown={(e) => e.stopPropagation()}
+              onChange={(e) => {
+                const raw = e.target.value.trim();
+                if (raw === "") return set({ S: null });
+                const n = Number(raw);
+                if (Number.isFinite(n) && n >= 1) set({ S: Math.floor(n) });
+              }}
+            />
+          </label>
+        )}
         <Pick
           label="train"
           value={o.dtype}

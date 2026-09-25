@@ -163,6 +163,7 @@ func decodeDoc(text string) (*ir.Doc, error) {
 type operatingPoint struct {
 	T                *float64 `json:"T"`
 	B                *float64 `json:"B"`
+	S                *float64 `json:"S"`
 	Dtype            string   `json:"dtype"`
 	InferenceDtype   string   `json:"inferenceDtype"`
 	KvDtype          string   `json:"kvDtype"`
@@ -194,7 +195,7 @@ func decodeOptions(text string) (analysis.Options, error) {
 		return analysis.Options{}, fmt.Errorf("could not read the operating point: %w", err)
 	}
 	out := analysis.Options{
-		T: o.T, B: o.B,
+		T: o.T, B: o.B, S: o.S,
 		Dtype: o.Dtype, InferenceDtype: o.InferenceDtype, KvDtype: o.KvDtype,
 		Hardware: o.Hardware, GPUs: o.GPUs,
 		Optimizer: o.Optimizer, Recompute: o.Recompute, Flash: o.Flash,

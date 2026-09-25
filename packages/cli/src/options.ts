@@ -28,6 +28,9 @@ export function analysisOptions(args: Args): AnalysisOptions {
   if (T !== undefined) out.T = T;
   const B = num(args, "B");
   if (B !== undefined) out.B = B;
+  // The source length, for a design with a second sequence.
+  const S = num(args, "S");
+  if (S !== undefined) out.S = S;
 
   const hardware = str(args, "hardware");
   if (hardware !== undefined) {

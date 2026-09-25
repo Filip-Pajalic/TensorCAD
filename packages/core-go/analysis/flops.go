@@ -38,6 +38,14 @@ type FlopsResult struct {
 	ByPath        map[string]float64 `json:"byPath"`
 	ByCategory    map[string]float64 `json:"byCategory"`
 	Errors        []string           `json:"errors"`
+	// PerStream is the forward pass per token of each sequence, for a design
+	// with two; absent for one, where it would only repeat FwdTotal. With two,
+	// every per-token figure above is per target token, the source's share
+	// spread over the target's tokens.
+	PerStream []StreamFlops `json:"perStream,omitempty"`
+	// FwdPerExample is one training example's forward pass, every stream's
+	// tokens, for a design with two.
+	FwdPerExample float64 `json:"fwdPerExample,omitempty"`
 }
 
 // FlopsOptions is the operating point FLOPs are counted at.
@@ -47,6 +55,8 @@ type FlopsOptions struct {
 	Recompute string
 	// NonEmbeddingActive is the parameter count the rules of thumb use.
 	NonEmbeddingActive float64
+	// Streams says which sequence each block runs along; nil is one, T.
+	Streams *Streams
 }
 
 // CountFlops adds up the arithmetic, by path and category.
@@ -59,24 +69,39 @@ func CountFlops(flat *FlatResult, opts FlopsOptions) *FlopsResult {
 		Errors:        []string{},
 	}
 
+	streams := opts.Streams
+	if streams == nil {
+		streams = &Streams{Target: opts.Ctx.T}
+	}
+	ownFwd := map[string]float64{}
 	for i := range flat.Nodes {
 		node := &flat.Nodes[i]
 		if node.Def.Flops == nil {
 			continue
 		}
-		per := node.Def.Flops(node.Resolved, opts.Ctx)
+		// Measured at the length of the sequence it runs along, then spread
+		// over the target's tokens.
+		ctx := opts.Ctx
+		ctx.T = streams.Length(node.Path)
+		spread := streams.Spread(node.Path)
+		per := node.Def.Flops(node.Resolved, ctx)
 		// FLOPs follow the active count: a token passes through top_k experts,
 		// not through all of them.
-		dense := per.Fwd * node.ActiveMultiplier
-		seq := per.FwdSeq * node.ActiveMultiplier
+		dense := per.Fwd * node.ActiveMultiplier * spread
+		seq := per.FwdSeq * node.ActiveMultiplier * spread
 		// A block that does not distinguish the two is counted the same way
 		// either way; only attention masks anything.
 		unmasked := per.FwdSeqUnmasked
 		if unmasked == 0 {
 			unmasked = per.FwdSeq
 		}
-		seqUnmasked := unmasked * node.ActiveMultiplier
-		elem := per.Elementwise * node.ActiveMultiplier
+		seqUnmasked := unmasked * node.ActiveMultiplier * spread
+		elem := per.Elementwise * node.ActiveMultiplier * spread
+		stream := "T"
+		if streams.OnSource(node.Path) {
+			stream = "S"
+		}
+		ownFwd[stream] += (per.Fwd + per.FwdSeq) * node.ActiveMultiplier
 
 		res.FwdDense += dense
 		res.FwdAttention += seq
@@ -91,6 +116,13 @@ func CountFlops(flat *FlatResult, opts FlopsOptions) *FlopsResult {
 
 	res.FwdTotal = res.FwdDense + res.FwdAttention
 	res.FwdTotalUnmasked = res.FwdDense + res.FwdAttentionUnmasked
+	if streams.Two() {
+		res.PerStream = []StreamFlops{
+			{Symbol: "S", Length: streams.Source, Fwd: ownFwd["S"]},
+			{Symbol: "T", Length: streams.Target, Fwd: ownFwd["T"]},
+		}
+		res.FwdPerExample = ownFwd["S"]*streams.Source + ownFwd["T"]*streams.Target
+	}
 	if res.FwdTotal > 0 {
 		res.AttentionShare = res.FwdAttention / res.FwdTotal
 	}

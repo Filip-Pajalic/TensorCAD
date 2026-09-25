@@ -297,6 +297,12 @@ func ResolveSymbols(doc *Doc) *SymbolTable {
 			table.Errors = append(table.Errors, err.Error())
 			continue
 		}
+		if name == SourceSymbol && !n.runtime {
+			table.Errors = append(table.Errors, fmt.Sprintf(
+				"Symbol %q is the length of a second sequence, an encoder's source, and has to be a runtime symbol like T",
+				name))
+			continue
+		}
 		add(name, n)
 	}
 

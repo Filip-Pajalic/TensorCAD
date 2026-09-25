@@ -104,6 +104,15 @@ export const BlockPort = z.object({
 export const analysisOptionsShape = {
   T: z.number().int().positive().optional().describe("Sequence length. Defaults to the document's own T."),
   B: z.number().int().positive().optional().describe("Micro-batch size."),
+  S: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe(
+      "Source length, for an encoder-decoder: the second sequence its encoder runs along. Defaults to the " +
+        "document's own S; ignored by a design that declares none.",
+    ),
   dtype: z.enum(["fp32", "bf16", "fp16", "fp8"]).optional().describe("Training dtype. Default bf16."),
   hardware: z
     .string()
@@ -189,6 +198,7 @@ export const AnalysisOutput = z.object({
   options: z.object({
     T: z.number(),
     B: z.number(),
+    S: z.number().optional(),
     dtype: z.string(),
     hardware: z.string(),
     gpus: z.number(),
@@ -224,6 +234,11 @@ export const AnalysisOutput = z.object({
     elementwise: num(),
     train_per_token: num(),
     attention_share: num(),
+    per_stream: z
+      .array(z.object({ symbol: z.enum(["T", "S"]), length: num(), fwd: num() }))
+      .optional()
+      .describe("For a design with two sequences: each one's forward pass per token of its own. The figures above are then per target token."),
+    fwd_per_example: num().optional().describe("One example's forward pass, every sequence's tokens; two sequences only."),
   }),
   kv: z.object({
     bytes_per_token: num(),

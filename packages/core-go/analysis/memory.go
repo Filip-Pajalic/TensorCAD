@@ -52,6 +52,8 @@ type MemoryOptions struct {
 	Symbols  *ir.SymbolTable
 	Params   *ParamsResult
 	Kv       *KvResult
+	// Streams says which sequence each block runs along; nil is one, T.
+	Streams *Streams
 }
 
 // TrainPerGpu is the training footprint on one device.
@@ -118,33 +120,6 @@ func elementsPerToken(shape shapes.Shape, env map[string]float64) (float64, bool
 	return product, true
 }
 
-// sequenceExcess is what a per-token size misses when a tensor is as long as
-// the sequence more than once.
-//
-// A tensor's size per token is taken with T at one and multiplied by the
-// tokens afterwards, which is right for anything with one sequence axis. A
-// score matrix has two — every query against every key, B heads T T — so it is
-// T times larger per token than that, and the second T is the operating
-// point's. Found by evaluating the shape at T = 2: the ratio is 2 to the power
-// of how many times T appears.
-func sequenceExcess(shape shapes.Shape, env map[string]float64, T float64) float64 {
-	one, okOne := elementsPerToken(shape, env)
-	doubled := make(map[string]float64, len(env))
-	for k, v := range env {
-		doubled[k] = v
-	}
-	doubled["T"] = 2
-	two, okTwo := elementsPerToken(shape, doubled)
-	if !okOne || !okTwo || one == 0 {
-		return 1
-	}
-	power := math.Round(math.Log2(two / one))
-	if power < 2 {
-		return 1
-	}
-	return math.Pow(T, power-1)
-}
-
 // AnalyzeMemory accounts for training and inference memory.
 //
 // Training memory is four things: weights, gradients, optimizer state and
@@ -161,7 +136,17 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 	// slice is null and every reader would have to defend against it.
 	notes, errs := []string{}, []string{}
 	ctx, par := opts.Ctx, opts.Parallel
-	tokens := ctx.B * ctx.T
+	streams := opts.Streams
+	if streams == nil {
+		streams = &Streams{Target: ctx.T}
+	}
+	lengths := map[string]float64{"T": streams.Target}
+	if streams.Two() {
+		lengths["S"] = streams.Source
+	}
+	// The tokens a block's own per-token figures are multiplied by: its own
+	// stream's.
+	tokensOf := func(path string) float64 { return ctx.B * streams.Length(path) }
 
 	// --- activations --------------------------------------------------------
 	// Memory is attributed to tensors rather than to blocks. A tensor several
@@ -226,19 +211,23 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 				errs = append(errs, fmt.Sprintf("%s: could not size the tensor on input %q", node.Path, port))
 				continue
 			}
-			elements *= sequenceExcess(shape, env, ctx.T)
+			// Each sequence axis at its own length: a written-out score
+			// matrix is T long twice, an encoder's stream S long once.
+			total := tensorTotal(shape, elements, env, ctx.B, lengths)
 			// The tensor belongs to whoever produced it, not to whoever is
 			// reading it here.
 			owner := node.Path
 			if at := strings.LastIndex(producer, ":"); at > 0 {
 				owner = producer[:at]
 			}
-			add(owner, producer, elements*ctx.Bytes*node.ActiveMultiplier*tokens)
+			add(owner, producer, total*ctx.Bytes*node.ActiveMultiplier)
 		}
 
 		if node.Def.ExtraActivationBytes != nil {
-			extra := node.Def.ExtraActivationBytes(node.Resolved, ctx)
-			total := extra * node.ActiveMultiplier * tokens
+			own := ctx
+			own.T = streams.Length(node.Path)
+			extra := node.Def.ExtraActivationBytes(node.Resolved, own)
+			total := extra * node.ActiveMultiplier * tokensOf(node.Path)
 			add(node.Path, node.Path, total)
 			if node.Type == "lm_head" {
 				logits += total
@@ -257,7 +246,7 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 					"Could not determine the stream width of %q for full recomputation", rep.Path))
 				continue
 			}
-			total := width * ctx.Bytes * rep.Count * tokens
+			total := width * ctx.Bytes * rep.Count * tokensOf(rep.Path)
 			activations += total
 			activationsByPath[rep.Path] = total
 			activationsByTensor[rep.Path] = total

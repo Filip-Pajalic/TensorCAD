@@ -259,7 +259,28 @@ export default function Analysis(): React.ReactElement {
               aside={pct(a.flops.fwdAttention, a.flops.fwdTotal)}
               title="Scores and the value product, counted as a causal kernel actually does them."
             />
-            <Row label="forward, total" value={formatFlops(a.flops.fwdTotal)} aside="per token" />
+            <Row
+              label="forward, total"
+              value={formatFlops(a.flops.fwdTotal)}
+              aside={a.flops.perStream ? "per target token" : "per token"}
+              title={
+                a.flops.perStream
+                  ? "Two sequences: the source's share is spread over the target's tokens."
+                  : undefined
+              }
+            />
+            {/* A second sequence: each measured per token of its own, and one example whole. */}
+            {a.flops.perStream?.map((s) => (
+              <Row
+                key={s.symbol}
+                label={`${s.symbol === "S" ? "source" : "target"} @ ${s.symbol}=${s.length.toLocaleString("en-US")}`}
+                value={formatFlops(s.fwd)}
+                aside={`per ${s.symbol === "S" ? "source" : "target"} token`}
+              />
+            ))}
+            {a.flops.fwdPerExample !== undefined && (
+              <Row label="forward, one example" value={formatFlops(a.flops.fwdPerExample)} aside="both sequences" />
+            )}
             <Row
               label="unmasked total"
               value={formatFlops(a.flops.fwdTotalUnmasked)}

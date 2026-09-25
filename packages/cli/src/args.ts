@@ -15,6 +15,7 @@ export interface Args {
 const VALUE_FLAGS = new Set([
   "T",
   "B",
+  "S",
   "hardware",
   "gpus",
   "tokens",

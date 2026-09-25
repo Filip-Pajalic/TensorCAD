@@ -81,6 +81,7 @@ async function guard(run: () => ToolResult | Promise<ToolResult>): Promise<ToolR
 type AnalysisInput = {
   T?: number;
   B?: number;
+  S?: number;
   dtype?: "fp32" | "bf16" | "fp16" | "fp8";
   hardware?: string;
   gpus?: number;
@@ -99,6 +100,7 @@ type AnalysisInput = {
 function toAnalysisOptions(input: AnalysisInput): AnalysisOptions {
   const out: AnalysisOptions = {};
   if (input.T !== undefined) out.T = input.T;
+  if (input.S !== undefined) out.S = input.S;
   if (input.B !== undefined) out.B = input.B;
   if (input.dtype) out.dtype = input.dtype;
   if (input.tokens !== undefined) out.tokens = input.tokens;

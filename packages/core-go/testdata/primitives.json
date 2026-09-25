@@ -156,7 +156,8 @@
       },
       "resolved": {
         "dim": 768,
-        "max_seq": 1024
+        "max_seq": 1024,
+        "positions": null
       },
       "errors": [],
       "ports": {
@@ -927,6 +928,7 @@
       "resolved": {
         "head_dim": 128,
         "heads": 32,
+        "positions": null,
         "scaling": null,
         "theta": 500000
       },
@@ -965,6 +967,7 @@
       "resolved": {
         "head_dim": 127,
         "heads": 32,
+        "positions": null,
         "scaling": null,
         "theta": 10000
       },

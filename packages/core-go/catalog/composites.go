@@ -226,6 +226,7 @@ var gqaAttention = &BlockDef{
 		{"output_gate", pBool(false,
 			"Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)")},
 		{"scale", attnScaleSpec()},
+		{"positions", positionsSpec()},
 	},
 	PortsFn: func(r *Resolved) Ports {
 		in := map[string]PortSpec{"x": Port("... d_model")}
@@ -237,10 +238,21 @@ var gqaAttention = &BlockDef{
 				Doc: "A second embedding of the same tokens, mixed into the values"}
 		}
 		tablePorts(r, in)
+		if r.Bool("positions") {
+			in["pos"] = positionsPort
+		}
 		return Ports{In: in, Out: map[string]PortSpec{"y": Port("... d_model")}}
 	},
 	Constraints: func(r *Resolved) []BlockFinding {
 		var out []BlockFinding
+		if _, rotates := ropeOf(r); r.Bool("positions") && !rotates {
+			out = append(out, BlockFinding{
+				ID: "ROPE-02", Severity: "error", Param: "positions",
+				Message: "The positions restart for a rotation, and this attention has no rope to turn by them.",
+				Hint: "Give it rope, or unset positions: a design without rotary positions has nothing that " +
+					"reads a token's place.",
+			})
+		}
 		if int(r.Num("heads"))%int(r.Num("kv_heads")) != 0 {
 			out = append(out, BlockFinding{
 				ID: "ATTN-01", Severity: "error", Param: "kv_heads",
@@ -599,14 +611,18 @@ func expandGQA(raw map[string]any, r *Resolved) Expansion {
 
 	ve := r.Bool("value_embeddings")
 	tables := TablesOf(r)
+	restart := r.Bool("positions") && hasRope
 	inNode, outNode := streamBoundary(D)
-	if ve || len(tables) > 0 {
+	if ve || len(tables) > 0 || restart {
 		ports := map[string]any{"x": "... " + D}
 		if ve {
 			ports["ve"] = fmt.Sprintf("B T (%s %s)", KV, dh)
 		}
 		for _, name := range tables {
 			ports[name] = "*"
+		}
+		if restart {
+			ports["pos"] = "B T"
 		}
 		inNode, outNode = boundary(ports, map[string]any{"y": "... " + D})
 	}
@@ -654,10 +670,16 @@ func expandGQA(raw map[string]any, r *Resolved) Expansion {
 	if hasRope {
 		theta := thetaOf(rope)
 		scaling := scalingOf(rope)
-		nodes = append(nodes,
-			node("rope_q", "rope", map[string]any{"heads": H, "head_dim": dh, "theta": theta, "scaling": scaling}),
-			node("rope_k", "rope", map[string]any{"heads": KV, "head_dim": dh, "theta": theta, "scaling": scaling}))
+		ropeQ := map[string]any{"heads": H, "head_dim": dh, "theta": theta, "scaling": scaling}
+		ropeK := map[string]any{"heads": KV, "head_dim": dh, "theta": theta, "scaling": scaling}
+		if restart {
+			ropeQ["positions"], ropeK["positions"] = true, true
+		}
+		nodes = append(nodes, node("rope_q", "rope", ropeQ), node("rope_k", "rope", ropeK))
 		edges = append(edges, edge(qTail, "rope_q:x"), edge(kTail, "rope_k:x"))
+		if restart {
+			edges = append(edges, edge("_in:pos", "rope_q:pos"), edge("_in:pos", "rope_k:pos"))
+		}
 		qTail, kTail = "rope_q:y", "rope_k:y"
 	}
 
@@ -1327,6 +1349,7 @@ var transformerBlock = &BlockDef{
 		{"norm_eps", grouped(ParamSpec{Type: ParamNum, Default: nil, HasDefault: true,
 			Doc: "Added inside every norm's square root, against dividing by zero; unset is the norm's own " +
 				"1e-5, and T5 uses 1e-6"}, "Normalization")},
+		{"positions", when(grouped(positionsSpec(), "Attention"), "attention", "gqa")},
 	},
 	// The value-embedding port only exists when the block asks for it, which is
 	// why these are computed rather than declared.
@@ -1342,6 +1365,9 @@ var transformerBlock = &BlockDef{
 		}
 		if r.Str("attention") != "mla" {
 			tablePorts(r, in)
+		}
+		if r.Bool("positions") && r.Str("attention") == "gqa" {
+			in["pos"] = positionsPort
 		}
 		return Ports{In: in, Out: map[string]PortSpec{"y": Port("... d_model")}}
 	},
@@ -1375,8 +1401,12 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 	if r.Str("attention") != "mla" {
 		tables = TablesOf(r)
 	}
-	if ve || cross || len(tables) > 0 {
+	restart := r.Bool("positions") && r.Str("attention") == "gqa"
+	if ve || cross || len(tables) > 0 || restart {
 		ports := map[string]any{"x": "... " + D}
+		if restart {
+			ports["pos"] = "B T"
+		}
 		if ve {
 			ports["ve"] = fmt.Sprintf("B T (%s %s)", Ex(raw["kv_heads"], "0"), Ex(raw["head_dim"], "0"))
 		}
@@ -1454,6 +1484,9 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 			"output_gate":      r.Bool("output_gate"),
 		})
 		withScale(r, raw, gqa)
+		if r.Bool("positions") {
+			gqa["positions"] = true
+		}
 		attnNode = node("attn", "gqa_attention", gqa)
 	}
 
@@ -1477,6 +1510,9 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 	}
 	for _, name := range tables {
 		edges = append(edges, edge("_in:"+name, "attn:"+name))
+	}
+	if restart {
+		edges = append(edges, edge("_in:pos", "attn:pos"))
 	}
 
 	// A decoder layer attends to the encoder's output between its own

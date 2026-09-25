@@ -45,7 +45,7 @@ func documentFindings(t *testing.T, doc *ir.Doc) []rules.Finding {
 	}
 	var out []rules.Finding
 	for _, f := range rep.Findings {
-		if f.Rule == "documents" {
+		if f.Rule == "input-roles" {
 			out = append(out, f)
 		}
 	}
@@ -67,5 +67,45 @@ func TestAMaskIsGivenTheDocuments(t *testing.T) {
 		if found := documentFindings(t, presets.MustGet(name)); len(found) > 0 {
 			t.Errorf("%s: %v", name, found)
 		}
+	}
+}
+
+// llama-3-8b with every layer's rotation turned by positions read from an
+// input with this role.
+func restartsPositions(t *testing.T, role string) *ir.Doc {
+	t.Helper()
+	doc := presets.MustGet("llama-3-8b")
+	doc.Graph.Nodes = append(doc.Graph.Nodes, ir.NodeDef{ID: "pos", Type: "input",
+		Params: map[string]any{"shape": "B T", "dtype": "int64", "role": role}})
+	doc.Graph.Edges = append(doc.Graph.Edges, ir.Edge{"pos:x", "layers:pos"})
+	for i := range doc.Graph.Nodes {
+		stack := &doc.Graph.Nodes[i]
+		if stack.ID != "layers" {
+			continue
+		}
+		for j := range stack.Graph.Nodes {
+			n := &stack.Graph.Nodes[j]
+			switch n.ID {
+			case "_in":
+				n.Params["ports"].(map[string]any)["pos"] = "B T"
+			case "block":
+				n.Params["positions"] = true
+			}
+		}
+		stack.Graph.Edges = append(stack.Graph.Edges, ir.Edge{"_in:pos", "block:pos"})
+	}
+	return doc
+}
+
+// The same for a rotation that restarts at every document: its positions,
+// followed back through the stack, start at an input that says it holds them.
+func TestARotationIsGivenThePositions(t *testing.T) {
+	if found := documentFindings(t, restartsPositions(t, "positions")); len(found) > 0 {
+		t.Errorf("wired right, and still: %v", found)
+	}
+	found := documentFindings(t, restartsPositions(t, "tokens"))
+	if len(found) != 1 || found[0].Path != "layers/block" || found[0].Param != "positions" ||
+		!strings.Contains(found[0].Message, "not a positions input") {
+		t.Errorf("tokens where the positions go: %+v", found)
 	}
 }

@@ -138,3 +138,31 @@ func TestANonsensePackingIsRefused(t *testing.T) {
 		}
 	}
 }
+
+// Positions that restart change what the model computes and not what it
+// costs: the same rotation, turned by a different number.
+func TestRestartingPositionsCostNothing(t *testing.T) {
+	doc := presets.MustGet("llama-3-8b")
+	doc.Graph.Nodes = append(doc.Graph.Nodes, ir.NodeDef{ID: "pos", Type: "input",
+		Params: map[string]any{"shape": "B T", "dtype": "int64", "role": "positions"}})
+	doc.Graph.Edges = append(doc.Graph.Edges, ir.Edge{"pos:x", "layers:pos"})
+	for i := range doc.Graph.Nodes {
+		if stack := &doc.Graph.Nodes[i]; stack.ID == "layers" {
+			for j := range stack.Graph.Nodes {
+				switch n := &stack.Graph.Nodes[j]; n.ID {
+				case "_in":
+					n.Params["ports"].(map[string]any)["pos"] = "B T"
+				case "block":
+					n.Params["positions"] = true
+				}
+			}
+			stack.Graph.Edges = append(stack.Graph.Edges, ir.Edge{"_in:pos", "block:pos"})
+		}
+	}
+	plain := analyzeAt(t, presets.MustGet("llama-3-8b"), 8192, nil)
+	restarted := analyzeAt(t, doc, 8192, nil)
+	if restarted.Params.Total != plain.Params.Total || restarted.Flops.FwdTotal != plain.Flops.FwdTotal ||
+		restarted.Flops.Elementwise != plain.Flops.Elementwise || restarted.Kv.BytesPerToken != plain.Kv.BytesPerToken {
+		t.Errorf("restarting the positions moved the numbers")
+	}
+}

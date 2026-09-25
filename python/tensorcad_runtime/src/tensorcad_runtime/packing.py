@@ -48,6 +48,27 @@ def draw_documents(batch: int, seq: int, mean: float, spread: float = 1.0, seed:
     return torch.tensor(np.stack(rows), dtype=torch.long)
 
 
+def positions_of(documents: Any) -> Any:
+    """Each token's place in its own document: 0 at every document's first.
+
+    The same numbers Hugging Face's ``DataCollatorWithFlattening`` returns as
+    ``position_ids`` when it packs whole examples into one row, and what a
+    row cut from a stream gives for the pieces at its ends.
+    """
+    import torch
+
+    index = torch.arange(documents.shape[-1], device=documents.device).expand_as(documents)
+    first = torch.ones_like(documents, dtype=torch.bool)
+    first[..., 1:] = documents[..., 1:] != documents[..., :-1]
+    start = torch.where(first, index, torch.zeros_like(index)).cummax(dim=-1).values
+    return index - start
+
+
+def draw_positions(batch: int, seq: int, mean: float, spread: float = 1.0, seed: int = 0) -> Any:
+    """The positions of the packing ``draw_documents`` makes with the same arguments."""
+    return positions_of(draw_documents(batch, seq, mean, spread, seed))
+
+
 def several_inputs(design: dict[str, Any] | None) -> list[str]:
     """The names of a design's inputs, when it has more than one."""
     if not design:

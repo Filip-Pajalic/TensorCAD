@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"sort"
 	"testing"
+
+	"github.com/tensorcad/core/ir"
 )
 
 // A mask that keeps documents apart, and what a packing makes it cost.
@@ -234,5 +236,26 @@ func TestTheKernelComputesWholeBlocks(t *testing.T) {
 	}
 	if g := def.Flops(r, AnalysisCtx{T: 8192, B: 1, Bytes: 2, Flash: true}); g.FwdSeqBlocks != 0 {
 		t.Error("a block figure with no packing")
+	}
+}
+
+// Positions that restart are for a rotation; an attention without one has
+// nothing to turn by them, and says so rather than dropping the input.
+func TestPositionsNeedARotation(t *testing.T) {
+	def := Builtin["gqa_attention"]
+	doc := &ir.Doc{Symbols: map[string]ir.SymbolDef{}}
+	raw := map[string]any{"d_model": 64.0, "heads": 4.0, "kv_heads": 4.0, "head_dim": 16.0, "positions": true}
+	r := ResolveNodeParams(def, raw, ir.ResolveSymbols(doc))
+	found := def.Constraints(r)
+	if len(found) != 1 || found[0].ID != "ROPE-02" {
+		t.Errorf("no rope: %+v", found)
+	}
+	raw["rope"] = map[string]any{"theta": 10000.0}
+	r = ResolveNodeParams(def, raw, ir.ResolveSymbols(doc))
+	if found := def.Constraints(r); len(found) != 0 {
+		t.Errorf("with rope: %+v", found)
+	}
+	if _, ok := def.PortsFn(r).In["pos"]; !ok {
+		t.Error("no pos input")
 	}
 }

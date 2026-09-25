@@ -343,6 +343,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -612,6 +618,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -1236,6 +1248,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -1564,6 +1582,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -2129,6 +2153,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -2398,6 +2428,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -3022,6 +3058,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -3291,6 +3333,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -3915,6 +3963,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -4184,6 +4238,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -4808,6 +4868,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -5136,6 +5202,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -5701,6 +5773,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -5970,6 +6048,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -6616,6 +6700,12 @@
               null,
               0.000001,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -7042,6 +7132,12 @@
               null,
               0.000001,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -7441,6 +7537,12 @@
               "1",
               1,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -7852,6 +7954,12 @@
               null,
               0.000001,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -8283,6 +8391,12 @@
               null,
               0.000001,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -8644,6 +8758,12 @@
               "1",
               1,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -8824,6 +8944,12 @@
               "1",
               1,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -9220,6 +9346,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -9504,6 +9636,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -10135,6 +10273,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -10596,6 +10740,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -11050,6 +11200,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -11511,6 +11667,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -11965,6 +12127,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -12426,6 +12594,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -12880,6 +13054,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -13341,6 +13521,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -13795,6 +13981,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -14256,6 +14448,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -14720,6 +14918,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -15191,6 +15395,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -15670,6 +15880,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -16009,6 +16225,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -16787,6 +17009,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -17131,6 +17359,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -17475,6 +17709,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -17819,6 +18059,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -18163,6 +18409,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -18511,6 +18763,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -19029,6 +19287,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -19907,6 +20171,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -20795,6 +21065,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -21690,6 +21966,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -22036,6 +22318,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -22925,6 +23213,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -24076,6 +24370,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -26336,6 +26636,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -26739,6 +27045,12 @@
               null,
               null,
               "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {
@@ -27078,6 +27390,12 @@
               null,
               null,
               "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "positions",
+              null,
+              null,
+              "Rotate by the positions wired to pos rather than by each token's index: its place in its own document, for rows packed with several. Unset rotates by the index."
             ]
           ],
           "shapes": {

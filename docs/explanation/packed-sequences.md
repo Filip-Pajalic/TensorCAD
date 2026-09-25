@@ -1,6 +1,6 @@
 # Packed sequences: a mask that reads the batch
 
-*A proposal for M12. Phases 1, 2 and 3 are built; the editor is not. It was written first,
+*A proposal for M12, now built. It was written first,
 as M10's and M11's were, because it decides what the training figures mean.
 Before it, they counted the attention of one document filling the whole
 sequence. Pretraining is rarely run that way.*
@@ -184,7 +184,7 @@ learned position table does; see below.*
 
 The operating point gets the packing control. The mask preview in the inspector
 draws a sampled packing, so the block-diagonal shape is visible. The walkthrough
-says what the mask is for.
+says what the mask is for. *Built in phase 4, below.*
 
 ## The phases
 
@@ -328,6 +328,35 @@ says what the mask is for.
    - Two rules: packing without a document mask, and documents short enough
      against the kernel's blocks that the share understates the work by more
      than a quarter.
+
+   *Done.*
+   - **The packing control.** The operating point takes a packing: `docs`, the
+     mean document length, and `spread`, which starts at 1 because real
+     corpora vary. It shows for a design with a documents input, and whenever
+     a packing is set, so one carried over from another design can always be
+     taken off. A stored packing the engine would refuse is dropped when the
+     editor loads.
+   - **The readout.** Under the training figure it shows the packed training
+     figure, which the cost is counted from, and the packed attention with how
+     much more a kernel computes in whole blocks.
+   - **The preview.** The mask preview draws one row of the packing, marked as
+     such. For Llama-3-8B at 8k in 1,024-token documents that is the block
+     diagonal: every diagonal block, nothing above it, nothing more than four
+     256-token cells below it.
+   - **The walkthrough.** Its attention step says the mask keeps packed
+     documents apart, and that the positions restart when they do. Under a
+     packing it adds what the attention costs and what the kernel computes.
+   - **`packing-unused`** notes a packing on a design where every attention
+     reads across documents.
+   - **`document-blocks`** measures on the whole forward pass, not only on
+     attention, because phase 2 showed the proposal's threshold would fire on
+     nearly everything. It notes a ratio of whole blocks to kept scores past
+     1.25. It warns only once the difference is a twentieth of the forward
+     pass.
+     - Llama-3-8B in 1,024-token documents at 8k is noted: 1.38x, 0.6% of a
+       token's work.
+     - nano-sort in 128-token documents, whose attention is a large share of
+       it, is warned about.
 
 **Done when:**
 - Llama-3-8B with a document mask, at 8,192 tokens and fixed 1,024-token

@@ -20,7 +20,7 @@ await loadEngine();
 
 const { getPreset, PRESET_NAMES } = await import("../src/engine.js");
 const { derive } = await import("../src/state/derive.js");
-const { DEFAULT_OPERATING } = await import("../src/state/operating.js");
+const { DEFAULT_OPERATING, toAnalysisOptions } = await import("../src/state/operating.js");
 const { buildWalkthrough } = await import("../src/state/walkthrough.js");
 const { useEditor } = await import("../src/state/store.js");
 
@@ -175,6 +175,33 @@ describe("a step exists because the design has the block", () => {
     expect(positions.body.join(" ")).not.toContain("Nothing is stored");
     // A decoder-only design gets none of it.
     expect(stepsFor(getPreset("llama-3-8b")).find((s) => s.id === "cross")).toBeUndefined();
+  });
+
+  test("a design that keeps packed documents apart is told what that is for, and what it costs", () => {
+    const doc = structuredClone(getPreset("llama-3-8b")) as Doc;
+    doc.graph.nodes.push({ id: "docs", type: "input", params: { shape: "B T", dtype: "int64", role: "documents" } });
+    doc.graph.edges.push(["docs:x", "layers:doc"]);
+    const stack = doc.graph.nodes.find((n) => n.id === "layers")!;
+    for (const n of stack.graph!.nodes) {
+      if (n.id === "_in") (n.params!.ports as Record<string, string>).doc = "B T";
+      if (n.id === "block") n.params!.mask = "doc(b, q) == doc(b, kv)";
+    }
+    stack.graph!.edges.push(["_in:doc", "block:doc"]);
+
+    const one = buildWalkthrough(doc, derive(doc, { ...DEFAULT_OPERATING, T: 8192 }));
+    const said = one.find((s) => s.id === "attention")!.body.join(" ");
+    expect(said).toContain("keeps packed documents apart");
+    expect(said).not.toContain("Packed in documents");
+
+    const packing = { mean: 1024, spread: 0 };
+    expect(toAnalysisOptions({ ...DEFAULT_OPERATING, packing }).packing).toEqual(packing);
+    expect("packing" in toAnalysisOptions(DEFAULT_OPERATING)).toBe(false);
+    const packed = buildWalkthrough(doc, derive(doc, { ...DEFAULT_OPERATING, T: 8192, packing }));
+    expect(packed.find((s) => s.id === "attention")!.body.join(" ")).toMatch(
+      /Packed in documents of 1,024 tokens, that is .* of attention a token rather than 2\.15 GFLOP, and a block-sparse kernel computes 1\.3\d times that/,
+    );
+    // A design that attends across documents is told nothing about them.
+    expect(stepsFor(getPreset("llama-3-8b")).find((s) => s.id === "attention")!.body.join(" ")).not.toContain("documents");
   });
 
   test("a context's cache is every one of its tokens' share", () => {

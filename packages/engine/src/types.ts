@@ -662,6 +662,11 @@ export interface MaskView {
   mask: string;
   /** What each score becomes, the cap included; empty when nothing. */
   score: string;
+  /**
+   * Drawn over one row of the operating point's packing: a mask that reads the
+   * documents, which one document a row would show as causal and nothing more.
+   */
+  sampled?: boolean;
 }
 
 // ---------------------------------------------------------------------------

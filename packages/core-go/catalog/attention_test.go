@@ -200,7 +200,7 @@ func TestAnExpressionIsResolvedAgainstTheDesign(t *testing.T) {
 
 func TestTheGridIsTheBlockMask(t *testing.T) {
 	_, r := sdpaWith(t, map[string]any{"causal": true, "window": 1024.0})
-	g := AttentionOf(r).Grid(8192, 1, 0)
+	g := AttentionOf(r).Grid(8192, 1, 0, nil)
 	if g.Cells != 32 || g.Span != 256 || len(g.Kept) != 32*32 {
 		t.Fatalf("%d cells of %v", g.Cells, g.Span)
 	}
@@ -216,7 +216,7 @@ func TestTheGridIsTheBlockMask(t *testing.T) {
 	near(t, "density", g.Density, (1024-1024.0*1024/(2*8192))/8192, 1e-12)
 
 	// A sequence shorter than 32 is drawn a position a block.
-	g = AttentionOf(r).Grid(11, 1, 0)
+	g = AttentionOf(r).Grid(11, 1, 0, nil)
 	if g.Cells != 11 || g.Span != 1 || g.Kept[0*11+1] != 0 || g.Kept[5*11+5] != 1 {
 		t.Errorf("%+v", g)
 	}

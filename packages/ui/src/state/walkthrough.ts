@@ -420,6 +420,10 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
 
   // -------------------------------------------------------------- attention
   const attn = firstOf(all, (f) => f.category === "attention" && inStack(f));
+  // Inputs that say what they hold: the documents a mask keeps apart, and each
+  // token's place in its own.
+  const documents = firstOf(all, (f) => f.type === "input" && f.resolved?.p.role === "documents");
+  const positions = firstOf(all, (f) => f.type === "input" && f.resolved?.p.role === "positions");
   if (attn) {
     const p = attn.resolved?.p ?? {};
     const heads = n(p.heads, n(sym.H));
@@ -441,6 +445,12 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
           : null,
         p.written_out === true || p.talking_heads === true
           ? `This attention is written out rather than fused: each head's whole matrix of scores is computed, kept and passed along like any other tensor${p.talking_heads === true ? ", because talking heads mixes every head's matrix into every other's, which needs them all at once" : ""}. That is the memory a fused kernel exists to save, and the design rules say how much it is here.`
+          : null,
+        documents
+          ? `This attention keeps packed documents apart: a token attends only to what came before it in its own document, so the documents a row is packed with do not read each other${positions ? ", and each one's positions start again from zero" : ""}.`
+          : null,
+        documents && a.flops.packed && a.options.packing
+          ? `Packed in documents of ${count(a.options.packing.mean)} tokens, that is ${formatFlops(a.flops.packed.fwdAttention)} of attention a token rather than ${formatFlops(a.flops.fwdAttention)}, and a block-sparse kernel computes ${(a.flops.packed.fwdAttentionBlocks / a.flops.packed.fwdAttention).toFixed(2)} times that, in whole blocks.`
           : null,
         p.sinks === true
           ? `Each head also has a sink: one learned score that sits beside the keys in every softmax, so a token that finds nothing worth attending to can put its attention there instead of spreading it thin. It is ${count(heads)} parameters, and it is why a head can stay quiet.`

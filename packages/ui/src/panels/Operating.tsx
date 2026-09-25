@@ -95,8 +95,17 @@ function Pick<T extends string | number>({
   );
 }
 
+/**
+ * Whether a design has documents to pack: an input whose role says it holds
+ * them, which is what a mask that keeps them apart reads.
+ */
+function readsDocuments(doc: { graph: { nodes: { type: string; params?: Record<string, unknown> }[] } }): boolean {
+  return doc.graph.nodes.some((n) => n.type === "input" && n.params?.role === "documents");
+}
+
 export default function Operating(): React.ReactElement {
   const o = useEditor((s) => s.operating);
+  const doc = useEditor((s) => s.doc);
   const set = useEditor((s) => s.setOperating);
   const reset = useEditor((s) => s.resetOperating);
   // With no override the analysis falls back to the design's own T; showing it
@@ -129,6 +138,7 @@ export default function Operating(): React.ReactElement {
     `B${o.B}`,
     `T${effectiveT.toLocaleString("en-US")}`,
     ...(effectiveS !== undefined ? [`S${effectiveS.toLocaleString("en-US")}`] : []),
+    ...(o.packing ? [`packed ${o.packing.mean.toLocaleString("en-US")}`] : []),
     o.dtype,
     HARDWARE_BY_ID[o.hardware]?.name.replace(/ \(.*\)$/, "") ?? o.hardware,
     `${o.gpus}×`,
@@ -216,6 +226,57 @@ export default function Operating(): React.ReactElement {
           title="Precision of the served weights and the cache."
         />
       </div>
+
+      {/* Shown for a design with documents to pack, and whenever a packing is set,
+          so one carried over from another design can always be taken off. */}
+      {(o.packing !== null || readsDocuments(doc)) && (
+        <div className="op__grid" data-testid="packing">
+          <label
+            className="op__field"
+            title="Training rows packed with documents of this mean length, which the mask keeps apart. Blank is one document a row, which is what serving is."
+          >
+            <span className="op__label">docs</span>
+            <input
+              className="field field--num"
+              type="number"
+              min={1}
+              placeholder="off"
+              value={o.packing?.mean ?? ""}
+              spellCheck={false}
+              aria-label="mean document length"
+              onKeyDown={(e) => e.stopPropagation()}
+              onChange={(e) => {
+                const raw = e.target.value.trim();
+                if (raw === "") return set({ packing: null });
+                const n = Number(raw);
+                if (Number.isFinite(n) && n >= 1) set({ packing: { mean: Math.floor(n), spread: o.packing?.spread ?? 1 } });
+              }}
+            />
+          </label>
+          {o.packing !== null && (
+            <label
+              className="op__field"
+              title="How much the document lengths vary: the coefficient of variation. 0 is every document the same length, 1 is exponential; real corpora are more."
+            >
+              <span className="op__label">spread</span>
+              <input
+                className="field field--num"
+                type="number"
+                min={0}
+                step={0.1}
+                value={o.packing.spread}
+                spellCheck={false}
+                aria-label="spread of document lengths"
+                onKeyDown={(e) => e.stopPropagation()}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  if (Number.isFinite(n) && n >= 0 && o.packing) set({ packing: { mean: o.packing.mean, spread: n } });
+                }}
+              />
+            </label>
+          )}
+        </div>
+      )}
 
       <div className="op__grid op__grid--wide">
         <Pick

@@ -294,6 +294,24 @@ export default function Analysis(): React.ReactElement {
               title="Norms, activations, RoPE and residual adds. Memory-bound, so they are reported but not added to the matmul totals."
             />
             <Row label="training" value={formatFlops(a.flops.trainPerToken)} aside="per token" />
+            {/* Packed training rows: the cost is counted from these, and the rows
+                above are one document a row, which is what serving is. */}
+            {a.flops.packed && o.packing && (
+              <>
+                <Row
+                  label={`training, packed ${o.packing.mean.toLocaleString("en-US")}`}
+                  value={formatFlops(a.flops.packed.trainPerToken)}
+                  aside="counted in the cost"
+                  title="Rows packed with documents the mask keeps apart. The training time and cost are counted from this; everything above is one document a row, which is what serving is."
+                />
+                <Row
+                  label="attention, packed"
+                  value={formatFlops(a.flops.packed.fwdAttention)}
+                  aside={`${(a.flops.packed.fwdAttentionBlocks / a.flops.packed.fwdAttention).toFixed(2)}× in blocks`}
+                  title="The scores the mask keeps, and what a block-sparse kernel computes: every 128-token block holding any of them, whole."
+                />
+              </>
+            )}
           </tbody>
         </table>
 

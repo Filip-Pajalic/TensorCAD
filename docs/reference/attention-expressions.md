@@ -185,7 +185,10 @@ they look at the positions every sequence has.
 operating point's sequence length, for one head at a time when the mask reads
 `h`: the sequence cut into blocks along both sides, each shaded by the share it
 keeps. An empty block is one the kernel skips; a full one is computed without
-the mask; anything between is computed and then masked.
+the mask; anything between is computed and then masked. A mask that reads the
+documents is drawn over one row of the operating point's packing, when there is
+one, and says so; without one a row is one document and the preview is the rest
+of the mask.
 
 **Generates them.** Each distinct expression becomes a module-level function in
 FlexAttention's signature,

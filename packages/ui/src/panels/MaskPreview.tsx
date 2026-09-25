@@ -84,6 +84,13 @@ export default function MaskPreview({
         <div>
           keeps <span className="mono" data-testid="mask-density">{percent(view.density)}</span> of the scores
         </div>
+        {view.sampled && operating.packing && (
+          <div data-testid="mask-sampled">
+            one packed row: documents of{" "}
+            <span className="mono">{operating.packing.mean.toLocaleString("en-US")}</span> tokens, spread{" "}
+            <span className="mono">{operating.packing.spread}</span>
+          </div>
+        )}
         {view.perHead && heads > 1 && (
           <div className="mask__head">
             <button

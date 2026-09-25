@@ -58,6 +58,12 @@ export interface OperatingPoint {
   concurrency: number;
   /** Training token budget. Null means the Chinchilla-optimal budget. */
   tokens: number | null;
+  /**
+   * How training rows are packed with documents, for a design whose mask keeps
+   * them apart: their mean length in tokens and the coefficient of variation of
+   * the lengths. Null is one document a row, which is what serving is.
+   */
+  packing: { mean: number; spread: number } | null;
 }
 
 export const DEFAULT_OPERATING: OperatingPoint = {
@@ -78,6 +84,7 @@ export const DEFAULT_OPERATING: OperatingPoint = {
   sequenceParallel: false,
   concurrency: 1,
   tokens: null,
+  packing: null,
 };
 
 /**
@@ -100,6 +107,7 @@ export function toAnalysisOptions(o: OperatingPoint): AnalysisOptions {
     flash: o.flash,
     concurrency: o.concurrency,
     ...(o.tokens !== null ? { tokens: o.tokens } : {}),
+    ...(o.packing !== null ? { packing: { mean: o.packing.mean, spread: o.packing.spread } } : {}),
     parallel: {
       ...DEFAULT_PARALLEL,
       dp,
@@ -122,10 +130,12 @@ export function loadOperating(): OperatingPoint {
     if (!raw) return DEFAULT_OPERATING;
     // Merge rather than replace, so a stored point from an older build gains
     // any field added since without failing to load.
-    return {
-      ...DEFAULT_OPERATING,
-      ...(JSON.parse(raw) as Partial<OperatingPoint>),
-    };
+    const stored = { ...DEFAULT_OPERATING, ...(JSON.parse(raw) as Partial<OperatingPoint>) };
+    // A packing the engine would refuse is dropped rather than kept to fail
+    // every analysis after it.
+    const p = stored.packing;
+    if (p !== null && !(p && p.mean >= 1 && p.spread >= 0)) stored.packing = null;
+    return stored;
   } catch {
     return DEFAULT_OPERATING;
   }

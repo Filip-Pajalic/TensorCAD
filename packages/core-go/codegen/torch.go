@@ -245,6 +245,35 @@ def _say_unfused(why):
         )
 
 
+def _block_mask(create_block_mask, mask_mod, batch, heads, seq, keys, device):
+    """The block mask for a mask function, built once.
+
+    A mask of positions is the same for every batch, so it is built once per
+    shape and kept. A mask that reads the batch's documents is not: its factory
+    marks it with what it reads, and it is built for the first layer that asks,
+    shared by every later layer given the same documents, and replaced, not
+    added to, when the next batch's arrive.
+    """
+    reads = getattr(mask_mod, "reads", None)
+    shape = (batch, heads, seq, keys, device)
+    if reads is None:
+        key = (mask_mod,) + shape
+        if key not in _BLOCK_MASKS:
+            _BLOCK_MASKS[key] = create_block_mask(mask_mod, batch, heads, seq, keys, device=device)
+        return _BLOCK_MASKS[key]
+    import weakref
+
+    versions = tuple(t._version for t in reads)
+    held = _BLOCK_MASKS.get(mask_mod.__code__)
+    if held is not None:
+        refs, was_versions, was_shape, block_mask = held
+        if was_shape == shape and was_versions == versions and all(r() is t for r, t in zip(refs, reads)):
+            return block_mask
+    block_mask = create_block_mask(mask_mod, batch, heads, seq, keys, device=device)
+    _BLOCK_MASKS[mask_mod.__code__] = (tuple(weakref.ref(t) for t in reads), versions, shape, block_mask)
+    return block_mask
+
+
 def expression_attention(
     q, k, v, mask_mod=None, score_mod=None, mask_heads=False, mask_batch=False, scale=None, sinks=None
 ):
@@ -280,11 +309,15 @@ def expression_attention(
         try:
             block_mask = None
             if mask_mod is not None:
-                key = (mask_mod, batch if mask_batch else None, heads if mask_heads else None, seq, keys, q.device)
-                block_mask = _BLOCK_MASKS.get(key)
-                if block_mask is None:
-                    block_mask = create_block_mask(mask_mod, key[1], key[2], seq, keys, device=q.device)
-                    _BLOCK_MASKS[key] = block_mask
+                block_mask = _block_mask(
+                    create_block_mask,
+                    mask_mod,
+                    batch if mask_batch else None,
+                    heads if mask_heads else None,
+                    seq,
+                    keys,
+                    q.device,
+                )
             if sinks is None:
                 return flex(q, k, v, score_mod=score_mod, block_mask=block_mask, scale=scale, enable_gqa=grouped)
             out, lse = flex(
@@ -586,9 +619,15 @@ func (c *ctx) attentionFunction(kind string, n attnexpr.Node, heads float64) str
 		signature = "score, " + signature
 	}
 	if len(tables) > 0 {
+		// A mask says what it reads, so its block mask is built once for the
+		// batch those documents are and shared by every layer that reads them.
+		reads := ""
+		if kind == "mask" {
+			reads = fmt.Sprintf("    mask_mod.reads = (%s,)\n", strings.Join(tables, ", "))
+		}
 		c.attnFuncs = append(c.attnFuncs, fmt.Sprintf(
-			"def %s(%s):\n    \"\"\"%s\"\"\"\n\n    def %s_mod(%s):\n        return %s\n\n    return %s_mod\n",
-			name, strings.Join(tables, ", "), attnexpr.String(n), kind, signature, body, kind))
+			"def %s(%s):\n    \"\"\"%s\"\"\"\n\n    def %s_mod(%s):\n        return %s\n\n%s    return %s_mod\n",
+			name, strings.Join(tables, ", "), attnexpr.String(n), kind, signature, body, reads, kind))
 		return name
 	}
 	c.attnFuncs = append(c.attnFuncs, fmt.Sprintf("def %s(%s):\n    \"\"\"%s\"\"\"\n    return %s\n",
@@ -1135,10 +1174,6 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 							vars[i] = inputVar(node.ID, name)
 						}
 						fn += "(" + strings.Join(vars, ", ") + ")"
-						c.warn("%s: the mask reads %s, each batch's documents. The model keeps them apart, "+
-							"but on CUDA it builds and keeps a new block mask on every call; building one per "+
-							"batch and sharing it between layers is the next phase of packed sequences.",
-							path, strings.Join(tables, ", "))
 					}
 					args = append(args, "mask_mod="+fn)
 					if attnexpr.Uses(m, "h") {

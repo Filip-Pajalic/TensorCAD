@@ -198,7 +198,8 @@ def mask_mod_1(b, h, q_idx, kv_idx):
 
 with causal, the window and the cap folded in, and the attention calls
 `expression_attention`. On CUDA that compiles `flex_attention` the first time it
-is called, with a block mask built once per shape. Anywhere else, or where it
+is called, with a block mask built once per shape, or once per batch for a mask
+that reads the documents. Anywhere else, or where it
 does not compile — without Triton, which includes Windows — it applies the same
 two functions to the whole score matrix and says once on a GPU that it is
 running unfused. That form is what a CPU verifies, profiles and exports, and a
@@ -234,6 +235,9 @@ quietly dropped.
   the engine can make up.
 - **The cache.** A mask that bounds how far back a query looks does not shrink
   the KV-cache estimate; `window` does, and is what to use for a sliding window.
-- **Block granularity.** A kernel computes whole blocks, so a mask that keeps a
-  sliver of every block costs more than its share says. The count is the share;
-  the preview shows the blocks.
+- **Block granularity, in general.** A kernel computes whole blocks, so a mask
+  that keeps a sliver of every block costs more than its share says. The count
+  is the share, and the preview shows the blocks. A mask that reads the
+  documents under a packing also reports the blocks, as
+  `flops.packed.fwdAttentionBlocks`, because that is where the difference is
+  largest.

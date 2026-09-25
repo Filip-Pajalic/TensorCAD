@@ -380,6 +380,12 @@ export interface PackedFlops {
   fwdTotal: number;
   trainPerToken: number;
   attentionShare: number;
+  /**
+   * The attention as FlexAttention computes it: every 128-by-128 block holding
+   * a score the mask keeps, computed whole. More than `fwdAttention` wherever
+   * document boundaries cut through blocks, which short documents do.
+   */
+  fwdAttentionBlocks: number;
 }
 
 /** One sequence's forward pass, per token of that sequence. */

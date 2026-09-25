@@ -66,6 +66,7 @@ export function analysisJson(a: AnalysisResult): Record<string, unknown> {
               fwd_total: n(a.flops.packed.fwdTotal),
               train_per_token: n(a.flops.packed.trainPerToken),
               attention_share: n(a.flops.packed.attentionShare),
+              fwd_attention_blocks: n(a.flops.packed.fwdAttentionBlocks),
             },
           }
         : {}),
@@ -203,6 +204,11 @@ export function analysisText(a: AnalysisResult, opts: { title?: string } = {}): 
       rows(
         [
           ["forward attention", finite(packed.fwdAttention, formatFlops)],
+          [
+            "  as the kernel runs it",
+            finite(packed.fwdAttentionBlocks, formatFlops),
+            `${(packed.fwdAttentionBlocks / packed.fwdAttention).toFixed(2)}x: whole 128-token blocks`,
+          ],
           ["training fwd+bwd", finite(packed.trainPerToken, formatFlops), "what the cost is counted from"],
           ["attention share", percent(packed.attentionShare)],
         ],

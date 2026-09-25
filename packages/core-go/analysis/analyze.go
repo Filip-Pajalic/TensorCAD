@@ -294,10 +294,11 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 			Streams:            streams,
 		})
 		flops.Packed = &PackedFlops{
-			FwdAttention:   p.FwdAttention,
-			FwdTotal:       p.FwdTotal,
-			TrainPerToken:  p.TrainPerToken,
-			AttentionShare: p.AttentionShare,
+			FwdAttention:       p.FwdAttention,
+			FwdTotal:           p.FwdTotal,
+			TrainPerToken:      p.TrainPerToken,
+			AttentionShare:     p.AttentionShare,
+			FwdAttentionBlocks: p.FwdAttentionBlocks,
 		}
 		trainFlops = p.TrainPerToken
 	}

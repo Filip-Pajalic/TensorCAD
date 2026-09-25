@@ -427,6 +427,8 @@ describe("the compiled engine", () => {
     // 491 keys a query rather than 4,096, and serving untouched.
     expect((4096 * packed.flops.packed!.fwdAttention) / one.flops.fwdAttention).toBeCloseTo(491.1, -0.5);
     expect(packed.flops.fwdTotal).toBe(one.flops.fwdTotal);
+    // And what the kernel computes, in whole blocks.
+    expect(packed.flops.packed!.fwdAttentionBlocks / packed.flops.packed!.fwdAttention).toBeCloseTo(1.37, 1);
     expect(packed.cost.gpuHours / one.cost.gpuHours).toBeCloseTo(
       packed.flops.packed!.trainPerToken / one.flops.trainPerToken,
       12,

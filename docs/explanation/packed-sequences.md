@@ -1,6 +1,6 @@
 # Packed sequences: a mask that reads the batch
 
-*A proposal for M12. Phase 1 is built; the rest is not. It was written first,
+*A proposal for M12. Phases 1 and 2 are built; the rest is not. It was written first,
 as M10's and M11's were, because it decides what the training figures mean.
 Before it, they counted the attention of one document filling the whole
 sequence. Pretraining is rarely run that way.*
@@ -88,6 +88,20 @@ documents, every boundary makes straddlers:
 These are per document. Documents that do not start on a block boundary do
 worse. `attention-expressions.md` already names block granularity as a gap, and
 document masking is where it stops being small.
+
+*Phase 2 counted it.* A stream starts its documents anywhere, so nearly every
+boundary cuts through blocks. Averaged over every phase, fixed documents at
+8,192 cost the kernel:
+
+| Documents | Scores computed ÷ scores kept |
+|---|---:|
+| 2,048 tokens | 1.19× |
+| 1,024 tokens | 1.37× |
+| 512 tokens | 1.74× |
+| 256 tokens | 2.48× |
+| 128 tokens | 3.94× |
+
+The aligned table above understates these.
 
 ## The design
 
@@ -233,6 +247,47 @@ says what the mask is for.
      made-up packing.
    - The isolation test in both forms, and `BlockMask`'s own count against the
      engine's block figure.
+
+   *Done.*
+   - **The block mask, once a batch.** The generated helper's cache used to be
+     keyed by the mask function, which a factory makes anew every call. Now:
+     - A mask factory marks what it returns with the tensors it read.
+     - `_block_mask` builds the block mask for the first layer that asks, and
+       shares it with every later layer handed the same documents: the same
+       tensor, at the same version.
+     - It replaces that entry when the next batch's documents arrive, so it
+       keeps one block mask per mask, not one per step.
+   - **The runtime's packing.** `tensorcad_runtime.packing` draws documents the
+     way the engine does: gamma-distributed lengths laid end to end, each row
+     a window of the stream. `verify` feeds it to a documents input:
+     - its lengths average a quarter of the row, exponentially spread;
+     - the forward pass, the profiled FLOPs and the export all run on it.
+     `smoke-train` and `trace` feed token ids alone. For a design with more
+     than one input, they now say so rather than fail on the call.
+   - **The kernel's blocks.**
+     - `flops.packed.fwdAttentionBlocks` is the attention with every 128 × 128
+       block holding a kept score computed whole.
+     - Whether a block holds one is decided for the whole block at once, over
+       the ranges of positions it covers, by interval arithmetic on the mask.
+       A row's document ids never fall, so reading them over a range is the
+       first and last document in it, and for a mask of documents and
+       positions the answer is exact. For any other mask it can only count a
+       block the kernel would skip, never miss one it computes.
+     - A test checks that against evaluating every point of thousands of
+       random boxes, and against the exact count for fixed documents.
+   - **Held against PyTorch.** On llama-3-8b scaled to two million parameters,
+     with the mask in every layer, at 512 tokens in 96-token documents:
+     - One document's tokens changed move no other document's outputs, and no
+       other row's, by exactly zero, over a whole forward pass.
+     - `flex_attention`, given the model's own mask and a block mask
+       `create_block_mask` built, computes what the eager form computes, also
+       to zero.
+     - Over 256 rows of the runtime's packing, the scores kept, counted one by
+       one, are within 0.7% of the engine's figure for fixed lengths and 2.6%
+       for exponential ones.
+     - The blocks `create_block_mask` says a kernel computes are within 0.1%.
+     - The block figure is 4.9 times the scores kept there: 96-token documents
+       against 128-token blocks.
 3. **Positions that restart.** The `positions` role and `rope` reading it, held
    against Hugging Face's flattening collator.
 4. **The editor and the rules.**
@@ -266,6 +321,10 @@ says what the mask is for.
   change their generated `forward` to take documents. That is a change to three
   presets' code, for a mask the paper found made little difference at their
   length.
+- **Training with real boundaries.** `smoke-train` reads its corpus as one
+  stream of tokens and does not know where documents end, so it cannot train a
+  design that keeps them apart, and says so. Recording the boundaries as the
+  corpus is tokenized would let it.
 - **Context parallelism.** Splitting a packed sequence across devices balances
   badly when documents are uneven. The planner does not model that, and this
   does not change it.

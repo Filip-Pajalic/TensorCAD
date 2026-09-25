@@ -952,6 +952,9 @@ var Primitives = []*BlockDef{
 			}
 			perKey := 2 * r.Num("heads") * (r.Num("head_dim") + vDim)
 			f := FlopsPerToken{FwdSeq: perKey * keys, FwdSeqUnmasked: perKey * seen}
+			if a.Documents && c.Packing != nil && !a.Cross {
+				f.FwdSeqBlocks = perKey * a.KernelKeys(c.T, *c.Packing)
+			}
 			if s := a.Score(); s != nil {
 				// On the scores the kernel computes: a fused one changes them
 				// inside the blocks it does not skip, so the mask counts here

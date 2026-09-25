@@ -45,6 +45,7 @@ import struct
 from typing import Any, Callable
 
 from .loader import ModelFile, design_hash, find_model_class, load_module, read_design, resolve_symbols
+from .packing import several_inputs
 
 # "Small enough to look at" is the whole premise. A trace of a model this size is
 # a few megabytes; of anything much larger it is not a picture any more.
@@ -175,6 +176,11 @@ def trace_model(
     if design is None:
         raise ValueError("a trace needs the design beside the model, to know the block paths")
     symbols = resolve_symbols(design)
+    several = several_inputs(design)
+    if several:
+        raise ValueError(
+            f"this design takes {len(several)} inputs ({', '.join(several)}), and a trace runs token ids alone"
+        )
 
     torch.manual_seed(seed)
     module = load_module(info.path)

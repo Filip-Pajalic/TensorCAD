@@ -45,6 +45,12 @@ the target's length and `--source` the source's, which defaults to the design's
 own `S`. The report's `inputs` says what each was called with, and
 `flops_per_token` is per target token, as the analysis's figures are.
 
+A design that keeps packed documents apart takes its documents beside its
+tokens, and the runtime makes up a packing for them: documents a quarter of the
+row long on average, exponentially spread, cut into rows wherever they fall.
+The profiled FLOPs do not depend on it, since a profiler counts attention as if
+nothing were masked.
+
 The harness reads the design's own `input` block for the shape and dtype of the
 tensor to feed, so a vision model gets `B C H W` floats rather than token ids.
 

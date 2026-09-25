@@ -115,8 +115,19 @@ def _example_input(in_spec, vocab: int, batch: int, seq: int, *, device=None, co
 
     dims = [batch, seq]
     dtype = "int64"
+    role = "tokens"
     if in_spec:
         dims, dtype = in_spec[0], in_spec[1]
+        if len(in_spec) > 3:
+            role = in_spec[3]
+
+    if role == "documents" and concrete and len(dims) == 2:
+        # A packing, as a pretraining pipeline makes one: documents a quarter
+        # of the row long on average, exponentially spread, cut into rows
+        # wherever they fall. Anywhere a value is not read, one document.
+        from .packing import draw_documents
+
+        return draw_documents(dims[0], dims[1], mean=max(1, dims[1] // 4), spread=1.0)
 
     if dtype in ("fp32", "bf16"):
         td = torch.float32 if dtype == "fp32" else torch.bfloat16

@@ -20,8 +20,8 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 | M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
-| M10 Attention variants | **Phases 1, 2 and 4 done; phase 3 two thirds done.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Phase 3 is two thirds done: BLOOM-7b1's ALiBi is a score expression and gpt-oss-20b brings attention sinks, both reproducing their published parameter counts exactly and both held against Hugging Face's own construction of what they add. Differential attention is two fused attentions and a combine, held against Microsoft's reference, and attention can be written out on purpose, with talking heads, at a cost a rule states. Only T5 remains, and it wants a milestone of its own. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
-| M11 Encoder–decoder | **Phases 1, 2 and 3 done.** A second sequence, and cross-attention to it, so T5 can be drawn and M10 can close: a source length `S` beside `T`, each block counted at the tokens of its own stream, cross-attention, a repeat that hands every layer the same tensor, and expressions that read a tensor — T5's shared relative-bias table, which is Hugging Face's to the bit and learns through FlexAttention. Only the two T5 presets remain. Every decoder-only number is held unchanged. [docs/explanation/encoder-decoder.md](docs/explanation/encoder-decoder.md). |
+| M10 Attention variants | **Done.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Phase 3 is two thirds done: BLOOM-7b1's ALiBi is a score expression and gpt-oss-20b brings attention sinks, both reproducing their published parameter counts exactly and both held against Hugging Face's own construction of what they add. Differential attention is two fused attentions and a combine, held against Microsoft's reference, and attention can be written out on purpose, with talking heads, at a cost a rule states. T5's relative bias came last, through M11's second sequence. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
+| M11 Encoder–decoder | **Done.** A second sequence, and cross-attention to it, so T5 can be drawn and M10 can close: a source length `S` beside `T`, each block counted at the tokens of its own stream, cross-attention, a repeat that hands every layer the same tensor, and expressions that read a tensor — T5's shared relative-bias table, which is Hugging Face's to the bit and learns through FlexAttention. `t5-small` and `flan-t5-base` reproduce their published counts exactly and compute what Hugging Face's T5 computes, weight for weight. Every decoder-only number is held unchanged. [docs/explanation/encoder-decoder.md](docs/explanation/encoder-decoder.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -322,7 +322,7 @@ can be copied to another machine; a trace of an earlier version of the design
 is loaded but said to be one. The browser suite reloads the page, opens only
 the design, and finds its values; with the shelf taken away, that check fails.
 
-### M10 — Attention variants · Phases 1, 2 and 4 done; T5 left
+### M10 — Attention variants · Done
 
 The open question below, *how far to go op-level*, has a proposal:
 [Attention variants](docs/explanation/attention-variants.md). Attention stays one
@@ -380,7 +380,7 @@ kernel before anything is added.
    active, biases everywhere, and sinks. It reproduces the 20,914,757,184
    parameters Hugging Face reports in the analysis and in PyTorch, and OpenAI's
    3.61B active is the design's non-embedding active count. YaRN and the
-   experts' clamped SwiGLU are recorded and not generated.
+   experts' clamped SwiGLU are recorded and not generated. *T5 done*, through M11: `t5-small` and `flan-t5-base`, each stack's learned `[buckets, heads]` table read by every layer's score expression. Both reproduce their published counts exactly, and each is held weight for weight against a transcription of Hugging Face's T5.
 4. **Sinks, differential attention, and an eager block** for what is not a score.
    *Sinks done:* a learned score per head on `sdpa`, `gqa_attention` and
    `transformer_block`, counted as `heads` parameters and generated through
@@ -405,10 +405,10 @@ kernel before anything is added.
    tensor can be as long as the sequence twice — and the `eager-attention` rule
    says how many bytes that is at the operating point. Held against PyTorch's
    fused attention at the identity and the paper's formulation with the mixes
-   learned. That finishes phase 4; T5, which needs encoder–decoder support and
-   a learned table inside a score, is left for a milestone of its own.
+   learned. That finishes phase 4; T5, which needed encoder–decoder support and
+   a learned table inside a score, was M11.
 
-### M11 — Encoder–decoder · Phases 1, 2 and 3 done
+### M11 — Encoder–decoder · Done
 
 M10's finishing line includes a relative-bias preset, and the relative-bias
 model is T5, an encoder–decoder. The engine assumes one sequence in five
@@ -457,6 +457,21 @@ adds a second sequence without changing what any existing number means:
    in PyTorch, count, FLOPs and export.
 4. **The presets** — `t5-small` (60,506,624; its checkpoint holds 256 more, a
    table the model never reads) and `flan-t5-base` (247,577,856), exact.
+   *Done:* both reproduce their counts in the analysis and in PyTorch, their
+   profiled FLOPs match, and a transcription of Hugging Face's T5, given the
+   generated model's own weights under Hugging Face's names, computes the same
+   logits — using every weight exactly once. What they needed:
+   - `scale` on `gqa_attention` and `transformer_block`, down to both
+     attentions, since T5's is unscaled; `norm_eps`, since its norms add 1e-6.
+   - `tied` on `embedding`: the decoder reads the encoder's table.
+   - Not a new switch for t5-small's scaled tied head: the `scale` block
+     before it says `1/sqrt(D)`.
+
+   Three things surfaced. A symbol only an attention expression reads was
+   reported unused. The walkthrough narrated two stacks as one, and every
+   decoder's context cache as 0 B. And the Hoffmann loss differed between the
+   goldens and the editor in its last bit, because `math.Exp` is assembly on
+   amd64 and plain Go in WebAssembly; it is reported to twelve decimals now.
 
 **Done when** both presets reproduce in the analysis and in PyTorch, their bias
 matches Hugging Face's construction of it, a profiler agrees with a small

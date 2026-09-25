@@ -67,6 +67,14 @@ func withExpressions(r *Resolved, params map[string]any) map[string]any {
 	return params
 }
 
+// withScale passes an attention's scale on to the block it expands into, and
+// only when the design set one.
+func withScale(r *Resolved, raw map[string]any, params map[string]any) {
+	if _, set := r.P["scale"].(float64); set {
+		params["scale"] = Ex(raw["scale"], "1")
+	}
+}
+
 // writtenOutSpec and talkingHeadsSpec switch an attention to the eager block.
 // Unset rather than false, like sinks, so a design that never mentions them
 // generates exactly the code it did.
@@ -217,6 +225,7 @@ var gqaAttention = &BlockDef{
 			"Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)")},
 		{"output_gate", pBool(false,
 			"Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)")},
+		{"scale", attnScaleSpec()},
 	},
 	PortsFn: func(r *Resolved) Ports {
 		in := map[string]PortSpec{"x": Port("... d_model")}
@@ -255,6 +264,9 @@ var gqaAttention = &BlockDef{
 			}
 			if r.Bool("sinks") {
 				lost = append(lost, "sinks")
+			}
+			if _, set := r.P["scale"].(float64); set {
+				lost = append(lost, "scale")
 			}
 			if len(lost) > 0 {
 				out = append(out, BlockFinding{
@@ -497,8 +509,7 @@ var crossAttention = &BlockDef{
 		{"head_dim", pInt(1, "Width of one head")},
 		{"bias", pBool(false, "Bias on the projections")},
 		{"flash", pBool(true, "Assume a memory-efficient kernel")},
-		{"scale", ParamSpec{Type: ParamNum, Default: nil, HasDefault: true,
-			Doc: "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"}},
+		{"scale", attnScaleSpec()},
 	},
 	PortsFn: func(r *Resolved) Ports {
 		memory := "d_model"
@@ -543,9 +554,7 @@ func expandCross(raw map[string]any, r *Resolved) Expansion {
 		"causal": false, "cross": true,
 		"flash": !isFalse(r.P["flash"]),
 	}
-	if _, set := r.P["scale"].(float64); set {
-		attn["scale"] = Ex(raw["scale"], "1")
-	}
+	withScale(r, raw, attn)
 	nodes := []ir.NodeDef{
 		inNode,
 		node("q_proj", "linear", map[string]any{"in_features": D, "out_features": H + "*" + dh, "bias": bias}),
@@ -652,13 +661,15 @@ func expandGQA(raw map[string]any, r *Resolved) Expansion {
 		qTail, kTail = "rope_q:y", "rope_k:y"
 	}
 
-	attn := node("attn", "sdpa", withExpressions(r, map[string]any{
+	sdpa := withExpressions(r, map[string]any{
 		"heads": H, "kv_heads": KV, "head_dim": dh,
 		"causal":        r.Bool("causal"),
 		"window":        Ex(raw["window"], "0"),
 		"flash":         !isFalse(r.P["flash"]),
 		"logit_softcap": Ex(raw["logit_softcap"], "0"),
-	}))
+	})
+	withScale(r, raw, sdpa)
+	attn := node("attn", "sdpa", sdpa)
 	if writtenOut(r) {
 		attn = node("attn", "eager_attention", map[string]any{
 			"heads": H, "kv_heads": KV, "head_dim": dh,
@@ -1310,6 +1321,12 @@ var transformerBlock = &BlockDef{
 		{"output_gate", when(grouped(pBool(false,
 			"Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"),
 			"Attention"), "attention", "gqa")},
+		{"scale", when(grouped(ParamSpec{Type: ParamNum, Default: nil, HasDefault: true,
+			Doc: "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), " +
+				"and T5 uses 1"}, "Attention"), "attention", "gqa")},
+		{"norm_eps", grouped(ParamSpec{Type: ParamNum, Default: nil, HasDefault: true,
+			Doc: "Added inside every norm's square root, against dividing by zero; unset is the norm's own " +
+				"1e-5, and T5 uses 1e-6"}, "Normalization")},
 	},
 	// The value-embedding port only exists when the block asks for it, which is
 	// why these are computed rather than declared.
@@ -1339,10 +1356,14 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 	D := Ex(raw["d_model"], "0")
 	normType := r.Str("norm")
 	normParams := func() map[string]any {
+		p := map[string]any{"dim": D}
 		if normType == "layernorm" {
-			return map[string]any{"dim": D, "bias": r.Bool("norm_bias")}
+			p["bias"] = r.Bool("norm_bias")
 		}
-		return map[string]any{"dim": D}
+		if eps, set := r.P["norm_eps"].(float64); set {
+			p["eps"] = eps
+		}
+		return p
 	}
 
 	// The value-embedding stream passes straight through to the attention,
@@ -1417,7 +1438,7 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 			"bias":     r.Bool("attn_bias"),
 		})
 	} else {
-		attnNode = node("attn", "gqa_attention", withExpressions(r, map[string]any{
+		gqa := withExpressions(r, map[string]any{
 			"d_model":          D,
 			"heads":            Ex(raw["heads"], "0"),
 			"kv_heads":         Ex(raw["kv_heads"], "0"),
@@ -1431,7 +1452,9 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 			"logit_softcap":    Ex(raw["logit_softcap"], "0"),
 			"value_embeddings": ve,
 			"output_gate":      r.Bool("output_gate"),
-		}))
+		})
+		withScale(r, raw, gqa)
+		attnNode = node("attn", "gqa_attention", gqa)
 	}
 
 	nodes := []ir.NodeDef{
@@ -1466,6 +1489,7 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 			"head_dim": Ex(raw["head_dim"], "0"),
 			"bias":     r.Bool("attn_bias"),
 		}
+		withScale(r, raw, crossParams)
 		nodes = append(nodes,
 			node("norm_cross", normType, normParams()),
 			node("cross", "cross_attention", crossParams),

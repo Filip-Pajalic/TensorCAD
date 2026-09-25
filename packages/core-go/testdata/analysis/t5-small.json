@@ -1,0 +1,1761 @@
+{
+  "preset": "t5-small",
+  "cases": [
+    {
+      "label": "default",
+      "options": {
+        "T": 114,
+        "B": 1,
+        "dtype": "bf16",
+        "inferenceDtype": "bf16",
+        "kvDtype": "bf16",
+        "hardware": "h100-sxm",
+        "gpus": 1,
+        "parallel": {
+          "dp": 1,
+          "tp": 1,
+          "pp": 1,
+          "ep": 1,
+          "zero": 0,
+          "sequenceParallel": false
+        },
+        "optimizer": "adamw",
+        "recompute": "none",
+        "flash": true,
+        "tokens": 881141760,
+        "tokensWereDefaulted": true,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 1
+      },
+      "params": {
+        "total": 60506624,
+        "active": 60506624,
+        "embedding": 16449536,
+        "head": 0,
+        "nonEmbedding": 44057088,
+        "nonEmbeddingActive": 44057088,
+        "byPath": [
+          [
+            "dec_bias",
+            256
+          ],
+          [
+            "decoder/block/attn/k_proj",
+            1572864
+          ],
+          [
+            "decoder/block/attn/o_proj",
+            1572864
+          ],
+          [
+            "decoder/block/attn/q_proj",
+            1572864
+          ],
+          [
+            "decoder/block/attn/v_proj",
+            1572864
+          ],
+          [
+            "decoder/block/cross/k_proj",
+            1572864
+          ],
+          [
+            "decoder/block/cross/o_proj",
+            1572864
+          ],
+          [
+            "decoder/block/cross/q_proj",
+            1572864
+          ],
+          [
+            "decoder/block/cross/v_proj",
+            1572864
+          ],
+          [
+            "decoder/block/mlp/down",
+            6291456
+          ],
+          [
+            "decoder/block/mlp/up",
+            6291456
+          ],
+          [
+            "decoder/block/norm1",
+            3072
+          ],
+          [
+            "decoder/block/norm2",
+            3072
+          ],
+          [
+            "decoder/block/norm_cross",
+            3072
+          ],
+          [
+            "embed",
+            16449536
+          ],
+          [
+            "enc_bias",
+            256
+          ],
+          [
+            "enc_norm",
+            512
+          ],
+          [
+            "encoder/block/attn/k_proj",
+            1572864
+          ],
+          [
+            "encoder/block/attn/o_proj",
+            1572864
+          ],
+          [
+            "encoder/block/attn/q_proj",
+            1572864
+          ],
+          [
+            "encoder/block/attn/v_proj",
+            1572864
+          ],
+          [
+            "encoder/block/mlp/down",
+            6291456
+          ],
+          [
+            "encoder/block/mlp/up",
+            6291456
+          ],
+          [
+            "encoder/block/norm1",
+            3072
+          ],
+          [
+            "encoder/block/norm2",
+            3072
+          ],
+          [
+            "final_norm",
+            512
+          ]
+        ],
+        "byCategory": [
+          [
+            "embedding",
+            16449536
+          ],
+          [
+            "linear",
+            44040192
+          ],
+          [
+            "norm",
+            16384
+          ],
+          [
+            "position",
+            512
+          ]
+        ],
+        "byType": [
+          [
+            "embedding",
+            16449536
+          ],
+          [
+            "linear",
+            44040192
+          ],
+          [
+            "position_bias",
+            512
+          ],
+          [
+            "rmsnorm",
+            16384
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 274733810.52631575,
+        "fwdAttention": 35248235.78947368,
+        "fwdAttentionUnmasked": 35948651.78947368,
+        "fwdTotal": 309982046.31578946,
+        "fwdTotalUnmasked": 310682462.31578946,
+        "elementwise": 1959971.087719298,
+        "trainPerToken": 929946138.9473684,
+        "attentionShare": 0.11371057197798186,
+        "ruleOfThumb2N": 88114176,
+        "ruleOfThumb6N": 264342528,
+        "byPath": [
+          [
+            "decoder/block/attn/attn",
+            700416
+          ],
+          [
+            "decoder/block/attn/k_proj",
+            3145728
+          ],
+          [
+            "decoder/block/attn/o_proj",
+            3145728
+          ],
+          [
+            "decoder/block/attn/q_proj",
+            3145728
+          ],
+          [
+            "decoder/block/attn/v_proj",
+            3145728
+          ],
+          [
+            "decoder/block/cross/attn",
+            6291456
+          ],
+          [
+            "decoder/block/cross/k_proj",
+            14128181.894736841
+          ],
+          [
+            "decoder/block/cross/o_proj",
+            3145728
+          ],
+          [
+            "decoder/block/cross/q_proj",
+            3145728
+          ],
+          [
+            "decoder/block/cross/v_proj",
+            14128181.894736841
+          ],
+          [
+            "decoder/block/mlp/down",
+            12582912
+          ],
+          [
+            "decoder/block/mlp/up",
+            12582912
+          ],
+          [
+            "encoder/block/attn/attn",
+            28256363.789473683
+          ],
+          [
+            "encoder/block/attn/k_proj",
+            14128181.894736841
+          ],
+          [
+            "encoder/block/attn/o_proj",
+            14128181.894736841
+          ],
+          [
+            "encoder/block/attn/q_proj",
+            14128181.894736841
+          ],
+          [
+            "encoder/block/attn/v_proj",
+            14128181.894736841
+          ],
+          [
+            "encoder/block/mlp/down",
+            56512727.578947365
+          ],
+          [
+            "encoder/block/mlp/up",
+            56512727.578947365
+          ],
+          [
+            "head",
+            32899072
+          ]
+        ],
+        "byCategory": [
+          [
+            "attention",
+            35248235.78947368
+          ],
+          [
+            "head",
+            32899072
+          ],
+          [
+            "linear",
+            241834738.52631575
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 12288,
+        "bytesPerSequenceFixed": 6291456,
+        "byPath": [
+          [
+            "decoder/block/attn/attn",
+            12288
+          ],
+          [
+            "decoder/block/cross/attn",
+            6291456
+          ]
+        ]
+      },
+      "memory": {
+        "weightsBytes": 121013248,
+        "train": {
+          "weights": 121013248,
+          "grads": 121013248,
+          "optimizer": 726079488,
+          "activations": 98577664,
+          "logits": 21975552,
+          "total": 1066683648,
+          "perGpu": {
+            "weights": 121013248,
+            "grads": 121013248,
+            "optimizer": 726079488,
+            "activations": 98577664,
+            "total": 1066683648
+          },
+          "activationsByPath": [
+            [
+              "decoder",
+              116736
+            ],
+            [
+              "decoder/block/_in",
+              700416
+            ],
+            [
+              "decoder/block/attn/_in",
+              700416
+            ],
+            [
+              "decoder/block/attn/attn",
+              722304
+            ],
+            [
+              "decoder/block/attn/k_heads",
+              700416
+            ],
+            [
+              "decoder/block/attn/o_merge",
+              700416
+            ],
+            [
+              "decoder/block/attn/q_heads",
+              700416
+            ],
+            [
+              "decoder/block/attn/v_heads",
+              700416
+            ],
+            [
+              "decoder/block/cross/_in",
+              700416
+            ],
+            [
+              "decoder/block/cross/attn",
+              722304
+            ],
+            [
+              "decoder/block/cross/k_heads",
+              3145728
+            ],
+            [
+              "decoder/block/cross/o_merge",
+              700416
+            ],
+            [
+              "decoder/block/cross/q_heads",
+              700416
+            ],
+            [
+              "decoder/block/cross/v_heads",
+              3145728
+            ],
+            [
+              "decoder/block/mlp/_in",
+              700416
+            ],
+            [
+              "decoder/block/mlp/act",
+              2801664
+            ],
+            [
+              "decoder/block/mlp/up",
+              2801664
+            ],
+            [
+              "decoder/block/resid1",
+              700416
+            ],
+            [
+              "decoder/block/resid_cross",
+              700416
+            ],
+            [
+              "enc_norm",
+              524288
+            ],
+            [
+              "encoder",
+              524288
+            ],
+            [
+              "encoder/block/_in",
+              3145728
+            ],
+            [
+              "encoder/block/attn/_in",
+              3145728
+            ],
+            [
+              "encoder/block/attn/attn",
+              3244032
+            ],
+            [
+              "encoder/block/attn/k_heads",
+              3145728
+            ],
+            [
+              "encoder/block/attn/o_merge",
+              3145728
+            ],
+            [
+              "encoder/block/attn/q_heads",
+              3145728
+            ],
+            [
+              "encoder/block/attn/v_heads",
+              3145728
+            ],
+            [
+              "encoder/block/mlp/_in",
+              3145728
+            ],
+            [
+              "encoder/block/mlp/act",
+              12582912
+            ],
+            [
+              "encoder/block/mlp/up",
+              12582912
+            ],
+            [
+              "encoder/block/resid1",
+              3145728
+            ],
+            [
+              "head",
+              21975552
+            ],
+            [
+              "rescale",
+              116736
+            ]
+          ],
+          "activationsByTensor": [
+            [
+              "decoder/block/_in:x",
+              700416
+            ],
+            [
+              "decoder/block/attn/_in:x",
+              700416
+            ],
+            [
+              "decoder/block/attn/attn",
+              722304
+            ],
+            [
+              "decoder/block/attn/k_heads:y",
+              700416
+            ],
+            [
+              "decoder/block/attn/o_merge:y",
+              700416
+            ],
+            [
+              "decoder/block/attn/q_heads:y",
+              700416
+            ],
+            [
+              "decoder/block/attn/v_heads:y",
+              700416
+            ],
+            [
+              "decoder/block/cross/_in:x",
+              700416
+            ],
+            [
+              "decoder/block/cross/attn",
+              722304
+            ],
+            [
+              "decoder/block/cross/k_heads:y",
+              3145728
+            ],
+            [
+              "decoder/block/cross/o_merge:y",
+              700416
+            ],
+            [
+              "decoder/block/cross/q_heads:y",
+              700416
+            ],
+            [
+              "decoder/block/cross/v_heads:y",
+              3145728
+            ],
+            [
+              "decoder/block/mlp/_in:x",
+              700416
+            ],
+            [
+              "decoder/block/mlp/act:y",
+              2801664
+            ],
+            [
+              "decoder/block/mlp/up:y",
+              2801664
+            ],
+            [
+              "decoder/block/resid1:y",
+              700416
+            ],
+            [
+              "decoder/block/resid_cross:y",
+              700416
+            ],
+            [
+              "decoder:x",
+              116736
+            ],
+            [
+              "enc_norm:y",
+              524288
+            ],
+            [
+              "encoder/block/_in:x",
+              3145728
+            ],
+            [
+              "encoder/block/attn/_in:x",
+              3145728
+            ],
+            [
+              "encoder/block/attn/attn",
+              3244032
+            ],
+            [
+              "encoder/block/attn/k_heads:y",
+              3145728
+            ],
+            [
+              "encoder/block/attn/o_merge:y",
+              3145728
+            ],
+            [
+              "encoder/block/attn/q_heads:y",
+              3145728
+            ],
+            [
+              "encoder/block/attn/v_heads:y",
+              3145728
+            ],
+            [
+              "encoder/block/mlp/_in:x",
+              3145728
+            ],
+            [
+              "encoder/block/mlp/act:y",
+              12582912
+            ],
+            [
+              "encoder/block/mlp/up:y",
+              12582912
+            ],
+            [
+              "encoder/block/resid1:y",
+              3145728
+            ],
+            [
+              "encoder:x",
+              524288
+            ],
+            [
+              "head",
+              21975552
+            ],
+            [
+              "rescale:y",
+              116736
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 121013248,
+          "kv": 7692288,
+          "overhead": 25741107.200000003,
+          "total": 154446643.2
+        },
+        "optimizerLabel": "AdamW, mixed precision (16 B/param)",
+        "notes": []
+      },
+      "throughput": {
+        "ridgePoint": 295.2238805970149,
+        "decodeBytesPerStep": 128705536,
+        "decodeWeightBytes": 121013248,
+        "residentWeightBytes": 121013248,
+        "decodeFlopsPerStep": 309982046.31578946,
+        "decodeSecondsPerStep": 0.00003841956298507463,
+        "decodeTokensPerSecond": 26028.406423792057,
+        "memoryBound": true,
+        "prefillSeconds": 0.00008932748554095046,
+        "notes": [
+          "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
+        ]
+      },
+      "cost": {
+        "totalFlops": 819414377577288700,
+        "gpuHours": 0.5753667969731552,
+        "wallClockHours": 0.5753667969731552,
+        "dollars": 1.438416992432888,
+        "tokens": 881141760,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 881141760,
+        "tokensPerParam": 14.562732172927051,
+        "tokensPerActiveParam": 14.562732172927051,
+        "overTrainingRatio": 1,
+        "predictedLoss": [
+          [
+            "epoch",
+            3.989701063752
+          ],
+          [
+            "hoffmann",
+            3.998291404772
+          ]
+        ],
+        "verdict": "Close to compute-optimal."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 72,
+        "blocks": 81,
+        "repeats": [
+          {
+            "path": "encoder",
+            "type": "repeat",
+            "count": 6,
+            "active": 6
+          },
+          {
+            "path": "decoder",
+            "type": "repeat",
+            "count": 6,
+            "active": 6
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "sharded",
+      "options": {
+        "T": 114,
+        "B": 1,
+        "dtype": "fp8",
+        "inferenceDtype": "fp8",
+        "kvDtype": "fp8",
+        "hardware": "h100-sxm",
+        "gpus": 64,
+        "parallel": {
+          "dp": 4,
+          "tp": 8,
+          "pp": 2,
+          "ep": 1,
+          "zero": 3,
+          "sequenceParallel": true
+        },
+        "optimizer": "adamw8bit",
+        "recompute": "full",
+        "flash": true,
+        "tokens": 15000000000000,
+        "tokensWereDefaulted": false,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 32
+      },
+      "params": {
+        "total": 60506624,
+        "active": 60506624,
+        "embedding": 16449536,
+        "head": 0,
+        "nonEmbedding": 44057088,
+        "nonEmbeddingActive": 44057088,
+        "byPath": [
+          [
+            "dec_bias",
+            256
+          ],
+          [
+            "decoder/block/attn/k_proj",
+            1572864
+          ],
+          [
+            "decoder/block/attn/o_proj",
+            1572864
+          ],
+          [
+            "decoder/block/attn/q_proj",
+            1572864
+          ],
+          [
+            "decoder/block/attn/v_proj",
+            1572864
+          ],
+          [
+            "decoder/block/cross/k_proj",
+            1572864
+          ],
+          [
+            "decoder/block/cross/o_proj",
+            1572864
+          ],
+          [
+            "decoder/block/cross/q_proj",
+            1572864
+          ],
+          [
+            "decoder/block/cross/v_proj",
+            1572864
+          ],
+          [
+            "decoder/block/mlp/down",
+            6291456
+          ],
+          [
+            "decoder/block/mlp/up",
+            6291456
+          ],
+          [
+            "decoder/block/norm1",
+            3072
+          ],
+          [
+            "decoder/block/norm2",
+            3072
+          ],
+          [
+            "decoder/block/norm_cross",
+            3072
+          ],
+          [
+            "embed",
+            16449536
+          ],
+          [
+            "enc_bias",
+            256
+          ],
+          [
+            "enc_norm",
+            512
+          ],
+          [
+            "encoder/block/attn/k_proj",
+            1572864
+          ],
+          [
+            "encoder/block/attn/o_proj",
+            1572864
+          ],
+          [
+            "encoder/block/attn/q_proj",
+            1572864
+          ],
+          [
+            "encoder/block/attn/v_proj",
+            1572864
+          ],
+          [
+            "encoder/block/mlp/down",
+            6291456
+          ],
+          [
+            "encoder/block/mlp/up",
+            6291456
+          ],
+          [
+            "encoder/block/norm1",
+            3072
+          ],
+          [
+            "encoder/block/norm2",
+            3072
+          ],
+          [
+            "final_norm",
+            512
+          ]
+        ],
+        "byCategory": [
+          [
+            "embedding",
+            16449536
+          ],
+          [
+            "linear",
+            44040192
+          ],
+          [
+            "norm",
+            16384
+          ],
+          [
+            "position",
+            512
+          ]
+        ],
+        "byType": [
+          [
+            "embedding",
+            16449536
+          ],
+          [
+            "linear",
+            44040192
+          ],
+          [
+            "position_bias",
+            512
+          ],
+          [
+            "rmsnorm",
+            16384
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 274733810.52631575,
+        "fwdAttention": 35248235.78947368,
+        "fwdAttentionUnmasked": 35948651.78947368,
+        "fwdTotal": 309982046.31578946,
+        "fwdTotalUnmasked": 310682462.31578946,
+        "elementwise": 1959971.087719298,
+        "trainPerToken": 1239928185.2631578,
+        "attentionShare": 0.11371057197798186,
+        "ruleOfThumb2N": 88114176,
+        "ruleOfThumb6N": 264342528,
+        "byPath": [
+          [
+            "decoder/block/attn/attn",
+            700416
+          ],
+          [
+            "decoder/block/attn/k_proj",
+            3145728
+          ],
+          [
+            "decoder/block/attn/o_proj",
+            3145728
+          ],
+          [
+            "decoder/block/attn/q_proj",
+            3145728
+          ],
+          [
+            "decoder/block/attn/v_proj",
+            3145728
+          ],
+          [
+            "decoder/block/cross/attn",
+            6291456
+          ],
+          [
+            "decoder/block/cross/k_proj",
+            14128181.894736841
+          ],
+          [
+            "decoder/block/cross/o_proj",
+            3145728
+          ],
+          [
+            "decoder/block/cross/q_proj",
+            3145728
+          ],
+          [
+            "decoder/block/cross/v_proj",
+            14128181.894736841
+          ],
+          [
+            "decoder/block/mlp/down",
+            12582912
+          ],
+          [
+            "decoder/block/mlp/up",
+            12582912
+          ],
+          [
+            "encoder/block/attn/attn",
+            28256363.789473683
+          ],
+          [
+            "encoder/block/attn/k_proj",
+            14128181.894736841
+          ],
+          [
+            "encoder/block/attn/o_proj",
+            14128181.894736841
+          ],
+          [
+            "encoder/block/attn/q_proj",
+            14128181.894736841
+          ],
+          [
+            "encoder/block/attn/v_proj",
+            14128181.894736841
+          ],
+          [
+            "encoder/block/mlp/down",
+            56512727.578947365
+          ],
+          [
+            "encoder/block/mlp/up",
+            56512727.578947365
+          ],
+          [
+            "head",
+            32899072
+          ]
+        ],
+        "byCategory": [
+          [
+            "attention",
+            35248235.78947368
+          ],
+          [
+            "head",
+            32899072
+          ],
+          [
+            "linear",
+            241834738.52631575
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 6144,
+        "bytesPerSequenceFixed": 3145728,
+        "byPath": [
+          [
+            "decoder/block/attn/attn",
+            6144
+          ],
+          [
+            "decoder/block/cross/attn",
+            3145728
+          ]
+        ]
+      },
+      "memory": {
+        "weightsBytes": 121013248,
+        "train": {
+          "weights": 121013248,
+          "grads": 121013248,
+          "optimizer": 363039744,
+          "activations": 21926656,
+          "logits": 18312960,
+          "total": 626992896,
+          "perGpu": {
+            "weights": 1890832,
+            "grads": 1890832,
+            "optimizer": 5672496,
+            "activations": 2740832,
+            "total": 12194992
+          },
+          "activationsByPath": [
+            [
+              "decoder",
+              875520
+            ],
+            [
+              "encoder",
+              2359296
+            ],
+            [
+              "head",
+              18312960
+            ],
+            [
+              "rescale",
+              58368
+            ]
+          ],
+          "activationsByTensor": [
+            [
+              "decoder",
+              875520
+            ],
+            [
+              "decoder:x",
+              58368
+            ],
+            [
+              "encoder",
+              2359296
+            ],
+            [
+              "encoder:x",
+              262144
+            ],
+            [
+              "head",
+              18312960
+            ],
+            [
+              "rescale:y",
+              58368
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 60506624,
+          "kv": 123076608,
+          "overhead": 36716646.4,
+          "total": 220299878.4
+        },
+        "optimizerLabel": "8-bit AdamW (10 B/param)",
+        "notes": [
+          "Full recomputation keeps only each layer's input, at the cost of one extra forward pass (8N instead of 6N).",
+          "Pipeline parallelism divides the weights but not the activations of the first stage: under 1F1B it holds one micro-batch worth of the whole model."
+        ]
+      },
+      "throughput": {
+        "ridgePoint": 590.7462686567164,
+        "decodeBytesPerStep": 183583232,
+        "decodeWeightBytes": 60506624,
+        "residentWeightBytes": 60506624,
+        "decodeFlopsPerStep": 9919425482.105263,
+        "decodeSecondsPerStep": 0.000054800964776119404,
+        "decodeTokensPerSecond": 583931.3254927334,
+        "memoryBound": true,
+        "prefillSeconds": 0.0014285175656392117,
+        "notes": [
+          "Decoding is memory-bound at batch 32. It stays that way until the batch passes this device's ridge point of about 591 FLOP per byte."
+        ]
+      },
+      "cost": {
+        "totalFlops": 1.8598922778947367e+22,
+        "gpuHours": 6526.487416114819,
+        "wallClockHours": 101.97636587679405,
+        "dollars": 16316.218540287047,
+        "tokens": 15000000000000,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 881141760,
+        "tokensPerParam": 247906.74158254144,
+        "tokensPerActiveParam": 247906.74158254144,
+        "overTrainingRatio": 17023.36749991284,
+        "predictedLoss": [
+          [
+            "epoch",
+            2.906733162244
+          ],
+          [
+            "hoffmann",
+            2.797253867801
+          ]
+        ],
+        "verdict": "Heavily over-trained, in the range of small models trained on very large corpora."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 72,
+        "blocks": 81,
+        "repeats": [
+          {
+            "path": "encoder",
+            "type": "repeat",
+            "count": 6,
+            "active": 6
+          },
+          {
+            "path": "decoder",
+            "type": "repeat",
+            "count": 6,
+            "active": 6
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "eager",
+      "options": {
+        "T": 8192,
+        "B": 4,
+        "dtype": "bf16",
+        "inferenceDtype": "bf16",
+        "kvDtype": "fp8",
+        "hardware": "h100-sxm",
+        "gpus": 8,
+        "parallel": {
+          "dp": 1,
+          "tp": 1,
+          "pp": 1,
+          "ep": 1,
+          "zero": 0,
+          "sequenceParallel": false
+        },
+        "optimizer": "adamw",
+        "recompute": "selective",
+        "flash": false,
+        "tokens": 881141760,
+        "tokensWereDefaulted": true,
+        "mfu": 0.4,
+        "decodeEfficiency": 0.3,
+        "concurrency": 1
+      },
+      "params": {
+        "total": 60506624,
+        "active": 60506624,
+        "embedding": 16449536,
+        "head": 0,
+        "nonEmbedding": 44057088,
+        "nonEmbeddingActive": 44057088,
+        "byPath": [
+          [
+            "dec_bias",
+            256
+          ],
+          [
+            "decoder/block/attn/k_proj",
+            1572864
+          ],
+          [
+            "decoder/block/attn/o_proj",
+            1572864
+          ],
+          [
+            "decoder/block/attn/q_proj",
+            1572864
+          ],
+          [
+            "decoder/block/attn/v_proj",
+            1572864
+          ],
+          [
+            "decoder/block/cross/k_proj",
+            1572864
+          ],
+          [
+            "decoder/block/cross/o_proj",
+            1572864
+          ],
+          [
+            "decoder/block/cross/q_proj",
+            1572864
+          ],
+          [
+            "decoder/block/cross/v_proj",
+            1572864
+          ],
+          [
+            "decoder/block/mlp/down",
+            6291456
+          ],
+          [
+            "decoder/block/mlp/up",
+            6291456
+          ],
+          [
+            "decoder/block/norm1",
+            3072
+          ],
+          [
+            "decoder/block/norm2",
+            3072
+          ],
+          [
+            "decoder/block/norm_cross",
+            3072
+          ],
+          [
+            "embed",
+            16449536
+          ],
+          [
+            "enc_bias",
+            256
+          ],
+          [
+            "enc_norm",
+            512
+          ],
+          [
+            "encoder/block/attn/k_proj",
+            1572864
+          ],
+          [
+            "encoder/block/attn/o_proj",
+            1572864
+          ],
+          [
+            "encoder/block/attn/q_proj",
+            1572864
+          ],
+          [
+            "encoder/block/attn/v_proj",
+            1572864
+          ],
+          [
+            "encoder/block/mlp/down",
+            6291456
+          ],
+          [
+            "encoder/block/mlp/up",
+            6291456
+          ],
+          [
+            "encoder/block/norm1",
+            3072
+          ],
+          [
+            "encoder/block/norm2",
+            3072
+          ],
+          [
+            "final_norm",
+            512
+          ]
+        ],
+        "byCategory": [
+          [
+            "embedding",
+            16449536
+          ],
+          [
+            "linear",
+            44040192
+          ],
+          [
+            "norm",
+            16384
+          ],
+          [
+            "position",
+            512
+          ]
+        ],
+        "byType": [
+          [
+            "embedding",
+            16449536
+          ],
+          [
+            "linear",
+            44040192
+          ],
+          [
+            "position_bias",
+            512
+          ],
+          [
+            "rmsnorm",
+            16384
+          ]
+        ]
+      },
+      "flops": {
+        "fwdDense": 79691776,
+        "fwdAttention": 57016320,
+        "fwdAttentionUnmasked": 107347968,
+        "fwdTotal": 136708096,
+        "fwdTotalUnmasked": 187039744,
+        "elementwise": 3035904,
+        "trainPerToken": 410124288,
+        "attentionShare": 0.4170661553211889,
+        "ruleOfThumb2N": 88114176,
+        "ruleOfThumb6N": 264342528,
+        "byPath": [
+          [
+            "decoder/block/attn/attn",
+            50331648
+          ],
+          [
+            "decoder/block/attn/k_proj",
+            3145728
+          ],
+          [
+            "decoder/block/attn/o_proj",
+            3145728
+          ],
+          [
+            "decoder/block/attn/q_proj",
+            3145728
+          ],
+          [
+            "decoder/block/attn/v_proj",
+            3145728
+          ],
+          [
+            "decoder/block/cross/attn",
+            6291456
+          ],
+          [
+            "decoder/block/cross/k_proj",
+            196608
+          ],
+          [
+            "decoder/block/cross/o_proj",
+            3145728
+          ],
+          [
+            "decoder/block/cross/q_proj",
+            3145728
+          ],
+          [
+            "decoder/block/cross/v_proj",
+            196608
+          ],
+          [
+            "decoder/block/mlp/down",
+            12582912
+          ],
+          [
+            "decoder/block/mlp/up",
+            12582912
+          ],
+          [
+            "encoder/block/attn/attn",
+            393216
+          ],
+          [
+            "encoder/block/attn/k_proj",
+            196608
+          ],
+          [
+            "encoder/block/attn/o_proj",
+            196608
+          ],
+          [
+            "encoder/block/attn/q_proj",
+            196608
+          ],
+          [
+            "encoder/block/attn/v_proj",
+            196608
+          ],
+          [
+            "encoder/block/mlp/down",
+            786432
+          ],
+          [
+            "encoder/block/mlp/up",
+            786432
+          ],
+          [
+            "head",
+            32899072
+          ]
+        ],
+        "byCategory": [
+          [
+            "attention",
+            57016320
+          ],
+          [
+            "head",
+            32899072
+          ],
+          [
+            "linear",
+            46792704
+          ]
+        ]
+      },
+      "kv": {
+        "bytesPerToken": 6144,
+        "bytesPerSequenceFixed": 3145728,
+        "byPath": [
+          [
+            "decoder/block/attn/attn",
+            6144
+          ],
+          [
+            "decoder/block/cross/attn",
+            3145728
+          ]
+        ]
+      },
+      "memory": {
+        "weightsBytes": 121013248,
+        "train": {
+          "weights": 121013248,
+          "grads": 121013248,
+          "optimizer": 726079488,
+          "activations": 11069161472,
+          "logits": 6316621824,
+          "total": 12037267456,
+          "perGpu": {
+            "weights": 121013248,
+            "grads": 121013248,
+            "optimizer": 726079488,
+            "activations": 11069161472,
+            "total": 12037267456
+          },
+          "activationsByPath": [
+            [
+              "decoder",
+              33554432
+            ],
+            [
+              "decoder/block/_in",
+              201326592
+            ],
+            [
+              "decoder/block/attn/_in",
+              201326592
+            ],
+            [
+              "decoder/block/attn/attn",
+              207618048
+            ],
+            [
+              "decoder/block/attn/k_heads",
+              201326592
+            ],
+            [
+              "decoder/block/attn/o_merge",
+              201326592
+            ],
+            [
+              "decoder/block/attn/q_heads",
+              201326592
+            ],
+            [
+              "decoder/block/attn/v_heads",
+              201326592
+            ],
+            [
+              "decoder/block/cross/_in",
+              201326592
+            ],
+            [
+              "decoder/block/cross/attn",
+              207618048
+            ],
+            [
+              "decoder/block/cross/k_heads",
+              12582912
+            ],
+            [
+              "decoder/block/cross/o_merge",
+              201326592
+            ],
+            [
+              "decoder/block/cross/q_heads",
+              201326592
+            ],
+            [
+              "decoder/block/cross/v_heads",
+              12582912
+            ],
+            [
+              "decoder/block/mlp/_in",
+              201326592
+            ],
+            [
+              "decoder/block/mlp/act",
+              805306368
+            ],
+            [
+              "decoder/block/mlp/up",
+              805306368
+            ],
+            [
+              "decoder/block/resid1",
+              201326592
+            ],
+            [
+              "decoder/block/resid_cross",
+              201326592
+            ],
+            [
+              "enc_norm",
+              2097152
+            ],
+            [
+              "encoder",
+              2097152
+            ],
+            [
+              "encoder/block/_in",
+              12582912
+            ],
+            [
+              "encoder/block/attn/_in",
+              12582912
+            ],
+            [
+              "encoder/block/attn/attn",
+              12976128
+            ],
+            [
+              "encoder/block/attn/k_heads",
+              12582912
+            ],
+            [
+              "encoder/block/attn/o_merge",
+              12582912
+            ],
+            [
+              "encoder/block/attn/q_heads",
+              12582912
+            ],
+            [
+              "encoder/block/attn/v_heads",
+              12582912
+            ],
+            [
+              "encoder/block/mlp/_in",
+              12582912
+            ],
+            [
+              "encoder/block/mlp/act",
+              50331648
+            ],
+            [
+              "encoder/block/mlp/up",
+              50331648
+            ],
+            [
+              "encoder/block/resid1",
+              12582912
+            ],
+            [
+              "head",
+              6316621824
+            ],
+            [
+              "rescale",
+              33554432
+            ]
+          ],
+          "activationsByTensor": [
+            [
+              "decoder/block/_in:x",
+              201326592
+            ],
+            [
+              "decoder/block/attn/_in:x",
+              201326592
+            ],
+            [
+              "decoder/block/attn/attn",
+              207618048
+            ],
+            [
+              "decoder/block/attn/k_heads:y",
+              201326592
+            ],
+            [
+              "decoder/block/attn/o_merge:y",
+              201326592
+            ],
+            [
+              "decoder/block/attn/q_heads:y",
+              201326592
+            ],
+            [
+              "decoder/block/attn/v_heads:y",
+              201326592
+            ],
+            [
+              "decoder/block/cross/_in:x",
+              201326592
+            ],
+            [
+              "decoder/block/cross/attn",
+              207618048
+            ],
+            [
+              "decoder/block/cross/k_heads:y",
+              12582912
+            ],
+            [
+              "decoder/block/cross/o_merge:y",
+              201326592
+            ],
+            [
+              "decoder/block/cross/q_heads:y",
+              201326592
+            ],
+            [
+              "decoder/block/cross/v_heads:y",
+              12582912
+            ],
+            [
+              "decoder/block/mlp/_in:x",
+              201326592
+            ],
+            [
+              "decoder/block/mlp/act:y",
+              805306368
+            ],
+            [
+              "decoder/block/mlp/up:y",
+              805306368
+            ],
+            [
+              "decoder/block/resid1:y",
+              201326592
+            ],
+            [
+              "decoder/block/resid_cross:y",
+              201326592
+            ],
+            [
+              "decoder:x",
+              33554432
+            ],
+            [
+              "enc_norm:y",
+              2097152
+            ],
+            [
+              "encoder/block/_in:x",
+              12582912
+            ],
+            [
+              "encoder/block/attn/_in:x",
+              12582912
+            ],
+            [
+              "encoder/block/attn/attn",
+              12976128
+            ],
+            [
+              "encoder/block/attn/k_heads:y",
+              12582912
+            ],
+            [
+              "encoder/block/attn/o_merge:y",
+              12582912
+            ],
+            [
+              "encoder/block/attn/q_heads:y",
+              12582912
+            ],
+            [
+              "encoder/block/attn/v_heads:y",
+              12582912
+            ],
+            [
+              "encoder/block/mlp/_in:x",
+              12582912
+            ],
+            [
+              "encoder/block/mlp/act:y",
+              50331648
+            ],
+            [
+              "encoder/block/mlp/up:y",
+              50331648
+            ],
+            [
+              "encoder/block/resid1:y",
+              12582912
+            ],
+            [
+              "encoder:x",
+              2097152
+            ],
+            [
+              "head",
+              6316621824
+            ],
+            [
+              "rescale:y",
+              33554432
+            ]
+          ]
+        },
+        "infer": {
+          "weights": 121013248,
+          "kv": 53477376,
+          "overhead": 34898124.800000004,
+          "total": 209388748.8
+        },
+        "optimizerLabel": "AdamW, mixed precision (16 B/param)",
+        "notes": [
+          "Selective recomputation drops the attention score matrix. A memory-efficient attention kernel already does this, so the two coincide here."
+        ]
+      },
+      "throughput": {
+        "ridgePoint": 295.2238805970149,
+        "decodeBytesPerStep": 174490624,
+        "decodeWeightBytes": 121013248,
+        "residentWeightBytes": 121013248,
+        "decodeFlopsPerStep": 136708096,
+        "decodeSecondsPerStep": 0.000052086753432835824,
+        "decodeTokensPerSecond": 19198.739297304593,
+        "memoryBound": true,
+        "prefillSeconds": 0.002830921947502528,
+        "notes": [
+          "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte."
+        ]
+      },
+      "cost": {
+        "totalFlops": 361377636947066900,
+        "gpuHours": 0.2537479194381719,
+        "wallClockHours": 0.031718489929771485,
+        "dollars": 0.6343697985954297,
+        "tokens": 881141760,
+        "mfu": 0.4
+      },
+      "chinchilla": {
+        "optimalTokens": 881141760,
+        "tokensPerParam": 14.562732172927051,
+        "tokensPerActiveParam": 14.562732172927051,
+        "overTrainingRatio": 1,
+        "predictedLoss": [
+          [
+            "epoch",
+            3.989701063752
+          ],
+          [
+            "hoffmann",
+            3.998291404772
+          ]
+        ],
+        "verdict": "Close to compute-optimal."
+      },
+      "errors": [],
+      "flat": {
+        "nodes": 72,
+        "blocks": 81,
+        "repeats": [
+          {
+            "path": "encoder",
+            "type": "repeat",
+            "count": 6,
+            "active": 6
+          },
+          {
+            "path": "decoder",
+            "type": "repeat",
+            "count": 6,
+            "active": 6
+          }
+        ],
+        "errors": []
+      }
+    }
+  ]
+}

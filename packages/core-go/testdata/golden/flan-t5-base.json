@@ -1,0 +1,1401 @@
+{
+  "preset": "flan-t5-base",
+  "symbols": {
+    "order": [
+      "B",
+      "T",
+      "S",
+      "L",
+      "D",
+      "H",
+      "dh",
+      "F",
+      "V",
+      "NB",
+      "MD"
+    ],
+    "values": {
+      "B": 1,
+      "D": 768,
+      "F": 2048,
+      "H": 12,
+      "L": 12,
+      "MD": 128,
+      "NB": 32,
+      "S": 512,
+      "T": 114,
+      "V": 32128,
+      "dh": 64
+    },
+    "designValues": {
+      "D": 768,
+      "F": 2048,
+      "H": 12,
+      "L": 12,
+      "MD": 128,
+      "NB": 32,
+      "V": 32128,
+      "dh": 64
+    },
+    "runtime": [
+      "B",
+      "S",
+      "T"
+    ],
+    "docs": {
+      "B": "Batch size",
+      "D": "Residual stream width (d_model)",
+      "F": "Feed-forward hidden width (d_ff)",
+      "H": "Heads, in every attention",
+      "L": "Layers in each stack, the encoder's and the decoder's",
+      "MD": "Relative distance past which every key shares the last bucket",
+      "NB": "Relative-position buckets",
+      "S": "Source length in tokens: the encoder's input",
+      "T": "Target length in tokens: 114 in T5's span-corruption pretraining, against 512 of input",
+      "V": "Vocabulary size, shared by both stacks",
+      "dh": "Head dimension (d_kv)"
+    },
+    "errors": []
+  },
+  "infer": {
+    "outputs": [
+      [
+        "dec_bias:table",
+        "NB H"
+      ],
+      [
+        "dec_embed:y",
+        "B T D"
+      ],
+      [
+        "decoder/_in:memory",
+        "B S D"
+      ],
+      [
+        "decoder/_in:rel",
+        "NB H"
+      ],
+      [
+        "decoder/_in:x",
+        "B T D"
+      ],
+      [
+        "decoder/block:y",
+        "B T D"
+      ],
+      [
+        "decoder:x",
+        "B T D"
+      ],
+      [
+        "embed:y",
+        "B S D"
+      ],
+      [
+        "enc_bias:table",
+        "NB H"
+      ],
+      [
+        "enc_norm:y",
+        "B S D"
+      ],
+      [
+        "encoder/_in:rel",
+        "NB H"
+      ],
+      [
+        "encoder/_in:x",
+        "B S D"
+      ],
+      [
+        "encoder/block:y",
+        "B S D"
+      ],
+      [
+        "encoder:x",
+        "B S D"
+      ],
+      [
+        "final_norm:y",
+        "B T D"
+      ],
+      [
+        "head:y",
+        "B T V"
+      ],
+      [
+        "source:x",
+        "B S"
+      ],
+      [
+        "target:x",
+        "B T"
+      ]
+    ],
+    "inputs": [
+      [
+        "dec_embed:ids",
+        "B T"
+      ],
+      [
+        "decoder/_out:x",
+        "B T D"
+      ],
+      [
+        "decoder/block:memory",
+        "B S D"
+      ],
+      [
+        "decoder/block:rel",
+        "NB H"
+      ],
+      [
+        "decoder/block:x",
+        "B T D"
+      ],
+      [
+        "decoder:memory",
+        "B S D"
+      ],
+      [
+        "decoder:rel",
+        "NB H"
+      ],
+      [
+        "decoder:x",
+        "B T D"
+      ],
+      [
+        "embed:ids",
+        "B S"
+      ],
+      [
+        "enc_norm:x",
+        "B S D"
+      ],
+      [
+        "encoder/_out:x",
+        "B S D"
+      ],
+      [
+        "encoder/block:rel",
+        "NB H"
+      ],
+      [
+        "encoder/block:x",
+        "B S D"
+      ],
+      [
+        "encoder:rel",
+        "NB H"
+      ],
+      [
+        "encoder:x",
+        "B S D"
+      ],
+      [
+        "final_norm:x",
+        "B T D"
+      ],
+      [
+        "head:x",
+        "B T D"
+      ],
+      [
+        "logits:x",
+        "B T V"
+      ]
+    ],
+    "producerOf": [
+      [
+        "dec_embed:ids",
+        "target:x"
+      ],
+      [
+        "decoder/_out:x",
+        "decoder/block:y"
+      ],
+      [
+        "decoder/block:memory",
+        "decoder/_in:memory"
+      ],
+      [
+        "decoder/block:rel",
+        "decoder/_in:rel"
+      ],
+      [
+        "decoder/block:x",
+        "decoder/_in:x"
+      ],
+      [
+        "decoder:memory",
+        "enc_norm:y"
+      ],
+      [
+        "decoder:rel",
+        "dec_bias:table"
+      ],
+      [
+        "decoder:x",
+        "dec_embed:y"
+      ],
+      [
+        "embed:ids",
+        "source:x"
+      ],
+      [
+        "enc_norm:x",
+        "encoder:x"
+      ],
+      [
+        "encoder/_out:x",
+        "encoder/block:y"
+      ],
+      [
+        "encoder/block:rel",
+        "encoder/_in:rel"
+      ],
+      [
+        "encoder/block:x",
+        "encoder/_in:x"
+      ],
+      [
+        "encoder:rel",
+        "enc_bias:table"
+      ],
+      [
+        "encoder:x",
+        "embed:y"
+      ],
+      [
+        "final_norm:x",
+        "decoder:x"
+      ],
+      [
+        "head:x",
+        "final_norm:y"
+      ],
+      [
+        "logits:x",
+        "head:y"
+      ]
+    ],
+    "issues": []
+  },
+  "inferExpanded": {
+    "outputs": [
+      [
+        "dec_bias:table",
+        "NB H"
+      ],
+      [
+        "dec_embed:y",
+        "B T D"
+      ],
+      [
+        "decoder/_in:memory",
+        "B S D"
+      ],
+      [
+        "decoder/_in:rel",
+        "NB H"
+      ],
+      [
+        "decoder/_in:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/_in:memory",
+        "B S D"
+      ],
+      [
+        "decoder/block/_in:rel",
+        "NB H"
+      ],
+      [
+        "decoder/block/_in:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/attn/_in:rel",
+        "NB H"
+      ],
+      [
+        "decoder/block/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "decoder/block/attn/k_heads:y",
+        "B H T dh"
+      ],
+      [
+        "decoder/block/attn/k_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "decoder/block/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "decoder/block/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "decoder/block/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "decoder/block/attn/v_heads:y",
+        "B H T dh"
+      ],
+      [
+        "decoder/block/attn/v_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "decoder/block/attn:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/cross/_in:memory",
+        "B S D"
+      ],
+      [
+        "decoder/block/cross/_in:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/cross/attn:y",
+        "B H T dh"
+      ],
+      [
+        "decoder/block/cross/k_heads:y",
+        "B H S dh"
+      ],
+      [
+        "decoder/block/cross/k_proj:y",
+        "B S H*dh"
+      ],
+      [
+        "decoder/block/cross/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "decoder/block/cross/o_proj:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/cross/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "decoder/block/cross/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "decoder/block/cross/v_heads:y",
+        "B H S dh"
+      ],
+      [
+        "decoder/block/cross/v_proj:y",
+        "B S H*dh"
+      ],
+      [
+        "decoder/block/cross:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/mlp/act:y",
+        "B T F"
+      ],
+      [
+        "decoder/block/mlp/down:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/mlp/gate:y",
+        "B T F"
+      ],
+      [
+        "decoder/block/mlp/gated:y",
+        "B T F"
+      ],
+      [
+        "decoder/block/mlp/up:y",
+        "B T F"
+      ],
+      [
+        "decoder/block/mlp:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/norm1:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/norm2:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/norm_cross:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/resid1:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/resid2:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/resid_cross:y",
+        "B T D"
+      ],
+      [
+        "decoder/block:y",
+        "B T D"
+      ],
+      [
+        "decoder:x",
+        "B T D"
+      ],
+      [
+        "embed:y",
+        "B S D"
+      ],
+      [
+        "enc_bias:table",
+        "NB H"
+      ],
+      [
+        "enc_norm:y",
+        "B S D"
+      ],
+      [
+        "encoder/_in:rel",
+        "NB H"
+      ],
+      [
+        "encoder/_in:x",
+        "B S D"
+      ],
+      [
+        "encoder/block/_in:rel",
+        "NB H"
+      ],
+      [
+        "encoder/block/_in:x",
+        "B S D"
+      ],
+      [
+        "encoder/block/attn/_in:rel",
+        "NB H"
+      ],
+      [
+        "encoder/block/attn/_in:x",
+        "B S D"
+      ],
+      [
+        "encoder/block/attn/attn:y",
+        "B H S dh"
+      ],
+      [
+        "encoder/block/attn/k_heads:y",
+        "B H S dh"
+      ],
+      [
+        "encoder/block/attn/k_proj:y",
+        "B S H*dh"
+      ],
+      [
+        "encoder/block/attn/o_merge:y",
+        "B S H*dh"
+      ],
+      [
+        "encoder/block/attn/o_proj:y",
+        "B S D"
+      ],
+      [
+        "encoder/block/attn/q_heads:y",
+        "B H S dh"
+      ],
+      [
+        "encoder/block/attn/q_proj:y",
+        "B S H*dh"
+      ],
+      [
+        "encoder/block/attn/v_heads:y",
+        "B H S dh"
+      ],
+      [
+        "encoder/block/attn/v_proj:y",
+        "B S H*dh"
+      ],
+      [
+        "encoder/block/attn:y",
+        "B S D"
+      ],
+      [
+        "encoder/block/mlp/_in:x",
+        "B S D"
+      ],
+      [
+        "encoder/block/mlp/act:y",
+        "B S F"
+      ],
+      [
+        "encoder/block/mlp/down:y",
+        "B S D"
+      ],
+      [
+        "encoder/block/mlp/gate:y",
+        "B S F"
+      ],
+      [
+        "encoder/block/mlp/gated:y",
+        "B S F"
+      ],
+      [
+        "encoder/block/mlp/up:y",
+        "B S F"
+      ],
+      [
+        "encoder/block/mlp:y",
+        "B S D"
+      ],
+      [
+        "encoder/block/norm1:y",
+        "B S D"
+      ],
+      [
+        "encoder/block/norm2:y",
+        "B S D"
+      ],
+      [
+        "encoder/block/resid1:y",
+        "B S D"
+      ],
+      [
+        "encoder/block/resid2:y",
+        "B S D"
+      ],
+      [
+        "encoder/block:y",
+        "B S D"
+      ],
+      [
+        "encoder:x",
+        "B S D"
+      ],
+      [
+        "final_norm:y",
+        "B T D"
+      ],
+      [
+        "head:y",
+        "B T V"
+      ],
+      [
+        "source:x",
+        "B S"
+      ],
+      [
+        "target:x",
+        "B T"
+      ]
+    ],
+    "inputs": [
+      [
+        "dec_embed:ids",
+        "B T"
+      ],
+      [
+        "decoder/_out:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/_out:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/attn/attn:k",
+        "B H T dh"
+      ],
+      [
+        "decoder/block/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "decoder/block/attn/attn:rel",
+        "NB H"
+      ],
+      [
+        "decoder/block/attn/attn:v",
+        "B H T dh"
+      ],
+      [
+        "decoder/block/attn/k_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "decoder/block/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "decoder/block/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "decoder/block/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "decoder/block/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/attn/v_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "decoder/block/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/attn:rel",
+        "NB H"
+      ],
+      [
+        "decoder/block/attn:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/cross/_out:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/cross/attn:k",
+        "B H S dh"
+      ],
+      [
+        "decoder/block/cross/attn:q",
+        "B H T dh"
+      ],
+      [
+        "decoder/block/cross/attn:v",
+        "B H S dh"
+      ],
+      [
+        "decoder/block/cross/k_heads:x",
+        "B S H*dh"
+      ],
+      [
+        "decoder/block/cross/k_proj:x",
+        "B S D"
+      ],
+      [
+        "decoder/block/cross/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "decoder/block/cross/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "decoder/block/cross/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "decoder/block/cross/q_proj:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/cross/v_heads:x",
+        "B S H*dh"
+      ],
+      [
+        "decoder/block/cross/v_proj:x",
+        "B S D"
+      ],
+      [
+        "decoder/block/cross:memory",
+        "B S D"
+      ],
+      [
+        "decoder/block/cross:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "decoder/block/mlp/act:x",
+        "B T F"
+      ],
+      [
+        "decoder/block/mlp/down:x",
+        "B T F"
+      ],
+      [
+        "decoder/block/mlp/gate:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/mlp/gated:a",
+        "B T F"
+      ],
+      [
+        "decoder/block/mlp/gated:b",
+        "B T F"
+      ],
+      [
+        "decoder/block/mlp/up:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/mlp:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/norm1:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/norm2:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/norm_cross:x",
+        "B T D"
+      ],
+      [
+        "decoder/block/resid1:a",
+        "B T D"
+      ],
+      [
+        "decoder/block/resid1:b",
+        "B T D"
+      ],
+      [
+        "decoder/block/resid2:a",
+        "B T D"
+      ],
+      [
+        "decoder/block/resid2:b",
+        "B T D"
+      ],
+      [
+        "decoder/block/resid_cross:a",
+        "B T D"
+      ],
+      [
+        "decoder/block/resid_cross:b",
+        "B T D"
+      ],
+      [
+        "decoder/block:memory",
+        "B S D"
+      ],
+      [
+        "decoder/block:rel",
+        "NB H"
+      ],
+      [
+        "decoder/block:x",
+        "B T D"
+      ],
+      [
+        "decoder:memory",
+        "B S D"
+      ],
+      [
+        "decoder:rel",
+        "NB H"
+      ],
+      [
+        "decoder:x",
+        "B T D"
+      ],
+      [
+        "embed:ids",
+        "B S"
+      ],
+      [
+        "enc_norm:x",
+        "B S D"
+      ],
+      [
+        "encoder/_out:x",
+        "B S D"
+      ],
+      [
+        "encoder/block/_out:y",
+        "B S D"
+      ],
+      [
+        "encoder/block/attn/_out:y",
+        "B S D"
+      ],
+      [
+        "encoder/block/attn/attn:k",
+        "B H S dh"
+      ],
+      [
+        "encoder/block/attn/attn:q",
+        "B H S dh"
+      ],
+      [
+        "encoder/block/attn/attn:rel",
+        "NB H"
+      ],
+      [
+        "encoder/block/attn/attn:v",
+        "B H S dh"
+      ],
+      [
+        "encoder/block/attn/k_heads:x",
+        "B S H*dh"
+      ],
+      [
+        "encoder/block/attn/k_proj:x",
+        "B S D"
+      ],
+      [
+        "encoder/block/attn/o_merge:x",
+        "B H S dh"
+      ],
+      [
+        "encoder/block/attn/o_proj:x",
+        "B S H*dh"
+      ],
+      [
+        "encoder/block/attn/q_heads:x",
+        "B S H*dh"
+      ],
+      [
+        "encoder/block/attn/q_proj:x",
+        "B S D"
+      ],
+      [
+        "encoder/block/attn/v_heads:x",
+        "B S H*dh"
+      ],
+      [
+        "encoder/block/attn/v_proj:x",
+        "B S D"
+      ],
+      [
+        "encoder/block/attn:rel",
+        "NB H"
+      ],
+      [
+        "encoder/block/attn:x",
+        "B S D"
+      ],
+      [
+        "encoder/block/mlp/_out:y",
+        "B S D"
+      ],
+      [
+        "encoder/block/mlp/act:x",
+        "B S F"
+      ],
+      [
+        "encoder/block/mlp/down:x",
+        "B S F"
+      ],
+      [
+        "encoder/block/mlp/gate:x",
+        "B S D"
+      ],
+      [
+        "encoder/block/mlp/gated:a",
+        "B S F"
+      ],
+      [
+        "encoder/block/mlp/gated:b",
+        "B S F"
+      ],
+      [
+        "encoder/block/mlp/up:x",
+        "B S D"
+      ],
+      [
+        "encoder/block/mlp:x",
+        "B S D"
+      ],
+      [
+        "encoder/block/norm1:x",
+        "B S D"
+      ],
+      [
+        "encoder/block/norm2:x",
+        "B S D"
+      ],
+      [
+        "encoder/block/resid1:a",
+        "B S D"
+      ],
+      [
+        "encoder/block/resid1:b",
+        "B S D"
+      ],
+      [
+        "encoder/block/resid2:a",
+        "B S D"
+      ],
+      [
+        "encoder/block/resid2:b",
+        "B S D"
+      ],
+      [
+        "encoder/block:rel",
+        "NB H"
+      ],
+      [
+        "encoder/block:x",
+        "B S D"
+      ],
+      [
+        "encoder:rel",
+        "NB H"
+      ],
+      [
+        "encoder:x",
+        "B S D"
+      ],
+      [
+        "final_norm:x",
+        "B T D"
+      ],
+      [
+        "head:x",
+        "B T D"
+      ],
+      [
+        "logits:x",
+        "B T V"
+      ]
+    ],
+    "producerOf": [
+      [
+        "dec_embed:ids",
+        "target:x"
+      ],
+      [
+        "decoder/_out:x",
+        "decoder/block:y"
+      ],
+      [
+        "decoder/block/_out:y",
+        "decoder/block/resid2:y"
+      ],
+      [
+        "decoder/block/attn/_out:y",
+        "decoder/block/attn/o_proj:y"
+      ],
+      [
+        "decoder/block/attn/attn:k",
+        "decoder/block/attn/k_heads:y"
+      ],
+      [
+        "decoder/block/attn/attn:q",
+        "decoder/block/attn/q_heads:y"
+      ],
+      [
+        "decoder/block/attn/attn:rel",
+        "decoder/block/attn/_in:rel"
+      ],
+      [
+        "decoder/block/attn/attn:v",
+        "decoder/block/attn/v_heads:y"
+      ],
+      [
+        "decoder/block/attn/k_heads:x",
+        "decoder/block/attn/k_proj:y"
+      ],
+      [
+        "decoder/block/attn/k_proj:x",
+        "decoder/block/attn/_in:x"
+      ],
+      [
+        "decoder/block/attn/o_merge:x",
+        "decoder/block/attn/attn:y"
+      ],
+      [
+        "decoder/block/attn/o_proj:x",
+        "decoder/block/attn/o_merge:y"
+      ],
+      [
+        "decoder/block/attn/q_heads:x",
+        "decoder/block/attn/q_proj:y"
+      ],
+      [
+        "decoder/block/attn/q_proj:x",
+        "decoder/block/attn/_in:x"
+      ],
+      [
+        "decoder/block/attn/v_heads:x",
+        "decoder/block/attn/v_proj:y"
+      ],
+      [
+        "decoder/block/attn/v_proj:x",
+        "decoder/block/attn/_in:x"
+      ],
+      [
+        "decoder/block/attn:rel",
+        "decoder/block/_in:rel"
+      ],
+      [
+        "decoder/block/attn:x",
+        "decoder/block/norm1:y"
+      ],
+      [
+        "decoder/block/cross/_out:y",
+        "decoder/block/cross/o_proj:y"
+      ],
+      [
+        "decoder/block/cross/attn:k",
+        "decoder/block/cross/k_heads:y"
+      ],
+      [
+        "decoder/block/cross/attn:q",
+        "decoder/block/cross/q_heads:y"
+      ],
+      [
+        "decoder/block/cross/attn:v",
+        "decoder/block/cross/v_heads:y"
+      ],
+      [
+        "decoder/block/cross/k_heads:x",
+        "decoder/block/cross/k_proj:y"
+      ],
+      [
+        "decoder/block/cross/k_proj:x",
+        "decoder/block/cross/_in:memory"
+      ],
+      [
+        "decoder/block/cross/o_merge:x",
+        "decoder/block/cross/attn:y"
+      ],
+      [
+        "decoder/block/cross/o_proj:x",
+        "decoder/block/cross/o_merge:y"
+      ],
+      [
+        "decoder/block/cross/q_heads:x",
+        "decoder/block/cross/q_proj:y"
+      ],
+      [
+        "decoder/block/cross/q_proj:x",
+        "decoder/block/cross/_in:x"
+      ],
+      [
+        "decoder/block/cross/v_heads:x",
+        "decoder/block/cross/v_proj:y"
+      ],
+      [
+        "decoder/block/cross/v_proj:x",
+        "decoder/block/cross/_in:memory"
+      ],
+      [
+        "decoder/block/cross:memory",
+        "decoder/block/_in:memory"
+      ],
+      [
+        "decoder/block/cross:x",
+        "decoder/block/norm_cross:y"
+      ],
+      [
+        "decoder/block/mlp/_out:y",
+        "decoder/block/mlp/down:y"
+      ],
+      [
+        "decoder/block/mlp/act:x",
+        "decoder/block/mlp/gate:y"
+      ],
+      [
+        "decoder/block/mlp/down:x",
+        "decoder/block/mlp/gated:y"
+      ],
+      [
+        "decoder/block/mlp/gate:x",
+        "decoder/block/mlp/_in:x"
+      ],
+      [
+        "decoder/block/mlp/gated:a",
+        "decoder/block/mlp/act:y"
+      ],
+      [
+        "decoder/block/mlp/gated:b",
+        "decoder/block/mlp/up:y"
+      ],
+      [
+        "decoder/block/mlp/up:x",
+        "decoder/block/mlp/_in:x"
+      ],
+      [
+        "decoder/block/mlp:x",
+        "decoder/block/norm2:y"
+      ],
+      [
+        "decoder/block/norm1:x",
+        "decoder/block/_in:x"
+      ],
+      [
+        "decoder/block/norm2:x",
+        "decoder/block/resid_cross:y"
+      ],
+      [
+        "decoder/block/norm_cross:x",
+        "decoder/block/resid1:y"
+      ],
+      [
+        "decoder/block/resid1:a",
+        "decoder/block/attn:y"
+      ],
+      [
+        "decoder/block/resid1:b",
+        "decoder/block/_in:x"
+      ],
+      [
+        "decoder/block/resid2:a",
+        "decoder/block/mlp:y"
+      ],
+      [
+        "decoder/block/resid2:b",
+        "decoder/block/resid_cross:y"
+      ],
+      [
+        "decoder/block/resid_cross:a",
+        "decoder/block/cross:y"
+      ],
+      [
+        "decoder/block/resid_cross:b",
+        "decoder/block/resid1:y"
+      ],
+      [
+        "decoder/block:memory",
+        "decoder/_in:memory"
+      ],
+      [
+        "decoder/block:rel",
+        "decoder/_in:rel"
+      ],
+      [
+        "decoder/block:x",
+        "decoder/_in:x"
+      ],
+      [
+        "decoder:memory",
+        "enc_norm:y"
+      ],
+      [
+        "decoder:rel",
+        "dec_bias:table"
+      ],
+      [
+        "decoder:x",
+        "dec_embed:y"
+      ],
+      [
+        "embed:ids",
+        "source:x"
+      ],
+      [
+        "enc_norm:x",
+        "encoder:x"
+      ],
+      [
+        "encoder/_out:x",
+        "encoder/block:y"
+      ],
+      [
+        "encoder/block/_out:y",
+        "encoder/block/resid2:y"
+      ],
+      [
+        "encoder/block/attn/_out:y",
+        "encoder/block/attn/o_proj:y"
+      ],
+      [
+        "encoder/block/attn/attn:k",
+        "encoder/block/attn/k_heads:y"
+      ],
+      [
+        "encoder/block/attn/attn:q",
+        "encoder/block/attn/q_heads:y"
+      ],
+      [
+        "encoder/block/attn/attn:rel",
+        "encoder/block/attn/_in:rel"
+      ],
+      [
+        "encoder/block/attn/attn:v",
+        "encoder/block/attn/v_heads:y"
+      ],
+      [
+        "encoder/block/attn/k_heads:x",
+        "encoder/block/attn/k_proj:y"
+      ],
+      [
+        "encoder/block/attn/k_proj:x",
+        "encoder/block/attn/_in:x"
+      ],
+      [
+        "encoder/block/attn/o_merge:x",
+        "encoder/block/attn/attn:y"
+      ],
+      [
+        "encoder/block/attn/o_proj:x",
+        "encoder/block/attn/o_merge:y"
+      ],
+      [
+        "encoder/block/attn/q_heads:x",
+        "encoder/block/attn/q_proj:y"
+      ],
+      [
+        "encoder/block/attn/q_proj:x",
+        "encoder/block/attn/_in:x"
+      ],
+      [
+        "encoder/block/attn/v_heads:x",
+        "encoder/block/attn/v_proj:y"
+      ],
+      [
+        "encoder/block/attn/v_proj:x",
+        "encoder/block/attn/_in:x"
+      ],
+      [
+        "encoder/block/attn:rel",
+        "encoder/block/_in:rel"
+      ],
+      [
+        "encoder/block/attn:x",
+        "encoder/block/norm1:y"
+      ],
+      [
+        "encoder/block/mlp/_out:y",
+        "encoder/block/mlp/down:y"
+      ],
+      [
+        "encoder/block/mlp/act:x",
+        "encoder/block/mlp/gate:y"
+      ],
+      [
+        "encoder/block/mlp/down:x",
+        "encoder/block/mlp/gated:y"
+      ],
+      [
+        "encoder/block/mlp/gate:x",
+        "encoder/block/mlp/_in:x"
+      ],
+      [
+        "encoder/block/mlp/gated:a",
+        "encoder/block/mlp/act:y"
+      ],
+      [
+        "encoder/block/mlp/gated:b",
+        "encoder/block/mlp/up:y"
+      ],
+      [
+        "encoder/block/mlp/up:x",
+        "encoder/block/mlp/_in:x"
+      ],
+      [
+        "encoder/block/mlp:x",
+        "encoder/block/norm2:y"
+      ],
+      [
+        "encoder/block/norm1:x",
+        "encoder/block/_in:x"
+      ],
+      [
+        "encoder/block/norm2:x",
+        "encoder/block/resid1:y"
+      ],
+      [
+        "encoder/block/resid1:a",
+        "encoder/block/attn:y"
+      ],
+      [
+        "encoder/block/resid1:b",
+        "encoder/block/_in:x"
+      ],
+      [
+        "encoder/block/resid2:a",
+        "encoder/block/mlp:y"
+      ],
+      [
+        "encoder/block/resid2:b",
+        "encoder/block/resid1:y"
+      ],
+      [
+        "encoder/block:rel",
+        "encoder/_in:rel"
+      ],
+      [
+        "encoder/block:x",
+        "encoder/_in:x"
+      ],
+      [
+        "encoder:rel",
+        "enc_bias:table"
+      ],
+      [
+        "encoder:x",
+        "embed:y"
+      ],
+      [
+        "final_norm:x",
+        "decoder:x"
+      ],
+      [
+        "head:x",
+        "final_norm:y"
+      ],
+      [
+        "logits:x",
+        "head:y"
+      ]
+    ],
+    "issues": [
+      {
+        "path": "decoder/block/attn/attn",
+        "message": "The mask and score expressions are counted as FlexAttention runs them: one fused kernel that skips the blocks the mask removes and changes each score inside, so the score matrix is never kept for the backward pass.",
+        "severity": "warning",
+        "rule": "SDPA-06",
+        "param": "score"
+      },
+      {
+        "path": "encoder/block/attn/attn",
+        "message": "The mask and score expressions are counted as FlexAttention runs them: one fused kernel that skips the blocks the mask removes and changes each score inside, so the score matrix is never kept for the backward pass.",
+        "severity": "warning",
+        "rule": "SDPA-06",
+        "param": "score"
+      }
+    ]
+  }
+}

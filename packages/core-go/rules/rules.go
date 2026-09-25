@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/tensorcad/core/analysis"
+	"github.com/tensorcad/core/attnexpr"
 	"github.com/tensorcad/core/catalog"
 	"github.com/tensorcad/core/ir"
 )
@@ -411,6 +412,24 @@ var unusedSymbols = Rule{
 			for _, sym := range ctx.Flat.Blocks[i].Resolved.S {
 				for _, name := range sym.Symbols() {
 					used[name] = true
+				}
+			}
+			// An attention expression reads symbols too, though the block
+			// only ever holds their values: T5's score names its buckets'
+			// reach, and a prefix-LM's mask its prefix.
+			for _, key := range []string{"mask", "score"} {
+				text, _ := ctx.Flat.Blocks[i].Resolved.Raw[key].(string)
+				if text == "" {
+					continue
+				}
+				n, err := attnexpr.Parse(text)
+				if err != nil {
+					continue
+				}
+				for _, name := range ctx.Symbols.Order {
+					if attnexpr.Uses(n, name) {
+						used[name] = true
+					}
 				}
 			}
 		}

@@ -331,6 +331,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -594,6 +606,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {
@@ -1206,6 +1224,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -1345,8 +1375,8 @@
           "kind": "primitive",
           "docs": {
             "name": "token embedding",
-            "summary": "Token embedding table.",
-            "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
+            "summary": "Token embedding table. A tied one reads the design's first embedding's table, which is how an encoder and a decoder share a vocabulary.",
+            "formula": "params = vocab * dim, or 0 when tied; FLOPs ~ 0 (a gather, not a matmul)"
           },
           "copies": {
             "total": 1,
@@ -1364,6 +1394,12 @@
               "D",
               768,
               "Embedding width"
+            ],
+            [
+              "tied",
+              null,
+              null,
+              "Share the design's first embedding table rather than learning one of its own, as T5's decoder shares its encoder's. Unset is a table of its own."
             ]
           ],
           "shapes": {
@@ -1522,6 +1558,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {
@@ -2075,6 +2117,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -2338,6 +2392,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {
@@ -2505,8 +2565,8 @@
           "kind": "primitive",
           "docs": {
             "name": "token embedding",
-            "summary": "Token embedding table.",
-            "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
+            "summary": "Token embedding table. A tied one reads the design's first embedding's table, which is how an encoder and a decoder share a vocabulary.",
+            "formula": "params = vocab * dim, or 0 when tied; FLOPs ~ 0 (a gather, not a matmul)"
           },
           "copies": {
             "total": 1,
@@ -2524,6 +2584,12 @@
               "D",
               1024,
               "Embedding width"
+            ],
+            [
+              "tied",
+              null,
+              null,
+              "Share the design's first embedding table rather than learning one of its own, as T5's decoder shares its encoder's. Unset is a table of its own."
             ]
           ],
           "shapes": {
@@ -2944,6 +3010,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -3207,6 +3285,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {
@@ -3374,8 +3458,8 @@
           "kind": "primitive",
           "docs": {
             "name": "token embedding",
-            "summary": "Token embedding table.",
-            "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
+            "summary": "Token embedding table. A tied one reads the design's first embedding's table, which is how an encoder and a decoder share a vocabulary.",
+            "formula": "params = vocab * dim, or 0 when tied; FLOPs ~ 0 (a gather, not a matmul)"
           },
           "copies": {
             "total": 1,
@@ -3393,6 +3477,12 @@
               "D",
               1280,
               "Embedding width"
+            ],
+            [
+              "tied",
+              null,
+              null,
+              "Share the design's first embedding table rather than learning one of its own, as T5's decoder shares its encoder's. Unset is a table of its own."
             ]
           ],
           "shapes": {
@@ -3813,6 +3903,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -4076,6 +4178,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {
@@ -4688,6 +4796,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -4827,8 +4947,8 @@
           "kind": "primitive",
           "docs": {
             "name": "token embedding",
-            "summary": "Token embedding table.",
-            "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
+            "summary": "Token embedding table. A tied one reads the design's first embedding's table, which is how an encoder and a decoder share a vocabulary.",
+            "formula": "params = vocab * dim, or 0 when tied; FLOPs ~ 0 (a gather, not a matmul)"
           },
           "copies": {
             "total": 1,
@@ -4846,6 +4966,12 @@
               "D",
               768,
               "Embedding width"
+            ],
+            [
+              "tied",
+              null,
+              null,
+              "Share the design's first embedding table rather than learning one of its own, as T5's decoder shares its encoder's. Unset is a table of its own."
             ]
           ],
           "shapes": {
@@ -5004,6 +5130,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {
@@ -5557,6 +5689,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -5820,6 +5964,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {
@@ -5987,8 +6137,8 @@
           "kind": "primitive",
           "docs": {
             "name": "token embedding",
-            "summary": "Token embedding table.",
-            "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
+            "summary": "Token embedding table. A tied one reads the design's first embedding's table, which is how an encoder and a decoder share a vocabulary.",
+            "formula": "params = vocab * dim, or 0 when tied; FLOPs ~ 0 (a gather, not a matmul)"
           },
           "copies": {
             "total": 1,
@@ -6006,6 +6156,12 @@
               "D",
               4096,
               "Embedding width"
+            ],
+            [
+              "tied",
+              null,
+              null,
+              "Share the design's first embedding table rather than learning one of its own, as T5's decoder shares its encoder's. Unset is a table of its own."
             ]
           ],
           "shapes": {
@@ -6090,6 +6246,2625 @@
               "path": "layers/block/attn/q_proj",
               "type": "linear",
               "params": 503439360
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "preset": "t5-small",
+      "blocks": [
+        {
+          "path": "decoder",
+          "type": "repeat",
+          "kind": "container",
+          "docs": {
+            "name": "stack",
+            "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
+          },
+          "copies": {
+            "total": 1,
+            "active": 1
+          },
+          "params": [
+            [
+              "count",
+              "L",
+              6,
+              "How many times the subgraph is stacked"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "memory": "B S D",
+              "rel": "*",
+              "x": "B T D"
+            },
+            "out": {
+              "x": "B T D"
+            }
+          },
+          "contributes": {
+            "params": 25175040,
+            "activeParams": 25175040,
+            "shareOfParams": 0.4160708090406763,
+            "flopsPerToken": 79288427.78947368,
+            "shareOfFlops": 0.25578393565638896,
+            "activationBytes": 21744384,
+            "cacheBytesPerToken": 12288,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "decoder/block/mlp/up",
+              "type": "linear",
+              "params": 6291456
+            },
+            {
+              "path": "decoder/block/mlp/down",
+              "type": "linear",
+              "params": 6291456
+            },
+            {
+              "path": "decoder/block/attn/q_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/attn/k_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/attn/v_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/attn/o_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/cross/q_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/cross/k_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/cross/v_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/cross/o_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/norm1",
+              "type": "rmsnorm",
+              "params": 3072
+            },
+            {
+              "path": "decoder/block/norm2",
+              "type": "rmsnorm",
+              "params": 3072
+            }
+          ]
+        },
+        {
+          "path": "decoder/block",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "name": "transformer block",
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 6,
+            "active": 6
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              512,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              8,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "H",
+              8,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              64,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              2048,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "rmsnorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              false,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "dense",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              null,
+              0,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              null,
+              1,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              null,
+              0,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "relu",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              false,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              false,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              false,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              null,
+              0,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              null,
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              "score + rel(t5_bucket(kv - q, NB, MD, false), h)",
+              "score + rel(t5_bucket(kv - q, 32, 128, false), h)",
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              true,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              1,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              0.000001,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "memory": "B S d_model",
+              "rel": "*",
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 25175040,
+            "activeParams": 25175040,
+            "shareOfParams": 0.4160708090406763,
+            "flopsPerToken": 79288427.78947368,
+            "shareOfFlops": 0.25578393565638896,
+            "activationBytes": 21744384,
+            "cacheBytesPerToken": 12288,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "decoder/block/mlp/up",
+              "type": "linear",
+              "params": 6291456
+            },
+            {
+              "path": "decoder/block/mlp/down",
+              "type": "linear",
+              "params": 6291456
+            },
+            {
+              "path": "decoder/block/attn/q_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/attn/k_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/attn/v_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/attn/o_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/cross/q_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/cross/k_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/cross/v_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/cross/o_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "decoder/block/norm1",
+              "type": "rmsnorm",
+              "params": 3072
+            },
+            {
+              "path": "decoder/block/norm2",
+              "type": "rmsnorm",
+              "params": 3072
+            }
+          ]
+        },
+        {
+          "path": "encoder",
+          "type": "repeat",
+          "kind": "container",
+          "docs": {
+            "name": "stack",
+            "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
+          },
+          "copies": {
+            "total": 1,
+            "active": 1
+          },
+          "params": [
+            [
+              "count",
+              "L",
+              6,
+              "How many times the subgraph is stacked"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "rel": "*",
+              "x": "B S D"
+            },
+            "out": {
+              "x": "B S D"
+            }
+          },
+          "contributes": {
+            "params": 18880512,
+            "activeParams": 18880512,
+            "shareOfParams": 0.31204041395533816,
+            "flopsPerToken": 197794546.52631578,
+            "shareOfFlops": 0.6380838789767057,
+            "activationBytes": 53575680,
+            "cacheBytesPerToken": 12288,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "encoder/block/mlp/up",
+              "type": "linear",
+              "params": 6291456
+            },
+            {
+              "path": "encoder/block/mlp/down",
+              "type": "linear",
+              "params": 6291456
+            },
+            {
+              "path": "encoder/block/attn/q_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "encoder/block/attn/k_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "encoder/block/attn/v_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "encoder/block/attn/o_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "encoder/block/norm1",
+              "type": "rmsnorm",
+              "params": 3072
+            },
+            {
+              "path": "encoder/block/norm2",
+              "type": "rmsnorm",
+              "params": 3072
+            }
+          ]
+        },
+        {
+          "path": "encoder/block",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "name": "transformer block",
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 6,
+            "active": 6
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              512,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              8,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "H",
+              8,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              64,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              2048,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "rmsnorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              false,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "dense",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              null,
+              0,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              null,
+              1,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              null,
+              0,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "relu",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              false,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              false,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              false,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              false,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              null,
+              0,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              null,
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              "score + rel(t5_bucket(kv - q, NB, MD, true), h)",
+              "score + rel(t5_bucket(kv - q, 32, 128, true), h)",
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              1,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              0.000001,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "rel": "*",
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 18880512,
+            "activeParams": 18880512,
+            "shareOfParams": 0.31204041395533816,
+            "flopsPerToken": 197794546.52631578,
+            "shareOfFlops": 0.6380838789767057,
+            "activationBytes": 53575680,
+            "cacheBytesPerToken": 12288,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "encoder/block/mlp/up",
+              "type": "linear",
+              "params": 6291456
+            },
+            {
+              "path": "encoder/block/mlp/down",
+              "type": "linear",
+              "params": 6291456
+            },
+            {
+              "path": "encoder/block/attn/q_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "encoder/block/attn/k_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "encoder/block/attn/v_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "encoder/block/attn/o_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "encoder/block/norm1",
+              "type": "rmsnorm",
+              "params": 3072
+            },
+            {
+              "path": "encoder/block/norm2",
+              "type": "rmsnorm",
+              "params": 3072
+            }
+          ]
+        },
+        {
+          "path": "embed",
+          "type": "embedding",
+          "kind": "primitive",
+          "docs": {
+            "name": "token embedding",
+            "summary": "Token embedding table. A tied one reads the design's first embedding's table, which is how an encoder and a decoder share a vocabulary.",
+            "formula": "params = vocab * dim, or 0 when tied; FLOPs ~ 0 (a gather, not a matmul)"
+          },
+          "copies": {
+            "total": 1,
+            "active": 1
+          },
+          "params": [
+            [
+              "vocab",
+              "V",
+              32128,
+              "Vocabulary size"
+            ],
+            [
+              "dim",
+              "D",
+              512,
+              "Embedding width"
+            ],
+            [
+              "tied",
+              null,
+              null,
+              "Share the design's first embedding table rather than learning one of its own, as T5's decoder shares its encoder's. Unset is a table of its own."
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "ids": "..."
+            },
+            "out": {
+              "y": "... dim"
+            }
+          },
+          "contributes": {
+            "params": 16449536,
+            "activeParams": 16449536,
+            "shareOfParams": 0.2718633913536475,
+            "flopsPerToken": 0,
+            "shareOfFlops": 0,
+            "activationBytes": 0,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "embed",
+              "type": "embedding",
+              "params": 16449536
+            }
+          ]
+        },
+        {
+          "path": "encoder/block/mlp",
+          "type": "dense_mlp",
+          "kind": "composite",
+          "docs": {
+            "name": "feed-forward",
+            "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
+            "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
+          },
+          "copies": {
+            "total": 6,
+            "active": 6
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              512,
+              "Width of the residual stream"
+            ],
+            [
+              "hidden",
+              "F",
+              2048,
+              "Width in the middle, where the nonlinearity is"
+            ],
+            [
+              "act",
+              null,
+              "relu",
+              "Which nonlinearity"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each projection"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 12582912,
+            "activeParams": 12582912,
+            "shareOfParams": 0.207959247569324,
+            "flopsPerToken": 113025455.15789473,
+            "shareOfFlops": 0.3646193594152604,
+            "activationBytes": 28311552,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "encoder/block/mlp/up",
+              "type": "linear",
+              "params": 6291456
+            },
+            {
+              "path": "encoder/block/mlp/down",
+              "type": "linear",
+              "params": 6291456
+            }
+          ]
+        },
+        {
+          "path": "decoder/block/mlp",
+          "type": "dense_mlp",
+          "kind": "composite",
+          "docs": {
+            "name": "feed-forward",
+            "summary": "Classic two-matrix feed-forward network (GPT-2, Nemotron-H).",
+            "formula": "params = 2 * d_model * hidden (+ hidden + d_model with bias)"
+          },
+          "copies": {
+            "total": 6,
+            "active": 6
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              512,
+              "Width of the residual stream"
+            ],
+            [
+              "hidden",
+              "F",
+              2048,
+              "Width in the middle, where the nonlinearity is"
+            ],
+            [
+              "act",
+              null,
+              "relu",
+              "Which nonlinearity"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each projection"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 12582912,
+            "activeParams": 12582912,
+            "shareOfParams": 0.207959247569324,
+            "flopsPerToken": 25165824,
+            "shareOfFlops": 0.08118477924480408,
+            "activationBytes": 6303744,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "decoder/block/mlp/up",
+              "type": "linear",
+              "params": 6291456
+            },
+            {
+              "path": "decoder/block/mlp/down",
+              "type": "linear",
+              "params": 6291456
+            }
+          ]
+        },
+        {
+          "path": "encoder/block/attn",
+          "type": "gqa_attention",
+          "kind": "composite",
+          "docs": {
+            "name": "grouped-query attention",
+            "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
+            "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
+            "refs": [
+              "https://arxiv.org/abs/2305.13245"
+            ]
+          },
+          "copies": {
+            "total": 6,
+            "active": 6
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              512,
+              "Residual stream width"
+            ],
+            [
+              "heads",
+              "H",
+              8,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "H",
+              8,
+              "Key/value heads. Equal to heads gives MHA, 1 gives MQA"
+            ],
+            [
+              "head_dim",
+              "dh",
+              64,
+              "Width of one head; query and key heads share it"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Bias on the q/k/v/o projections"
+            ],
+            [
+              "o_bias",
+              null,
+              null,
+              "Override the output-projection bias (Qwen2.5 has qkv bias only)"
+            ],
+            [
+              "causal",
+              null,
+              false,
+              "Mask out every position after the current one"
+            ],
+            [
+              "window",
+              "0",
+              0,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "qk_norm",
+              null,
+              false,
+              "RMSNorm on the query and key heads (Qwen3, Gemma 3)"
+            ],
+            [
+              "rope",
+              null,
+              null,
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "flash",
+              null,
+              true,
+              "Assume a memory-efficient kernel, which never builds the score matrix"
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              "score + rel(t5_bucket(kv - q, 32, 128, true), h)",
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              "1",
+              1,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "rel": "*",
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 6291456,
+            "activeParams": 6291456,
+            "shareOfParams": 0.103979623784662,
+            "flopsPerToken": 84769091.36842105,
+            "shareOfFlops": 0.2734645195614453,
+            "activationBytes": 18972672,
+            "cacheBytesPerToken": 12288,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "encoder/block/attn/q_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "encoder/block/attn/k_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "encoder/block/attn/v_proj",
+              "type": "linear",
+              "params": 1572864
+            },
+            {
+              "path": "encoder/block/attn/o_proj",
+              "type": "linear",
+              "params": 1572864
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "preset": "flan-t5-base",
+      "blocks": [
+        {
+          "path": "decoder",
+          "type": "repeat",
+          "kind": "container",
+          "docs": {
+            "name": "stack",
+            "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
+          },
+          "copies": {
+            "total": 1,
+            "active": 1
+          },
+          "params": [
+            [
+              "count",
+              "L",
+              12,
+              "How many times the subgraph is stacked"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "memory": "B S D",
+              "rel": "*",
+              "x": "B T D"
+            },
+            "out": {
+              "x": "B T D"
+            }
+          },
+          "contributes": {
+            "params": 113273856,
+            "activeParams": 113273856,
+            "shareOfParams": 0.45752822094072904,
+            "flopsPerToken": 346310117.05263156,
+            "shareOfFlops": 0.27852995349277526,
+            "activationBytes": 70836480,
+            "cacheBytesPerToken": 36864,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "decoder/block/mlp/gate",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "decoder/block/mlp/up",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "decoder/block/mlp/down",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "decoder/block/attn/q_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/attn/k_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/attn/v_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/attn/o_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/cross/q_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/cross/k_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/cross/v_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/cross/o_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/norm1",
+              "type": "rmsnorm",
+              "params": 9216
+            }
+          ]
+        },
+        {
+          "path": "decoder/block",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "name": "transformer block",
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              768,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              12,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "H",
+              12,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              64,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              2048,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "rmsnorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              false,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "gated",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              null,
+              0,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              null,
+              1,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              null,
+              0,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "gelu_tanh",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              false,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              false,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              false,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              null,
+              0,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              null,
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              "score + rel(t5_bucket(kv - q, NB, MD, false), h)",
+              "score + rel(t5_bucket(kv - q, 32, 128, false), h)",
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              true,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              1,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              0.000001,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "memory": "B S d_model",
+              "rel": "*",
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 113273856,
+            "activeParams": 113273856,
+            "shareOfParams": 0.45752822094072904,
+            "flopsPerToken": 346310117.05263156,
+            "shareOfFlops": 0.27852995349277526,
+            "activationBytes": 70836480,
+            "cacheBytesPerToken": 36864,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "decoder/block/mlp/gate",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "decoder/block/mlp/up",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "decoder/block/mlp/down",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "decoder/block/attn/q_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/attn/k_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/attn/v_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/attn/o_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/cross/q_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/cross/k_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/cross/v_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/cross/o_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/norm1",
+              "type": "rmsnorm",
+              "params": 9216
+            }
+          ]
+        },
+        {
+          "path": "encoder",
+          "type": "repeat",
+          "kind": "container",
+          "docs": {
+            "name": "stack",
+            "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
+          },
+          "copies": {
+            "total": 1,
+            "active": 1
+          },
+          "params": [
+            [
+              "count",
+              "L",
+              12,
+              "How many times the subgraph is stacked"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "rel": "*",
+              "x": "B S D"
+            },
+            "out": {
+              "x": "B S D"
+            }
+          },
+          "contributes": {
+            "params": 84953088,
+            "activeParams": 84953088,
+            "shareOfParams": 0.34313685954207473,
+            "flopsPerToken": 847690913.6842105,
+            "shareOfFlops": 0.681779997576069,
+            "activationBytes": 185892864,
+            "cacheBytesPerToken": 36864,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "encoder/block/mlp/gate",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "encoder/block/mlp/up",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "encoder/block/mlp/down",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "encoder/block/attn/q_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "encoder/block/attn/k_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "encoder/block/attn/v_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "encoder/block/attn/o_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "encoder/block/norm1",
+              "type": "rmsnorm",
+              "params": 9216
+            },
+            {
+              "path": "encoder/block/norm2",
+              "type": "rmsnorm",
+              "params": 9216
+            }
+          ]
+        },
+        {
+          "path": "encoder/block",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "name": "transformer block",
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              768,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              12,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "H",
+              12,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              64,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              2048,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "rmsnorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              false,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "gated",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              null,
+              0,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              null,
+              1,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              null,
+              0,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "router_bias",
+              null,
+              false,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "gelu_tanh",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              false,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              false,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              false,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              false,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              null,
+              0,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              null,
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              "score + rel(t5_bucket(kv - q, NB, MD, true), h)",
+              "score + rel(t5_bucket(kv - q, 32, 128, true), h)",
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              1,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              0.000001,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "rel": "*",
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 84953088,
+            "activeParams": 84953088,
+            "shareOfParams": 0.34313685954207473,
+            "flopsPerToken": 847690913.6842105,
+            "shareOfFlops": 0.681779997576069,
+            "activationBytes": 185892864,
+            "cacheBytesPerToken": 36864,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "encoder/block/mlp/gate",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "encoder/block/mlp/up",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "encoder/block/mlp/down",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "encoder/block/attn/q_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "encoder/block/attn/k_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "encoder/block/attn/v_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "encoder/block/attn/o_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "encoder/block/norm1",
+              "type": "rmsnorm",
+              "params": 9216
+            },
+            {
+              "path": "encoder/block/norm2",
+              "type": "rmsnorm",
+              "params": 9216
+            }
+          ]
+        },
+        {
+          "path": "encoder/block/mlp",
+          "type": "gated_mlp",
+          "kind": "composite",
+          "docs": {
+            "name": "gated feed-forward",
+            "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
+            "formula": "params = 3 * d_model * hidden",
+            "refs": [
+              "https://arxiv.org/abs/2002.05202"
+            ]
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              768,
+              "Width of the residual stream"
+            ],
+            [
+              "hidden",
+              "F",
+              2048,
+              "Intermediate width"
+            ],
+            [
+              "act",
+              null,
+              "gelu_tanh",
+              "Which nonlinearity the gate passes through"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each projection"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 56623104,
+            "activeParams": 56623104,
+            "shareOfParams": 0.22870827348953213,
+            "flopsPerToken": 508614548.2105263,
+            "shareOfFlops": 0.4090679985456414,
+            "activationBytes": 110100480,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "encoder/block/mlp/gate",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "encoder/block/mlp/up",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "encoder/block/mlp/down",
+              "type": "linear",
+              "params": 18874368
+            }
+          ]
+        },
+        {
+          "path": "decoder/block/mlp",
+          "type": "gated_mlp",
+          "kind": "composite",
+          "docs": {
+            "name": "gated feed-forward",
+            "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
+            "formula": "params = 3 * d_model * hidden",
+            "refs": [
+              "https://arxiv.org/abs/2002.05202"
+            ]
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              768,
+              "Width of the residual stream"
+            ],
+            [
+              "hidden",
+              "F",
+              2048,
+              "Intermediate width"
+            ],
+            [
+              "act",
+              null,
+              "gelu_tanh",
+              "Which nonlinearity the gate passes through"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Learn a constant on each projection"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 56623104,
+            "activeParams": 56623104,
+            "shareOfParams": 0.22870827348953213,
+            "flopsPerToken": 113246208,
+            "shareOfFlops": 0.09108154655117796,
+            "activationBytes": 24514560,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "decoder/block/mlp/gate",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "decoder/block/mlp/up",
+              "type": "linear",
+              "params": 18874368
+            },
+            {
+              "path": "decoder/block/mlp/down",
+              "type": "linear",
+              "params": 18874368
+            }
+          ]
+        },
+        {
+          "path": "encoder/block/attn",
+          "type": "gqa_attention",
+          "kind": "composite",
+          "docs": {
+            "name": "grouped-query attention",
+            "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
+            "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
+            "refs": [
+              "https://arxiv.org/abs/2305.13245"
+            ]
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              768,
+              "Residual stream width"
+            ],
+            [
+              "heads",
+              "H",
+              12,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "H",
+              12,
+              "Key/value heads. Equal to heads gives MHA, 1 gives MQA"
+            ],
+            [
+              "head_dim",
+              "dh",
+              64,
+              "Width of one head; query and key heads share it"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Bias on the q/k/v/o projections"
+            ],
+            [
+              "o_bias",
+              null,
+              null,
+              "Override the output-projection bias (Qwen2.5 has qkv bias only)"
+            ],
+            [
+              "causal",
+              null,
+              false,
+              "Mask out every position after the current one"
+            ],
+            [
+              "window",
+              "0",
+              0,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "qk_norm",
+              null,
+              false,
+              "RMSNorm on the query and key heads (Qwen3, Gemma 3)"
+            ],
+            [
+              "rope",
+              null,
+              null,
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "flash",
+              null,
+              true,
+              "Assume a memory-efficient kernel, which never builds the score matrix"
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              "score + rel(t5_bucket(kv - q, 32, 128, true), h)",
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              "1",
+              1,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "rel": "*",
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 28311552,
+            "activeParams": 28311552,
+            "shareOfParams": 0.11435413674476606,
+            "flopsPerToken": 339076365.4736842,
+            "shareOfFlops": 0.2727119990304276,
+            "activationBytes": 56918016,
+            "cacheBytesPerToken": 36864,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "encoder/block/attn/q_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "encoder/block/attn/k_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "encoder/block/attn/v_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "encoder/block/attn/o_proj",
+              "type": "linear",
+              "params": 7077888
+            }
+          ]
+        },
+        {
+          "path": "decoder/block/attn",
+          "type": "gqa_attention",
+          "kind": "composite",
+          "docs": {
+            "name": "grouped-query attention",
+            "summary": "Grouped-query attention. kv_heads = heads gives multi-head attention, kv_heads = 1 gives multi-query.",
+            "formula": "params = d_model*heads*head_dim + 2*d_model*kv_heads*head_dim + heads*head_dim*d_model",
+            "refs": [
+              "https://arxiv.org/abs/2305.13245"
+            ]
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              768,
+              "Residual stream width"
+            ],
+            [
+              "heads",
+              "H",
+              12,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "H",
+              12,
+              "Key/value heads. Equal to heads gives MHA, 1 gives MQA"
+            ],
+            [
+              "head_dim",
+              "dh",
+              64,
+              "Width of one head; query and key heads share it"
+            ],
+            [
+              "bias",
+              null,
+              false,
+              "Bias on the q/k/v/o projections"
+            ],
+            [
+              "o_bias",
+              null,
+              null,
+              "Override the output-projection bias (Qwen2.5 has qkv bias only)"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Mask out every position after the current one"
+            ],
+            [
+              "window",
+              "0",
+              0,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "qk_norm",
+              null,
+              false,
+              "RMSNorm on the query and key heads (Qwen3, Gemma 3)"
+            ],
+            [
+              "rope",
+              null,
+              null,
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "flash",
+              null,
+              true,
+              "Assume a memory-efficient kernel, which never builds the score matrix"
+            ],
+            [
+              "logit_softcap",
+              "0",
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              "score + rel(t5_bucket(kv - q, 32, 128, false), h)",
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              "1",
+              1,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "rel": "*",
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 28311552,
+            "activeParams": 28311552,
+            "shareOfParams": 0.11435413674476606,
+            "flopsPerToken": 58724352,
+            "shareOfFlops": 0.04723076290886279,
+            "activationBytes": 12673152,
+            "cacheBytesPerToken": 36864,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "decoder/block/attn/q_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/attn/k_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/attn/v_proj",
+              "type": "linear",
+              "params": 7077888
+            },
+            {
+              "path": "decoder/block/attn/o_proj",
+              "type": "linear",
+              "params": 7077888
             }
           ]
         }
@@ -6433,6 +9208,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -6711,6 +9498,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {
@@ -7330,6 +10123,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -7785,6 +10590,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {
@@ -8227,6 +11038,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -8682,6 +11505,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {
@@ -9124,6 +11953,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -9579,6 +12420,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {
@@ -10021,6 +12868,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -10476,6 +13335,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {
@@ -10918,6 +13783,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -11373,6 +14250,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {
@@ -11422,8 +14305,8 @@
           "kind": "primitive",
           "docs": {
             "name": "token embedding",
-            "summary": "Token embedding table.",
-            "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
+            "summary": "Token embedding table. A tied one reads the design's first embedding's table, which is how an encoder and a decoder share a vocabulary.",
+            "formula": "params = vocab * dim, or 0 when tied; FLOPs ~ 0 (a gather, not a matmul)"
           },
           "copies": {
             "total": 1,
@@ -11441,6 +14324,12 @@
               "D",
               3584,
               "Embedding width"
+            ],
+            [
+              "tied",
+              null,
+              null,
+              "Share the design's first embedding table rather than learning one of its own, as T5's decoder shares its encoder's. Unset is a table of its own."
             ]
           ],
           "shapes": {
@@ -11819,6 +14708,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -12284,6 +15185,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {
@@ -12343,8 +15250,8 @@
           "kind": "primitive",
           "docs": {
             "name": "token embedding",
-            "summary": "Token embedding table.",
-            "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
+            "summary": "Token embedding table. A tied one reads the design's first embedding's table, which is how an encoder and a decoder share a vocabulary.",
+            "formula": "params = vocab * dim, or 0 when tied; FLOPs ~ 0 (a gather, not a matmul)"
           },
           "copies": {
             "total": 1,
@@ -12362,6 +15269,12 @@
               "D",
               4096,
               "Embedding width"
+            ],
+            [
+              "tied",
+              null,
+              null,
+              "Share the design's first embedding table rather than learning one of its own, as T5's decoder shares its encoder's. Unset is a table of its own."
             ]
           ],
           "shapes": {
@@ -12745,6 +15658,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -13072,6 +15997,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -13838,6 +16775,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -14170,6 +17119,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -14502,6 +17463,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -14834,6 +17807,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -15166,6 +18151,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -15502,6 +18499,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -16008,6 +19017,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -16874,6 +19895,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -17750,6 +20783,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -18633,6 +21678,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -18967,6 +22024,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -19844,6 +22913,18 @@
               null,
               true,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -20983,6 +24064,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -22421,8 +25514,8 @@
           "kind": "primitive",
           "docs": {
             "name": "token embedding",
-            "summary": "Token embedding table.",
-            "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)"
+            "summary": "Token embedding table. A tied one reads the design's first embedding's table, which is how an encoder and a decoder share a vocabulary.",
+            "formula": "params = vocab * dim, or 0 when tied; FLOPs ~ 0 (a gather, not a matmul)"
           },
           "copies": {
             "total": 1,
@@ -22440,6 +25533,12 @@
               "D",
               4096,
               "Embedding width"
+            ],
+            [
+              "tied",
+              null,
+              null,
+              "Share the design's first embedding table rather than learning one of its own, as T5's decoder shares its encoder's. Unset is a table of its own."
             ]
           ],
           "shapes": {
@@ -23225,6 +26324,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -23616,6 +26727,18 @@
               null,
               false,
               "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1"
+            ],
+            [
+              "norm_eps",
+              null,
+              null,
+              "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6"
             ]
           ],
           "shapes": {
@@ -23949,6 +27072,12 @@
               null,
               false,
               "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)"
+            ],
+            [
+              "scale",
+              null,
+              null,
+              "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"
             ]
           ],
           "shapes": {

@@ -333,6 +333,14 @@ export function buildModel3D(doc: Doc, derived: Derived): Model3D {
   /** The reference passes an explicit 2 against its 6 wherever an arrow feeds an aggregate. */
   const AGG_ARROW = RESID_ARROW / 3;
 
+  // An encoder-decoder is two streams and this draws one: the last stack it
+  // found, from that stream's embedding to the output. Saying so is the
+  // difference between a picture of half a model and a wrong picture of all of it.
+  if ((derived.analysis.flops.perStream?.length ?? 0) > 1) {
+    notes.push(
+      `This design has two sequences and the volume view draws one: ${shape.stackPath || "the last stack"}, from its embedding to the output, without the other stack or the cross-attention between them.`,
+    );
+  }
   const blocksDrawn = Math.min(shape.nBlocks, MAX_BLOCKS_DRAWN);
   if (shape.nBlocks > blocksDrawn) {
     notes.push(`Showing ${blocksDrawn} of ${shape.nBlocks} blocks.`);

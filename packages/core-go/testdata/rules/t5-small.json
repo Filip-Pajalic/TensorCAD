@@ -1,0 +1,110 @@
+{
+  "preset": "t5-small",
+  "cases": [
+    {
+      "label": "default",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 2,
+        "warning": 0
+      },
+      "findings": [
+        {
+          "rule": "SDPA-06",
+          "severity": "info",
+          "path": "decoder/block/attn/attn",
+          "param": "score",
+          "message": "The mask and score expressions are counted as FlexAttention runs them: one fused kernel that skips the blocks the mask removes and changes each score inside, so the score matrix is never kept for the backward pass.",
+          "hint": "The generated model compiles flex_attention on CUDA. Anywhere else, or where it cannot compile, it computes the same attention over the whole score matrix, which is exact but unfused, and is what a CPU verifies and profiles."
+        },
+        {
+          "rule": "SDPA-06",
+          "severity": "info",
+          "path": "encoder/block/attn/attn",
+          "param": "score",
+          "message": "The mask and score expressions are counted as FlexAttention runs them: one fused kernel that skips the blocks the mask removes and changes each score inside, so the score matrix is never kept for the backward pass.",
+          "hint": "The generated model compiles flex_attention on CUDA. Anywhere else, or where it cannot compile, it computes the same attention over the whole score matrix, which is exact but unfused, and is what a CPU verifies and profiles."
+        }
+      ]
+    },
+    {
+      "label": "sharded",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 4,
+        "warning": 0
+      },
+      "findings": [
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 17.46 MiB, which is 84% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "chinchilla",
+          "severity": "info",
+          "message": "15000B tokens is 17023.4x the compute-optimal budget of 1B. Heavily over-trained, in the range of small models trained on very large corpora.",
+          "hint": "This is fine when inference cost matters more than training cost, which is usually why it is done."
+        },
+        {
+          "rule": "SDPA-06",
+          "severity": "info",
+          "path": "decoder/block/attn/attn",
+          "param": "score",
+          "message": "The mask and score expressions are counted as FlexAttention runs them: one fused kernel that skips the blocks the mask removes and changes each score inside, so the score matrix is never kept for the backward pass.",
+          "hint": "The generated model compiles flex_attention on CUDA. Anywhere else, or where it cannot compile, it computes the same attention over the whole score matrix, which is exact but unfused, and is what a CPU verifies and profiles."
+        },
+        {
+          "rule": "SDPA-06",
+          "severity": "info",
+          "path": "encoder/block/attn/attn",
+          "param": "score",
+          "message": "The mask and score expressions are counted as FlexAttention runs them: one fused kernel that skips the blocks the mask removes and changes each score inside, so the score matrix is never kept for the backward pass.",
+          "hint": "The generated model compiles flex_attention on CUDA. Anywhere else, or where it cannot compile, it computes the same attention over the whole score matrix, which is exact but unfused, and is what a CPU verifies and profiles."
+        }
+      ]
+    },
+    {
+      "label": "eager",
+      "ok": true,
+      "counts": {
+        "error": 0,
+        "info": 4,
+        "warning": 0
+      },
+      "findings": [
+        {
+          "rule": "logits-memory",
+          "severity": "info",
+          "message": "The logits buffer is 5.88 GiB, which is 57% of all activation memory.",
+          "hint": "Compute the cross-entropy in chunks over the sequence so the full logits tensor is never materialized."
+        },
+        {
+          "rule": "attention-share",
+          "severity": "info",
+          "message": "At 8192 tokens, attention is 42% of forward FLOPs.",
+          "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
+        },
+        {
+          "rule": "SDPA-06",
+          "severity": "info",
+          "path": "decoder/block/attn/attn",
+          "param": "score",
+          "message": "The mask and score expressions are counted as FlexAttention runs them: one fused kernel that skips the blocks the mask removes and changes each score inside, so the score matrix is never kept for the backward pass.",
+          "hint": "The generated model compiles flex_attention on CUDA. Anywhere else, or where it cannot compile, it computes the same attention over the whole score matrix, which is exact but unfused, and is what a CPU verifies and profiles."
+        },
+        {
+          "rule": "SDPA-06",
+          "severity": "info",
+          "path": "encoder/block/attn/attn",
+          "param": "score",
+          "message": "The mask and score expressions are counted as FlexAttention runs them: one fused kernel that skips the blocks the mask removes and changes each score inside, so the score matrix is never kept for the backward pass.",
+          "hint": "The generated model compiles flex_attention on CUDA. Anywhere else, or where it cannot compile, it computes the same attention over the whole score matrix, which is exact but unfused, and is what a CPU verifies and profiles."
+        }
+      ]
+    }
+  ]
+}

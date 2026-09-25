@@ -1,6 +1,6 @@
 # Encoder–decoder: a second sequence
 
-*A proposal for M11. Phases 1 and 2 are built; the rest is not. It was written first
+*A proposal for M11, now built. It was written first
 for the same reason M10's was: the choice decides what "per token" means in
 every number the tool reports.*
 
@@ -241,6 +241,25 @@ generated code must compute what the model computes.
    score, counted with the elementwise work, where the profiler does not look.
 4. **The presets.** `t5-small` and `flan-t5-base`, exact. The notes carry the
    checkpoint's unused table.
+   *Done.* Both reproduce their counts, 60,506,624 and 247,577,856, in the
+   analysis and in PyTorch, and their profiled FLOPs per target token are the
+   analysis's. `t5_probe.py` renames the generated model's weights into Hugging
+   Face's layout and runs a transcription of `modeling_t5.py` over them. The
+   logits agree to float32 rounding, and the renaming uses every weight exactly
+   once, so the two are the same parameters and not only the same count.
+   - **Unscaled attention.** `scale` on `gqa_attention` and
+     `transformer_block`, which takes it to the cross-attention as well.
+   - **A shared vocabulary.** `tied` on `embedding` reads the design's first
+     embedding's table, which is how the decoder shares the encoder's.
+   - **The scaled head.** The open question below needed no switch. t5-small
+     multiplies the decoder's output by `d_model^-0.5` before its tied head,
+     and a `scale` block saying `1/sqrt(D)` is exactly that.
+   - **The norms.** `norm_eps` on `transformer_block`, since T5 adds 1e-6.
+
+   The editor learned to say what it is looking at. The walkthrough speaks of
+   two stacks, a cross-attention step and a learned bias table rather than
+   ALiBi's arithmetic, and the volume view says it is drawing the decoder's
+   stream alone.
 
 **Done when** both presets reproduce their counts in the analysis and in
 PyTorch; their bias is checked against Hugging Face's construction of it; a
@@ -253,9 +272,9 @@ M10 closes.
 - **What to call "a token" in the headline.** Per example and per target token
   is a proposal, not a finding. It should be checked against how the T5 and UL2
   papers quote compute before it is built.
-- **Tied heads that are scaled.** t5-small multiplies the decoder's output by
-  `d_model^-0.5` before its tied head, and flan-t5 does not. That is a switch on
-  `lm_head`, and it changes what the model computes, not what it costs.
+- **Tied heads that are scaled.** *Settled by phase 4:* it did not need a
+  switch on `lm_head`. The `scale` block before the head is the multiplication,
+  and it is on the sheet where it happens.
 - **Prefix-LM.** T5's own paper compares an encoder–decoder with a decoder-only
   model that is bidirectional over a prefix. That is already drawable with
   M10's mask, `kv <= q or kv < P`, and the comparison between the two is the

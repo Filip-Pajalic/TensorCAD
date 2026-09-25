@@ -1,0 +1,336 @@
+{
+  "version": 1,
+  "meta": {
+    "name": "flan-t5-base",
+    "family": "t5",
+    "notes": "T5 v1.1 at base size, instruction-tuned: twelve layers a stack, width 768, twelve heads of 64 and a gated GELU feed-forward of 2,048, the GELU taken with its tanh approximation. Each stack has one learned relative-position table, [32 buckets, heads], wired to every layer: a score gets table[bucket(kv - q), h] added, with the bucket exact for small distances and logarithmic out to 128, two-sided in the encoder and one-sided in the decoder. Hugging Face keeps it on the first layer and hands its bias down; here it is a block outside the stack, which is the same parameters read the same way. Cross-attention has none. The attention is unscaled, T5 having folded 1/sqrt(d_kv) into its initialisation, and there are no biases anywhere. The norms are RMSNorm without a mean, as T5's LayerNorm is, with 1e-6 inside the square root. The encoder and the decoder read one embedding table: the decoder's is tied to the encoder's. The default lengths are T5's pretraining: 512 tokens of corrupted input and 114 of target. Unlike the original T5, v1.1 gives the output head a table of its own, which is why its vocabulary is counted twice and there is no rescale before it.",
+    "published": {
+      "params": 247577856,
+      "source": "https://huggingface.co/google/flan-t5-base"
+    }
+  },
+  "symbols": {
+    "B": {
+      "kind": "runtime",
+      "default": 1,
+      "doc": "Batch size"
+    },
+    "T": {
+      "kind": "runtime",
+      "default": 114,
+      "doc": "Target length in tokens: 114 in T5's span-corruption pretraining, against 512 of input"
+    },
+    "S": {
+      "kind": "runtime",
+      "default": 512,
+      "doc": "Source length in tokens: the encoder's input"
+    },
+    "L": {
+      "kind": "design",
+      "value": 12,
+      "doc": "Layers in each stack, the encoder's and the decoder's"
+    },
+    "D": {
+      "kind": "design",
+      "value": 768,
+      "doc": "Residual stream width (d_model)"
+    },
+    "H": {
+      "kind": "design",
+      "value": 12,
+      "doc": "Heads, in every attention"
+    },
+    "dh": {
+      "kind": "design",
+      "value": 64,
+      "doc": "Head dimension (d_kv)"
+    },
+    "F": {
+      "kind": "design",
+      "value": 2048,
+      "doc": "Feed-forward hidden width (d_ff)"
+    },
+    "V": {
+      "kind": "design",
+      "value": 32128,
+      "doc": "Vocabulary size, shared by both stacks"
+    },
+    "NB": {
+      "kind": "design",
+      "value": 32,
+      "doc": "Relative-position buckets"
+    },
+    "MD": {
+      "kind": "design",
+      "value": 128,
+      "doc": "Relative distance past which every key shares the last bucket"
+    }
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "source",
+        "type": "input",
+        "params": {
+          "shape": "B S",
+          "dtype": "int64"
+        }
+      },
+      {
+        "id": "embed",
+        "type": "embedding",
+        "params": {
+          "vocab": "V",
+          "dim": "D"
+        }
+      },
+      {
+        "id": "enc_bias",
+        "type": "position_bias",
+        "params": {
+          "buckets": "NB",
+          "heads": "H"
+        }
+      },
+      {
+        "id": "encoder",
+        "type": "repeat",
+        "label": "Encoder block x12",
+        "params": {
+          "count": "L"
+        },
+        "graph": {
+          "nodes": [
+            {
+              "id": "_in",
+              "type": "boundary_in",
+              "params": {
+                "ports": {
+                  "x": "B S D",
+                  "rel": "*"
+                }
+              }
+            },
+            {
+              "id": "block",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "H",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "rmsnorm",
+                "mlp": "gated",
+                "act": "gelu_tanh",
+                "attn_bias": false,
+                "mlp_bias": false,
+                "causal": false,
+                "rope": null,
+                "score": "score + rel(t5_bucket(kv - q, NB, MD, true), h)",
+                "scale": 1,
+                "norm_eps": 1e-06
+              }
+            },
+            {
+              "id": "_out",
+              "type": "boundary_out",
+              "params": {
+                "ports": {
+                  "x": "B S D"
+                }
+              }
+            }
+          ],
+          "edges": [
+            [
+              "_in:x",
+              "block:x"
+            ],
+            [
+              "_in:rel",
+              "block:rel"
+            ],
+            [
+              "block:y",
+              "_out:x"
+            ]
+          ]
+        }
+      },
+      {
+        "id": "enc_norm",
+        "type": "rmsnorm",
+        "params": {
+          "dim": "D",
+          "eps": 1e-06
+        }
+      },
+      {
+        "id": "target",
+        "type": "input",
+        "params": {
+          "shape": "B T",
+          "dtype": "int64"
+        }
+      },
+      {
+        "id": "dec_embed",
+        "type": "embedding",
+        "params": {
+          "vocab": "V",
+          "dim": "D",
+          "tied": true
+        }
+      },
+      {
+        "id": "dec_bias",
+        "type": "position_bias",
+        "params": {
+          "buckets": "NB",
+          "heads": "H"
+        }
+      },
+      {
+        "id": "decoder",
+        "type": "repeat",
+        "label": "Decoder block x12",
+        "params": {
+          "count": "L"
+        },
+        "graph": {
+          "nodes": [
+            {
+              "id": "_in",
+              "type": "boundary_in",
+              "params": {
+                "ports": {
+                  "x": "B T D",
+                  "memory": "B S D",
+                  "rel": "*"
+                }
+              }
+            },
+            {
+              "id": "block",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "H",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "rmsnorm",
+                "mlp": "gated",
+                "act": "gelu_tanh",
+                "attn_bias": false,
+                "mlp_bias": false,
+                "causal": true,
+                "rope": null,
+                "score": "score + rel(t5_bucket(kv - q, NB, MD, false), h)",
+                "scale": 1,
+                "norm_eps": 1e-06,
+                "cross_attention": true
+              }
+            },
+            {
+              "id": "_out",
+              "type": "boundary_out",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            }
+          ],
+          "edges": [
+            [
+              "_in:x",
+              "block:x"
+            ],
+            [
+              "_in:memory",
+              "block:memory"
+            ],
+            [
+              "_in:rel",
+              "block:rel"
+            ],
+            [
+              "block:y",
+              "_out:x"
+            ]
+          ]
+        }
+      },
+      {
+        "id": "final_norm",
+        "type": "rmsnorm",
+        "params": {
+          "dim": "D",
+          "eps": 1e-06
+        }
+      },
+      {
+        "id": "head",
+        "type": "lm_head",
+        "params": {
+          "vocab": "V",
+          "dim": "D",
+          "tied": false
+        }
+      },
+      {
+        "id": "logits",
+        "type": "output"
+      }
+    ],
+    "edges": [
+      [
+        "source:x",
+        "embed:ids"
+      ],
+      [
+        "embed:y",
+        "encoder:x"
+      ],
+      [
+        "enc_bias:table",
+        "encoder:rel"
+      ],
+      [
+        "encoder:x",
+        "enc_norm:x"
+      ],
+      [
+        "target:x",
+        "dec_embed:ids"
+      ],
+      [
+        "dec_embed:y",
+        "decoder:x"
+      ],
+      [
+        "enc_norm:y",
+        "decoder:memory"
+      ],
+      [
+        "dec_bias:table",
+        "decoder:rel"
+      ],
+      [
+        "decoder:x",
+        "final_norm:x"
+      ],
+      [
+        "final_norm:y",
+        "head:x"
+      ],
+      [
+        "head:y",
+        "logits:x"
+      ]
+    ]
+  },
+  "ui": {}
+}

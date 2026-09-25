@@ -1,7 +1,7 @@
 # Attention variants: what to open up, and how far
 
-*A proposal for M10. Phases 1, 2 and 4 are built, and two thirds of 3; T5 is not,
-and waits on [a second sequence](encoder-decoder.md), which is M11. The point of
+*A proposal for M10, now built. T5 came last, and needed
+[a second sequence](encoder-decoder.md), which was M11. The point of
 writing it first was that the choice decides what every attention estimate in
 the tool means. The language the two expressions are written in is
 [its own reference page](../reference/attention-expressions.md).*
@@ -244,7 +244,9 @@ analysis and the generated code currently disagree.
    `bloom-7b1`, whose only sense of order is a score expression, reproduces its
    published count exactly, and its bias is checked against Hugging Face's own
    construction of it. *So is gpt-oss:* `gpt-oss-20b` reproduces its 20.9B to
-   the parameter, sinks included.
+   the parameter, sinks included. *And T5*, once M11 gave it a second
+   sequence: `t5-small` and `flan-t5-base` reproduce their counts exactly, the
+   bias a learned table every layer's score reads.
 4. **The three that are not a score.** Sinks as a parameter, differential attention
    as two blocks and a primitive, and the eager block with its rule. *Sinks are
    done*, as planned above: `sinks` on the primitive, `heads` learned scalars,

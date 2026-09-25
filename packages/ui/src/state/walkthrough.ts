@@ -2,7 +2,7 @@
  * The walkthrough: the design explaining itself, a stage at a time.
  *
  * Brendan Bycroft's LLM visualisation has ten hand-written phases against one
- * model. Twenty-six presets cannot each have ten, and do not need to: what
+ * model. Twenty-eight presets cannot each have ten, and do not need to: what
  * differs between them is which *kinds* of stage they have, not what a stage
  * is. An embedding is an embedding in a 124k-parameter sorter and in a 671B
  * mixture of experts, and the sentence that explains one explains the other
@@ -232,6 +232,21 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
     steps.push({ id, title, body: text, paths: real, detail });
   };
 
+  // ------------------------------------------------------------ two sequences
+  // An encoder-decoder has a stack over each sequence. The decoder is the one
+  // whose blocks attend to the other's output, which is how it is found here
+  // rather than by its name.
+  const S = a.flops.perStream?.find((s) => s.symbol === "S")?.length;
+  const crosses = allOf(all, (f) => f.type === "cross_attention");
+  const stacks = allOf(all, (f) => f.category === "container" && f.depth === 0);
+  const decoder = crosses[0] ? stacks.find((s) => crosses[0]!.path.startsWith(`${s.path}/`)) : undefined;
+  const encoder = decoder ? stacks.find((s) => s !== decoder) : undefined;
+  const seq2seq = S !== undefined && !!encoder && !!decoder;
+  const depthOf = (f: Found | undefined): number => n(f?.resolved?.p.count, 1);
+  const causalIn = (stack: Found | undefined): boolean =>
+    firstOf(all, (f) => f.category === "attention" && !!stack && f.path.startsWith(`${stack.path}/`))?.resolved?.p
+      .causal !== false;
+
   // ---------------------------------------------------------------- the whole
   const layers = sym.L ?? sym.Lm ?? null;
   const dense = derived.params.active === derived.params.total;
@@ -243,9 +258,12 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
       // can be: by the stages it is written out as. Without this the opening
       // line of AlexNet's walkthrough was four words long.
       `${formatCount(derived.params.total)} parameters` +
-        (layers
-          ? `, in ${count(layers)} layers` + (sym.D ? ` of width ${count(sym.D)}` : "")
-          : `, across ${count(doc.graph.nodes.length)} stages drawn end to end`) +
+        (seq2seq
+          ? `, in an encoder of ${count(depthOf(encoder))} layers and a decoder of ${count(depthOf(decoder))}` +
+            (sym.D ? `, of width ${count(sym.D)}` : "")
+          : layers
+            ? `, in ${count(layers)} layers` + (sym.D ? ` of width ${count(sym.D)}` : "")
+            : `, across ${count(doc.graph.nodes.length)} stages drawn end to end`) +
         ".",
       dense
         ? "Every parameter is used on every token: this is a dense model."
@@ -258,19 +276,21 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
   );
 
   // ---------------------------------------------------------------- the input
-  const input = firstOf(all, (f) => f.type === "input");
+  const inputs = allOf(all, (f) => f.type === "input");
   const embed = firstOf(all, (f) => f.type === "embedding");
   push(
     "input",
     "What goes in",
     [
-      embed
-        ? `A sequence of integers, one per token, each one an index into a vocabulary of ${count(n(embed.resolved?.p.vocab))}.`
-        : "A batch of inputs; this design takes tensors rather than token ids.",
+      seq2seq && embed
+        ? `Two sequences of integers, each token an index into a vocabulary of ${count(n(embed.resolved?.p.vocab))}: the source, ${count(S!)} tokens that the encoder reads whole, and the target, which the decoder writes one token at a time.`
+        : embed
+          ? `A sequence of integers, one per token, each one an index into a vocabulary of ${count(n(embed.resolved?.p.vocab))}.`
+          : "A batch of inputs; this design takes tensors rather than token ids.",
       "Batch and sequence length stay symbolic all the way through the design, because they are conditions of a run rather than properties of the model.",
       run.input ?? null,
     ],
-    [input?.path],
+    seq2seq ? inputs.map((f) => f.path) : [inputs[0]?.path],
     1,
   );
 
@@ -278,15 +298,19 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
   if (embed) {
     const dim = n(embed.resolved?.p.dim);
     const vocab = n(embed.resolved?.p.vocab);
+    const sharing = allOf(all, (f) => f.type === "embedding" && f.resolved?.p.tied === true);
     push(
       "embed",
       "Every token becomes a vector",
       [
         `A table with ${count(vocab)} rows and ${count(dim)} columns. Looking a token up is a row lookup, not a matrix multiply, which is why this block costs ${formatCount(vocab * dim)} parameters and almost no arithmetic.`,
         `Those ${count(dim)} numbers are the residual stream. Every block from here to the output reads a vector of that width and writes one back.`,
+        sharing.length > 0
+          ? "The decoder's tokens are looked up in the same table: its embedding is tied to this one, so the vocabulary is learned once for both."
+          : null,
         run.embed ?? null,
       ],
-      [embed.path],
+      [embed.path, ...sharing.map((f) => f.path)],
       1,
     );
   }
@@ -321,6 +345,24 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
       [rope.path],
       3,
     );
+  } else if (distance && allOf(all, (f) => f.type === "position_bias").length > 0) {
+    const tables = allOf(all, (f) => f.type === "position_bias");
+    const t = tables[0]!.resolved?.p ?? {};
+    const score = String(distance.resolved?.p.score);
+    push(
+      "positions",
+      "And where it sits",
+      [
+        "Attention sees a set, not a sequence. This design adds nothing to the vectors: instead each attention score gets a learned bias, one per head, for how far its key is from its query." +
+          (score.includes("t5_bucket(")
+            ? " Distances are sorted into buckets — one bucket per distance close by, wider ones further out, and one for everything past the furthest — so the table stays small whatever the length."
+            : ""),
+        `${tables.length === 1 ? "The table is" : `Each of the ${count(tables.length)} tables is`} ${count(n(t.buckets))} buckets by ${count(n(t.heads))} heads, ${formatCount(tables.reduce((s, f) => s + (derived.paramsByPath.get(f.path) ?? 0), 0))} parameters in all, and every layer it is wired to reads the same one rather than learning its own.`,
+        `The score expression says exactly how: ${score}.`,
+      ],
+      tables.map((f) => f.path),
+      1,
+    );
   } else if (distance) {
     push(
       "positions",
@@ -335,8 +377,19 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
   }
 
   // ------------------------------------------------------------- the stack
-  const stack = firstOf(all, (f) => f.category === "container");
-  if (stack && layers) {
+  const stack = seq2seq ? encoder : firstOf(all, (f) => f.category === "container");
+  if (seq2seq) {
+    push(
+      "stack",
+      "Two stacks, over two sequences",
+      [
+        `An encoder of ${count(depthOf(encoder))} blocks reads the source, ${causalIn(encoder) ? "each token seeing those before it" : "every token seeing every other"}. A decoder of ${count(depthOf(decoder))} blocks writes the target, ${causalIn(decoder) ? "each token seeing only those before it" : "every token seeing every other"}. They hold ${formatCount(derived.paramsByPath.get(encoder!.path) ?? 0)} and ${formatCount(derived.paramsByPath.get(decoder!.path) ?? 0)} of the model.`,
+        "The next few steps are what happens inside an encoder block. A decoder block is the same with one more attention, between its own and its feed-forward, which comes after them.",
+      ],
+      [encoder!.path, decoder!.path],
+      1,
+    );
+  } else if (stack && layers) {
     push(
       "stack",
       "The same block, over and over",
@@ -376,11 +429,13 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
       "attention",
       "Every token looks at the others",
       [
-        `Each token asks a question, every earlier token offers an answer, and the token takes a weighted average of what it is offered. ${count(heads)} heads do this at once, each over its own ${count(dh)} numbers, so the block can attend to several things at a time.`,
+        `Each token asks a question, ${p.causal === false ? "every other token" : "every earlier token"} offers an answer, and the token takes a weighted average of what it is offered. ${count(heads)} heads do this at once, each over its own ${count(dh)} numbers, so the block can attend to several things at a time.`,
         kv === heads
           ? `All ${count(heads)} heads keep their own keys and values.`
           : `${count(heads)} heads ask, but only ${count(kv)} sets of keys and values are kept and shared between them. That is what makes the cache affordable: ${formatBytes(a.kv.bytesPerToken)} per token rather than ${formatBytes((a.kv.bytesPerToken * heads) / Math.max(kv, 1))}.`,
-        `Attention is the one stage whose cost grows with the sequence: ${formatFlops(a.flops.fwdAttention)} per token at ${count(a.options.T)} tokens, against ${formatFlops(a.flops.fwdDense)} for everything else.`,
+        seq2seq
+          ? `Attention is the one stage whose cost grows with the sequence: ${formatFlops(a.flops.fwdAttention)} per target token at ${count(S!)} source tokens and ${count(a.options.T)} target tokens, against ${formatFlops(a.flops.fwdDense)} for everything else.`
+          : `Attention is the one stage whose cost grows with the sequence: ${formatFlops(a.flops.fwdAttention)} per token at ${count(a.options.T)} tokens, against ${formatFlops(a.flops.fwdDense)} for everything else.`,
         attn.type === "diff_attention"
           ? "Each of these heads is two attention maps over the same values, one taken away from the other, scaled by a learned lambda. Whatever both maps put on tokens that do not matter cancels, which is the point: less attention wasted on context that is only there."
           : null,
@@ -449,6 +504,24 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
     );
   }
 
+  // ------------------------------------------------------- cross-attention
+  if (seq2seq) {
+    const cached = Object.entries(a.kv.byPath)
+      .filter(([path]) => crosses.some((c) => path.startsWith(`${c.path}/`)))
+      .reduce((t, [, bytes]) => t + bytes, 0);
+    push(
+      "cross",
+      "The decoder reads the encoder",
+      [
+        `Each of the decoder's ${count(depthOf(decoder))} blocks has a second attention, between its own and its feed-forward. Its queries come from the target, its keys and values from the encoder's output, and nothing is masked: every target token can look at every source token.`,
+        `That is the only way the source reaches the output. Those keys and values are computed once per request, from the encoder, and kept while the target is written` +
+          (cached > 0 ? `: ${formatBytes(cached)} for ${count(S!)} source tokens.` : "."),
+      ],
+      crosses.map((f) => f.path),
+      Math.max(...crosses.map((f) => f.depth)),
+    );
+  }
+
   // ---------------------------------------------------------- convolutions
   const conv = allOf(all, (f) => f.type === "conv2d");
   if (conv.length > 0) {
@@ -478,7 +551,9 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
         p.tied === true
           ? `The projection reuses the embedding table rather than learning its own, which costs nothing and is why this block reports no parameters of its own.`
           : `${count(vocab)} scores per position, from its own ${formatCount(vocab * n(p.dim, n(sym.D)))} parameters.`,
-        "The highest score is the next token. Feed it back in at the end and you have the loop the whole thing exists for.",
+        seq2seq
+          ? "The highest score is the target's next token. Feed it back into the decoder and you have the loop; the encoder ran once, and does not run again."
+          : "The highest score is the next token. Feed it back in at the end and you have the loop the whole thing exists for.",
         run.output ?? null,
       ],
       [finalNorm?.path, head.path],
@@ -491,9 +566,16 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
     "cost",
     "What it costs to run",
     [
-      `At the operating point set above — ${count(a.options.T)} tokens, batch ${count(a.options.B)}, ${a.options.inferenceDtype} — one token costs ${formatFlops(a.flops.fwdTotal)} to predict.`,
+      seq2seq
+        ? `At the operating point set above — ${count(S!)} source tokens and ${count(a.options.T)} target tokens, batch ${count(a.options.B)}, ${a.options.inferenceDtype} — one target token costs ${formatFlops(a.flops.fwdTotal)} to predict, the encoder's share spread over the target, and one whole example ${formatFlops(a.flops.fwdPerExample ?? 0)}.`
+        : `At the operating point set above — ${count(a.options.T)} tokens, batch ${count(a.options.B)}, ${a.options.inferenceDtype} — one token costs ${formatFlops(a.flops.fwdTotal)} to predict.`,
+      // What a context holds is every token's share and whatever is held per
+      // sequence regardless: a sliding window's bounded cache, a state-space
+      // layer's state, the source's keys and values.
       a.kv.bytesPerToken > 0
-        ? `Serving it means keeping ${formatBytes(a.kv.bytesPerToken)} per token of context, so a full ${count(a.options.T)}-token conversation holds ${formatBytes(a.kv.bytesPerSequenceFixed)} before a single reply is generated.`
+        ? seq2seq
+          ? `Serving it means keeping ${formatBytes(a.kv.bytesPerToken)} per target token and ${formatBytes(a.kv.bytesPerSequenceFixed)} per request for the source, so a ${count(a.options.T)}-token reply holds ${formatBytes(a.kv.bytesPerToken * a.options.T + a.kv.bytesPerSequenceFixed)} by its last token.`
+          : `Serving it means keeping ${formatBytes(a.kv.bytesPerToken)} per token of context, so a full ${count(a.options.T)}-token conversation holds ${formatBytes(a.kv.bytesPerToken * a.options.T + a.kv.bytesPerSequenceFixed)} before a single reply is generated.`
         : null,
       "Every one of those numbers is in the readout on the right, under the same operating point, and every one of them moves when you change the design.",
     ],

@@ -39,6 +39,14 @@ func maskSpec() ParamSpec {
 // sinksSpec is a learned score per head that every query can attend to instead
 // of any key. Unset rather than false by default, so a design that never
 // mentions it resolves, documents and generates exactly as it did before.
+// attnScaleSpec is what an attention's scores are multiplied by, on the blocks
+// that carry it down to sdpa. Unset, like sinks, so a design that never
+// mentions it expands into exactly the graph it always did.
+func attnScaleSpec() ParamSpec {
+	return ParamSpec{Type: ParamNum, Default: nil, HasDefault: true,
+		Doc: "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"}
+}
+
 func sinksSpec() ParamSpec {
 	return ParamSpec{Type: ParamBool, Default: nil, HasDefault: true,
 		Doc: "Learn one score per head that sits in the softmax's denominator beside the keys, so a " +
@@ -185,6 +193,9 @@ var Primitives = []*BlockDef{
 		Params: ParamList{
 			{"vocab", pInt(1, "Vocabulary size")},
 			{"dim", pInt(1, "Embedding width")},
+			{"tied", ParamSpec{Type: ParamBool, Default: nil, HasDefault: true,
+				Doc: "Share the design's first embedding table rather than learning one of its own, as " +
+					"T5's decoder shares its encoder's. Unset is a table of its own."}},
 		},
 		Ports: Ports{
 			// An index in, a vector out. This is the block where the integral
@@ -194,13 +205,19 @@ var Primitives = []*BlockDef{
 			In:  map[string]PortSpec{"ids": {Shape: "...", Dtype: "int", Anchor: "flow"}},
 			Out: map[string]PortSpec{"y": {Shape: "... dim", Dtype: "float", Anchor: "flow"}},
 		},
-		ParamCount: func(r *Resolved) float64 { return r.Num("vocab") * r.Num("dim") },
-		Flops:      noFlops,
-		Retains:    noRetains,
+		ParamCount: func(r *Resolved) float64 {
+			if r.Bool("tied") {
+				return 0
+			}
+			return r.Num("vocab") * r.Num("dim")
+		},
+		Flops:   noFlops,
+		Retains: noRetains,
 		Docs: BlockDocs{
-			Name:    "token embedding",
-			Summary: "Token embedding table.",
-			Formula: "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)",
+			Name: "token embedding",
+			Summary: "Token embedding table. A tied one reads the design's first embedding's table, " +
+				"which is how an encoder and a decoder share a vocabulary.",
+			Formula: "params = vocab * dim, or 0 when tied; FLOPs ~ 0 (a gather, not a matmul)",
 		},
 	},
 	{

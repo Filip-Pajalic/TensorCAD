@@ -227,7 +227,15 @@ func AnalyzeChinchilla(p ChinchillaInputs) *ChinchillaResult {
 
 	if p.Tokens > 0 && n > 0 {
 		for key, f := range ChinchillaFits {
-			res.PredictedLoss[key] = f.E + f.A/math.Pow(n, f.Alpha) + f.B/math.Pow(p.Tokens, f.Beta)
+			loss := f.E + f.A/math.Pow(n, f.Alpha) + f.B/math.Pow(p.Tokens, f.Beta)
+			// To twelve decimals, because the last bit is the platform's:
+			// math.Pow goes through Exp and Log, which are assembly on amd64
+			// and plain Go in WebAssembly, and the two disagree by an ulp for
+			// some inputs. The goldens are written natively and the editor
+			// runs the WebAssembly; flan-t5-base was the first design to land
+			// on such an input. A fit to a few percent has no use for the
+			// digits this drops.
+			res.PredictedLoss[key] = math.Round(loss*1e12) / 1e12
 		}
 	}
 

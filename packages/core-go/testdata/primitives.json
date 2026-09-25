@@ -118,6 +118,7 @@
       },
       "resolved": {
         "dim": 4096,
+        "tied": null,
         "vocab": 128256
       },
       "errors": [],

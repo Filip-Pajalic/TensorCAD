@@ -413,11 +413,11 @@
         "predictedLoss": [
           [
             "epoch",
-            2.1047415180098046
+            2.10474151801
           ],
           [
             "hoffmann",
-            2.1018160083807746
+            2.101816008381
           ]
         ],
         "verdict": "Close to compute-optimal."
@@ -750,11 +750,11 @@
         "predictedLoss": [
           [
             "epoch",
-            1.9961355897551498
+            1.996135589755
           ],
           [
             "hoffmann",
-            1.9229565515584512
+            1.922956551558
           ]
         ],
         "verdict": "Heavily over-trained, in the range of small models trained on very large corpora."
@@ -1194,11 +1194,11 @@
         "predictedLoss": [
           [
             "epoch",
-            2.1047415180098046
+            2.10474151801
           ],
           [
             "hoffmann",
-            2.1018160083807746
+            2.101816008381
           ]
         ],
         "verdict": "Close to compute-optimal."

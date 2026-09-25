@@ -61,7 +61,7 @@ Two cross-checks worth knowing:
 
 - **FLOPs.** For GPT-2 small at batch 2, sequence 128, `torch.utils.flop_counter` measures 251.78 MFLOP per token and the analysis reports 249.42. The whole difference is the causal mask: a profiler counts the attention operator as if nothing were masked, because the operator's shape does not depend on the mask. `flops.fwdTotalUnmasked` reproduces the profiler's number exactly; `flops.fwdTotal` is what a fused causal kernel actually does. A test pins both.
 - **Export.** `generateTorch` defaults to a gather-based mixture-of-experts dispatch, which uses `nonzero` and so cannot be traced by `torch.export`. Pass `moeDispatch: "dense"` for a traceable variant that computes the same thing at `experts / top_k` times the cost. Use it to verify a design, not to train one.
-- **Attention expressions.** A design's `mask` and `score` are generated as FlexAttention's `mask_mod` and `score_mod` and called through `expression_attention`, which compiles `flex_attention` on CUDA and otherwise applies the same functions to the whole score matrix. The second form is what verification profiles and exports; `expression_attention_probe.py` holds it against uncompiled `flex_attention` to the bit. The language is `packages/core-go/attnexpr`; `catalog/attention.go` is what it costs, and a mask is counted by *evaluating* it — seeded and stratified, so reproducible — rather than by a formula. Attention sinks go through the same helper: fused, the output rescaled by `sigmoid(lse - sink)` from the log-sum-exp FlexAttention returns; the long way, one more column in the softmax, as Hugging Face writes it. `sinks_probe.py` holds our form against both. `sinks` defaults to *unset* rather than `false`, so a design that never mentions it generates byte-identical code — a new `false` in every class docstring would have changed every `model.py` hash, including the one the committed nano-sort trace is matched by. A score can also read a tensor: a name called like a function that is not one is a table, an input of that name on the attention and on every composite that carries the score down to it, and the generated score is then a factory closing over it, `score_mod_1(rel)`. `t5_bias_probe.py` holds T5's bias against Hugging Face's and checks that a gradient reaches the table through `flex_attention`.
+- **Attention expressions.** A design's `mask` and `score` are generated as FlexAttention's `mask_mod` and `score_mod` and called through `expression_attention`, which compiles `flex_attention` on CUDA and otherwise applies the same functions to the whole score matrix. The second form is what verification profiles and exports; `expression_attention_probe.py` holds it against uncompiled `flex_attention` to the bit. The language is `packages/core-go/attnexpr`; `catalog/attention.go` is what it costs, and a mask is counted by *evaluating* it — seeded and stratified, so reproducible — rather than by a formula. Attention sinks go through the same helper: fused, the output rescaled by `sigmoid(lse - sink)` from the log-sum-exp FlexAttention returns; the long way, one more column in the softmax, as Hugging Face writes it. `sinks_probe.py` holds our form against both. `sinks` defaults to *unset* rather than `false`, so a design that never mentions it generates byte-identical code — a new `false` in every class docstring would have changed every `model.py` hash, including the one the committed nano-sort trace is matched by. A score can also read a tensor: a name called like a function that is not one is a table, an input of that name on the attention and on every composite that carries the score down to it, and the generated score is then a factory closing over it, `score_mod_1(rel)`. `t5_bias_probe.py` holds T5's bias against Hugging Face's and checks that a gradient reaches the table through `flex_attention`; `t5_probe.py` holds both T5 presets against a transcription of Hugging Face's whole model, given the generated model's own weights under Hugging Face's names.
 - **Initialization.** Generated models carry an `init_weights()` method rather than relying on PyTorch's defaults, because `nn.Embedding` defaults to a unit normal. Measured on GPT-2 small: defaults give a next-token loss of 466, `init_weights()` gives 10.94 against the uniform baseline of `ln(50257) = 10.82`. It is a method rather than part of `__init__` so the model can still be built on the meta device for verification.
 
 ## Layout
@@ -70,8 +70,8 @@ Two cross-checks worth knowing:
   analysis; `packages/engine` is that module plus the TypeScript client that loads it. The
   editor, the command line, the MCP server and the desktop shell are all clients of the same
   module, so an answer cannot depend on where it was asked.
-- **`packages/core-go/testdata` is the specification.** A hundred and fifteen files saying what
-  the engine answers for all twenty-six presets: symbol tables, inferred shapes at two expansion
+- **`packages/core-go/testdata` is the specification.** A hundred and twenty-three files saying what
+  the engine answers for all twenty-eight presets: symbol tables, inferred shapes at two expansion
   settings, the full analysis and the design-rule check at three operating points, every byte
   of a generated `model.py`, the prose of every block. `go run ./cmd/golden` rewrites them and
   nothing else does — never a test, which would pass whatever the engine did. They began as
@@ -86,9 +86,12 @@ Two cross-checks worth knowing:
   rounds a half to even where JavaScript rounds it away from zero. `packages/core-go/jsonx`
   and `analysis/format.go` exist for those three, and `report/wire_test.go` walks a whole
   report objecting to every `null` it was not told to expect. Add to that list rather than
-  papering over it in a client.
+  papering over it in a client. The goldens have a boundary of their own: they are written
+  by native Go, where `math.Exp` and `math.Log` are assembly on amd64, and the editor runs
+  WebAssembly, where they are plain Go, so a transcendental can differ in its last bit.
+  `AnalyzeChinchilla` rounds its predicted losses for that reason; flan-t5-base found it.
 - **A preset is a document, not a builder.** `packages/core-go/presets/data` holds the
-  library as twenty-six JSON files, embedded into the binary. There is no builder any more and
+  library as twenty-eight JSON files, embedded into the binary. There is no builder any more and
   nothing generates them: a new preset is a file, and `meta.published` is what the tests hold
   it to.
 - `packages/engine` — the compiled module and the TypeScript that loads it.
@@ -263,7 +266,7 @@ Two cross-checks worth knowing:
    fails on a vendor name, a vendor's environment variable, a stateful Cloudflare binding or a
    privileged key's name; it runs in `test:all` and in CI before the tests, because what it
    guards against is a commit rather than a behaviour.
-10. **Presets are the regression suite.** Every preset carries `meta.published` and the tests assert the analysis reproduces it. Twenty-three of twenty-six match to the parameter; the other three — `qwen3-30b-a3b`, `qwen3-235b-a22b` and `deepseek-v3` — are checked against rounded vendor figures with an explicit `tolerance`. Not all of them are language models. `ijepa-vit-h14` is a vision transformer with bidirectional attention and no vocabulary (`presets/jepa.ts`), and `alexnet` is a convolutional classifier whose tensors are `B C H W` rather than a sequence (`presets/convnet.ts`). A convnet's token is one image, so `T` is 1 and every per-token figure reads as per-image; its FLOPs match `torch.utils.flop_counter` exactly, there being no causal mask to disagree about. Everything downstream treats all three kinds identically.
+10. **Presets are the regression suite.** Every preset carries `meta.published` and the tests assert the analysis reproduces it. Twenty-five of twenty-eight match to the parameter; the other three — `qwen3-30b-a3b`, `qwen3-235b-a22b` and `deepseek-v3` — are checked against rounded vendor figures with an explicit `tolerance`. Not all of them are language models. `ijepa-vit-h14` is a vision transformer with bidirectional attention and no vocabulary (`presets/jepa.ts`), and `alexnet` is a convolutional classifier whose tensors are `B C H W` rather than a sequence (`presets/convnet.ts`). A convnet's token is one image, so `T` is 1 and every per-token figure reads as per-image; its FLOPs match `torch.utils.flop_counter` exactly, there being no causal mask to disagree about. `t5-small` and `flan-t5-base` are encoder–decoders, two stacks over two sequences, the decoder's embedding `tied` to the encoder's. Everything downstream treats all of them identically.
 
 ## When adding a block
 

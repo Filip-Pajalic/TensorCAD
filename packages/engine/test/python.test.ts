@@ -927,6 +927,80 @@ describe.skipIf(!available)("a relative-position bias", () => {
 });
 
 /**
+ * T5, the first encoder-decoder presets: M11's fourth phase, and the end of
+ * M10's relative bias. Each is held three ways. Its parameters, profiled FLOPs,
+ * forward pass and export, as every design is. And weight for weight against a
+ * transcription of Hugging Face's own forward pass, with the generated model's
+ * parameters renamed into Hugging Face's layout: the logits have to agree, and
+ * the renaming has to use every weight exactly once, which is what makes the
+ * two the same parameters rather than the same count.
+ */
+describe.skipIf(!available)("T5", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+  const cases = [
+    { name: "t5-small", params: 60_506_624, layers: 6, heads: 8, gated: false, tied: true },
+    { name: "flan-t5-base", params: 247_577_856, layers: 12, heads: 12, gated: true, tied: false },
+  ] as const;
+
+  for (const c of cases) {
+    it(
+      `${c.name} has the parameters and the FLOPs it says, runs, and exports`,
+      () => {
+        const { dir, model } = writePreset(c.name);
+        try {
+          const full = runVerify(invocation, model, ["--seq", "16", "--source", "24"]);
+          expect(full).not.toHaveProperty("spawnFailed");
+          const r = full as Verify & { inputs?: Record<string, number[]> };
+          expect({ ok: r.ok, matches: r.matches, forward: r.forward, export: r.export_ok }).toEqual({
+            ok: true,
+            matches: true,
+            forward: "ok",
+            export: true,
+          });
+          expect(r.params).toBe(c.params);
+          expect(r.inputs).toEqual({ source: [2, 24], target: [2, 16] });
+          const analysis = analyze(getPreset(c.name), { T: 16, B: 2, S: 24 });
+          expect(r.flops! / (2 * 16)).toBe(analysis.flops.fwdTotalUnmasked);
+        } finally {
+          rmSync(dir, { recursive: true, force: true });
+        }
+      },
+      TIMEOUT_MS,
+    );
+
+    it(
+      `${c.name} computes what Hugging Face's T5 computes`,
+      () => {
+        const { dir, model } = writePreset(c.name);
+        try {
+          const [cmd] = invocation;
+          const python = cmd === "tensorcad-runtime" ? "python" : cmd;
+          const result = spawnSync(python, [join(import.meta.dir, "t5_probe.py"), model], {
+            encoding: "utf8",
+            timeout: TIMEOUT_MS,
+            shell: process.platform === "win32",
+          });
+          const out = JSON.parse(result.stdout.trim().split(/\r?\n/).at(-1)!);
+          expect(out).toMatchObject({
+            layers: c.layers,
+            heads: c.heads,
+            gated: c.gated,
+            tied: c.tied,
+            every_weight_once: true,
+            hf_params: c.params,
+          });
+          // float32 rounding over a few dozen layers, and nothing else.
+          expect(out.logits_diff / out.logits_scale).toBeLessThan(1e-5);
+        } finally {
+          rmSync(dir, { recursive: true, force: true });
+        }
+      },
+      TIMEOUT_MS,
+    );
+  }
+});
+
+/**
  * Every preset, through `ast.parse`.
  *
  * Cheaper than the block above and answering a different question: not "does

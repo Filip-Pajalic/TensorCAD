@@ -6,6 +6,8 @@
   "gpt2-xl",
   "nanogpt",
   "bloom-7b1",
+  "t5-small",
+  "flan-t5-base",
   "llama-2-7b",
   "mistral-7b",
   "llama-3-8b",

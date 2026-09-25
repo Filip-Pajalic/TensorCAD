@@ -566,8 +566,8 @@
       "kind": "primitive",
       "category": "embedding",
       "name": "token embedding",
-      "summary": "Token embedding table.",
-      "formula": "params = vocab * dim; FLOPs ~ 0 (a gather, not a matmul)",
+      "summary": "Token embedding table. A tied one reads the design's first embedding's table, which is how an encoder and a decoder share a vocabulary.",
+      "formula": "params = vocab * dim, or 0 when tied; FLOPs ~ 0 (a gather, not a matmul)",
       "refs": [],
       "params": [
         [
@@ -580,6 +580,12 @@
           "dim",
           "int",
           "Embedding width",
+          null
+        ],
+        [
+          "tied",
+          "bool",
+          "Share the design's first embedding table rather than learning one of its own, as T5's decoder shares its encoder's. Unset is a table of its own.",
           null
         ]
       ]
@@ -917,6 +923,12 @@
           "output_gate",
           "bool",
           "Project a second query-width tensor and use it as a sigmoid gate on the attention output (Qwen3-Next)",
+          null
+        ],
+        [
+          "scale",
+          "num",
+          "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1",
           null
         ]
       ]
@@ -2277,6 +2289,18 @@
           "output_gate",
           "bool",
           "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)",
+          null
+        ],
+        [
+          "scale",
+          "num",
+          "What the scores are multiplied by, in the cross-attention too; unset is 1/sqrt(head_dim), and T5 uses 1",
+          null
+        ],
+        [
+          "norm_eps",
+          "num",
+          "Added inside every norm's square root, against dividing by zero; unset is the norm's own 1e-5, and T5 uses 1e-6",
           null
         ]
       ]

@@ -1521,7 +1521,9 @@ func GenerateTorch(doc *ir.Doc, options Options) *Generated {
 	// has one output head per prediction depth and they all share the
 	// embedding. Counting them as shared and then emitting them untied is a
 	// model that does not have the parameters the analysis said it does, which
-	// is exactly what `verify` is for and exactly what it caught.
+	// is exactly what `verify` is for and exactly what it caught. A tied
+	// embedding is the same thing on the way in: T5's decoder reads its
+	// encoder's table.
 	var tie []string
 	var embed *ir.NodeDef
 	for i := range doc.Graph.Nodes {
@@ -1532,7 +1534,7 @@ func GenerateTorch(doc *ir.Doc, options Options) *Generated {
 	if embed != nil {
 		for i := range doc.Graph.Nodes {
 			head := &doc.Graph.Nodes[i]
-			if head.Type != "lm_head" {
+			if (head.Type != "lm_head" && head.Type != "embedding") || head == embed {
 				continue
 			}
 			r := catalog.ResolveNodeParams(c.cat[head.Type], head.Params, symbols)

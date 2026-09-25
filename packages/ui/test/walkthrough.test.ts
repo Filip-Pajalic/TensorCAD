@@ -149,6 +149,40 @@ describe("a step exists because the design has the block", () => {
     expect(positions?.paths).toEqual(["layers/block/attn/attn"]);
     expect(positions?.body.join(" ")).toContain("score - 2 ** (-8 * (h + 1) / heads) * (q - kv)");
   });
+
+  test("an encoder-decoder is told it has two stacks, and where they meet", () => {
+    const steps = new Map(stepsFor(getPreset("t5-small")).map((s) => [s.id, s]));
+    expect(steps.get("whole")?.body[0]).toBe(
+      "60.5M parameters, in an encoder of 6 layers and a decoder of 6, of width 512.",
+    );
+    expect(steps.get("input")?.paths).toEqual(["source", "target"]);
+    expect(steps.get("embed")?.paths).toEqual(["embed", "dec_embed"]);
+    const stack = steps.get("stack")!;
+    expect(stack.paths).toEqual(["encoder", "decoder"]);
+    expect(stack.body[0]).toContain("every token seeing every other");
+    expect(stack.body[0]).toContain("each token seeing only those before it");
+    // The encoder's attention is not causal, and says so.
+    expect(steps.get("attention")?.body[0]).toContain("every other token offers an answer");
+    // The source's keys and values: 512 positions, six layers, keys and
+    // values of 512 at two bytes.
+    const cross = steps.get("cross")!;
+    expect(cross.paths).toEqual(["decoder/block/cross"]);
+    expect(cross.body.join(" ")).toContain("6.00 MiB for 512 source tokens");
+    // A learned table is stored, which ALiBi's sentence would deny.
+    const positions = steps.get("positions")!;
+    expect(positions.paths).toEqual(["enc_bias", "dec_bias"]);
+    expect(positions.body.join(" ")).toContain("512 parameters in all");
+    expect(positions.body.join(" ")).not.toContain("Nothing is stored");
+    // A decoder-only design gets none of it.
+    expect(stepsFor(getPreset("llama-3-8b")).find((s) => s.id === "cross")).toBeUndefined();
+  });
+
+  test("a context's cache is every one of its tokens' share", () => {
+    // It used to quote the part held per sequence regardless, which is
+    // nothing at all for a design with no window: 0 B for a full context.
+    const cost = stepsFor(getPreset("gpt2-small")).find((s) => s.id === "cost");
+    expect(cost?.body[1]).toContain("a full 1,024-token conversation holds 36.00 MiB");
+  });
 });
 
 describe("it narrates the design in front of you", () => {

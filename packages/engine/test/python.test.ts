@@ -647,6 +647,89 @@ describe.skipIf(!available)("gpt-oss-20b", () => {
 });
 
 /**
+ * Differential attention, against the paper's own code and the profiler.
+ *
+ * nano-sort with its attention made differential: two heads, each a pair of
+ * twelve-wide maps over values twice that. No released model to regress
+ * against, so the generated module is held against a transcription of
+ * Microsoft's reference, given the same weights, and the whole model against
+ * PyTorch's count of its parameters and FLOPs.
+ */
+function differential(extra: Record<string, unknown>): ReturnType<typeof getPreset> {
+  const doc = structuredClone(getPreset("nano-sort"));
+  for (const [k, v] of [["H", 2], ["Hkv", 2], ["dh", 12]] as const) {
+    (doc.symbols[k] as { value: number }).value = v;
+  }
+  const block = doc.graph.nodes.find((n) => n.id === "layers")!.graph!.nodes.find((n) => n.id === "block")!;
+  block.params = { ...block.params, attention: "diff", ...extra };
+  return doc;
+}
+
+describe.skipIf(!available)("differential attention", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+
+  it(
+    "computes what the reference implementation computes",
+    () => {
+      // The reference has no biases and leaves rotary to its caller, and its
+      // lambda_init is scheduled by depth: this is its layer one.
+      const doc = differential({ rope: null, attn_bias: false, lambda_init: 0.8 - 0.6 * Math.exp(-0.3) });
+      const dir = mkdtempSync(join(tmpdir(), "tensorcad-diff-"));
+      try {
+        for (const file of generateTorch(doc).files) writeFileSync(join(dir, file.path), file.contents);
+        const [cmd] = invocation;
+        const python = cmd === "tensorcad-runtime" ? "python" : cmd;
+        const result = spawnSync(python, [join(import.meta.dir, "diff_attention_probe.py"), join(dir, "model.py"), "1"], {
+          encoding: "utf8",
+          timeout: TIMEOUT_MS,
+          shell: process.platform === "win32",
+        });
+        const out = JSON.parse(result.stdout.trim().split(/\r?\n/).at(-1)!);
+        expect({ heads: out.heads, head_dim: out.head_dim }).toEqual({ heads: 2, head_dim: 12 });
+        expect(out.params_ours).toBe(out.params_reference);
+        // Two fused attentions subtracted against one subtraction of two
+        // score matrices: the same numbers, to float32 rounding.
+        expect(out.max_abs / out.scale).toBeLessThan(1e-5);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+
+  it(
+    "has the parameters and the FLOPs it says, and exports",
+    () => {
+      const doc = differential({ rope: { theta: 10000 } });
+      const dir = mkdtempSync(join(tmpdir(), "tensorcad-diff-"));
+      try {
+        const out = generateTorch(doc);
+        expect(out.warnings).toEqual([]);
+        for (const file of out.files) writeFileSync(join(dir, file.path), file.contents);
+        // nano-sort's positions stop at eleven.
+        const full = runVerify(invocation, join(dir, "model.py"), ["--seq", "11"]);
+        expect(full).not.toHaveProperty("spawnFailed");
+        const r = full as Verify;
+        expect({ ok: r.ok, matches: r.matches, forward: r.forward, export: r.export_ok }).toEqual({
+          ok: true,
+          matches: true,
+          forward: "ok",
+          export: true,
+        });
+        const analysis = analyze(doc, { T: 11, B: 2 });
+        expect(r.params).toBe(analysis.params.total);
+        // Values twice as wide as keys: the profiler counts the value
+        // product at the value width, and so does the analysis.
+        expect(r.flops! / (2 * 11)).toBe(analysis.flops.fwdTotalUnmasked);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+});
+
+/**
  * Every preset, through `ast.parse`.
  *
  * Cheaper than the block above and answering a different question: not "does

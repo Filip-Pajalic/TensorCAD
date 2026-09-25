@@ -83,7 +83,7 @@
         {
           "rule": "attention-share",
           "severity": "info",
-          "message": "At 8192 tokens, attention is 25% of forward FLOPs.",
+          "message": "At 8192 tokens, attention is 22% of forward FLOPs.",
           "hint": "The 2N and 6N rules of thumb quietly stop working here. Compare against the reported attention term rather than the parameter count."
         }
       ]

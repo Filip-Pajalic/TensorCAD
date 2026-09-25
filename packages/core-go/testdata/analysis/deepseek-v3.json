@@ -216,19 +216,19 @@
       },
       "flops": {
         "fwdDense": 73249193984,
-        "fwdAttention": 12280922112,
-        "fwdAttentionUnmasked": 24561844224,
-        "fwdTotal": 85530116096,
-        "fwdTotalUnmasked": 97811038208,
+        "fwdAttention": 10234101760,
+        "fwdAttentionUnmasked": 20468203520,
+        "fwdTotal": 83483295744,
+        "fwdTotalUnmasked": 93717397504,
         "elementwise": 18386944,
-        "trainPerToken": 256590348288,
-        "attentionShare": 0.1435859399303954,
+        "trainPerToken": 250449887232,
+        "attentionShare": 0.12258861690586205,
         "ruleOfThumb2N": 73251236864,
         "ruleOfThumb6N": 219753710592,
         "byPath": [
           [
             "dense_layers/block/attn/attn",
-            603979776
+            503316480
           ],
           [
             "dense_layers/block/attn/k_up",
@@ -272,7 +272,7 @@
           ],
           [
             "layers/block/attn/attn",
-            11676942336
+            9730785280
           ],
           [
             "layers/block/attn/k_up",
@@ -330,7 +330,7 @@
         "byCategory": [
           [
             "attention",
-            12280922112
+            10234101760
           ],
           [
             "head",
@@ -741,21 +741,21 @@
         "decodeBytesPerStep": 75392429056,
         "decodeWeightBytes": 75104594944,
         "residentWeightBytes": 1342052838400,
-        "decodeFlopsPerStep": 85530116096,
+        "decodeFlopsPerStep": 83483295744,
         "decodeSecondsPerStep": 0.022505202703283583,
         "decodeTokensPerSecond": 44.434169875488244,
         "memoryBound": true,
-        "prefillSeconds": 0.8855696550283518,
+        "prefillSeconds": 0.8643770964798382,
         "notes": [
           "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte.",
           "One token routes to 69.95 GiB of the 1.22 TiB of weights held, so that is what a step reads at this batch. A larger batch reads the union of its tokens' choices, which reaches nearly every expert long before the batch reaches the expert count."
         ]
       },
       "cost": {
-        "totalFlops": 1.8795560379460545e+23,
-        "gpuHours": 131976.46598317986,
-        "wallClockHours": 131976.46598317986,
-        "dollars": 329941.16495794966,
+        "totalFlops": 1.834576401219332e+23,
+        "gpuHours": 128818.13849703208,
+        "wallClockHours": 128818.13849703208,
+        "dollars": 322045.3462425802,
         "tokens": 732512368640,
         "mfu": 0.4
       },
@@ -1018,19 +1018,19 @@
       },
       "flops": {
         "fwdDense": 73249193984,
-        "fwdAttention": 12280922112,
-        "fwdAttentionUnmasked": 24561844224,
-        "fwdTotal": 85530116096,
-        "fwdTotalUnmasked": 97811038208,
+        "fwdAttention": 10234101760,
+        "fwdAttentionUnmasked": 20468203520,
+        "fwdTotal": 83483295744,
+        "fwdTotalUnmasked": 93717397504,
         "elementwise": 18386944,
-        "trainPerToken": 342120464384,
-        "attentionShare": 0.1435859399303954,
+        "trainPerToken": 333933182976,
+        "attentionShare": 0.12258861690586205,
         "ruleOfThumb2N": 73251236864,
         "ruleOfThumb6N": 219753710592,
         "byPath": [
           [
             "dense_layers/block/attn/attn",
-            603979776
+            503316480
           ],
           [
             "dense_layers/block/attn/k_up",
@@ -1074,7 +1074,7 @@
           ],
           [
             "layers/block/attn/attn",
-            11676942336
+            9730785280
           ],
           [
             "layers/block/attn/k_up",
@@ -1132,7 +1132,7 @@
         "byCategory": [
           [
             "attention",
-            12280922112
+            10234101760
           ],
           [
             "head",
@@ -1237,21 +1237,21 @@
         "decodeBytesPerStep": 438880635826.9708,
         "decodeWeightBytes": 434275290034.9708,
         "residentWeightBytes": 671026419200,
-        "decodeFlopsPerStep": 2736963715072,
+        "decodeFlopsPerStep": 2671465463808,
         "decodeSecondsPerStep": 0.13100914502297636,
         "decodeTokensPerSecond": 244.25775768850215,
         "memoryBound": true,
-        "prefillSeconds": 14.161954746001657,
+        "prefillSeconds": 13.82304514875893,
         "notes": [
           "Decoding is memory-bound at batch 32. It stays that way until the batch passes this device's ridge point of about 591 FLOP per byte.",
           "A step at batch 32 reads 404.45 GiB of the 624.94 GiB of weights held, because its tokens between them route to that much: a batch reads the union of their choices rather than one token's share. Routing is taken to be independent and uniform, and a router trained towards balance spreads a batch wider still, so this is a floor and the rate above it a ceiling."
         ]
       },
       "cost": {
-        "totalFlops": 5.13180696576e+24,
-        "gpuHours": 1800785.6681825838,
-        "wallClockHours": 28137.27606535287,
-        "dollars": 4501964.17045646,
+        "totalFlops": 5.00899774464e+24,
+        "gpuHours": 1757691.0843860535,
+        "wallClockHours": 27463.923193532086,
+        "dollars": 4394227.710965134,
         "tokens": 15000000000000,
         "mfu": 0.4
       },
@@ -1514,19 +1514,19 @@
       },
       "flops": {
         "fwdDense": 73249193984,
-        "fwdAttention": 24561844224,
-        "fwdAttentionUnmasked": 49123688448,
-        "fwdTotal": 97811038208,
-        "fwdTotalUnmasked": 122372882432,
+        "fwdAttention": 20468203520,
+        "fwdAttentionUnmasked": 40936407040,
+        "fwdTotal": 93717397504,
+        "fwdTotalUnmasked": 114185601024,
         "elementwise": 18386944,
-        "trainPerToken": 293433114624,
-        "attentionShare": 0.2511152593204054,
+        "trainPerToken": 281152192512,
+        "attentionShare": 0.2184034561899394,
         "ruleOfThumb2N": 73251236864,
         "ruleOfThumb6N": 219753710592,
         "byPath": [
           [
             "dense_layers/block/attn/attn",
-            1207959552
+            1006632960
           ],
           [
             "dense_layers/block/attn/k_up",
@@ -1570,7 +1570,7 @@
           ],
           [
             "layers/block/attn/attn",
-            23353884672
+            19461570560
           ],
           [
             "layers/block/attn/k_up",
@@ -1628,7 +1628,7 @@
         "byCategory": [
           [
             "attention",
-            24561844224
+            20468203520
           ],
           [
             "head",
@@ -2040,21 +2040,21 @@
         "decodeBytesPerStep": 75392429056,
         "decodeWeightBytes": 75104594944,
         "residentWeightBytes": 1342052838400,
-        "decodeFlopsPerStep": 97811038208,
+        "decodeFlopsPerStep": 93717397504,
         "decodeSecondsPerStep": 0.022505202703283583,
         "decodeTokensPerSecond": 44.434169875488244,
         "memoryBound": true,
-        "prefillSeconds": 2.0254500126388675,
+        "prefillSeconds": 1.9406797784448129,
         "notes": [
           "Decoding is memory-bound at batch 1. It stays that way until the batch passes this device's ridge point of about 295 FLOP per byte.",
           "One token routes to 69.95 GiB of the 1.22 TiB of weights held, so that is what a step reads at this batch. A larger batch reads the union of its tokens' choices, which reaches nearly every expert long before the batch reaches the expert count."
         ]
       },
       "cost": {
-        "totalFlops": 2.1494338583063886e+23,
-        "gpuHours": 150926.4309000666,
-        "wallClockHours": 18865.803862508325,
-        "dollars": 377316.0772501665,
+        "totalFlops": 2.059474584852944e+23,
+        "gpuHours": 144609.77592777103,
+        "wallClockHours": 18076.22199097138,
+        "dollars": 361524.43981942756,
         "tokens": 732512368640,
         "mfu": 0.4
       },

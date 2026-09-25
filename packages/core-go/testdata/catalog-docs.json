@@ -265,6 +265,110 @@
       ]
     },
     {
+      "type": "diff_attention",
+      "kind": "composite",
+      "category": "attention",
+      "name": "differential attention",
+      "summary": "Each head is one attention map minus lambda times another over the same values, normalised per head: noise both maps put on irrelevant context cancels. Two fused attentions and a combine, by linearity.",
+      "formula": "params = d_model*heads*2*head_dim (q) + 2*d_model*kv_heads*head_dim (k) + d_model*kv_heads*2*head_dim (v) + heads*2*head_dim*d_model (o) + 4*head_dim (lambda) + 2*head_dim (norm)",
+      "refs": [
+        "https://arxiv.org/abs/2410.05258"
+      ],
+      "params": [
+        [
+          "d_model",
+          "int",
+          "Residual stream width",
+          null
+        ],
+        [
+          "heads",
+          "int",
+          "Differential heads: half a baseline transformer's, each a pair of maps",
+          null
+        ],
+        [
+          "kv_heads",
+          "int",
+          "Key/value heads. Equal to heads gives multi-head attention",
+          null
+        ],
+        [
+          "head_dim",
+          "int",
+          "Width of each of a pair's query and key heads; a value head is twice it",
+          null
+        ],
+        [
+          "bias",
+          "bool",
+          "Bias on the projections",
+          null
+        ],
+        [
+          "causal",
+          "bool",
+          "Mask out every position after the current one",
+          null
+        ],
+        [
+          "rope",
+          "obj",
+          "RoPE settings, or null for no rotary embedding",
+          null
+        ],
+        [
+          "flash",
+          "bool",
+          "Assume a memory-efficient kernel for each of the two maps",
+          null
+        ],
+        [
+          "lambda_init",
+          "num",
+          "Where lambda starts. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer); one value here holds for every copy in a stack",
+          null
+        ]
+      ]
+    },
+    {
+      "type": "diff_combine",
+      "kind": "primitive",
+      "category": "attention",
+      "name": "differential combine",
+      "summary": "One attention's output minus lambda times another's, which is differential attention by linearity: softmax(Q1K1)V - lambda softmax(Q2K2)V is two fused attentions and this, so the score matrix is still never kept.",
+      "formula": "y = a - lambda*b, lambda = exp(lq1.lk1) - exp(lq2.lk2) + lambda_init; params = 4*head_dim",
+      "refs": [
+        "https://arxiv.org/abs/2410.05258"
+      ],
+      "params": [
+        [
+          "heads",
+          "int",
+          "Heads, each a pair of attention maps",
+          null
+        ],
+        [
+          "head_dim",
+          "int",
+          "Width of one of a pair's query and key heads, which is the width of the vectors lambda is made from",
+          null
+        ],
+        [
+          "dim",
+          "int",
+          "Width of a value head, twice head_dim in the paper",
+          null
+        ],
+        [
+          "lambda_init",
+          "num",
+          "Where lambda starts, and what it is reparameterised around. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer); one value here holds for every copy in a stack",
+          null
+        ]
+      ]
+    },
+    {
       "type": "embedding",
       "kind": "primitive",
       "category": "embedding",
@@ -1365,12 +1469,35 @@
       ]
     },
     {
+      "type": "scale",
+      "kind": "primitive",
+      "category": "elementwise",
+      "name": "scale",
+      "summary": "Multiplies a tensor by a constant, which nothing learns.",
+      "formula": "y = by * x; no parameters",
+      "refs": [],
+      "params": [
+        [
+          "dim",
+          "int",
+          "Width of the last axis",
+          null
+        ],
+        [
+          "by",
+          "num",
+          "The constant every element is multiplied by",
+          null
+        ]
+      ]
+    },
+    {
       "type": "sdpa",
       "kind": "primitive",
       "category": "attention",
       "name": "scaled dot-product attention",
       "summary": "Scaled dot-product attention core. Covers MHA, GQA and MQA through kv_heads.",
-      "formula": "FLOPs/token = 4*keys*heads*head_dim, keys = T/2 causal, W - W^2/2T in a causal window of W, times the share a mask keeps; KV cache = 2*kv_heads*head_dim*bytes per token",
+      "formula": "FLOPs/token = 2*keys*heads*(head_dim + v_head_dim), keys = T/2 causal, W - W^2/2T in a causal window of W, times the share a mask keeps; KV cache = kv_heads*(head_dim + v_head_dim)*bytes per token",
       "refs": [
         "https://arxiv.org/abs/2305.13245",
         "https://arxiv.org/abs/2205.14135"
@@ -1446,6 +1573,12 @@
           "sinks",
           "bool",
           "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none.",
+          null
+        ],
+        [
+          "shared_values",
+          "bool",
+          "The values are another attention's, which caches them: this one caches its keys alone. Differential attention's second map reads the first one's values. Unset is no.",
           null
         ]
       ]
@@ -1667,10 +1800,11 @@
         [
           "attention",
           "enum",
-          "Grouped-query attention, or DeepSeek's latent attention",
+          "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention",
           [
             "gqa",
-            "mla"
+            "mla",
+            "diff"
           ]
         ],
         [
@@ -1846,6 +1980,12 @@
           "sinks",
           "bool",
           "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none.",
+          null
+        ],
+        [
+          "lambda_init",
+          "num",
+          "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)",
           null
         ],
         [

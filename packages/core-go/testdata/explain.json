@@ -132,7 +132,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -295,6 +295,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -971,7 +977,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -1134,6 +1140,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -1804,7 +1816,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -1967,6 +1979,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -2637,7 +2655,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -2800,6 +2818,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -3470,7 +3494,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -3633,6 +3657,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -4309,7 +4339,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -4472,6 +4502,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -5142,7 +5178,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -5305,6 +5341,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -5980,7 +6022,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -6145,6 +6187,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -6841,7 +6889,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -7006,6 +7054,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -7702,7 +7756,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -7867,6 +7921,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -8563,7 +8623,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -8728,6 +8788,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -9424,7 +9490,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -9589,6 +9655,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -10285,7 +10357,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -10450,6 +10522,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -11150,7 +11228,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -11315,6 +11393,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -12040,7 +12124,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -12207,6 +12291,12 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -12343,7 +12433,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -12508,6 +12598,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -13085,7 +13181,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -13250,6 +13346,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -13393,7 +13495,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -13558,6 +13660,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -13701,7 +13809,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -13866,6 +13974,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -14009,7 +14123,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -14174,6 +14288,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -14317,7 +14437,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -14484,6 +14604,12 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -14625,7 +14751,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -14794,6 +14920,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -15111,7 +15243,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -15276,6 +15408,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -15953,7 +16091,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -16118,6 +16256,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -16805,7 +16949,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -16970,6 +17114,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -17657,7 +17807,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -17831,6 +17981,12 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -17967,7 +18123,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -18139,6 +18295,12 @@
               null,
               true,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -18827,7 +18989,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -18992,6 +19154,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -19825,8 +19993,8 @@
             "params": 667422603776,
             "activeParams": 33948482048,
             "shareOfParams": 0.9946293986035655,
-            "flopsPerToken": 79571976192,
-            "shareOfFlops": 0.9303386903238561,
+            "flopsPerToken": 77625819136,
+            "shareOfFlops": 0.92983654327733,
             "activationBytes": 128081461248,
             "cacheBytesPerToken": 66816,
             "cacheBytesPerSequence": 0
@@ -19942,7 +20110,7 @@
               "attention",
               null,
               "mla",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -20109,6 +20277,12 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -20133,8 +20307,8 @@
             "params": 667422603776,
             "activeParams": 33948482048,
             "shareOfParams": 0.9946293986035655,
-            "flopsPerToken": 79571976192,
-            "shareOfFlops": 0.9303386903238561,
+            "flopsPerToken": 77625819136,
+            "shareOfFlops": 0.92983654327733,
             "activationBytes": 128081461248,
             "cacheBytesPerToken": 66816,
             "cacheBytesPerSequence": 0
@@ -20294,7 +20468,7 @@
             "activeParams": 23095425536,
             "shareOfParams": 0.9784555845755887,
             "flopsPerToken": 46190821376,
-            "shareOfFlops": 0.5400532991695567,
+            "shareOfFlops": 0.5532941765696854,
             "activationBytes": 69088575488,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -20377,7 +20551,7 @@
             "activeParams": 20434649088,
             "shareOfParams": 0.9744903510588931,
             "flopsPerToken": 40869298176,
-            "shareOfFlops": 0.4778351771454142,
+            "shareOfFlops": 0.48955060784045895,
             "activationBytes": 58384711680,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -20455,7 +20629,7 @@
             "activeParams": 20434649088,
             "shareOfParams": 0.9744903510588931,
             "flopsPerToken": 40869298176,
-            "shareOfFlops": 0.4778351771454142,
+            "shareOfFlops": 0.48955060784045895,
             "activationBytes": 58384711680,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -20524,7 +20698,7 @@
             "activeParams": 6811549696,
             "shareOfParams": 0.32483011701963105,
             "flopsPerToken": 13623099392,
-            "shareOfFlops": 0.15927839238180472,
+            "shareOfFlops": 0.16318353594681964,
             "activationBytes": 7784628224,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -20583,7 +20757,7 @@
             "activeParams": 6811549696,
             "shareOfParams": 0.32483011701963105,
             "flopsPerToken": 13623099392,
-            "shareOfFlops": 0.15927839238180472,
+            "shareOfFlops": 0.16318353594681964,
             "activationBytes": 7784628224,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -20642,7 +20816,7 @@
             "activeParams": 6811549696,
             "shareOfParams": 0.32483011701963105,
             "flopsPerToken": 13623099392,
-            "shareOfFlops": 0.15927839238180472,
+            "shareOfFlops": 0.16318353594681964,
             "activationBytes": 0,
             "cacheBytesPerToken": 0,
             "cacheBytesPerSequence": 0
@@ -22162,7 +22336,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -22325,6 +22499,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",
@@ -22529,7 +22709,7 @@
               "attention",
               null,
               "gqa",
-              "Grouped-query attention, or DeepSeek's latent attention"
+              "Grouped-query attention, DeepSeek's latent attention, or DIFF Transformer's differential attention"
             ],
             [
               "q_lora",
@@ -22692,6 +22872,12 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "lambda_init",
+              null,
+              null,
+              "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by depth, 0.8 - 0.6*exp(-0.3*layer)"
             ],
             [
               "value_embeddings",

@@ -291,6 +291,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -534,6 +540,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -1118,6 +1130,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -1414,6 +1432,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -1939,6 +1963,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -2182,6 +2212,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -2760,6 +2796,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -3003,6 +3045,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -3581,6 +3629,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -3824,6 +3878,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -4408,6 +4468,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -4704,6 +4770,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -5229,6 +5301,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -5472,6 +5550,12 @@
               null,
               "score - 2 ** (-8 * (h + 1) / heads) * (q - kv)",
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -6057,6 +6141,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -6315,6 +6405,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -6906,6 +7002,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -7343,6 +7445,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -7753,6 +7861,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -8192,6 +8306,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -8602,6 +8722,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -9041,6 +9167,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -9451,6 +9583,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -9890,6 +10028,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -10300,6 +10444,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -10739,6 +10889,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -11153,6 +11309,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -11602,6 +11764,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -12033,6 +12201,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -12328,6 +12502,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -13066,6 +13246,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -13366,6 +13552,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -13670,6 +13862,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -13972,6 +14170,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -14272,6 +14476,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -14578,6 +14788,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -15054,6 +15270,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -15890,6 +16112,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -16738,6 +16966,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -17272,6 +17506,1176 @@
       ]
     },
     {
+      "preset": "gpt-oss-20b",
+      "blocks": [
+        {
+          "path": "layers",
+          "type": "repeat",
+          "kind": "container",
+          "docs": {
+            "name": "stack",
+            "summary": "Stacks its subgraph count times. The subgraph's input and output shapes must match."
+          },
+          "copies": {
+            "total": 1,
+            "active": 1
+          },
+          "params": [
+            [
+              "count",
+              "L/2",
+              12,
+              "How many times the subgraph is stacked"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "B T D"
+            },
+            "out": {
+              "x": "B T D"
+            }
+          },
+          "contributes": {
+            "params": 19756487424,
+            "activeParams": 3029170944,
+            "shareOfParams": 0.9446194976202694,
+            "flopsPerToken": 6483443712,
+            "shareOfFlops": 0.8484283242533978,
+            "activationBytes": 16231956480,
+            "cacheBytesPerToken": 24576,
+            "cacheBytesPerSequence": 3145728
+          },
+          "breakdown": [
+            {
+              "path": "layers/local/mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/local/mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/local/mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/global/mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/global/mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/global/mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/local/attn/q_proj",
+              "type": "linear",
+              "params": 141606912
+            },
+            {
+              "path": "layers/global/attn/q_proj",
+              "type": "linear",
+              "params": 141606912
+            },
+            {
+              "path": "layers/local/attn/o_proj",
+              "type": "linear",
+              "params": 141592320
+            },
+            {
+              "path": "layers/global/attn/o_proj",
+              "type": "linear",
+              "params": 141592320
+            },
+            {
+              "path": "layers/local/attn/k_proj",
+              "type": "linear",
+              "params": 17700864
+            },
+            {
+              "path": "layers/local/attn/v_proj",
+              "type": "linear",
+              "params": 17700864
+            }
+          ]
+        },
+        {
+          "path": "layers/local",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "name": "transformer block",
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              2880,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              64,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "Hkv",
+              8,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              64,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              2880,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, or DeepSeek's latent attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "rmsnorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              false,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "moe",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              "E",
+              32,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              "K",
+              4,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              "Fe",
+              2880,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "router_bias",
+              null,
+              true,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              true,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              true,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              false,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              "W",
+              128,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              {
+                "scaling": {
+                  "beta_fast": 32,
+                  "beta_slow": 1,
+                  "factor": 32,
+                  "original_max_position_embeddings": 4096,
+                  "type": "yarn"
+                },
+                "theta": 150000
+              },
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              true,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 9878243712,
+            "activeParams": 1514585472,
+            "shareOfParams": 0.4723097488101347,
+            "flopsPerToken": 3052781568,
+            "shareOfFlops": 0.39948929382328535,
+            "activationBytes": 8115978240,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 3145728
+          },
+          "breakdown": [
+            {
+              "path": "layers/local/mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/local/mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/local/mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/local/attn/q_proj",
+              "type": "linear",
+              "params": 141606912
+            },
+            {
+              "path": "layers/local/attn/o_proj",
+              "type": "linear",
+              "params": 141592320
+            },
+            {
+              "path": "layers/local/attn/k_proj",
+              "type": "linear",
+              "params": 17700864
+            },
+            {
+              "path": "layers/local/attn/v_proj",
+              "type": "linear",
+              "params": 17700864
+            },
+            {
+              "path": "layers/local/mlp/router",
+              "type": "topk_router",
+              "params": 1106304
+            },
+            {
+              "path": "layers/local/norm1",
+              "type": "rmsnorm",
+              "params": 34560
+            },
+            {
+              "path": "layers/local/norm2",
+              "type": "rmsnorm",
+              "params": 34560
+            },
+            {
+              "path": "layers/local/attn/attn",
+              "type": "sdpa",
+              "params": 768
+            }
+          ]
+        },
+        {
+          "path": "layers/global",
+          "type": "transformer_block",
+          "kind": "composite",
+          "docs": {
+            "name": "transformer block",
+            "summary": "Pre-norm transformer block: norm, attention, residual, norm, feed-forward, residual.",
+            "formula": "params = attention + mlp + 2 norms"
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              2880,
+              "Width of the residual stream"
+            ],
+            [
+              "heads",
+              "H",
+              64,
+              "Query heads"
+            ],
+            [
+              "kv_heads",
+              "Hkv",
+              8,
+              "Key/value heads; fewer than the query heads is grouped-query attention"
+            ],
+            [
+              "head_dim",
+              "dh",
+              64,
+              "Width of one head"
+            ],
+            [
+              "ffn_hidden",
+              "F",
+              2880,
+              "Width in the middle of the feed-forward"
+            ],
+            [
+              "attention",
+              null,
+              "gqa",
+              "Grouped-query attention, or DeepSeek's latent attention"
+            ],
+            [
+              "q_lora",
+              null,
+              0,
+              "Latent attention: compressed query width"
+            ],
+            [
+              "kv_lora",
+              null,
+              0,
+              "Latent attention: cached latent width"
+            ],
+            [
+              "nope_dim",
+              null,
+              0,
+              "Per-head width without position"
+            ],
+            [
+              "rope_dim",
+              null,
+              0,
+              "Per-head rotary width"
+            ],
+            [
+              "v_dim",
+              null,
+              0,
+              "Per-head value width"
+            ],
+            [
+              "norm",
+              null,
+              "rmsnorm",
+              "Which normalization"
+            ],
+            [
+              "norm_bias",
+              null,
+              true,
+              "Bias on layernorm; ignored for rmsnorm"
+            ],
+            [
+              "post_norm",
+              null,
+              false,
+              "Also normalize each sublayer's output before the residual add (Gemma 2/3)"
+            ],
+            [
+              "mlp",
+              null,
+              "moe",
+              "Gated, plain, or a mixture of experts"
+            ],
+            [
+              "experts",
+              "E",
+              32,
+              "Routed experts, when mlp is moe"
+            ],
+            [
+              "top_k",
+              "K",
+              4,
+              "Experts each token is routed to"
+            ],
+            [
+              "expert_hidden",
+              "Fe",
+              2880,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              null,
+              0,
+              "Always-on experts, beside the routed ones"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "router_bias",
+              null,
+              true,
+              "A learned bias on the router's scores"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity in the feed-forward"
+            ],
+            [
+              "attn_bias",
+              null,
+              true,
+              "Bias on the q/k/v projections"
+            ],
+            [
+              "attn_o_bias",
+              null,
+              null,
+              "Override the output-projection bias; null follows attn_bias"
+            ],
+            [
+              "mlp_bias",
+              null,
+              true,
+              "Bias on the feed-forward projections"
+            ],
+            [
+              "qk_norm",
+              null,
+              false,
+              "RMSNorm on the query and key heads"
+            ],
+            [
+              "causal",
+              null,
+              true,
+              "Whether a token may attend to what follows it"
+            ],
+            [
+              "window",
+              null,
+              0,
+              "Sliding-window width; 0 means full attention"
+            ],
+            [
+              "rope",
+              null,
+              {
+                "scaling": {
+                  "beta_fast": 32,
+                  "beta_slow": 1,
+                  "factor": 32,
+                  "original_max_position_embeddings": 4096,
+                  "type": "yarn"
+                },
+                "theta": 150000
+              },
+              "RoPE settings, or null for no rotary embedding"
+            ],
+            [
+              "logit_softcap",
+              null,
+              0,
+              "Bound the attention scores to this magnitude with tanh (Gemma 2)"
+            ],
+            [
+              "mask",
+              null,
+              null,
+              "Which scores count, as an expression over q and kv (the query's and the key's positions), h (the head) and the design's symbols. A score has to pass causal, window and this, so a mask that widens attention needs causal off: kv <= q or kv < 16 is causal with the first 16 positions seen by all. Empty adds nothing."
+            ],
+            [
+              "score",
+              null,
+              null,
+              "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              true,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "value_embeddings",
+              null,
+              false,
+              "Take a second embedding of the same tokens on `ve` and mix it into the values"
+            ],
+            [
+              "output_gate",
+              null,
+              false,
+              "Sigmoid gate on the attention output, from a projection as wide as the queries (Qwen3-Next)"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 9878243712,
+            "activeParams": 1514585472,
+            "shareOfParams": 0.4723097488101347,
+            "flopsPerToken": 3430662144,
+            "shareOfFlops": 0.44893903043011235,
+            "activationBytes": 8115978240,
+            "cacheBytesPerToken": 24576,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/global/mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/global/mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/global/mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/global/attn/q_proj",
+              "type": "linear",
+              "params": 141606912
+            },
+            {
+              "path": "layers/global/attn/o_proj",
+              "type": "linear",
+              "params": 141592320
+            },
+            {
+              "path": "layers/global/attn/k_proj",
+              "type": "linear",
+              "params": 17700864
+            },
+            {
+              "path": "layers/global/attn/v_proj",
+              "type": "linear",
+              "params": 17700864
+            },
+            {
+              "path": "layers/global/mlp/router",
+              "type": "topk_router",
+              "params": 1106304
+            },
+            {
+              "path": "layers/global/norm1",
+              "type": "rmsnorm",
+              "params": 34560
+            },
+            {
+              "path": "layers/global/norm2",
+              "type": "rmsnorm",
+              "params": 34560
+            },
+            {
+              "path": "layers/global/attn/attn",
+              "type": "sdpa",
+              "params": 768
+            }
+          ]
+        },
+        {
+          "path": "layers/local/mlp",
+          "type": "moe_layer",
+          "kind": "composite",
+          "docs": {
+            "name": "mixture of experts",
+            "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
+            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
+            "refs": [
+              "https://arxiv.org/abs/2401.06066",
+              "https://arxiv.org/abs/2412.19437"
+            ]
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              2880,
+              "Width of the residual stream"
+            ],
+            [
+              "experts",
+              "E",
+              32,
+              "Routed experts"
+            ],
+            [
+              "top_k",
+              "K",
+              4,
+              "Experts each token is sent to"
+            ],
+            [
+              "expert_hidden",
+              "Fe",
+              2880,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              "0",
+              0,
+              "Experts every token always passes through"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity inside an expert"
+            ],
+            [
+              "bias",
+              null,
+              true,
+              "Learn a constant on each expert's projections"
+            ],
+            [
+              "router_bias",
+              null,
+              true,
+              "Give the router a per-expert bias, which is how DeepSeek balances load"
+            ],
+            [
+              "normalize",
+              null,
+              true,
+              "Renormalize the chosen weights to sum to one"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 9559572864,
+            "activeParams": 1195914624,
+            "shareOfParams": 0.4570730981908396,
+            "flopsPerToken": 2390999040,
+            "shareOfFlops": 0.31288793408417004,
+            "activationBytes": 5945425920,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/local/mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/local/mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/local/mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/local/mlp/router",
+              "type": "topk_router",
+              "params": 1106304
+            }
+          ]
+        },
+        {
+          "path": "layers/global/mlp",
+          "type": "moe_layer",
+          "kind": "composite",
+          "docs": {
+            "name": "mixture of experts",
+            "summary": "Sparse feed-forward layer: a router picks top_k of the experts for each token.",
+            "formula": "total = router + experts*3*d_model*expert_hidden + shared*3*d_model*expert_hidden (+ d_model when the shared expert is gated); active swaps experts for top_k",
+            "refs": [
+              "https://arxiv.org/abs/2401.06066",
+              "https://arxiv.org/abs/2412.19437"
+            ]
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              2880,
+              "Width of the residual stream"
+            ],
+            [
+              "experts",
+              "E",
+              32,
+              "Routed experts"
+            ],
+            [
+              "top_k",
+              "K",
+              4,
+              "Experts each token is sent to"
+            ],
+            [
+              "expert_hidden",
+              "Fe",
+              2880,
+              "Hidden width of one expert"
+            ],
+            [
+              "shared_experts",
+              "0",
+              0,
+              "Experts every token always passes through"
+            ],
+            [
+              "shared_expert_gate",
+              null,
+              false,
+              "Weight the shared expert's output by a sigmoid of one learned direction (Qwen)"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity inside an expert"
+            ],
+            [
+              "bias",
+              null,
+              true,
+              "Learn a constant on each expert's projections"
+            ],
+            [
+              "router_bias",
+              null,
+              true,
+              "Give the router a per-expert bias, which is how DeepSeek balances load"
+            ],
+            [
+              "normalize",
+              null,
+              true,
+              "Renormalize the chosen weights to sum to one"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 9559572864,
+            "activeParams": 1195914624,
+            "shareOfParams": 0.4570730981908396,
+            "flopsPerToken": 2390999040,
+            "shareOfFlops": 0.31288793408417004,
+            "activationBytes": 5945425920,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/global/mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/global/mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/global/mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/global/mlp/router",
+              "type": "topk_router",
+              "params": 1106304
+            }
+          ]
+        },
+        {
+          "path": "layers/local/mlp/experts",
+          "type": "moe_experts",
+          "kind": "container",
+          "docs": {
+            "name": "expert bank",
+            "summary": "A bank of experts. Its subgraph describes one expert.",
+            "formula": "total params scale with experts; FLOPs and activations scale with top_k"
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "experts",
+              "E",
+              32,
+              "How many expert copies exist"
+            ],
+            [
+              "top_k",
+              "K",
+              4,
+              "How many a single token passes through"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... D"
+            },
+            "out": {
+              "y": "... D"
+            }
+          },
+          "contributes": {
+            "params": 9558466560,
+            "activeParams": 1194808320,
+            "shareOfParams": 0.45702020233408797,
+            "flopsPerToken": 2388787200,
+            "shareOfFlops": 0.3125984910369136,
+            "activationBytes": 5662310400,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/local/mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/local/mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/local/mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3186155520
+            }
+          ]
+        },
+        {
+          "path": "layers/local/mlp/experts/expert",
+          "type": "gated_mlp",
+          "kind": "composite",
+          "docs": {
+            "name": "gated feed-forward",
+            "summary": "Gated feed-forward network (SwiGLU when act is silu, GeGLU when gelu).",
+            "formula": "params = 3 * d_model * hidden",
+            "refs": [
+              "https://arxiv.org/abs/2002.05202"
+            ]
+          },
+          "copies": {
+            "total": 384,
+            "active": 48
+          },
+          "params": [
+            [
+              "d_model",
+              "D",
+              2880,
+              "Width of the residual stream"
+            ],
+            [
+              "hidden",
+              "Fe",
+              2880,
+              "Intermediate width"
+            ],
+            [
+              "act",
+              null,
+              "silu",
+              "Which nonlinearity the gate passes through"
+            ],
+            [
+              "bias",
+              null,
+              true,
+              "Learn a constant on each projection"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... d_model"
+            },
+            "out": {
+              "y": "... d_model"
+            }
+          },
+          "contributes": {
+            "params": 9558466560,
+            "activeParams": 1194808320,
+            "shareOfParams": 0.45702020233408797,
+            "flopsPerToken": 2388787200,
+            "shareOfFlops": 0.3125984910369136,
+            "activationBytes": 5662310400,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/local/mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/local/mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/local/mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3186155520
+            }
+          ]
+        },
+        {
+          "path": "layers/global/mlp/experts",
+          "type": "moe_experts",
+          "kind": "container",
+          "docs": {
+            "name": "expert bank",
+            "summary": "A bank of experts. Its subgraph describes one expert.",
+            "formula": "total params scale with experts; FLOPs and activations scale with top_k"
+          },
+          "copies": {
+            "total": 12,
+            "active": 12
+          },
+          "params": [
+            [
+              "experts",
+              "E",
+              32,
+              "How many expert copies exist"
+            ],
+            [
+              "top_k",
+              "K",
+              4,
+              "How many a single token passes through"
+            ]
+          ],
+          "shapes": {
+            "in": {
+              "x": "... D"
+            },
+            "out": {
+              "y": "... D"
+            }
+          },
+          "contributes": {
+            "params": 9558466560,
+            "activeParams": 1194808320,
+            "shareOfParams": 0.45702020233408797,
+            "flopsPerToken": 2388787200,
+            "shareOfFlops": 0.3125984910369136,
+            "activationBytes": 5662310400,
+            "cacheBytesPerToken": 0,
+            "cacheBytesPerSequence": 0
+          },
+          "breakdown": [
+            {
+              "path": "layers/global/mlp/experts/expert/gate",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/global/mlp/experts/expert/up",
+              "type": "linear",
+              "params": 3186155520
+            },
+            {
+              "path": "layers/global/mlp/experts/expert/down",
+              "type": "linear",
+              "params": 3186155520
+            }
+          ]
+        }
+      ]
+    },
+    {
       "preset": "qwen3-next-80b-a3b",
       "blocks": [
         {
@@ -17582,6 +18986,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -18691,6 +20101,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",
@@ -20905,6 +22321,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -21266,6 +22688,12 @@
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
             ],
             [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -21579,6 +23007,12 @@
               null,
               null,
               "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone."
+            ],
+            [
+              "sinks",
+              null,
+              null,
+              "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
               "value_embeddings",

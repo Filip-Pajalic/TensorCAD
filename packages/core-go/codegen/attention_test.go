@@ -45,7 +45,7 @@ func TestExpressionsBecomeFlexAttentionFunctions(t *testing.T) {
 	doc.Symbols["W"] = ir.SymbolDef{Kind: "literal", Number: 4, HasNumber: true}
 	model := modelOf(t, doc)
 	for _, want := range []string{
-		"def expression_attention(q, k, v, mask_mod=None, score_mod=None, mask_heads=False, mask_batch=False, scale=None):",
+		"def expression_attention(\n    q, k, v, mask_mod=None, score_mod=None, mask_heads=False, mask_batch=False, scale=None, sinks=None\n):",
 		"def mask_mod_1(b, h, q_idx, kv_idx):\n" +
 			"    \"\"\"kv <= q and (kv < 2 or q - kv < 4)\"\"\"\n" +
 			"    return (kv_idx <= q_idx) & ((kv_idx < 2) | ((q_idx - kv_idx) < 4))\n",

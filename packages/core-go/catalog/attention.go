@@ -22,6 +22,8 @@ type Attention struct {
 	Window float64
 	Cap    float64
 	Heads  float64
+	// Sinks is a learned score per head in the softmax's denominator.
+	Sinks bool
 	// MaskExpr and ScoreExpr are what the design wrote, nil where it wrote
 	// nothing.
 	MaskExpr  attnexpr.Node
@@ -36,6 +38,7 @@ func AttentionOf(r *Resolved) Attention {
 		Window: math.Max(0, r.Num("window")),
 		Cap:    r.Num("logit_softcap"),
 		Heads:  r.Num("heads"),
+		Sinks:  r.Bool("sinks"),
 	}
 	if m := compiled(r.Str("mask"), attnexpr.Mask); m != nil {
 		a.MaskExpr = attnexpr.With(m, "heads", a.Heads)
@@ -54,6 +57,11 @@ func AttentionOf(r *Resolved) Attention {
 // what decides the kernel: FlexAttention for any expression, FlashAttention
 // for the switches alone.
 func (a Attention) Expressions() bool { return a.MaskExpr != nil || a.ScoreExpr != nil }
+
+// Flex reports whether the layer is FlexAttention's to run: an expression,
+// or sinks, which FlashAttention 2 has no way to take and FlexAttention takes
+// through the log-sum-exp it returns.
+func (a Attention) Flex() bool { return a.Expressions() || a.Sinks }
 
 var (
 	causalMask = attnexpr.Binary{Op: "<=", X: attnexpr.Var{Name: "kv"}, Y: attnexpr.Var{Name: "q"}}
@@ -420,7 +428,7 @@ func (a Attention) Grid(T, B float64, head float64) MaskGrid {
 
 // constraints are what the rules say about an sdpa's expressions.
 func (a Attention) constraints(r *Resolved) []BlockFinding {
-	if !a.Expressions() {
+	if !a.Flex() {
 		return nil
 	}
 	var out []BlockFinding
@@ -446,13 +454,23 @@ func (a Attention) constraints(r *Resolved) []BlockFinding {
 		}
 	}
 	if r.Bool("flash") {
+		message := "The mask and score expressions are counted as FlexAttention runs them: one " +
+			"fused kernel that skips the blocks the mask removes and changes each score inside"
+		if a.Sinks {
+			if a.Expressions() {
+				message = "The mask and score expressions and the sinks are counted as FlexAttention " +
+					"runs them: one fused kernel that skips the blocks the mask removes and changes each " +
+					"score inside, with the sinks applied to the log-sum-exp it returns"
+			} else {
+				message = "The sinks are counted as FlexAttention runs them: one fused kernel that skips " +
+					"the blocks the mask removes, with the sinks applied to the log-sum-exp it returns"
+			}
+		}
 		out = append(out, BlockFinding{
 			ID: "SDPA-06", Severity: "info", Param: expressionParam(a),
-			Message: "The mask and score expressions are counted as FlexAttention runs them: one fused " +
-				"kernel that skips the blocks the mask removes and changes each score inside, so the " +
-				"score matrix is never kept for the backward pass.",
+			Message: message + ", so the score matrix is never kept for the backward pass.",
 			Hint: "The generated model compiles flex_attention on CUDA. Anywhere else, or where it " +
-				"cannot compile, it applies the same expressions to the whole score matrix, which is " +
+				"cannot compile, it computes the same attention over the whole score matrix, which is " +
 				"exact but unfused, and is what a CPU verifies and profiles.",
 		})
 	}
@@ -460,10 +478,13 @@ func (a Attention) constraints(r *Resolved) []BlockFinding {
 }
 
 func expressionParam(a Attention) string {
-	if a.MaskExpr != nil {
+	switch {
+	case a.MaskExpr != nil:
 		return "mask"
+	case a.ScoreExpr != nil:
+		return "score"
 	}
-	return "score"
+	return "sinks"
 }
 
 // positions names a set of query positions as ranges: "queries 0 to 15 and 32".

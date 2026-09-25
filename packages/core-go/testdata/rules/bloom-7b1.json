@@ -28,7 +28,7 @@
           "path": "layers/block/attn/attn",
           "param": "score",
           "message": "The mask and score expressions are counted as FlexAttention runs them: one fused kernel that skips the blocks the mask removes and changes each score inside, so the score matrix is never kept for the backward pass.",
-          "hint": "The generated model compiles flex_attention on CUDA. Anywhere else, or where it cannot compile, it applies the same expressions to the whole score matrix, which is exact but unfused, and is what a CPU verifies and profiles."
+          "hint": "The generated model compiles flex_attention on CUDA. Anywhere else, or where it cannot compile, it computes the same attention over the whole score matrix, which is exact but unfused, and is what a CPU verifies and profiles."
         }
       ]
     },
@@ -59,7 +59,7 @@
           "path": "layers/block/attn/attn",
           "param": "score",
           "message": "The mask and score expressions are counted as FlexAttention runs them: one fused kernel that skips the blocks the mask removes and changes each score inside, so the score matrix is never kept for the backward pass.",
-          "hint": "The generated model compiles flex_attention on CUDA. Anywhere else, or where it cannot compile, it applies the same expressions to the whole score matrix, which is exact but unfused, and is what a CPU verifies and profiles."
+          "hint": "The generated model compiles flex_attention on CUDA. Anywhere else, or where it cannot compile, it computes the same attention over the whole score matrix, which is exact but unfused, and is what a CPU verifies and profiles."
         }
       ]
     },
@@ -90,7 +90,7 @@
           "path": "layers/block/attn/attn",
           "param": "score",
           "message": "The mask and score expressions are counted as FlexAttention runs them: one fused kernel that skips the blocks the mask removes and changes each score inside, so the score matrix is never kept for the backward pass.",
-          "hint": "The generated model compiles flex_attention on CUDA. Anywhere else, or where it cannot compile, it applies the same expressions to the whole score matrix, which is exact but unfused, and is what a CPU verifies and profiles."
+          "hint": "The generated model compiles flex_attention on CUDA. Anywhere else, or where it cannot compile, it computes the same attention over the whole score matrix, which is exact but unfused, and is what a CPU verifies and profiles."
         }
       ]
     }

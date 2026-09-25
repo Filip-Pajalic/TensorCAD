@@ -1,0 +1,1133 @@
+{
+  "preset": "gpt-oss-20b",
+  "symbols": {
+    "order": [
+      "B",
+      "T",
+      "L",
+      "D",
+      "H",
+      "Hkv",
+      "dh",
+      "F",
+      "V",
+      "E",
+      "K",
+      "Fe",
+      "W"
+    ],
+    "values": {
+      "B": 1,
+      "D": 2880,
+      "E": 32,
+      "F": 2880,
+      "Fe": 2880,
+      "H": 64,
+      "Hkv": 8,
+      "K": 4,
+      "L": 24,
+      "T": 4096,
+      "V": 201088,
+      "W": 128,
+      "dh": 64
+    },
+    "designValues": {
+      "D": 2880,
+      "E": 32,
+      "F": 2880,
+      "Fe": 2880,
+      "H": 64,
+      "Hkv": 8,
+      "K": 4,
+      "L": 24,
+      "V": 201088,
+      "W": 128,
+      "dh": 64
+    },
+    "runtime": [
+      "B",
+      "T"
+    ],
+    "docs": {
+      "B": "Batch size",
+      "D": "Residual stream width (d_model)",
+      "E": "Routed experts per layer",
+      "F": "Feed-forward hidden width, unused: every layer is experts",
+      "Fe": "Hidden width of one expert",
+      "H": "Query heads",
+      "Hkv": "Key/value heads",
+      "K": "Experts each token is routed to",
+      "L": "Number of transformer layers",
+      "T": "Sequence length in tokens",
+      "V": "Vocabulary size",
+      "W": "Width of the band the local layers attend within",
+      "dh": "Head dimension"
+    },
+    "errors": []
+  },
+  "infer": {
+    "outputs": [
+      [
+        "embed:y",
+        "B T D"
+      ],
+      [
+        "final_norm:y",
+        "B T D"
+      ],
+      [
+        "head:y",
+        "B T V"
+      ],
+      [
+        "layers/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/global:y",
+        "B T D"
+      ],
+      [
+        "layers/local:y",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "tokens:x",
+        "B T"
+      ]
+    ],
+    "inputs": [
+      [
+        "embed:ids",
+        "B T"
+      ],
+      [
+        "final_norm:x",
+        "B T D"
+      ],
+      [
+        "head:x",
+        "B T D"
+      ],
+      [
+        "layers/_out:x",
+        "B T D"
+      ],
+      [
+        "layers/global:x",
+        "B T D"
+      ],
+      [
+        "layers/local:x",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "logits:x",
+        "B T V"
+      ]
+    ],
+    "producerOf": [
+      [
+        "embed:ids",
+        "tokens:x"
+      ],
+      [
+        "final_norm:x",
+        "layers:x"
+      ],
+      [
+        "head:x",
+        "final_norm:y"
+      ],
+      [
+        "layers/_out:x",
+        "layers/global:y"
+      ],
+      [
+        "layers/global:x",
+        "layers/local:y"
+      ],
+      [
+        "layers/local:x",
+        "layers/_in:x"
+      ],
+      [
+        "layers:x",
+        "embed:y"
+      ],
+      [
+        "logits:x",
+        "head:y"
+      ]
+    ],
+    "issues": []
+  },
+  "inferExpanded": {
+    "outputs": [
+      [
+        "embed:y",
+        "B T D"
+      ],
+      [
+        "final_norm:y",
+        "B T D"
+      ],
+      [
+        "head:y",
+        "B T V"
+      ],
+      [
+        "layers/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/global/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/global/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/global/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "layers/global/attn/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/global/attn/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/global/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/global/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/global/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "layers/global/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/global/attn/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/global/attn/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "layers/global/attn/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/global/attn/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/global/attn:y",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/combine:y",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/experts/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/experts/expert/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/experts/expert/act:y",
+        "B T Fe"
+      ],
+      [
+        "layers/global/mlp/experts/expert/down:y",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/experts/expert/gate:y",
+        "B T Fe"
+      ],
+      [
+        "layers/global/mlp/experts/expert/gated:y",
+        "B T Fe"
+      ],
+      [
+        "layers/global/mlp/experts/expert/up:y",
+        "B T Fe"
+      ],
+      [
+        "layers/global/mlp/experts/expert:y",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/experts:y",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/router:weights",
+        "B T K"
+      ],
+      [
+        "layers/global/mlp:y",
+        "B T D"
+      ],
+      [
+        "layers/global/norm1:y",
+        "B T D"
+      ],
+      [
+        "layers/global/norm2:y",
+        "B T D"
+      ],
+      [
+        "layers/global/resid1:y",
+        "B T D"
+      ],
+      [
+        "layers/global/resid2:y",
+        "B T D"
+      ],
+      [
+        "layers/global:y",
+        "B T D"
+      ],
+      [
+        "layers/local/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local/attn/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local/attn/attn:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local/attn/k_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local/attn/k_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local/attn/o_merge:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/local/attn/o_proj:y",
+        "B T D"
+      ],
+      [
+        "layers/local/attn/q_heads:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local/attn/q_proj:y",
+        "B T H*dh"
+      ],
+      [
+        "layers/local/attn/rope_k:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local/attn/rope_q:y",
+        "B H T dh"
+      ],
+      [
+        "layers/local/attn/v_heads:y",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local/attn/v_proj:y",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local/attn:y",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/combine:y",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/experts/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/experts/expert/_in:x",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/experts/expert/act:y",
+        "B T Fe"
+      ],
+      [
+        "layers/local/mlp/experts/expert/down:y",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/experts/expert/gate:y",
+        "B T Fe"
+      ],
+      [
+        "layers/local/mlp/experts/expert/gated:y",
+        "B T Fe"
+      ],
+      [
+        "layers/local/mlp/experts/expert/up:y",
+        "B T Fe"
+      ],
+      [
+        "layers/local/mlp/experts/expert:y",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/experts:y",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/router:weights",
+        "B T K"
+      ],
+      [
+        "layers/local/mlp:y",
+        "B T D"
+      ],
+      [
+        "layers/local/norm1:y",
+        "B T D"
+      ],
+      [
+        "layers/local/norm2:y",
+        "B T D"
+      ],
+      [
+        "layers/local/resid1:y",
+        "B T D"
+      ],
+      [
+        "layers/local/resid2:y",
+        "B T D"
+      ],
+      [
+        "layers/local:y",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "tokens:x",
+        "B T"
+      ]
+    ],
+    "inputs": [
+      [
+        "embed:ids",
+        "B T"
+      ],
+      [
+        "final_norm:x",
+        "B T D"
+      ],
+      [
+        "head:x",
+        "B T D"
+      ],
+      [
+        "layers/_out:x",
+        "B T D"
+      ],
+      [
+        "layers/global/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/global/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/global/attn/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/global/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "layers/global/attn/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/global/attn/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/global/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/global/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "layers/global/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/global/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/global/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/global/attn/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/global/attn/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "layers/global/attn/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/global/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/global/attn:x",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/combine:weights",
+        "B T K"
+      ],
+      [
+        "layers/global/mlp/combine:x",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/experts/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/experts/expert/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/experts/expert/act:x",
+        "B T Fe"
+      ],
+      [
+        "layers/global/mlp/experts/expert/down:x",
+        "B T Fe"
+      ],
+      [
+        "layers/global/mlp/experts/expert/gate:x",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/experts/expert/gated:a",
+        "B T Fe"
+      ],
+      [
+        "layers/global/mlp/experts/expert/gated:b",
+        "B T Fe"
+      ],
+      [
+        "layers/global/mlp/experts/expert/up:x",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/experts/expert:x",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/experts:x",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp/router:x",
+        "B T D"
+      ],
+      [
+        "layers/global/mlp:x",
+        "B T D"
+      ],
+      [
+        "layers/global/norm1:x",
+        "B T D"
+      ],
+      [
+        "layers/global/norm2:x",
+        "B T D"
+      ],
+      [
+        "layers/global/resid1:a",
+        "B T D"
+      ],
+      [
+        "layers/global/resid1:b",
+        "B T D"
+      ],
+      [
+        "layers/global/resid2:a",
+        "B T D"
+      ],
+      [
+        "layers/global/resid2:b",
+        "B T D"
+      ],
+      [
+        "layers/global:x",
+        "B T D"
+      ],
+      [
+        "layers/local/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local/attn/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local/attn/attn:k",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local/attn/attn:q",
+        "B H T dh"
+      ],
+      [
+        "layers/local/attn/attn:v",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local/attn/k_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local/attn/k_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local/attn/o_merge:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local/attn/o_proj:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/local/attn/q_heads:x",
+        "B T H*dh"
+      ],
+      [
+        "layers/local/attn/q_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local/attn/rope_k:x",
+        "B Hkv T dh"
+      ],
+      [
+        "layers/local/attn/rope_q:x",
+        "B H T dh"
+      ],
+      [
+        "layers/local/attn/v_heads:x",
+        "B T Hkv*dh"
+      ],
+      [
+        "layers/local/attn/v_proj:x",
+        "B T D"
+      ],
+      [
+        "layers/local/attn:x",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/combine:weights",
+        "B T K"
+      ],
+      [
+        "layers/local/mlp/combine:x",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/experts/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/experts/expert/_out:y",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/experts/expert/act:x",
+        "B T Fe"
+      ],
+      [
+        "layers/local/mlp/experts/expert/down:x",
+        "B T Fe"
+      ],
+      [
+        "layers/local/mlp/experts/expert/gate:x",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/experts/expert/gated:a",
+        "B T Fe"
+      ],
+      [
+        "layers/local/mlp/experts/expert/gated:b",
+        "B T Fe"
+      ],
+      [
+        "layers/local/mlp/experts/expert/up:x",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/experts/expert:x",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/experts:x",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp/router:x",
+        "B T D"
+      ],
+      [
+        "layers/local/mlp:x",
+        "B T D"
+      ],
+      [
+        "layers/local/norm1:x",
+        "B T D"
+      ],
+      [
+        "layers/local/norm2:x",
+        "B T D"
+      ],
+      [
+        "layers/local/resid1:a",
+        "B T D"
+      ],
+      [
+        "layers/local/resid1:b",
+        "B T D"
+      ],
+      [
+        "layers/local/resid2:a",
+        "B T D"
+      ],
+      [
+        "layers/local/resid2:b",
+        "B T D"
+      ],
+      [
+        "layers/local:x",
+        "B T D"
+      ],
+      [
+        "layers:x",
+        "B T D"
+      ],
+      [
+        "logits:x",
+        "B T V"
+      ]
+    ],
+    "producerOf": [
+      [
+        "embed:ids",
+        "tokens:x"
+      ],
+      [
+        "final_norm:x",
+        "layers:x"
+      ],
+      [
+        "head:x",
+        "final_norm:y"
+      ],
+      [
+        "layers/_out:x",
+        "layers/global:y"
+      ],
+      [
+        "layers/global/_out:y",
+        "layers/global/resid2:y"
+      ],
+      [
+        "layers/global/attn/_out:y",
+        "layers/global/attn/o_proj:y"
+      ],
+      [
+        "layers/global/attn/attn:k",
+        "layers/global/attn/rope_k:y"
+      ],
+      [
+        "layers/global/attn/attn:q",
+        "layers/global/attn/rope_q:y"
+      ],
+      [
+        "layers/global/attn/attn:v",
+        "layers/global/attn/v_heads:y"
+      ],
+      [
+        "layers/global/attn/k_heads:x",
+        "layers/global/attn/k_proj:y"
+      ],
+      [
+        "layers/global/attn/k_proj:x",
+        "layers/global/attn/_in:x"
+      ],
+      [
+        "layers/global/attn/o_merge:x",
+        "layers/global/attn/attn:y"
+      ],
+      [
+        "layers/global/attn/o_proj:x",
+        "layers/global/attn/o_merge:y"
+      ],
+      [
+        "layers/global/attn/q_heads:x",
+        "layers/global/attn/q_proj:y"
+      ],
+      [
+        "layers/global/attn/q_proj:x",
+        "layers/global/attn/_in:x"
+      ],
+      [
+        "layers/global/attn/rope_k:x",
+        "layers/global/attn/k_heads:y"
+      ],
+      [
+        "layers/global/attn/rope_q:x",
+        "layers/global/attn/q_heads:y"
+      ],
+      [
+        "layers/global/attn/v_heads:x",
+        "layers/global/attn/v_proj:y"
+      ],
+      [
+        "layers/global/attn/v_proj:x",
+        "layers/global/attn/_in:x"
+      ],
+      [
+        "layers/global/attn:x",
+        "layers/global/norm1:y"
+      ],
+      [
+        "layers/global/mlp/_out:y",
+        "layers/global/mlp/combine:y"
+      ],
+      [
+        "layers/global/mlp/combine:weights",
+        "layers/global/mlp/router:weights"
+      ],
+      [
+        "layers/global/mlp/combine:x",
+        "layers/global/mlp/experts:y"
+      ],
+      [
+        "layers/global/mlp/experts/_out:y",
+        "layers/global/mlp/experts/expert:y"
+      ],
+      [
+        "layers/global/mlp/experts/expert/_out:y",
+        "layers/global/mlp/experts/expert/down:y"
+      ],
+      [
+        "layers/global/mlp/experts/expert/act:x",
+        "layers/global/mlp/experts/expert/gate:y"
+      ],
+      [
+        "layers/global/mlp/experts/expert/down:x",
+        "layers/global/mlp/experts/expert/gated:y"
+      ],
+      [
+        "layers/global/mlp/experts/expert/gate:x",
+        "layers/global/mlp/experts/expert/_in:x"
+      ],
+      [
+        "layers/global/mlp/experts/expert/gated:a",
+        "layers/global/mlp/experts/expert/act:y"
+      ],
+      [
+        "layers/global/mlp/experts/expert/gated:b",
+        "layers/global/mlp/experts/expert/up:y"
+      ],
+      [
+        "layers/global/mlp/experts/expert/up:x",
+        "layers/global/mlp/experts/expert/_in:x"
+      ],
+      [
+        "layers/global/mlp/experts/expert:x",
+        "layers/global/mlp/experts/_in:x"
+      ],
+      [
+        "layers/global/mlp/experts:x",
+        "layers/global/mlp/_in:x"
+      ],
+      [
+        "layers/global/mlp/router:x",
+        "layers/global/mlp/_in:x"
+      ],
+      [
+        "layers/global/mlp:x",
+        "layers/global/norm2:y"
+      ],
+      [
+        "layers/global/norm1:x",
+        "layers/global/_in:x"
+      ],
+      [
+        "layers/global/norm2:x",
+        "layers/global/resid1:y"
+      ],
+      [
+        "layers/global/resid1:a",
+        "layers/global/attn:y"
+      ],
+      [
+        "layers/global/resid1:b",
+        "layers/global/_in:x"
+      ],
+      [
+        "layers/global/resid2:a",
+        "layers/global/mlp:y"
+      ],
+      [
+        "layers/global/resid2:b",
+        "layers/global/resid1:y"
+      ],
+      [
+        "layers/global:x",
+        "layers/local:y"
+      ],
+      [
+        "layers/local/_out:y",
+        "layers/local/resid2:y"
+      ],
+      [
+        "layers/local/attn/_out:y",
+        "layers/local/attn/o_proj:y"
+      ],
+      [
+        "layers/local/attn/attn:k",
+        "layers/local/attn/rope_k:y"
+      ],
+      [
+        "layers/local/attn/attn:q",
+        "layers/local/attn/rope_q:y"
+      ],
+      [
+        "layers/local/attn/attn:v",
+        "layers/local/attn/v_heads:y"
+      ],
+      [
+        "layers/local/attn/k_heads:x",
+        "layers/local/attn/k_proj:y"
+      ],
+      [
+        "layers/local/attn/k_proj:x",
+        "layers/local/attn/_in:x"
+      ],
+      [
+        "layers/local/attn/o_merge:x",
+        "layers/local/attn/attn:y"
+      ],
+      [
+        "layers/local/attn/o_proj:x",
+        "layers/local/attn/o_merge:y"
+      ],
+      [
+        "layers/local/attn/q_heads:x",
+        "layers/local/attn/q_proj:y"
+      ],
+      [
+        "layers/local/attn/q_proj:x",
+        "layers/local/attn/_in:x"
+      ],
+      [
+        "layers/local/attn/rope_k:x",
+        "layers/local/attn/k_heads:y"
+      ],
+      [
+        "layers/local/attn/rope_q:x",
+        "layers/local/attn/q_heads:y"
+      ],
+      [
+        "layers/local/attn/v_heads:x",
+        "layers/local/attn/v_proj:y"
+      ],
+      [
+        "layers/local/attn/v_proj:x",
+        "layers/local/attn/_in:x"
+      ],
+      [
+        "layers/local/attn:x",
+        "layers/local/norm1:y"
+      ],
+      [
+        "layers/local/mlp/_out:y",
+        "layers/local/mlp/combine:y"
+      ],
+      [
+        "layers/local/mlp/combine:weights",
+        "layers/local/mlp/router:weights"
+      ],
+      [
+        "layers/local/mlp/combine:x",
+        "layers/local/mlp/experts:y"
+      ],
+      [
+        "layers/local/mlp/experts/_out:y",
+        "layers/local/mlp/experts/expert:y"
+      ],
+      [
+        "layers/local/mlp/experts/expert/_out:y",
+        "layers/local/mlp/experts/expert/down:y"
+      ],
+      [
+        "layers/local/mlp/experts/expert/act:x",
+        "layers/local/mlp/experts/expert/gate:y"
+      ],
+      [
+        "layers/local/mlp/experts/expert/down:x",
+        "layers/local/mlp/experts/expert/gated:y"
+      ],
+      [
+        "layers/local/mlp/experts/expert/gate:x",
+        "layers/local/mlp/experts/expert/_in:x"
+      ],
+      [
+        "layers/local/mlp/experts/expert/gated:a",
+        "layers/local/mlp/experts/expert/act:y"
+      ],
+      [
+        "layers/local/mlp/experts/expert/gated:b",
+        "layers/local/mlp/experts/expert/up:y"
+      ],
+      [
+        "layers/local/mlp/experts/expert/up:x",
+        "layers/local/mlp/experts/expert/_in:x"
+      ],
+      [
+        "layers/local/mlp/experts/expert:x",
+        "layers/local/mlp/experts/_in:x"
+      ],
+      [
+        "layers/local/mlp/experts:x",
+        "layers/local/mlp/_in:x"
+      ],
+      [
+        "layers/local/mlp/router:x",
+        "layers/local/mlp/_in:x"
+      ],
+      [
+        "layers/local/mlp:x",
+        "layers/local/norm2:y"
+      ],
+      [
+        "layers/local/norm1:x",
+        "layers/local/_in:x"
+      ],
+      [
+        "layers/local/norm2:x",
+        "layers/local/resid1:y"
+      ],
+      [
+        "layers/local/resid1:a",
+        "layers/local/attn:y"
+      ],
+      [
+        "layers/local/resid1:b",
+        "layers/local/_in:x"
+      ],
+      [
+        "layers/local/resid2:a",
+        "layers/local/mlp:y"
+      ],
+      [
+        "layers/local/resid2:b",
+        "layers/local/resid1:y"
+      ],
+      [
+        "layers/local:x",
+        "layers/_in:x"
+      ],
+      [
+        "layers:x",
+        "embed:y"
+      ],
+      [
+        "logits:x",
+        "head:y"
+      ]
+    ],
+    "issues": [
+      {
+        "path": "layers/global/attn/attn",
+        "message": "The sinks are counted as FlexAttention runs them: one fused kernel that skips the blocks the mask removes, with the sinks applied to the log-sum-exp it returns, so the score matrix is never kept for the backward pass.",
+        "severity": "warning",
+        "rule": "SDPA-06",
+        "param": "sinks"
+      },
+      {
+        "path": "layers/local/attn/attn",
+        "message": "The sinks are counted as FlexAttention runs them: one fused kernel that skips the blocks the mask removes, with the sinks applied to the log-sum-exp it returns, so the score matrix is never kept for the backward pass.",
+        "severity": "warning",
+        "rule": "SDPA-06",
+        "param": "sinks"
+      }
+    ]
+  }
+}

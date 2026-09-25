@@ -146,7 +146,9 @@ function ParamRow({
               set(e.target.value === "inherit" ? null : e.target.value === "true")
             }
           >
-            <option value="inherit">inherit</option>
+            {/* What unset means is the parameter's own to say, in its doc:
+                o_bias follows attn_bias, sinks are none. */}
+            <option value="inherit">unset</option>
             <option value="true">true</option>
             <option value="false">false</option>
           </select>

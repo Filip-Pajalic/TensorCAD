@@ -550,6 +550,103 @@ describe.skipIf(!available)("bloom-7b1", () => {
 });
 
 /**
+ * gpt-oss, the first preset with attention sinks.
+ *
+ * Twenty-one billion parameters are counted on the meta device. The sinks are
+ * held against two other statements of them: FlexAttention's, the log-sum-exp
+ * rescale the generated code uses on CUDA, and a transcription of Hugging
+ * Face's own gpt-oss attention. And a copy small enough to run goes through a
+ * forward pass and an export, with the dense expert dispatch that is there to
+ * make a mixture of experts traceable.
+ */
+describe.skipIf(!available)("gpt-oss-20b", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+
+  it(
+    "has the parameters it says, sinks included",
+    () => {
+      const { dir, model } = writePreset("gpt-oss-20b");
+      try {
+        const full = runVerify(invocation, model, ["--no-export", "--no-flops"]);
+        expect(full).not.toHaveProperty("spawnFailed");
+        const r = full as Verify;
+        expect({ ok: r.ok, matches: r.matches, params: r.params }).toEqual({
+          ok: true,
+          matches: true,
+          params: 20_914_757_184,
+        });
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+
+  it(
+    "puts its sinks where FlexAttention and Hugging Face do",
+    () => {
+      const { dir, model } = writePreset("gpt-oss-20b");
+      try {
+        const [cmd] = invocation;
+        const python = cmd === "tensorcad-runtime" ? "python" : cmd;
+        const result = spawnSync(python, [join(import.meta.dir, "sinks_probe.py"), model], {
+          encoding: "utf8",
+          timeout: TIMEOUT_MS,
+          shell: process.platform === "win32",
+        });
+        const out = JSON.parse(result.stdout.trim().split(/\r?\n/).at(-1)!);
+        // One mask for the band, one for the full layers.
+        expect(Object.keys(out.cases)).toEqual(["mask_mod_1", "mask_mod_2"]);
+        for (const [mask, err] of Object.entries(out.cases as Record<string, { fused: number; hugging_face: number }>)) {
+          expect({ mask, fused: err.fused < 1e-5, hugging_face: err.hugging_face < 1e-5 }).toEqual({
+            mask,
+            fused: true,
+            hugging_face: true,
+          });
+        }
+        // A query with nothing but its sink puts all of its attention there.
+        expect(out.empty_row).toEqual({ ours: 0, fused: 0 });
+        expect(out.finite).toBe(true);
+        // A sink far below every score takes nothing.
+        expect(out.silent_sink).toBeLessThan(1e-6);
+        if (out.cuda) expect(out.cuda_vs_cpu).toBeLessThan(1e-4);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+
+  it(
+    "shrunk to run, goes forward and exports",
+    () => {
+      const scaled = scaleDesign(getPreset("gpt-oss-20b"), { targetParams: 2e6, vocab: 256 });
+      // A pair of layers is the unit, so it cannot shrink to one.
+      expect((scaled.doc.symbols.L as { value: number }).value).toBe(2);
+      const dir = mkdtempSync(join(tmpdir(), "tensorcad-gptoss-"));
+      try {
+        const out = generateTorch(scaled.doc, { moeDispatch: "dense" });
+        expect(out.warnings).toEqual([]);
+        for (const file of out.files) writeFileSync(join(dir, file.path), file.contents);
+        const full = runVerify(invocation, join(dir, "model.py"), ["--no-flops"]);
+        expect(full).not.toHaveProperty("spawnFailed");
+        const r = full as Verify;
+        expect({ ok: r.ok, matches: r.matches, forward: r.forward, export: r.export_ok }).toEqual({
+          ok: true,
+          matches: true,
+          forward: "ok",
+          export: true,
+        });
+        expect(r.params).toBe(scaled.achieved);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+});
+
+/**
  * Every preset, through `ast.parse`.
  *
  * Cheaper than the block above and answering a different question: not "does

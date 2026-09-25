@@ -1,0 +1,262 @@
+{
+  "version": 1,
+  "meta": {
+    "name": "gpt-oss-20b",
+    "family": "gpt-oss",
+    "notes": "OpenAI's smaller open-weight model: 21B parameters, 32 experts a layer and four of them active. Two things set its attention apart, and both are written into the design. Every other layer attends only within a 128-token band, starting with the first, so the repeating unit is the pair and the stack repeats L/2 times, as Gemma 2's does. And every attention layer has sinks: one learned score per head that sits in the softmax's denominator beside the keys, so a head can put its attention nowhere rather than spreading it over keys it has no use for — 64 parameters a layer, which the published count includes. Biases on every projection, the router included, and on every expert. OpenAI's 3.61B active is this design's active count without the embedding table — the unembedding is a matmul every token pays for, the lookup is not. Two things are recorded but not generated: YaRN's rotary scaling, which stretches a 4k-trained model to 128k, and the experts' activation, which is SwiGLU with a sigmoid slope of 1.702, the linear half offset by one and both halves clamped at 7. Both change what the model computes and not what it costs; the generated model uses plain RoPE and SiLU.",
+    "published": {
+      "params": 20914757184,
+      "source": "https://huggingface.co/openai/gpt-oss-20b"
+    }
+  },
+  "symbols": {
+    "B": {
+      "kind": "runtime",
+      "default": 1,
+      "doc": "Batch size"
+    },
+    "T": {
+      "kind": "runtime",
+      "default": 4096,
+      "doc": "Sequence length in tokens"
+    },
+    "L": {
+      "kind": "design",
+      "value": 24,
+      "doc": "Number of transformer layers"
+    },
+    "D": {
+      "kind": "design",
+      "value": 2880,
+      "doc": "Residual stream width (d_model)"
+    },
+    "H": {
+      "kind": "design",
+      "value": 64,
+      "doc": "Query heads"
+    },
+    "Hkv": {
+      "kind": "design",
+      "value": 8,
+      "doc": "Key/value heads"
+    },
+    "dh": {
+      "kind": "design",
+      "value": 64,
+      "doc": "Head dimension"
+    },
+    "F": {
+      "kind": "design",
+      "value": 2880,
+      "doc": "Feed-forward hidden width, unused: every layer is experts"
+    },
+    "V": {
+      "kind": "design",
+      "value": 201088,
+      "doc": "Vocabulary size"
+    },
+    "E": {
+      "kind": "design",
+      "value": 32,
+      "doc": "Routed experts per layer"
+    },
+    "K": {
+      "kind": "design",
+      "value": 4,
+      "doc": "Experts each token is routed to"
+    },
+    "Fe": {
+      "kind": "design",
+      "value": 2880,
+      "doc": "Hidden width of one expert"
+    },
+    "W": {
+      "kind": "design",
+      "value": 128,
+      "doc": "Width of the band the local layers attend within"
+    }
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "tokens",
+        "type": "input",
+        "params": {
+          "shape": "B T",
+          "dtype": "int64"
+        }
+      },
+      {
+        "id": "embed",
+        "type": "embedding",
+        "params": {
+          "vocab": "V",
+          "dim": "D"
+        }
+      },
+      {
+        "id": "layers",
+        "type": "repeat",
+        "label": "Transformer block x24",
+        "params": {
+          "count": "L/2"
+        },
+        "graph": {
+          "nodes": [
+            {
+              "id": "_in",
+              "type": "boundary_in",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            },
+            {
+              "id": "local",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "Hkv",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "rmsnorm",
+                "norm_bias": true,
+                "post_norm": false,
+                "mlp": "moe",
+                "act": "silu",
+                "attn_bias": true,
+                "attn_o_bias": null,
+                "mlp_bias": true,
+                "qk_norm": false,
+                "causal": true,
+                "window": "W",
+                "rope": {
+                  "theta": 150000,
+                  "scaling": {
+                    "type": "yarn",
+                    "factor": 32,
+                    "original_max_position_embeddings": 4096,
+                    "beta_fast": 32,
+                    "beta_slow": 1
+                  }
+                },
+                "experts": "E",
+                "top_k": "K",
+                "expert_hidden": "Fe",
+                "shared_experts": 0,
+                "router_bias": true,
+                "sinks": true
+              }
+            },
+            {
+              "id": "global",
+              "type": "transformer_block",
+              "params": {
+                "d_model": "D",
+                "heads": "H",
+                "kv_heads": "Hkv",
+                "head_dim": "dh",
+                "ffn_hidden": "F",
+                "norm": "rmsnorm",
+                "norm_bias": true,
+                "post_norm": false,
+                "mlp": "moe",
+                "act": "silu",
+                "attn_bias": true,
+                "attn_o_bias": null,
+                "mlp_bias": true,
+                "qk_norm": false,
+                "causal": true,
+                "window": 0,
+                "rope": {
+                  "theta": 150000,
+                  "scaling": {
+                    "type": "yarn",
+                    "factor": 32,
+                    "original_max_position_embeddings": 4096,
+                    "beta_fast": 32,
+                    "beta_slow": 1
+                  }
+                },
+                "experts": "E",
+                "top_k": "K",
+                "expert_hidden": "Fe",
+                "shared_experts": 0,
+                "router_bias": true,
+                "sinks": true
+              }
+            },
+            {
+              "id": "_out",
+              "type": "boundary_out",
+              "params": {
+                "ports": {
+                  "x": "B T D"
+                }
+              }
+            }
+          ],
+          "edges": [
+            [
+              "_in:x",
+              "local:x"
+            ],
+            [
+              "local:y",
+              "global:x"
+            ],
+            [
+              "global:y",
+              "_out:x"
+            ]
+          ]
+        }
+      },
+      {
+        "id": "final_norm",
+        "type": "rmsnorm",
+        "params": {
+          "dim": "D"
+        }
+      },
+      {
+        "id": "head",
+        "type": "lm_head",
+        "params": {
+          "vocab": "V",
+          "dim": "D",
+          "tied": false
+        }
+      },
+      {
+        "id": "logits",
+        "type": "output"
+      }
+    ],
+    "edges": [
+      [
+        "tokens:x",
+        "embed:ids"
+      ],
+      [
+        "embed:y",
+        "layers:x"
+      ],
+      [
+        "layers:x",
+        "final_norm:x"
+      ],
+      [
+        "final_norm:y",
+        "head:x"
+      ],
+      [
+        "head:y",
+        "logits:x"
+      ]
+    ]
+  },
+  "ui": {}
+}

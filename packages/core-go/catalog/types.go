@@ -263,6 +263,9 @@ type AnalysisCtx struct {
 	// S is the source length of a design with a second sequence, which
 	// cross-attention reads every position of; zero with none.
 	S float64
+	// Packing is how a training batch's rows are filled, for a mask that
+	// keeps documents apart; nil is one document a row.
+	Packing *Packing
 }
 
 // StateBytes is per-token cache and per-sequence state.

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/tensorcad/core/codegen"
 	"github.com/tensorcad/core/ir"
 	"github.com/tensorcad/core/presets"
 )
@@ -152,5 +153,41 @@ func TestAScoreReadsItsTableThroughAFactory(t *testing.T) {
 		if !strings.Contains(model, want) {
 			t.Errorf("missing:\n%s", want)
 		}
+	}
+}
+
+// A mask that keeps documents apart reads them the way a score reads a table:
+// through a factory the attention calls with this batch's documents, indexed
+// by row and position. Until the block mask is built once per batch, the
+// generated model says what it does on CUDA instead.
+func TestAMaskReadsTheDocumentsThroughAFactory(t *testing.T) {
+	doc := withAttention(t, "nano-sort", map[string]any{"mask": "doc(b, q) == doc(b, kv)"})
+	doc.Graph.Nodes = append(doc.Graph.Nodes, ir.NodeDef{ID: "docs", Type: "input",
+		Params: map[string]any{"shape": "B T", "dtype": "int64", "role": "documents"}})
+	doc.Graph.Edges = append(doc.Graph.Edges, ir.Edge{"docs:x", "layers:doc"})
+	for i := range doc.Graph.Nodes {
+		if stack := &doc.Graph.Nodes[i]; stack.ID == "layers" {
+			for j := range stack.Graph.Nodes {
+				if n := &stack.Graph.Nodes[j]; n.ID == "_in" {
+					n.Params["ports"].(map[string]any)["doc"] = "B T"
+				}
+			}
+			stack.Graph.Edges = append(stack.Graph.Edges, ir.Edge{"_in:doc", "block:doc"})
+		}
+	}
+	out := codegen.GenerateTorch(doc, codegen.Options{})
+	model := modelOf(t, doc)
+	for _, want := range []string{
+		"def forward(self, tokens, docs):",
+		"def mask_mod_1(doc):",
+		"return (kv_idx <= q_idx) & (doc[b, q_idx] == doc[b, kv_idx])",
+		"mask_mod=mask_mod_1(doc), mask_batch=True",
+	} {
+		if !strings.Contains(model, want) {
+			t.Errorf("missing: %s", want)
+		}
+	}
+	if len(out.Warnings) != 1 || !strings.Contains(out.Warnings[0], "each batch's documents") {
+		t.Errorf("warnings: %v", out.Warnings)
 	}
 }

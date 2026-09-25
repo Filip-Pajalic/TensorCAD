@@ -39,6 +39,7 @@ export function analysisJson(a: AnalysisResult): Record<string, unknown> {
       tokens_were_defaulted: o.tokensWereDefaulted,
       mfu: o.mfu,
       concurrency: o.concurrency,
+      ...(o.packing ? { packing: { ...o.packing } } : {}),
     },
     params: {
       total: a.params.total,
@@ -58,6 +59,16 @@ export function analysisJson(a: AnalysisResult): Record<string, unknown> {
       train_per_token: n(a.flops.trainPerToken),
       attention_share: n(a.flops.attentionShare),
       by_category: a.flops.byCategory,
+      ...(a.flops.packed
+        ? {
+            packed: {
+              fwd_attention: n(a.flops.packed.fwdAttention),
+              fwd_total: n(a.flops.packed.fwdTotal),
+              train_per_token: n(a.flops.packed.trainPerToken),
+              attention_share: n(a.flops.packed.attentionShare),
+            },
+          }
+        : {}),
     },
     kv: {
       bytes_per_token: n(a.kv.bytesPerToken),
@@ -183,6 +194,22 @@ export function analysisText(a: AnalysisResult, opts: { title?: string } = {}): 
       ["attention share", percent(a.flops.attentionShare)],
     ]),
   );
+  const packed = a.flops.packed;
+  if (packed && o.packing) {
+    // Training rows packed with documents the mask keeps apart. The figures
+    // above are one document a row, which is what serving is.
+    out.push(dim(`  packed training, documents of ${o.packing.mean} tokens (spread ${o.packing.spread})`));
+    out.push(
+      rows(
+        [
+          ["forward attention", finite(packed.fwdAttention, formatFlops)],
+          ["training fwd+bwd", finite(packed.trainPerToken, formatFlops), "what the cost is counted from"],
+          ["attention share", percent(packed.attentionShare)],
+        ],
+        "    ",
+      ),
+    );
+  }
 
   out.push(heading("KV cache"));
   out.push(

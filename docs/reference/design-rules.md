@@ -13,6 +13,7 @@ the block it is about.
 | `shape` | An interface does not match. The message names the polynomial difference, not two numbers. |
 | `symbols` | A symbol is undefined, cyclic, or does not evaluate to a number. |
 | `dtype` | A port that says what it carries is given the other thing: token ids into a matmul, activations where an index was wanted. Shapes agree perfectly in both cases, so nothing else catches it. |
+| `documents` | A mask that keeps [packed documents](../explanation/packed-sequences.md) apart is not given the documents: what reaches it, followed back through every stack it was handed into, is not an input whose `role` is `documents`. Token ids have the same shape and element type, so the two checks above pass them. |
 | `block-constraints` | A block's own `constraints()` objects — for example heads not divisible by key/value heads, or an [attention mask](attention-expressions.md) that keeps nothing (`SDPA-04`) or leaves a query with no key to attend to (`SDPA-05`). |
 | `user-blocks` | A definition in `doc.defs` failed to compile. It is dropped from the catalog rather than thrown, and this says why. |
 | `dangling-output` | A block produces a tensor nothing reads. |

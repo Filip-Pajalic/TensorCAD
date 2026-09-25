@@ -405,6 +405,42 @@ describe("the compiled engine", () => {
     expect("fwdPerExample" in one.flops).toBe(false);
   });
 
+  it("takes a packing through the boundary, and moves only training with it", () => {
+    // llama-3-8b with every layer keeping documents apart, as Llama 3 trained.
+    const doc = structuredClone(engine.preset("llama-3-8b")) as Doc;
+    doc.graph.nodes.push({ id: "docs", type: "input", params: { shape: "B T", dtype: "int64", role: "documents" } });
+    doc.graph.edges.push(["docs:x", "layers:doc"]);
+    const stack = doc.graph.nodes.find((n) => n.id === "layers")!;
+    for (const n of stack.graph!.nodes) {
+      if (n.id === "_in") (n.params!.ports as Record<string, string>).doc = "B T";
+      if (n.id === "block") n.params!.mask = "doc(b, q) == doc(b, kv)";
+    }
+    stack.graph!.edges.push(["_in:doc", "block:doc"]);
+
+    const one = engine.analyze(doc, { T: 8192 });
+    expect(one.errors).toEqual([]);
+    expect("packed" in one.flops).toBe(false);
+    expect("packing" in one.options).toBe(false);
+
+    const packed = engine.analyze(doc, { T: 8192, packing: { mean: 1024 } });
+    expect(packed.options.packing).toEqual({ mean: 1024, spread: 0 });
+    // 491 keys a query rather than 4,096, and serving untouched.
+    expect((4096 * packed.flops.packed!.fwdAttention) / one.flops.fwdAttention).toBeCloseTo(491.1, -0.5);
+    expect(packed.flops.fwdTotal).toBe(one.flops.fwdTotal);
+    expect(packed.cost.gpuHours / one.cost.gpuHours).toBeCloseTo(
+      packed.flops.packed!.trainPerToken / one.flops.trainPerToken,
+      12,
+    );
+    // Nothing is wrong with the wiring, and the same wire from the tokens is.
+    expect(engine.validate(doc, {}).findings.filter((f) => f.rule === "documents")).toEqual([]);
+
+    // A design that attends across documents is not moved by a packing.
+    const plain = engine.analyze(engine.preset("llama-3-8b"), { T: 8192, packing: { mean: 1024 } });
+    expect("packed" in plain.flops).toBe(false);
+    // And a packing that means nothing is refused, not ignored.
+    expect(() => engine.analyze(doc, { packing: { mean: 0 } })).toThrow(/packing/);
+  });
+
   it("draws an attention's mask through the boundary", () => {
     const doc = engine.preset("nano-sort");
     // A block with attention inside it answers through that attention, at the

@@ -29,6 +29,8 @@ const VALUE_FLAGS = new Set([
   "dtype",
   "mfu",
   "concurrency",
+  "pack",
+  "pack-spread",
   "out",
   "class-name",
   "name",

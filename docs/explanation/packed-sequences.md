@@ -1,9 +1,9 @@
 # Packed sequences: a mask that reads the batch
 
-*A proposal for M12. Nothing here is built yet. It was written first, as M10's
-and M11's were, because it decides what the training figures mean. Today they
-count the attention of one document filling the whole sequence. Pretraining is
-rarely run that way.*
+*A proposal for M12. Phase 1 is built; the rest is not. It was written first,
+as M10's and M11's were, because it decides what the training figures mean.
+Before it, they counted the attention of one document filling the whole
+sequence. Pretraining is rarely run that way.*
 
 Pretraining does not pad. It concatenates documents until the sequence is full
 and trains on the result, so one row of a batch holds the end of one document,
@@ -180,6 +180,54 @@ says what the mask is for.
      no design has a documents input and packing is off by default.
    - The fixed-length closed form must reproduce exactly, and the gamma forms
      within the sampler's error.
+
+   *Done.*
+   - **The input and the mask.** `input` has a `role`, `tokens` by default. A
+     mask may read a tensor at two indices, a row and a position, and nothing
+     else. `sdpa`, `gqa_attention` and `transformer_block` grow a `B T` integer
+     input for it, as they grow one for a score's table.
+   - **The operating point.** `packing: { mean, spread }` in the engine, `--pack`
+     and `--pack-spread` on the command line, `packing` on the MCP tools. With
+     it, `flops.packed` holds the training figures and the cost is counted from
+     them. Everything else stays one document a row. It is present only when a
+     mask reads the documents.
+   - **The rule.** `documents` follows what reaches such a mask back through
+     every stack it was handed into, and objects unless it starts at an input
+     whose role is `documents`. Token ids have the same shape and element type,
+     so nothing else would catch them wired there.
+   - **Golden files.** Every analysis, rules and codegen golden is unchanged.
+     Only the catalog's prose moved, for the new parameter.
+
+   What building it found:
+   - **A row begins inside a document.** A stream cut into rows starts each
+     row wherever the last one stopped, so the pieces at both ends are shorter
+     documents as far as the mask can tell. Fixed 1,024-token documents at
+     8,192 keep **491.1** keys a query, averaged over every phase a row can
+     begin at, not the 512 of a row that begins on a boundary. That is what
+     the analysis reports and what the test holds it to, exactly; the
+     proposal's 512 is the special case.
+   - **The long documents are the noise.** The first sampler, 64 rows of 32
+     queries each, was off by 5% for exponential lengths, because which queries
+     land in long documents varied from draw to draw. Now it is:
+     - 1,024 rows cut from a circular stream of at least 1,024 documents,
+       whose lengths are one from each stratum of the distribution, shuffled;
+     - 16 queries a row;
+     - for each query, keys in bands that widen by four going back from it.
+
+     That is the same quarter of a million evaluations. Fixed lengths are
+     within half a percent of the exact count. Spread-out lengths are within
+     about two percent of a brute-force stream of two hundred thousand
+     documents, which itself agrees with the closed form for exponential
+     lengths to the token. It takes about 100 ms in the editor the first time
+     and nothing after, being cached.
+   - **The reference needs documents, not rows.** A brute-force reference cut
+     from three thousand documents was off by two percent through its long
+     documents alone, however many rows it cut.
+   - **Generated code came early.** A mask that reads the documents is a
+     factory called with them, as a score that reads a table is, and the eager
+     form keeps documents apart. On CUDA each call still builds, and keeps, a
+     block mask of its own. The generated model says so in a warning, and
+     building one per batch is what phase 2 is for.
 2. **Generated and verified.**
    - The factory, the block mask built once per forward pass, and the runtime's
      made-up packing.
@@ -195,7 +243,9 @@ says what the mask is for.
 
 **Done when:**
 - Llama-3-8B with a document mask, at 8,192 tokens and fixed 1,024-token
-  documents, is counted at exactly 512 keys a query.
+  documents, is counted at exactly 512 keys a query. *Phase 1 found that a
+  row cut from a stream begins inside a document, which makes it 491.1, and
+  the analysis is held to that.*
 - Gamma-distributed packings agree with the size-biased mean.
 - A generated model keeps its documents apart in both forms.
 - FlexAttention's block count matches the engine's.

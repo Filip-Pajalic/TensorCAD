@@ -31,11 +31,18 @@ it usable in CI.
 
 ```bash
 bun packages/cli/src/index.ts analyze <file|preset> \
-  [--T n] [--B n] [--S n] [--hardware id] [--gpus n] [--tokens n] [--json]
+  [--T n] [--B n] [--S n] [--hardware id] [--gpus n] [--tokens n]
+  [--pack mean] [--pack-spread c] [--json]
 ```
 
 `--S` is the source length, for a design with a second sequence; a design that
 declares no `S` ignores it.
+
+`--pack` packs the training rows with documents of that mean length, in tokens,
+and `--pack-spread` says how much the lengths vary: 0, the default, is every
+document the same length, and 1 is exponential. It changes the training figures
+of a design whose mask keeps documents apart, and nothing else. See
+[Packed sequences](../explanation/packed-sequences.md).
 
 Parameters, FLOPs, KV cache, memory, throughput, cost and Chinchilla budget. See
 [analysis outputs](analysis.md).

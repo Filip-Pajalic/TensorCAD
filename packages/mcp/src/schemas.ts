@@ -129,6 +129,20 @@ export const analysisOptionsShape = {
   ep: z.number().int().positive().optional().describe("Expert parallel degree."),
   concurrency: z.number().int().positive().optional().describe("Concurrent sequences when serving."),
   mfu: z.number().positive().max(1).optional().describe("Model FLOPs utilization, 0..1."),
+  packing: z
+    .object({
+      mean: z.number().min(1).describe("Mean document length, in tokens."),
+      spread: z
+        .number()
+        .min(0)
+        .optional()
+        .describe("Coefficient of variation of the lengths: 0, the default, is fixed; 1 is exponential."),
+    })
+    .optional()
+    .describe(
+      "Training rows packed with documents, for a design whose mask keeps them apart " +
+        "(doc(b, q) == doc(b, kv)). Moves the training figures and the cost, not serving.",
+    ),
 };
 
 // ---------------------------------------------------------------------------
@@ -216,6 +230,7 @@ export const AnalysisOutput = z.object({
     tokens_were_defaulted: z.boolean(),
     mfu: z.number(),
     concurrency: z.number(),
+    packing: z.object({ mean: z.number(), spread: z.number() }).optional(),
   }),
   params: z.object({
     total: z.number(),
@@ -239,6 +254,13 @@ export const AnalysisOutput = z.object({
       .optional()
       .describe("For a design with two sequences: each one's forward pass per token of its own. The figures above are then per target token."),
     fwd_per_example: num().optional().describe("One example's forward pass, every sequence's tokens; two sequences only."),
+    packed: z
+      .object({ fwd_attention: num(), fwd_total: num(), train_per_token: num(), attention_share: num() })
+      .optional()
+      .describe(
+        "Training under the packing, for a design whose mask keeps documents apart. The figures above are " +
+          "one document a row, which is what serving is; the training cost is counted from these.",
+      ),
   }),
   kv: z.object({
     bytes_per_token: num(),

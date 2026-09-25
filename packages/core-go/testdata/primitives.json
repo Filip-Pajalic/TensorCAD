@@ -14,6 +14,7 @@
       },
       "resolved": {
         "dtype": "int64",
+        "role": "tokens",
         "shape": "B T"
       },
       "errors": [],

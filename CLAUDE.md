@@ -253,8 +253,9 @@ Two cross-checks worth knowing:
    touches the document's own symbols, so switching twice ends where it started. It is document
    state because it changes what the design *is*.
 8. **The operating point is editor state, not document state.** Batch, sequence length,
-   dtype, device, GPU count and the sharding plan are conditions the analysis is measured
-   under, not properties of the design. `packages/ui/src/state/operating.ts` owns them and
+   dtype, device, GPU count, the sharding plan and how training rows are packed are
+   conditions the analysis is measured under, not properties of the design. A packing
+   moves the training figures only (`flops.packed`), because a request is one document. `packages/ui/src/state/operating.ts` owns them and
    translates them to `AnalysisOptions`; the CLI and MCP pass their own.
 9. **This repository is the open one, and keeps nothing private in it.** Accounts, sessions,
    billing and the hosted service live in a separate private repository. The seam is

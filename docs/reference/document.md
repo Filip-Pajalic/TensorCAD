@@ -65,6 +65,11 @@ they evaluate to — that is what makes `scaleDesign` possible.
 A container node carries a `graph`, entered through `boundary_in` and
 `boundary_out` nodes that declare its ports.
 
+An `input` holds token ids unless its `role` says otherwise. `"role":
+"documents"` is each position's document, `B T` integers, for a mask that keeps
+packed documents apart: `doc(b, q) == doc(b, kv)`. The `documents` design rule
+follows what reaches such a mask back to an input with that role.
+
 ## `defs`
 
 Composites the design defines for itself, resolving exactly like built-ins. See

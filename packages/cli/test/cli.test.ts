@@ -146,6 +146,22 @@ describe("analyze", () => {
     expect(sharded.memory.train.per_gpu.optimizer).toBeLessThan(base.memory.train.per_gpu.optimizer);
   });
 
+  test("--pack moves the training figures of a design that keeps documents apart", () => {
+    const packed = resolve(import.meta.dir, "fixtures/packed.tensorcad.json");
+    const one = JSON.parse(cli("analyze", packed, "--json").stdout);
+    expect(one.flops.packed).toBeUndefined();
+    const r = JSON.parse(cli("analyze", packed, "--pack", "3", "--pack-spread", "1", "--json").stdout);
+    expect(r.options.packing).toEqual({ mean: 3, spread: 1 });
+    expect(r.flops.packed.train_per_token).toBeLessThan(one.flops.train_per_token);
+    // Serving is one document a row, packed or not.
+    expect(r.flops.fwd_total).toBe(one.flops.fwd_total);
+    expect(cli("analyze", packed, "--pack", "3").stdout).toContain("packed training");
+
+    const alone = cli("analyze", packed, "--pack-spread", "1");
+    expect(alone.code).toBe(2);
+    expect(alone.stderr).toContain("--pack-spread needs --pack");
+  });
+
   test("an unknown hardware id is a usage error", () => {
     const r = cli("analyze", "llama-3-8b", "--hardware", "gtx260");
     expect(r.code).toBe(2);

@@ -316,6 +316,22 @@ export interface AnalysisOptions {
   mfu?: number;
   decodeEfficiency?: number;
   concurrency?: number;
+  /**
+   * How training rows are filled, for a design whose mask keeps documents
+   * apart. Absent is one document a row, which is what serving is. It moves
+   * the training figures and nothing else.
+   */
+  packing?: Packing;
+}
+
+/**
+ * Documents laid end to end and cut into rows: their lengths gamma-distributed
+ * with this mean, in tokens, and coefficient of variation. A spread of zero,
+ * the default, is every document the same length; one is exponential.
+ */
+export interface Packing {
+  mean: number;
+  spread?: number;
 }
 
 export interface HardwareProfile {
@@ -358,6 +374,14 @@ export interface ParamsResult {
   errors: string[];
 }
 
+/** The forward and training work per token of a packed training row. */
+export interface PackedFlops {
+  fwdAttention: number;
+  fwdTotal: number;
+  trainPerToken: number;
+  attentionShare: number;
+}
+
 /** One sequence's forward pass, per token of that sequence. */
 export interface StreamFlops {
   /** "T" for the target, "S" for the source. */
@@ -376,6 +400,13 @@ export interface FlopsResult {
   perStream?: StreamFlops[];
   /** One example's forward pass, every sequence's tokens; two sequences only. */
   fwdPerExample?: number;
+  /**
+   * Training under the operating point's packing, for a design whose mask
+   * keeps documents apart; absent otherwise. Every other figure here is one
+   * document a row, which is what serving is, and the training cost is counted
+   * from this one.
+   */
+  packed?: PackedFlops;
   fwdDense: number;
   fwdAttention: number;
   /** The attention term as a profiler counts it, with nothing masked. */
@@ -497,6 +528,8 @@ export interface ResolvedAnalysisOptions {
   mfu: number;
   decodeEfficiency: number;
   concurrency: number;
+  /** Present only when the operating point gave one. */
+  packing?: { mean: number; spread: number };
 }
 
 export interface AnalysisResult {

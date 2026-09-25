@@ -641,6 +641,7 @@ var Rules = []Rule{
 	userBlocks,
 	shapeIssues,
 	dtypeMismatch,
+	documentsWired,
 	symbolErrors,
 	blockConstraints,
 	flashHeadDim,

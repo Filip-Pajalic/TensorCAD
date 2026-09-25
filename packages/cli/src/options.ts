@@ -50,6 +50,14 @@ export function analysisOptions(args: Args): AnalysisOptions {
   if (mfu !== undefined) out.mfu = mfu;
   const concurrency = num(args, "concurrency");
   if (concurrency !== undefined) out.concurrency = concurrency;
+  // Training rows packed with documents of this mean length, for a design
+  // whose mask keeps them apart.
+  const pack = num(args, "pack");
+  const spread = num(args, "pack-spread");
+  if (spread !== undefined && pack === undefined) {
+    throw new UsageError("--pack-spread needs --pack, the mean document length it spreads around");
+  }
+  if (pack !== undefined) out.packing = spread === undefined ? { mean: pack } : { mean: pack, spread };
 
   const dtype = oneOf(args, "dtype", DTYPES);
   if (dtype) out.dtype = dtype;

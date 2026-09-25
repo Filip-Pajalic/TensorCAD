@@ -152,6 +152,9 @@ var Primitives = []*BlockDef{
 		Params: ParamList{
 			{"shape", pPattern("B T", "Shape pattern of the model input")},
 			{"dtype", pEnum([]string{"int64", "int32", "bf16", "fp32"}, "int64", "What the tensor holds; token ids are integers, everything else is not")},
+			{"role", pEnum([]string{"tokens", "documents"}, "tokens",
+				"What the input is: the tokens, or which document each position belongs to, for a mask "+
+					"that keeps packed documents apart")},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			s := r.Str("shape")
@@ -933,7 +936,7 @@ var Primitives = []*BlockDef{
 			// there is one, and whatever share the design's own mask leaves.
 			// A profiler counts the operator as if nothing were masked, since
 			// its shape does not depend on the mask.
-			keys := a.KeysPerQuery(c.T, c.B)
+			keys := a.KeysPerQuery(c.T, c.B, c.Packing)
 			seen := c.T
 			if a.Cross {
 				// Every source position, for every query: nothing is masked.

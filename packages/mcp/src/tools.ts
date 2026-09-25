@@ -95,6 +95,7 @@ type AnalysisInput = {
   ep?: number;
   concurrency?: number;
   mfu?: number;
+  packing?: { mean: number; spread?: number };
 };
 
 function toAnalysisOptions(input: AnalysisInput): AnalysisOptions {
@@ -108,6 +109,7 @@ function toAnalysisOptions(input: AnalysisInput): AnalysisOptions {
   if (input.recompute) out.recompute = input.recompute;
   if (input.concurrency !== undefined) out.concurrency = input.concurrency;
   if (input.mfu !== undefined) out.mfu = input.mfu;
+  if (input.packing) out.packing = { ...input.packing };
 
   if (input.hardware) {
     if (!HARDWARE.some((h) => h.id === input.hardware)) {

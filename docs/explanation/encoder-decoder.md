@@ -132,7 +132,7 @@ table in the PyTorch version the runtime uses was the first thing phase 3
 checked: they do, through `flex_attention` as through the fallback. The
 same mechanism is what document masking wants, with a runtime input rather than
 a learned table: `doc(q) == doc(kv)`, a mask for packed pretraining, left for
-M12.
+M12 and [proposed there](packed-sequences.md).
 
 ### An explicit scale on `sdpa`
 

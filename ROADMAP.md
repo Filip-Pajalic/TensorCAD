@@ -4,11 +4,11 @@ Goal: a node-based CAD tool for designing neural network architectures at the pr
 
 Effort estimates assume one developer working with an AI coding assistant, part-time. They are ranges, not commitments.
 
-## Status as of 2026-09-24
+## Status as of 2026-09-25
 
 | Milestone | State |
 |---|---|
-| M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 26 presets, exact parameter match on 23 of them. |
+| M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 28 presets, exact parameter match on 25 of them. |
 | M1 Check (design rules, full analysis) | **Done.** 20 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
 | M2 Manufacture (PyTorch codegen, verification) | **Done.** Every generated model's parameter count matches PyTorch exactly, and the FLOPs estimate matches a profiler once the causal mask is accounted for. |
 | M3 Agent (MCP server, CLI) | **Done.** 19 MCP tools over stdio, 9 CLI commands, and the live editor bridge: an agent's edits land on the canvas as it makes them and the human's come back. |
@@ -20,8 +20,9 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 | M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
-| M10 Attention variants | **Done.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Phase 3 is two thirds done: BLOOM-7b1's ALiBi is a score expression and gpt-oss-20b brings attention sinks, both reproducing their published parameter counts exactly and both held against Hugging Face's own construction of what they add. Differential attention is two fused attentions and a combine, held against Microsoft's reference, and attention can be written out on purpose, with talking heads, at a cost a rule states. T5's relative bias came last, through M11's second sequence. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
+| M10 Attention variants | **Done.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. BLOOM-7b1's ALiBi is a score expression and gpt-oss-20b brings attention sinks, both reproducing their published parameter counts exactly and both held against Hugging Face's own construction of what they add. Differential attention is two fused attentions and a combine, held against Microsoft's reference, and attention can be written out on purpose, with talking heads, at a cost a rule states. T5's relative bias came last, through M11's second sequence. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
 | M11 Encoder–decoder | **Done.** A second sequence, and cross-attention to it, so T5 can be drawn and M10 can close: a source length `S` beside `T`, each block counted at the tokens of its own stream, cross-attention, a repeat that hands every layer the same tensor, and expressions that read a tensor — T5's shared relative-bias table, which is Hugging Face's to the bit and learns through FlexAttention. `t5-small` and `flan-t5-base` reproduce their published counts exactly and compute what Hugging Face's T5 computes, weight for weight. Every decoder-only number is held unchanged. [docs/explanation/encoder-decoder.md](docs/explanation/encoder-decoder.md). |
+| M12 Packed sequences | **Proposed.** Pretraining packs documents into one sequence and masks attention between them, which cuts Llama-3-8B's attention at 8k by eight times, and the engine assumes a sequence is one document. A documents input a mask can read, packing as a condition of training with a length distribution rather than a length, and a block mask built per batch. [docs/explanation/packed-sequences.md](docs/explanation/packed-sequences.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -31,7 +32,7 @@ settings, the full analysis and the design-rule check at three operating points,
 and the generated PyTorch byte for byte. `go run ./cmd/golden` rewrites those
 files, deliberately and never as part of a test.
 
-26 presets, 23 matching their published parameter count exactly and 3 within a
+28 presets, 25 matching their published parameter count exactly and 3 within a
 stated tolerance, and every one of them confirmed against PyTorch 2.11 by
 instantiating the generated model. Not all are language models:
 `ijepa-vit-h14` is a vision transformer and `alexnet` a convolutional
@@ -478,13 +479,45 @@ matches Hugging Face's construction of it, a profiler agrees with a small
 encoder–decoder's FLOPs, and every decoder-only golden is unchanged. M10 then
 closes.
 
+### M12 — Packed sequences · Proposed
+
+Pretraining concatenates documents to fill the sequence, and Llama 3 masks
+attention between them. The engine assumes a training sequence is one
+document: a mask reads positions but never a tensor, training and serving are
+measured at the same attention, and the generated attention keeps its block
+masks as though they never changed. The proposal,
+[Packed sequences](docs/explanation/packed-sequences.md), makes packing a
+condition of training:
+
+1. **Documents, measured** — a `documents` role on `input`, a mask that reads
+   it (`doc(b, q) == doc(b, kv)`), and packing in the operating point as
+   documents of mean length `μ` and spread `c`. The mask is still counted by
+   evaluating it, with a packing drawn for each sampled row. Packing moves the
+   training figures and not the serving ones. With packing off, every golden
+   is unchanged.
+2. **Generated and verified** — the mask as a factory over the documents, one
+   block mask per forward pass rather than one cached per step, and a test that
+   one document's tokens move no other document's outputs. FlexAttention's own
+   block count is held against the engine's.
+3. **Positions that restart** at each document, as Hugging Face's flattening
+   collator does.
+4. **The editor and the rules** — the packing control, a sampled mask preview,
+   and a rule for documents short enough that the kernel's blocks cost much
+   more than the share.
+
+**Done when** Llama-3-8B with a document mask, at 8,192 tokens and 1,024-token
+documents, is counted at exactly 512 keys a query (attention falls from 12.5%
+of the forward pass to 1.8%), gamma-distributed packings agree with the
+size-biased mean, a generated model keeps its documents apart, FlexAttention's
+block count matches the engine's, and with packing off no golden moves.
+
 ## Sequencing and dependencies
 
 ```
 M0 Sketch ──► M1 Check ──► M2 Manufacture ──► M3 Agent ──► M4 Test bench
                                │                 │
                                └──► M5 Advanced parts (starts after M2, runs alongside M3/M4)
-                                                                 └──► M6 Ship ──► M7 Legibility ──► M8 Real values ──► M9 Your own values ──► M10 Attention variants ──► M11 Encoder–decoder
+                                                                 └──► M6 Ship ──► M7 Legibility ──► M8 Real values ──► M9 Your own values ──► M10 Attention variants ──► M11 Encoder–decoder ──► M12 Packed sequences
 ```
 
 M3 is deliberately short because the core is pure; the MCP server is a thin adapter. M5 is where most of the long-tail work lives and is driven by which architectures you want to learn next.

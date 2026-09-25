@@ -335,6 +335,49 @@ def input_spec_from_design(
     return dims, dtype, pattern.split()
 
 
+def input_specs_from_design(
+    design: dict[str, Any] | None, batch: int, seq: int, source: int | None = None
+) -> list[tuple[str, list[int], str, list[str]]] | None:
+    """Every input the model takes, in the order the design lists them.
+
+    A language model has one, token ids. An encoder-decoder has two, the
+    source and the target, and the generated model takes each by its input
+    block's name. Each comes back with its name, its dims, its dtype and its
+    atom names — ``S`` being the source length, ``source`` here, which defaults
+    to the design's own ``S`` and then to ``seq``.
+
+    Returns None when there is at most one input, so a design with one goes on
+    through exactly the path it always did.
+    """
+    if not design:
+        return None
+    graph = design.get("graph") or {}
+    inputs = [
+        n for n in graph.get("nodes") or [] if isinstance(n, dict) and n.get("type") == "input"
+    ]
+    if len(inputs) < 2:
+        return None
+    values = dict(resolve_symbols(design))
+    values["B"] = batch
+    values["T"] = seq
+    values["S"] = source if source is not None else int(values.get("S") or seq)
+    specs: list[tuple[str, list[int], str, list[str]]] = []
+    for node in inputs:
+        params = node.get("params") or {}
+        pattern = str(params.get("shape") or "B T").split()
+        dims: list[int] = []
+        for atom in pattern:
+            if atom in values:
+                dims.append(int(values[atom]))
+                continue
+            try:
+                dims.append(int(float(atom)))
+            except ValueError:
+                return None
+        specs.append((str(node.get("id")), dims, str(params.get("dtype") or "int64"), pattern))
+    return specs
+
+
 def _find_node(graph: Any, type_name: str) -> dict[str, Any] | None:
     """First node of a given type, anywhere in the nesting."""
     if not isinstance(graph, dict):

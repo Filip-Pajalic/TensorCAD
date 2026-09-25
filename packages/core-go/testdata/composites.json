@@ -4417,6 +4417,340 @@
         ]
       ],
       "constraints": []
+    },
+    {
+      "type": "cross_attention",
+      "params": {
+        "d_model": "D",
+        "head_dim": "dh",
+        "heads": "H",
+        "kv_heads": "Hkv"
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "memory": "B S D",
+              "x": "B T D"
+            }
+          }
+        },
+        {
+          "id": "q_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "D",
+            "out_features": "H*dh"
+          }
+        },
+        {
+          "id": "k_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "D",
+            "out_features": "Hkv*dh"
+          }
+        },
+        {
+          "id": "v_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "D",
+            "out_features": "Hkv*dh"
+          }
+        },
+        {
+          "id": "q_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (H dh)",
+            "to": "B H T dh"
+          }
+        },
+        {
+          "id": "k_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (Hkv dh)",
+            "to": "B Hkv T dh"
+          }
+        },
+        {
+          "id": "v_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (Hkv dh)",
+            "to": "B Hkv T dh"
+          }
+        },
+        {
+          "id": "attn",
+          "type": "sdpa",
+          "params": {
+            "causal": false,
+            "cross": true,
+            "flash": true,
+            "head_dim": "dh",
+            "heads": "H",
+            "kv_heads": "Hkv"
+          }
+        },
+        {
+          "id": "o_merge",
+          "type": "rearrange",
+          "params": {
+            "from": "B H T dh",
+            "to": "B T (H dh)"
+          }
+        },
+        {
+          "id": "o_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "H*dh",
+            "out_features": "D"
+          }
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "B T D"
+            }
+          }
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "q_proj:x"
+        ],
+        [
+          "_in:memory",
+          "k_proj:x"
+        ],
+        [
+          "_in:memory",
+          "v_proj:x"
+        ],
+        [
+          "q_proj:y",
+          "q_heads:x"
+        ],
+        [
+          "k_proj:y",
+          "k_heads:x"
+        ],
+        [
+          "v_proj:y",
+          "v_heads:x"
+        ],
+        [
+          "q_heads:y",
+          "attn:q"
+        ],
+        [
+          "k_heads:y",
+          "attn:k"
+        ],
+        [
+          "v_heads:y",
+          "attn:v"
+        ],
+        [
+          "attn:y",
+          "o_merge:x"
+        ],
+        [
+          "o_merge:y",
+          "o_proj:x"
+        ],
+        [
+          "o_proj:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
+    },
+    {
+      "type": "transformer_block",
+      "params": {
+        "cross_attention": true,
+        "d_model": "D",
+        "ffn_hidden": "F",
+        "head_dim": "dh",
+        "heads": "H",
+        "kv_heads": "Hkv"
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "memory": "B S D",
+              "x": "... D"
+            }
+          }
+        },
+        {
+          "id": "norm1",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "D"
+          }
+        },
+        {
+          "id": "attn",
+          "type": "gqa_attention",
+          "params": {
+            "bias": false,
+            "causal": true,
+            "d_model": "D",
+            "head_dim": "dh",
+            "heads": "H",
+            "kv_heads": "Hkv",
+            "logit_softcap": "0",
+            "o_bias": null,
+            "output_gate": false,
+            "qk_norm": false,
+            "rope": null,
+            "value_embeddings": false,
+            "window": "0"
+          }
+        },
+        {
+          "id": "resid1",
+          "type": "add",
+          "params": {
+            "dim": "D"
+          }
+        },
+        {
+          "id": "norm2",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "D"
+          }
+        },
+        {
+          "id": "mlp",
+          "type": "gated_mlp",
+          "params": {
+            "act": "silu",
+            "bias": false,
+            "d_model": "D",
+            "hidden": "F"
+          }
+        },
+        {
+          "id": "resid2",
+          "type": "add",
+          "params": {
+            "dim": "D"
+          }
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          }
+        },
+        {
+          "id": "norm_cross",
+          "type": "rmsnorm",
+          "params": {
+            "dim": "D"
+          }
+        },
+        {
+          "id": "cross",
+          "type": "cross_attention",
+          "params": {
+            "bias": false,
+            "d_model": "D",
+            "head_dim": "dh",
+            "heads": "H",
+            "kv_heads": "Hkv"
+          }
+        },
+        {
+          "id": "resid_cross",
+          "type": "add",
+          "params": {
+            "dim": "D"
+          }
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "norm1:x"
+        ],
+        [
+          "norm1:y",
+          "attn:x"
+        ],
+        [
+          "_in:x",
+          "resid1:b"
+        ],
+        [
+          "resid_cross:y",
+          "norm2:x"
+        ],
+        [
+          "norm2:y",
+          "mlp:x"
+        ],
+        [
+          "resid_cross:y",
+          "resid2:b"
+        ],
+        [
+          "resid2:y",
+          "_out:y"
+        ],
+        [
+          "resid1:y",
+          "norm_cross:x"
+        ],
+        [
+          "norm_cross:y",
+          "cross:x"
+        ],
+        [
+          "_in:memory",
+          "cross:memory"
+        ],
+        [
+          "cross:y",
+          "resid_cross:a"
+        ],
+        [
+          "resid1:y",
+          "resid_cross:b"
+        ],
+        [
+          "attn:y",
+          "resid1:a"
+        ],
+        [
+          "mlp:y",
+          "resid2:a"
+        ]
+      ],
+      "constraints": []
     }
   ]
 }

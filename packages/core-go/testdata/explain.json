@@ -303,6 +303,12 @@
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
             ],
             [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
               "talking_heads",
               null,
               null,
@@ -1172,6 +1178,12 @@
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
             ],
             [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
               "talking_heads",
               null,
               null,
@@ -2033,6 +2045,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -2898,6 +2916,12 @@
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
             ],
             [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
               "talking_heads",
               null,
               null,
@@ -3759,6 +3783,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -4630,6 +4660,12 @@
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
             ],
             [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
               "talking_heads",
               null,
               null,
@@ -5491,6 +5527,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -6361,6 +6403,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -7254,6 +7302,12 @@
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
             ],
             [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
               "talking_heads",
               null,
               null,
@@ -8143,6 +8197,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -9036,6 +9096,12 @@
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
             ],
             [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
               "talking_heads",
               null,
               null,
@@ -9927,6 +9993,12 @@
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
             ],
             [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
               "talking_heads",
               null,
               null,
@@ -10816,6 +10888,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -11711,6 +11789,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -12633,6 +12717,12 @@
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
             ],
             [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
               "talking_heads",
               null,
               null,
@@ -12952,6 +13042,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -13714,6 +13810,12 @@
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
             ],
             [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
               "talking_heads",
               null,
               null,
@@ -14038,6 +14140,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -14366,6 +14474,12 @@
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
             ],
             [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
               "talking_heads",
               null,
               null,
@@ -14692,6 +14806,12 @@
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
             ],
             [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
               "talking_heads",
               null,
               null,
@@ -15016,6 +15136,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -15346,6 +15472,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -15846,6 +15978,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -16706,6 +16844,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -17576,6 +17720,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -18455,6 +18605,12 @@
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
             ],
             [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
               "talking_heads",
               null,
               null,
@@ -18781,6 +18937,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -19652,6 +19814,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -20785,6 +20953,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",
@@ -23023,6 +23197,12 @@
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
             ],
             [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
+            ],
+            [
               "talking_heads",
               null,
               null,
@@ -23406,6 +23586,12 @@
               null,
               null,
               "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "cross_attention",
+              null,
+              null,
+              "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."
             ],
             [
               "talking_heads",

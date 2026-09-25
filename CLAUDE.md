@@ -238,7 +238,10 @@ Two cross-checks worth knowing:
    is why clicking a wire in the editor can answer a question clicking a block cannot. A tensor's
    size per token is taken with `T` at one and multiplied by the tokens, except where `T`
    appears twice: a written-out score matrix, `B heads T T`, is `T` times larger per token, and
-   `sequenceExcess` in `analysis/memory.go` is what says so.
+   `tensorTotal` in `analysis/streams.go` is what says so. A stack's input its layer does not
+   give back — a decoder's view of the encoder — is one tensor every copy reads, charged once
+   to what feeds the stack; `broadcasts.through` follows it up through the boundaries it was
+   handed across, because producers are recorded one hop at a time.
 6. **`B` and `T` are reserved runtime symbols**, and `S` is too for a design that has a second sequence (an encoder's source): it has to be declared, and only as a runtime symbol. They stay indeterminate through shape checking, so a mismatch is a real polynomial difference. In a block's *declaration* `T` means that block's sequence: `alongSource` in `infer/infer.go` binds it to `S` for a block that everything arrives at `S` long, which is how an encoder is built from the same blocks as a decoder. The analysis (`analysis/streams.go`) measures each block at its own stream's length and spreads a source's per-token figures over the target's tokens, so per token means per target token.
 7. **A configuration is a view of the design; the operating point is a view of the measurement.**
    `doc.configurations` are named sets of symbol values and `doc.active` says which is in

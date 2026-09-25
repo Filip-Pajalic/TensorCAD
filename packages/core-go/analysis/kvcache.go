@@ -36,12 +36,13 @@ func CountKvCache(flat *FlatResult, ctx catalog.AnalysisCtx, streams *Streams) *
 		own := ctx
 		own.T = streams.Length(node.Path)
 		s := node.Def.StateBytes(node.Resolved, own)
-		// A source is read in full before anything is generated, so what a
-		// block along it holds is fixed for the request: its per-token state
-		// times the source's length, not a cost that grows with the output.
+		// A source is read in full, once, before anything is generated, and
+		// what a block along it computed is not needed again: an encoder's own
+		// keys and values are discarded. What generation keeps of the source is
+		// cross-attention's keys and values, which the decoder's blocks count,
+		// once per request.
 		if streams.OnSource(node.Path) {
-			s.PerSequence += s.PerToken * streams.Source
-			s.PerToken, s.PerTokenDecompressed = 0, 0
+			continue
 		}
 		perToken := s.PerToken * node.Multiplier
 		perSeq := s.PerSequence * node.Multiplier

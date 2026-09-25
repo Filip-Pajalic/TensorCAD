@@ -502,6 +502,9 @@ type ctx struct {
 	usedNames  map[string]bool
 	needsRope  bool
 	needsFused bool
+	// inputArgs names the model's arguments when it has more than one input:
+	// each input node's own name.
+	inputArgs map[string]string
 	// needsExpression is the FlexAttention helper, and attnFuncs are the
 	// mask and score functions it is handed, one per distinct expression.
 	needsExpression bool
@@ -688,7 +691,14 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 
 		switch node.Type {
 		case "input":
-			set("x", "ids")
+			// A model with one input takes it as ids, as it always has; one
+			// with several — an encoder-decoder's source and target — takes
+			// each by its node's name.
+			if name, ok := c.inputArgs[node.ID]; ok && prefix == "" {
+				set("x", name)
+			} else {
+				set("x", "ids")
+			}
 
 		case "output":
 			// Keyed by the node, not by the port: a design may have several
@@ -1040,6 +1050,11 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 			if vd := r.Num("v_head_dim"); vd != 0 && vd != r.Num("head_dim") {
 				scale = ", scale=" + jsToPrecision(1/math.Sqrt(r.Num("head_dim")), 12)
 			}
+			// A design that says what the scale is — T5, whose attention is
+			// unscaled — is taken at its word.
+			if s, ok := p["scale"].(float64); ok {
+				scale = ", scale=" + pyNum(s)
+			}
 			w := r.Num("window")
 			cap := r.Num("logit_softcap")
 			a := catalog.AttentionOf(r)
@@ -1108,16 +1123,27 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 				inner := emitClassForGraph(node.Graph, path, "Layer", c, nil)
 				out.init = append(out.init, fmt.Sprintf("self.%s = nn.ModuleList([%s() for _ in range(%s)])",
 					attr, inner.name, pyValue(p["count"])))
-				seed := make([]string, len(inner.inputs))
-				loopVars := make([]string, len(inner.inputs))
-				for i, port := range inner.inputs {
-					seed[i] = inputVar(node.ID, port)
-					loopVars[i] = outName(port)
+				// An input the layer gives back is carried from copy to copy;
+				// one it does not — a decoder's view of the encoder — is handed
+				// to every copy as it is.
+				returned := map[string]bool{}
+				for _, port := range inner.outputs {
+					returned[port] = true
+				}
+				var seed, loopVars, args []string
+				for _, port := range inner.inputs {
+					if !returned[port] {
+						args = append(args, inputVar(node.ID, port))
+						continue
+					}
+					seed = append(seed, inputVar(node.ID, port))
+					loopVars = append(loopVars, outName(port))
+					args = append(args, outName(port))
 				}
 				out.forward = append(out.forward,
 					strings.Join(loopVars, ", ")+" = "+strings.Join(seed, ", "),
 					"for layer in self."+attr+":",
-					"    "+strings.Join(loopVars, ", ")+" = layer("+strings.Join(loopVars, ", ")+")")
+					"    "+strings.Join(loopVars, ", ")+" = layer("+strings.Join(args, ", ")+")")
 				for _, port := range inner.outputs {
 					set(port, outName(port))
 				}
@@ -1409,6 +1435,22 @@ func GenerateTorch(doc *ir.Doc, options Options) *Generated {
 		modelName = c.className(base)
 	}
 
+	var inputNodes []string
+	for _, n := range doc.Graph.Nodes {
+		if n.Type == "input" {
+			inputNodes = append(inputNodes, n.ID)
+		}
+	}
+	modelArgs := "ids"
+	if len(inputNodes) > 1 {
+		c.inputArgs = map[string]string{}
+		names := make([]string, len(inputNodes))
+		for i, id := range inputNodes {
+			names[i] = pyName(id)
+			c.inputArgs[id] = names[i]
+		}
+		modelArgs = strings.Join(names, ", ")
+	}
 	body := emitGraph(&doc.Graph, "", map[string]string{}, c)
 
 	// Weight tying, which the graph expresses as a flag rather than an edge.
@@ -1547,7 +1589,7 @@ func GenerateTorch(doc *ir.Doc, options Options) *Generated {
 			"")
 	}
 
-	modelLines = append(modelLines, "    def forward(self, ids):")
+	modelLines = append(modelLines, "    def forward(self, "+modelArgs+"):")
 	for _, l := range body.forward {
 		modelLines = append(modelLines, "        "+l)
 	}

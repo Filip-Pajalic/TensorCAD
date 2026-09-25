@@ -853,17 +853,29 @@ var Primitives = []*BlockDef{
 			{"shared_values", ParamSpec{Type: ParamBool, Default: nil, HasDefault: true,
 				Doc: "The values are another attention's, which caches them: this one caches its keys alone. " +
 					"Differential attention's second map reads the first one's values. Unset is no."}},
+			{"cross", ParamSpec{Type: ParamBool, Default: nil, HasDefault: true,
+				Doc: "Attend from this sequence to the source: queries T long, keys and values S long, every " +
+					"one of them seen. An encoder-decoder's cross-attention. Unset is self-attention."}},
+			{"scale", ParamSpec{Type: ParamNum, Default: nil, HasDefault: true,
+				Doc: "What the scores are multiplied by before the softmax; unset is 1/sqrt(head_dim). T5 uses 1, " +
+					"having folded the scale into its initialisation."}},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			v := "head_dim"
 			if r.Num("v_head_dim") != 0 {
 				v = "v_head_dim"
 			}
+			// Cross-attention's keys and values are the source's, however long
+			// the queries are.
+			keys := "T"
+			if r.Bool("cross") {
+				keys = "S"
+			}
 			return Ports{
 				In: map[string]PortSpec{
 					"q": {Shape: "B heads T head_dim", Dtype: "real", Anchor: "flow"},
-					"k": {Shape: "B kv_heads T head_dim", Dtype: "real", Anchor: "flow"},
-					"v": {Shape: "B kv_heads T " + v, Dtype: "real", Anchor: "flow"},
+					"k": {Shape: "B kv_heads " + keys + " head_dim", Dtype: "real", Anchor: "flow"},
+					"v": {Shape: "B kv_heads " + keys + " " + v, Dtype: "real", Anchor: "flow"},
 				},
 				Out: map[string]PortSpec{"y": Port("B heads T " + v)},
 			}
@@ -883,6 +895,11 @@ var Primitives = []*BlockDef{
 			// A profiler counts the operator as if nothing were masked, since
 			// its shape does not depend on the mask.
 			keys := a.KeysPerQuery(c.T, c.B)
+			seen := c.T
+			if a.Cross {
+				// Every source position, for every query: nothing is masked.
+				keys, seen = c.S, c.S
+			}
 			// The scores are head_dim wide and the weighted sum of values is
 			// v_head_dim wide, a multiply-accumulate each. Counting both at
 			// head_dim overcounted latent attention, whose values are
@@ -892,7 +909,7 @@ var Primitives = []*BlockDef{
 				vDim = r.Num("head_dim")
 			}
 			perKey := 2 * r.Num("heads") * (r.Num("head_dim") + vDim)
-			f := FlopsPerToken{FwdSeq: perKey * keys, FwdSeqUnmasked: perKey * c.T}
+			f := FlopsPerToken{FwdSeq: perKey * keys, FwdSeqUnmasked: perKey * seen}
 			if s := a.Score(); s != nil {
 				// On the scores the kernel computes: a fused one changes them
 				// inside the blocks it does not skip, so the mask counts here
@@ -914,6 +931,9 @@ var Primitives = []*BlockDef{
 			tEff := c.T
 			if w := r.Num("window"); w > 0 {
 				tEff = fmin(c.T, w)
+			}
+			if r.Bool("cross") {
+				tEff = c.S
 			}
 			vDim := r.Num("v_head_dim")
 			if vDim == 0 {
@@ -941,6 +961,11 @@ var Primitives = []*BlockDef{
 			perTokenFull := r.Num("kv_heads") * (r.Num("head_dim") + vDim) * c.Bytes
 			if r.Bool("shared_values") {
 				perTokenFull = r.Num("kv_heads") * r.Num("head_dim") * c.Bytes
+			}
+			// The source's keys and values, computed once from the encoder
+			// for the whole request.
+			if r.Bool("cross") {
+				return StateBytes{PerSequence: perTokenFull * c.S}
 			}
 			if w := r.Num("window"); w > 0 {
 				return StateBytes{PerSequence: perTokenFull * w}

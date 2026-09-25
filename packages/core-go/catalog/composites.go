@@ -166,7 +166,7 @@ func scalingOf(rope map[string]any) any {
 }
 
 // Composites is every block that is an arrangement rather than a formula.
-var Composites = []*BlockDef{gqaAttention, diffAttention, eagerAttention, gatedMlp, denseMlp, mlaAttention, moeLayer, mambaBlock, mamba2Block, transformerBlock, mtpHeadComposite, gatedDeltanetBlock}
+var Composites = []*BlockDef{gqaAttention, diffAttention, eagerAttention, crossAttention, gatedMlp, denseMlp, mlaAttention, moeLayer, mambaBlock, mamba2Block, transformerBlock, mtpHeadComposite, gatedDeltanetBlock}
 
 // Containers carry the multipliers that make sparsity and stacking work.
 var Containers = []*BlockDef{moeExperts, repeatContainer}
@@ -478,6 +478,98 @@ func expandEager(raw map[string]any, r *Resolved) Expansion {
 		edges = append(edges, edge("scores:y", "softmax:x"), edge("softmax:y", "values:p"))
 	}
 	edges = append(edges, edge("values:y", "_out:y"))
+	return Expansion{Nodes: nodes, Edges: edges}
+}
+
+// crossAttention is an encoder-decoder's cross-attention: queries from the
+// target stream, keys and values from the source, every source position seen.
+// It is grouped-query attention whose keys and values are projected from a
+// second input, the encoder's output, which is the only thing that makes it
+// different.
+var crossAttention = &BlockDef{
+	Kind: "composite", Type: "cross_attention", Category: "attention",
+	Params: ParamList{
+		{"d_model", pInt(1, "Width of the target stream the queries come from")},
+		{"memory_dim", pIntD(0, 0, "Width of the source's memory the keys and values come from; 0 means d_model")},
+		{"heads", pInt(1, "Query heads")},
+		{"kv_heads", pInt(1, "Key/value heads")},
+		{"head_dim", pInt(1, "Width of one head")},
+		{"bias", pBool(false, "Bias on the projections")},
+		{"flash", pBool(true, "Assume a memory-efficient kernel")},
+		{"scale", ParamSpec{Type: ParamNum, Default: nil, HasDefault: true,
+			Doc: "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1"}},
+	},
+	PortsFn: func(r *Resolved) Ports {
+		memory := "d_model"
+		if r.Num("memory_dim") != 0 {
+			memory = "memory_dim"
+		}
+		return Ports{
+			In: map[string]PortSpec{
+				"x": Port("B T d_model"),
+				"memory": {Shape: "B S " + memory, Anchor: "side",
+					Doc: "The encoder's output, which every query attends to all of"},
+			},
+			Out: map[string]PortSpec{"y": Port("B T d_model")},
+		}
+	},
+	Docs: BlockDocs{
+		Name: "cross-attention",
+		Summary: "Attention from the target to the source: queries from the decoder's stream, keys and " +
+			"values from the encoder's output, every source position seen. Its cache is computed once " +
+			"per request, from the encoder.",
+		Formula: "FLOPs/target token = 2*S*heads*(head_dim + head_dim); cache = kv_heads*2*head_dim*bytes*S per request",
+		Refs:    []string{"https://arxiv.org/abs/1706.03762"},
+	},
+}
+
+func expandCross(raw map[string]any, r *Resolved) Expansion {
+	D := Ex(raw["d_model"], "0")
+	M := D
+	if r.Num("memory_dim") != 0 {
+		M = Ex(raw["memory_dim"], "0")
+	}
+	H := Ex(raw["heads"], "0")
+	KV := Ex(raw["kv_heads"], "0")
+	dh := Ex(raw["head_dim"], "0")
+	bias := r.Bool("bias")
+	inNode, outNode := boundary(
+		map[string]any{"x": "B T " + D, "memory": "B S " + M},
+		map[string]any{"y": "B T " + D},
+	)
+	attn := map[string]any{
+		"heads": H, "kv_heads": KV, "head_dim": dh,
+		"causal": false, "cross": true,
+		"flash": !isFalse(r.P["flash"]),
+	}
+	if _, set := r.P["scale"].(float64); set {
+		attn["scale"] = Ex(raw["scale"], "1")
+	}
+	nodes := []ir.NodeDef{
+		inNode,
+		node("q_proj", "linear", map[string]any{"in_features": D, "out_features": H + "*" + dh, "bias": bias}),
+		node("k_proj", "linear", map[string]any{"in_features": M, "out_features": KV + "*" + dh, "bias": bias}),
+		node("v_proj", "linear", map[string]any{"in_features": M, "out_features": KV + "*" + dh, "bias": bias}),
+		// Each rearrange is declared over T, and the key and value ones run
+		// along the source, where T is S.
+		node("q_heads", "rearrange", map[string]any{
+			"from": fmt.Sprintf("B T (%s %s)", H, dh), "to": fmt.Sprintf("B %s T %s", H, dh)}),
+		node("k_heads", "rearrange", map[string]any{
+			"from": fmt.Sprintf("B T (%s %s)", KV, dh), "to": fmt.Sprintf("B %s T %s", KV, dh)}),
+		node("v_heads", "rearrange", map[string]any{
+			"from": fmt.Sprintf("B T (%s %s)", KV, dh), "to": fmt.Sprintf("B %s T %s", KV, dh)}),
+		node("attn", "sdpa", attn),
+		node("o_merge", "rearrange", map[string]any{
+			"from": fmt.Sprintf("B %s T %s", H, dh), "to": fmt.Sprintf("B T (%s %s)", H, dh)}),
+		node("o_proj", "linear", map[string]any{"in_features": H + "*" + dh, "out_features": D, "bias": bias}),
+		outNode,
+	}
+	edges := []ir.Edge{
+		edge("_in:x", "q_proj:x"), edge("_in:memory", "k_proj:x"), edge("_in:memory", "v_proj:x"),
+		edge("q_proj:y", "q_heads:x"), edge("k_proj:y", "k_heads:x"), edge("v_proj:y", "v_heads:x"),
+		edge("q_heads:y", "attn:q"), edge("k_heads:y", "attn:k"), edge("v_heads:y", "attn:v"),
+		edge("attn:y", "o_merge:x"), edge("o_merge:y", "o_proj:x"), edge("o_proj:y", "_out:y"),
+	}
 	return Expansion{Nodes: nodes, Edges: edges}
 }
 
@@ -1195,6 +1287,9 @@ var transformerBlock = &BlockDef{
 		{"score", when(grouped(scoreSpec(), "Attention"), "attention", "gqa")},
 		{"sinks", when(grouped(sinksSpec(), "Attention"), "attention", "gqa")},
 		{"written_out", when(grouped(writtenOutSpec(), "Attention"), "attention", "gqa")},
+		{"cross_attention", grouped(ParamSpec{Type: ParamBool, Default: nil, HasDefault: true,
+			Doc: "Attend to an encoder's output after attending to this sequence: a decoder layer of an " +
+				"encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none."}, "Attention")},
 		{"talking_heads", when(grouped(talkingHeadsSpec(), "Attention"), "attention", "gqa")},
 		{"lambda_init", when(grouped(ParamSpec{Type: ParamNum, Default: nil, HasDefault: true,
 			Doc: "Where differential attention's lambda starts; unset is 0.8. The paper schedules it by " +
@@ -1213,6 +1308,10 @@ var transformerBlock = &BlockDef{
 		if r.Bool("value_embeddings") && r.Str("attention") != "mla" {
 			in["ve"] = PortSpec{Shape: "... (kv_heads head_dim)", Anchor: "side",
 				Doc: "A second embedding of the same tokens, mixed into the values"}
+		}
+		if r.Bool("cross_attention") {
+			in["memory"] = PortSpec{Shape: "B S d_model", Anchor: "side",
+				Doc: "The encoder's output, which the cross-attention reads every position of"}
 		}
 		return Ports{In: in, Out: map[string]PortSpec{"y": Port("... d_model")}}
 	},
@@ -1237,15 +1336,16 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 	// which is the only thing in here that reads the tokens twice.
 	ve := r.Bool("value_embeddings") && r.Str("attention") != "mla"
 	inNode, outNode := streamBoundary(D)
-	if ve {
-		inNode, outNode = boundary(
-			map[string]any{
-				"x": "... " + D,
-				"ve": fmt.Sprintf("B T (%s %s)",
-					Ex(raw["kv_heads"], "0"), Ex(raw["head_dim"], "0")),
-			},
-			map[string]any{"y": "... " + D},
-		)
+	cross := r.Bool("cross_attention")
+	if ve || cross {
+		ports := map[string]any{"x": "... " + D}
+		if ve {
+			ports["ve"] = fmt.Sprintf("B T (%s %s)", Ex(raw["kv_heads"], "0"), Ex(raw["head_dim"], "0"))
+		}
+		if cross {
+			ports["memory"] = "B S " + D
+		}
+		inNode, outNode = boundary(ports, map[string]any{"y": "... " + D})
 	}
 
 	var mlpNode ir.NodeDef
@@ -1331,6 +1431,33 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 	}
 	if ve {
 		edges = append(edges, edge("_in:ve", "attn:ve"))
+	}
+
+	// A decoder layer attends to the encoder's output between its own
+	// attention and its feed-forward, behind a norm of its own.
+	if cross {
+		crossParams := map[string]any{
+			"d_model":  D,
+			"heads":    Ex(raw["heads"], "0"),
+			"kv_heads": Ex(raw["kv_heads"], "0"),
+			"head_dim": Ex(raw["head_dim"], "0"),
+			"bias":     r.Bool("attn_bias"),
+		}
+		nodes = append(nodes,
+			node("norm_cross", normType, normParams()),
+			node("cross", "cross_attention", crossParams),
+			node("resid_cross", "add", map[string]any{"dim": D}))
+		for i, e := range edges {
+			switch {
+			case e.From() == "resid1:y" && e.To() == "norm2:x":
+				edges[i] = edge("resid_cross:y", "norm2:x")
+			case e.From() == "resid1:y" && e.To() == "resid2:b":
+				edges[i] = edge("resid_cross:y", "resid2:b")
+			}
+		}
+		edges = append(edges,
+			edge("resid1:y", "norm_cross:x"), edge("norm_cross:y", "cross:x"), edge("_in:memory", "cross:memory"),
+			edge("cross:y", "resid_cross:a"), edge("resid1:y", "resid_cross:b"))
 	}
 
 	if r.Bool("post_norm") {
@@ -1519,6 +1646,8 @@ func Expand(def *BlockDef, raw map[string]any, r *Resolved) (Expansion, bool) {
 		return expandDiff(full, r), true
 	case "eager_attention":
 		return expandEager(full, r), true
+	case "cross_attention":
+		return expandCross(full, r), true
 	case "gated_mlp":
 		return expandGatedMlp(full, r), true
 	case "dense_mlp":

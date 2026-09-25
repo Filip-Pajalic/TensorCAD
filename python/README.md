@@ -40,7 +40,7 @@ deterministic synthetic corpus, so `smoke-train` always has something to train o
 ## `verify`
 
 ```bash
-tensorcad-runtime verify out/gpt2-small/model.py [--batch 2] [--seq 128] [--class-name Auto]
+tensorcad-runtime verify out/gpt2-small/model.py [--batch 2] [--seq 128] [--source n] [--class-name Auto]
 ```
 
 Imports the generated file, instantiates the model on `torch.device("meta")` and

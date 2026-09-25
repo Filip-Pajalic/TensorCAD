@@ -183,6 +183,10 @@ var Primitives = []BlockCase{
 	{"attn_softmax", map[string]any{"heads": 32.0}},
 	{"head_mix", map[string]any{"heads": 32.0}},
 	{"attn_values", map[string]any{"heads": 32.0, "kv_heads": 8.0, "v_head_dim": 128.0}},
+	// Cross-attention: keys and values the source's, every one seen, and an
+	// explicit scale, which is what T5 has.
+	{"sdpa", map[string]any{"heads": 12.0, "kv_heads": 12.0, "head_dim": 64.0, "causal": false,
+		"cross": true, "scale": 1.0}},
 }
 
 // Composites are pinned as the subgraph they stand for, node for node.
@@ -243,6 +247,9 @@ var Composites = []BlockCase{
 	{"eager_attention", map[string]any{"heads": "H", "kv_heads": "Hkv", "head_dim": "dh", "talking_heads": true}},
 	{"gqa_attention", map[string]any{"d_model": "D", "heads": "H", "kv_heads": "Hkv", "head_dim": "dh",
 		"talking_heads": true}},
+	{"cross_attention", map[string]any{"d_model": "D", "heads": "H", "kv_heads": "Hkv", "head_dim": "dh"}},
+	{"transformer_block", map[string]any{"d_model": "D", "heads": "H", "kv_heads": "Hkv",
+		"head_dim": "dh", "ffn_hidden": "F", "cross_attention": true}},
 }
 
 func f(v float64) *float64 { return &v }

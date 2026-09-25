@@ -148,6 +148,12 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 	// stream's.
 	tokensOf := func(path string) float64 { return ctx.B * streams.Length(path) }
 
+	// A stack's input that its layers do not give back is one tensor every
+	// copy reads — a decoder's view of the encoder — not one per copy. Inside
+	// the stack its producer is the stack's own boundary; it is charged
+	// instead to what feeds the stack, at the stack's own count of one.
+	broadcast := broadcastInputs(flat, opts.Expanded)
+
 	// --- activations --------------------------------------------------------
 	// Memory is attributed to tensors rather than to blocks. A tensor several
 	// blocks read (the residual stream feeding the query, key and value
@@ -195,6 +201,11 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 			if !ok {
 				producer = consumerKey
 			}
+			multiplier := node.ActiveMultiplier
+			if outer, isBroadcast := broadcast.through(producer, opts.Expanded); isBroadcast {
+				producer = outer.producer
+				multiplier /= outer.count
+			}
 			if counted[producer] {
 				continue
 			}
@@ -220,7 +231,7 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 			if at := strings.LastIndex(producer, ":"); at > 0 {
 				owner = producer[:at]
 			}
-			add(owner, producer, total*ctx.Bytes*node.ActiveMultiplier)
+			add(owner, producer, total*ctx.Bytes*multiplier)
 		}
 
 		if node.Def.ExtraActivationBytes != nil {
@@ -364,4 +375,99 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 		Notes:          notes,
 		Errors:         errs,
 	}
+}
+
+type broadcastInput struct {
+	producer string
+	count    float64
+}
+
+// broadcasts are a design's stack inputs that every copy reads unchanged, by
+// the endpoint inside the stack, and the boundaries a tensor passes through on
+// its way to a block.
+type broadcasts struct {
+	inputs     map[string]broadcastInput
+	boundaries map[string]bool
+}
+
+// through follows a producer up through the boundaries it was handed across —
+// a stack's, then a block's, then a composite's inside it, each recorded one
+// hop at a time — and reports the stack input it started as, if it is one of
+// those every copy shares. A tensor that is not is left exactly where it was
+// found.
+func (b broadcasts) through(producer string, expanded *infer.Result) (broadcastInput, bool) {
+	if len(b.inputs) == 0 || expanded == nil {
+		return broadcastInput{}, false
+	}
+	for hop := 0; hop < 64; hop++ {
+		if in, ok := b.inputs[producer]; ok {
+			return in, true
+		}
+		at := strings.LastIndex(producer, ":")
+		if at < 0 || !b.boundaries[producer[:at]] {
+			return broadcastInput{}, false
+		}
+		node, port := producer[:at], producer[at+1:]
+		slash := strings.LastIndex(node, "/")
+		if slash < 0 {
+			return broadcastInput{}, false
+		}
+		next, ok := expanded.ProducerOf[node[:slash]+":"+port]
+		if !ok {
+			return broadcastInput{}, false
+		}
+		producer = next
+	}
+	return broadcastInput{}, false
+}
+
+// broadcastInputs finds each stack-boundary endpoint that is handed to every
+// copy unchanged, and what feeds it from outside the stack.
+func broadcastInputs(flat *FlatResult, expanded *infer.Result) broadcasts {
+	res := broadcasts{inputs: map[string]broadcastInput{}, boundaries: map[string]bool{}}
+	out := res.inputs
+	if expanded == nil {
+		return res
+	}
+	for i := range flat.Blocks {
+		if flat.Blocks[i].Type == "boundary_in" {
+			res.boundaries[flat.Blocks[i].Path] = true
+		}
+	}
+	// Stacks only. An experts container's input is not handed back either,
+	// but it is not shared the same way: each token goes to top_k of them,
+	// and that is already what the active count says.
+	counts := map[string]float64{}
+	for _, rep := range flat.Repeats {
+		if rep.Type == "repeat" && rep.Count > 0 {
+			counts[rep.Path] = rep.Count
+		}
+	}
+	for i := range flat.Blocks {
+		b := &flat.Blocks[i]
+		if b.Type != "boundary_in" {
+			continue
+		}
+		at := strings.LastIndex(b.Path, "/")
+		if at < 0 {
+			continue
+		}
+		stack := b.Path[:at]
+		count, isStack := counts[stack]
+		if !isStack {
+			continue
+		}
+		ports := expanded.Ports[stack]
+		for port := range ports.In {
+			if _, returned := ports.Out[port]; returned {
+				continue
+			}
+			outer, ok := expanded.ProducerOf[stack+":"+port]
+			if !ok {
+				continue
+			}
+			out[b.Path+":"+port] = broadcastInput{producer: outer, count: count}
+		}
+	}
+	return res
 }

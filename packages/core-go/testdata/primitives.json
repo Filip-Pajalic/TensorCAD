@@ -1004,11 +1004,13 @@
       "resolved": {
         "cache": true,
         "causal": true,
+        "cross": null,
         "flash": true,
         "head_dim": 128,
         "heads": 32,
         "kv_heads": 8,
         "logit_softcap": 0,
+        "scale": null,
         "shared_values": null,
         "sinks": null,
         "v_head_dim": 0,
@@ -1061,11 +1063,13 @@
       "resolved": {
         "cache": true,
         "causal": false,
+        "cross": null,
         "flash": true,
         "head_dim": 128,
         "heads": 32,
         "kv_heads": 8,
         "logit_softcap": 0,
+        "scale": null,
         "shared_values": null,
         "sinks": null,
         "v_head_dim": 0,
@@ -1118,11 +1122,13 @@
       "resolved": {
         "cache": true,
         "causal": true,
+        "cross": null,
         "flash": true,
         "head_dim": 128,
         "heads": 32,
         "kv_heads": 8,
         "logit_softcap": 0,
+        "scale": null,
         "shared_values": null,
         "sinks": null,
         "v_head_dim": 0,
@@ -1174,11 +1180,13 @@
       "resolved": {
         "cache": true,
         "causal": true,
+        "cross": null,
         "flash": true,
         "head_dim": 128,
         "heads": 32,
         "kv_heads": 7,
         "logit_softcap": 0,
+        "scale": null,
         "shared_values": null,
         "sinks": null,
         "v_head_dim": 0,
@@ -1233,11 +1241,13 @@
       "resolved": {
         "cache": false,
         "causal": true,
+        "cross": null,
         "flash": true,
         "head_dim": 128,
         "heads": 32,
         "kv_heads": 8,
         "logit_softcap": 0,
+        "scale": null,
         "shared_values": null,
         "sinks": null,
         "v_head_dim": 0,
@@ -2064,11 +2074,13 @@
       "resolved": {
         "cache": true,
         "causal": true,
+        "cross": null,
         "flash": true,
         "head_dim": 64,
         "heads": 16,
         "kv_heads": 16,
         "logit_softcap": 0,
+        "scale": null,
         "shared_values": null,
         "sinks": null,
         "v_head_dim": 128,
@@ -2122,11 +2134,13 @@
       "resolved": {
         "cache": true,
         "causal": true,
+        "cross": null,
         "flash": true,
         "head_dim": 64,
         "heads": 16,
         "kv_heads": 16,
         "logit_softcap": 0,
+        "scale": null,
         "shared_values": true,
         "sinks": null,
         "v_head_dim": 128,
@@ -2394,6 +2408,67 @@
       "stateBytes": {
         "perSeq": 0,
         "perToken": 2048
+      },
+      "constraints": []
+    },
+    {
+      "type": "sdpa",
+      "params": {
+        "causal": false,
+        "cross": true,
+        "head_dim": 64,
+        "heads": 12,
+        "kv_heads": 12,
+        "scale": 1
+      },
+      "resolved": {
+        "cache": true,
+        "causal": false,
+        "cross": true,
+        "flash": true,
+        "head_dim": 64,
+        "heads": 12,
+        "kv_heads": 12,
+        "logit_softcap": 0,
+        "scale": 1,
+        "shared_values": null,
+        "sinks": null,
+        "v_head_dim": 0,
+        "window": 0
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "k": "B kv_heads S head_dim",
+          "q": "B heads T head_dim",
+          "v": "B kv_heads S head_dim"
+        },
+        "out": {
+          "y": "B heads T head_dim"
+        },
+        "anchors": {
+          "k": "flow/real",
+          "q": "flow/real",
+          "v": "flow/real"
+        }
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
+      },
+      "retains": [
+        "q",
+        "k",
+        "v"
+      ],
+      "extraActivationBytes": 1584,
+      "stateBytes": {
+        "perSeq": 0,
+        "perToken": 0
       },
       "constraints": []
     }

@@ -1,6 +1,6 @@
 # Encoder–decoder: a second sequence
 
-*A proposal for M11. Phase 1 is built; the rest is not. It was written first
+*A proposal for M11. Phases 1 and 2 are built; the rest is not. It was written first
 for the same reason M10's was: the choice decides what "per token" means in
 every number the tool reports.*
 
@@ -181,6 +181,36 @@ generated code must compute what the model computes.
      with a per-request cache.
    - Broadcast inputs on a repeat, and `scale` on `sdpa`.
    - Generated code with two inputs, verified with two.
+   *Done.*
+   - **Cross-attention.** `cross` on `sdpa` declares its keys and values `S`
+     long. It is counted at every one of them for every target token, and its
+     cache is `S` positions once per request. `SDPA-07` refuses causal, a
+     window, a mask, a score, sinks or a cap on it.
+   - **The composites.** `cross_attention` projects its keys and values from a
+     `memory` input. `cross_attention` on `transformer_block` adds that input
+     and a third norm between the block's own attention and its feed-forward.
+     `scale` on `sdpa` is what T5 will set to one.
+   - **A stack's shared input.** An input the stack's layer does not give back
+     is handed to every copy unchanged. That needs no new syntax: the loop
+     passes it as an argument rather than threading it through. Memory charges
+     it once, as the tensor it is outside the stack, following it up through
+     every boundary it crossed on the way in.
+   - **Generated code.** A model with several inputs takes each by its block's
+     name, `forward(self, src, tgt)`; one input is `ids`, byte for byte.
+   - **Verification.** The runtime builds every input, takes `--source`, and
+     exports with the batch, the target and the source all dynamic.
+
+   Two things the proposal did not foresee:
+   - **Batch binding.** A port that spells every axis out no longer takes part
+     in agreeing a batch, so a block can read `B T D` and `B S D` together.
+   - **The encoder's cache.** An encoder caches nothing: it runs once, before
+     anything is generated, and what generation keeps of the source is
+     cross-attention's keys and values. Phase 1 had counted an encoder's own
+     cache per request, which would have counted the source twice.
+
+   A small encoder-decoder verifies in PyTorch. The profiler's count per target
+   token, 625,152, is the analysis's exactly: the encoder's share is spread
+   over the target, and cross-attention reads all 24 source positions.
 3. **Tensors in expressions.** Ports read by name, the `position_bias` block,
    `t5_bucket`, and FlexAttention's captured table. Held against a transcription
    of Hugging Face's own `_relative_position_bucket` and bias computation.

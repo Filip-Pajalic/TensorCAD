@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "meta": {"name": "tiny-seq2seq"},
+  "symbols": {
+    "B": {"kind": "runtime", "default": 1},
+    "T": {"kind": "runtime", "default": 32},
+    "S": {"kind": "runtime", "default": 48},
+    "D": {"kind": "design", "value": 64},
+    "H": {"kind": "design", "value": 4},
+    "dh": {"kind": "design", "value": 16},
+    "V": {"kind": "design", "value": 100},
+    "L": {"kind": "design", "value": 2}
+  },
+  "graph": {
+    "nodes": [
+      {"id": "src", "type": "input", "params": {"shape": "B S", "dtype": "int64"}},
+      {"id": "src_embed", "type": "embedding", "params": {"vocab": "V", "dim": "D"}},
+      {"id": "encoder", "type": "repeat", "params": {"count": "L"}, "graph": {
+        "nodes": [
+          {"id": "_in", "type": "boundary_in", "params": {"ports": {"x": "B S D"}}},
+          {"id": "block", "type": "transformer_block", "params": {"d_model": "D", "heads": "H", "kv_heads": "H",
+            "head_dim": "dh", "ffn_hidden": "4*D", "mlp": "dense", "act": "relu", "causal": false}},
+          {"id": "_out", "type": "boundary_out", "params": {"ports": {"x": "B S D"}}}
+        ],
+        "edges": [["_in:x", "block:x"], ["block:y", "_out:x"]]
+      }},
+      {"id": "enc_norm", "type": "rmsnorm", "params": {"dim": "D"}},
+      {"id": "tgt", "type": "input", "params": {"shape": "B T", "dtype": "int64"}},
+      {"id": "tgt_embed", "type": "embedding", "params": {"vocab": "V", "dim": "D"}},
+      {"id": "decoder", "type": "repeat", "params": {"count": "L"}, "graph": {
+        "nodes": [
+          {"id": "_in", "type": "boundary_in", "params": {"ports": {"x": "B T D", "memory": "B S D"}}},
+          {"id": "block", "type": "transformer_block", "params": {"d_model": "D", "heads": "H", "kv_heads": "H",
+            "head_dim": "dh", "ffn_hidden": "4*D", "mlp": "dense", "act": "relu", "causal": true,
+            "cross_attention": true}},
+          {"id": "_out", "type": "boundary_out", "params": {"ports": {"x": "B T D"}}}
+        ],
+        "edges": [["_in:x", "block:x"], ["_in:memory", "block:memory"], ["block:y", "_out:x"]]
+      }},
+      {"id": "final_norm", "type": "rmsnorm", "params": {"dim": "D"}},
+      {"id": "head", "type": "lm_head", "params": {"vocab": "V", "dim": "D", "tied": false}},
+      {"id": "logits", "type": "output"}
+    ],
+    "edges": [
+      ["src:x", "src_embed:ids"], ["src_embed:y", "encoder:x"], ["encoder:x", "enc_norm:x"],
+      ["tgt:x", "tgt_embed:ids"], ["tgt_embed:y", "decoder:x"], ["enc_norm:y", "decoder:memory"],
+      ["decoder:x", "final_norm:x"], ["final_norm:y", "head:x"], ["head:y", "logits:x"]
+    ]
+  }
+}

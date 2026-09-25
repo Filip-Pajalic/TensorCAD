@@ -265,3 +265,53 @@ func TestCompositesPassTheExpressionsDown(t *testing.T) {
 		}
 	}
 }
+
+// A sink is one learned score per head: heads parameters, a rescale of every
+// output element, and a layer that is FlexAttention's to run.
+func TestSinksAreAScorePerHead(t *testing.T) {
+	def, r := sdpaWith(t, map[string]any{"causal": true, "window": 128.0, "sinks": true})
+	if got := def.ParamCount(r); got != 8 {
+		t.Errorf("sinks on eight heads are %v parameters", got)
+	}
+	if got := def.Flops(r, AnalysisCtx{T: 4096, B: 1}).Elementwise; got != 8*64 {
+		t.Errorf("the rescale costs %v", got)
+	}
+	if got := findingIDs(def.Constraints(r)); got != "SDPA-06:info" {
+		t.Errorf("findings %q", got)
+	}
+	if msg := def.Constraints(r)[0].Message; !strings.HasPrefix(msg, "The sinks are counted") {
+		t.Errorf("says %q", msg)
+	}
+	// Unset is none, and costs nothing.
+	def, r = sdpaWith(t, map[string]any{"causal": true})
+	if def.ParamCount(r) != 0 || AttentionOf(r).Flex() {
+		t.Error("an attention that never mentioned sinks has them")
+	}
+}
+
+// Sinks go down through both composites when they are on, and not at all when
+// they are not, so a design without them expands into the graph it always did.
+func TestSinksPassDownOnlyWhenOn(t *testing.T) {
+	symbols := ir.ResolveSymbols(&ir.Doc{})
+	gqa := Builtin["gqa_attention"]
+	base := map[string]any{"d_model": 64.0, "heads": 4.0, "kv_heads": 2.0, "head_dim": 16.0}
+	for _, on := range []bool{true, false} {
+		raw := map[string]any{}
+		for k, v := range base {
+			raw[k] = v
+		}
+		if on {
+			raw["sinks"] = true
+		}
+		r := ResolveNodeParams(gqa, raw, symbols)
+		exp, _ := Expand(gqa, r.RawFull, r)
+		for _, n := range exp.Nodes {
+			if n.Type != "sdpa" {
+				continue
+			}
+			if _, has := n.Params["sinks"]; has != on {
+				t.Errorf("sinks %v: the kernel was given %v", on, n.Params["sinks"])
+			}
+		}
+	}
+}

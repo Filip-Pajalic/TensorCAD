@@ -121,6 +121,28 @@ func TestExactPresets(t *testing.T) {
 	}
 }
 
+// TestGptOssActiveIsWithoutTheEmbedding: OpenAI's "3.61B active" for
+// gpt-oss-20b counts the unembedding, which every token multiplies through, and
+// not the embedding table, which a token only looks a row up in. That is this
+// engine's non-embedding active count, and not its active count, which
+// includes the table: the two definitions differ by 579,133,440. Pinned here
+// rather than in meta.published, which holds the active count by the engine's
+// own definition.
+func TestGptOssActiveIsWithoutTheEmbedding(t *testing.T) {
+	result, err := analysis.Analyze(presets.MustGet("gpt-oss-20b"), analysis.Options{}, analysis.Inputs{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 3.61B as published, to the two decimals it is published to.
+	if got := math.Round(result.Params.NonEmbeddingActive/1e7) / 100; got != 3.61 {
+		t.Errorf("non-embedding active is %s, which does not round to OpenAI's 3.61B",
+			analysis.FormatCount(result.Params.NonEmbeddingActive))
+	}
+	if got := result.Params.Active - result.Params.NonEmbeddingActive; got != 579_133_440 {
+		t.Errorf("the embedding table is %s", analysis.FormatCount(got))
+	}
+}
+
 // TestGetReturnsAFreshCopy: a caller that edits a preset must not change what
 // the next caller sees. The library is embedded and shared.
 func TestGetReturnsAFreshCopy(t *testing.T) {

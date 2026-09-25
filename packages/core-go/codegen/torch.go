@@ -245,7 +245,9 @@ def _say_unfused(why):
         )
 
 
-def expression_attention(q, k, v, mask_mod=None, score_mod=None, mask_heads=False, mask_batch=False, scale=None):
+def expression_attention(
+    q, k, v, mask_mod=None, score_mod=None, mask_heads=False, mask_batch=False, scale=None, sinks=None
+):
     """Attention whose scores the design's expressions mask or change.
 
     mask_mod(b, h, q_idx, kv_idx) says whether a score counts, and
@@ -258,6 +260,12 @@ def expression_attention(q, k, v, mask_mod=None, score_mod=None, mask_heads=Fals
     Anywhere else, or where it does not compile, the same two functions are
     applied to the whole score matrix: every score, then the mask. A query the
     mask leaves nothing to attend to gets zeros, as FlexAttention gives it.
+
+    sinks, one learned score per query head, sits in each row's softmax
+    beside the keys, so a query can put its attention nowhere. Fused, that is
+    the output rescaled by sigmoid(lse - sink), from the log-sum-exp the kernel
+    returns; the long way, it is one more column in the softmax that no value
+    is read by, which is how the model it comes from writes it.
 
     q is (B, heads, T, head_dim); k and v may have fewer heads than q.
     """
@@ -277,7 +285,12 @@ def expression_attention(q, k, v, mask_mod=None, score_mod=None, mask_heads=Fals
                 if block_mask is None:
                     block_mask = create_block_mask(mask_mod, key[1], key[2], seq, keys, device=q.device)
                     _BLOCK_MASKS[key] = block_mask
-            return flex(q, k, v, score_mod=score_mod, block_mask=block_mask, scale=scale, enable_gqa=grouped)
+            if sinks is None:
+                return flex(q, k, v, score_mod=score_mod, block_mask=block_mask, scale=scale, enable_gqa=grouped)
+            out, lse = flex(
+                q, k, v, score_mod=score_mod, block_mask=block_mask, scale=scale, enable_gqa=grouped, return_lse=True
+            )
+            return out * torch.sigmoid(lse - sinks.float().view(1, -1, 1)).unsqueeze(-1).to(out.dtype)
         except Exception as error:  # most often, no Triton to compile it with
             _FLEX = False
             _say_unfused("FlexAttention did not compile: " + type(error).__name__)
@@ -296,7 +309,12 @@ def expression_attention(q, k, v, mask_mod=None, score_mod=None, mask_heads=Fals
         scores = score_mod(scores, b, h, q_idx, kv_idx)
     if mask_mod is not None:
         scores = scores.masked_fill(~mask_mod(b, h, q_idx, kv_idx), float("-inf"))
+    if sinks is not None:
+        sink = sinks.view(1, -1, 1, 1).expand(scores.shape[0], -1, scores.shape[2], 1)
+        scores = torch.cat([scores, sink.to(scores.dtype)], dim=-1)
     weights = torch.softmax(scores.float(), dim=-1).nan_to_num(0.0)
+    if sinks is not None:
+        weights = weights[..., :-1]
     return weights.to(v.dtype) @ v
 `
 
@@ -967,11 +985,18 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 			cap := r.Num("logit_softcap")
 			a := catalog.AttentionOf(r)
 			switch {
-			case a.Expressions():
+			case a.Flex():
 				// Causal, the window and the cap are folded into the two
 				// functions, so the kernel is told everything once.
 				c.needsExpression = true
 				args := []string{q, k, v}
+				if a.Sinks {
+					// Zero to begin with: a sink at zero adds one to the
+					// denominator, which is a start rather than a choice.
+					out.init = append(out.init, fmt.Sprintf(
+						"self.%s_sinks = nn.Parameter(torch.zeros(%s))", attr, pyNum(a.Heads)))
+					args = append(args, fmt.Sprintf("sinks=self.%s_sinks", attr))
+				}
 				if m := a.Mask(); m != nil {
 					args = append(args, "mask_mod="+c.attentionFunction("mask", m, a.Heads))
 					if attnexpr.Uses(m, "h") {

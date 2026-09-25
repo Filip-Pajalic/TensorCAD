@@ -50,11 +50,17 @@ func Ex(v any, fallback string) string {
 // expands into, as the resolver understood them: with the design's symbols
 // already bound, and not at all when there are none, or when they did not
 // compile — this block has said so, and the one inside would say it again.
+//
+// Sinks go the same way, and only when they are on: a block that never asked
+// for them expands into exactly the graph it always did.
 func withExpressions(r *Resolved, params map[string]any) map[string]any {
 	for _, key := range []string{"mask", "score"} {
 		if text := r.Str(key); text != "" {
 			params[key] = text
 		}
+	}
+	if r.Bool("sinks") {
+		params["sinks"] = true
 	}
 	return params
 }
@@ -183,6 +189,7 @@ var gqaAttention = &BlockDef{
 			Doc: "Bound the attention scores to this magnitude with tanh (Gemma 2); 0 leaves them alone"}},
 		{"mask", maskSpec()},
 		{"score", scoreSpec()},
+		{"sinks", sinksSpec()},
 		{"value_embeddings", pBool(false,
 			"Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)")},
 		{"output_gate", pBool(false,
@@ -922,6 +929,7 @@ var transformerBlock = &BlockDef{
 			Doc: "Bound the attention scores to this magnitude with tanh (Gemma 2)"}, "Attention")},
 		{"mask", when(grouped(maskSpec(), "Attention"), "attention", "gqa")},
 		{"score", when(grouped(scoreSpec(), "Attention"), "attention", "gqa")},
+		{"sinks", when(grouped(sinksSpec(), "Attention"), "attention", "gqa")},
 		{"value_embeddings", when(grouped(pBool(false,
 			"Take a second embedding of the same tokens on `ve` and mix it into the values"), "Attention"),
 			"attention", "gqa")},

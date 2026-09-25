@@ -8,7 +8,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 
 | Milestone | State |
 |---|---|
-| M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 25 presets, exact parameter match on 22 of them. |
+| M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 26 presets, exact parameter match on 23 of them. |
 | M1 Check (design rules, full analysis) | **Done.** 19 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
 | M2 Manufacture (PyTorch codegen, verification) | **Done.** Every generated model's parameter count matches PyTorch exactly, and the FLOPs estimate matches a profiler once the causal mask is accounted for. |
 | M3 Agent (MCP server, CLI) | **Done.** 19 MCP tools over stdio, 9 CLI commands, and the live editor bridge: an agent's edits land on the canvas as it makes them and the human's come back. |
@@ -20,7 +20,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 | M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
-| M10 Attention variants | **Phases 1 and 2 done.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Phase 3 has begun: BLOOM-7b1 is the first preset whose attention is an expression, its ALiBi reproducing both the published parameter count and the bias BLOOM builds. gpt-oss and T5, and the variants that are not a score, remain. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
+| M10 Attention variants | **Phases 1 and 2 done; 3 and 4 under way.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Phase 3 is two thirds done: BLOOM-7b1's ALiBi is a score expression and gpt-oss-20b brings attention sinks, both reproducing their published parameter counts exactly and both held against Hugging Face's own construction of what they add. T5, differential attention and the eager block remain. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -30,7 +30,7 @@ settings, the full analysis and the design-rule check at three operating points,
 and the generated PyTorch byte for byte. `go run ./cmd/golden` rewrites those
 files, deliberately and never as part of a test.
 
-25 presets, 22 matching their published parameter count exactly and 3 within a
+26 presets, 23 matching their published parameter count exactly and 3 within a
 stated tolerance, and every one of them confirmed against PyTorch 2.11 by
 instantiating the generated model. Not all are language models:
 `ijepa-vit-h14` is a vision transformer and `alexnet` a convolutional
@@ -321,7 +321,7 @@ can be copied to another machine; a trace of an earlier version of the design
 is loaded but said to be one. The browser suite reloads the page, opens only
 the design, and finds its values; with the shelf taken away, that check fails.
 
-### M10 — Attention variants · Phases 1 and 2 done
+### M10 — Attention variants · Phases 1 and 2 done, 3 and 4 under way
 
 The open question below, *how far to go op-level*, has a proposal:
 [Attention variants](docs/explanation/attention-variants.md). Attention stays one
@@ -374,8 +374,20 @@ kernel before anything is added.
    transcription of Hugging Face's own `build_alibi_tensor`: BLOOM adds slope ×
    key position rather than slope × distance, which differs by a constant along
    each row, and the weights agree to 1e-6. MPT-7B was the other candidate; its
-   original repository is no longer public.
+   original repository is no longer public. *gpt-oss done:* `gpt-oss-20b`,
+   alternating a 128-token band with full attention, 32 experts with four
+   active, biases everywhere, and sinks. It reproduces the 20,914,757,184
+   parameters Hugging Face reports in the analysis and in PyTorch, and OpenAI's
+   3.61B active is the design's non-embedding active count. YaRN and the
+   experts' clamped SwiGLU are recorded and not generated.
 4. **Sinks, differential attention, and an eager block** for what is not a score.
+   *Sinks done:* a learned score per head on `sdpa`, `gqa_attention` and
+   `transformer_block`, counted as `heads` parameters and generated through
+   FlexAttention — the output rescaled by `sigmoid(lse - sink)` — or, the long
+   way, as one more column in the softmax, which is Hugging Face's form; a test
+   holds the two against each other and against a transcription of Hugging
+   Face's gpt-oss attention. The scaler, asked to shrink a design that repeats a
+   pair of layers, now keeps the pairs whole.
 
 ## Sequencing and dependencies
 

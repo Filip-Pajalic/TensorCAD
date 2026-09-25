@@ -1009,6 +1009,7 @@
         "heads": 32,
         "kv_heads": 8,
         "logit_softcap": 0,
+        "sinks": null,
         "v_head_dim": 0,
         "window": 0
       },
@@ -1064,6 +1065,7 @@
         "heads": 32,
         "kv_heads": 8,
         "logit_softcap": 0,
+        "sinks": null,
         "v_head_dim": 0,
         "window": 0
       },
@@ -1119,6 +1121,7 @@
         "heads": 32,
         "kv_heads": 8,
         "logit_softcap": 0,
+        "sinks": null,
         "v_head_dim": 0,
         "window": 4096
       },
@@ -1173,6 +1176,7 @@
         "heads": 32,
         "kv_heads": 7,
         "logit_softcap": 0,
+        "sinks": null,
         "v_head_dim": 0,
         "window": 0
       },
@@ -1230,6 +1234,7 @@
         "heads": 32,
         "kv_heads": 8,
         "logit_softcap": 0,
+        "sinks": null,
         "v_head_dim": 0,
         "window": 0
       },

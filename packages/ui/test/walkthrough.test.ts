@@ -118,6 +118,13 @@ describe("a step exists because the design has the block", () => {
     expect(ids).toContain("ssm");
   });
 
+  test("a design with sinks is told what they are for", () => {
+    const attention = stepsFor(getPreset("gpt-oss-20b")).find((s) => s.id === "attention");
+    expect(attention?.body.join(" ")).toContain("Each head also has a sink");
+    const plain = stepsFor(getPreset("llama-3-8b")).find((s) => s.id === "attention");
+    expect(plain?.body.join(" ")).not.toContain("sink");
+  });
+
   test("a design whose sense of order is in its scores is told where", () => {
     // BLOOM has no position embedding and no rotation: ALiBi is a score
     // expression on the attention, and that is the step's block.

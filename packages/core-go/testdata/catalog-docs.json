@@ -593,6 +593,12 @@
           null
         ],
         [
+          "sinks",
+          "bool",
+          "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none.",
+          null
+        ],
+        [
           "value_embeddings",
           "bool",
           "Take a second embedding of the same tokens on `ve` and mix it into the values (nanoGPT speedrun)",
@@ -1435,6 +1441,12 @@
           "score",
           "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone.",
           null
+        ],
+        [
+          "sinks",
+          "bool",
+          "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none.",
+          null
         ]
       ]
     },
@@ -1828,6 +1840,12 @@
           "score",
           "score",
           "What each score becomes before the softmax, over score, q, kv, h, heads and the design's symbols: score - 2 ** (-8 * (h + 1) / heads) * (q - kv) is ALiBi. Applied before logit_softcap; empty leaves the scores alone.",
+          null
+        ],
+        [
+          "sinks",
+          "bool",
+          "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none.",
           null
         ],
         [

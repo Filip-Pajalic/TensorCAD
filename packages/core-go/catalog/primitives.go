@@ -36,6 +36,16 @@ func maskSpec() ParamSpec {
 			"16 positions seen by all. Empty adds nothing."}
 }
 
+// sinksSpec is a learned score per head that every query can attend to instead
+// of any key. Unset rather than false by default, so a design that never
+// mentions it resolves, documents and generates exactly as it did before.
+func sinksSpec() ParamSpec {
+	return ParamSpec{Type: ParamBool, Default: nil, HasDefault: true,
+		Doc: "Learn one score per head that sits in the softmax's denominator beside the keys, so a " +
+			"query can put its attention nowhere rather than spreading it over keys it has no use for " +
+			"(gpt-oss). Adds heads parameters; unset is none."}
+}
+
 func scoreSpec() ParamSpec {
 	return ParamSpec{Type: ParamScore, Default: "", HasDefault: true,
 		Doc: "What each score becomes before the softmax, over score, q, kv, h, heads and the " +
@@ -667,6 +677,7 @@ var Primitives = []*BlockDef{
 				Doc: "Bound the attention scores to this magnitude with tanh; 0 leaves them alone. FlashAttention 2.6 and later caps inside the fused kernel; PyTorch's own scaled_dot_product_attention cannot."}},
 			{"mask", maskSpec()},
 			{"score", scoreSpec()},
+			{"sinks", sinksSpec()},
 		},
 		PortsFn: func(r *Resolved) Ports {
 			v := "head_dim"
@@ -682,7 +693,13 @@ var Primitives = []*BlockDef{
 				Out: map[string]PortSpec{"y": Port("B heads T " + v)},
 			}
 		},
-		ParamCount: noParams,
+		// A sink is one learned score per query head.
+		ParamCount: func(r *Resolved) float64 {
+			if r.Bool("sinks") {
+				return r.Num("heads")
+			}
+			return 0
+		},
 		Flops: func(r *Resolved, c AnalysisCtx) FlopsPerToken {
 			a := AttentionOf(r)
 			// A kernel that skips what the mask removes multiplies each query
@@ -699,6 +716,15 @@ var Primitives = []*BlockDef{
 				// exactly as it does for the matmuls. A cap is a divide, a
 				// tanh and a multiply, which is softcapCost.
 				f.Elementwise = attnexpr.Cost(s) * keys * r.Num("heads")
+			}
+			if a.Sinks {
+				// The sink joins the denominator after the kernel: each output
+				// is rescaled by sigmoid(lse - sink), one multiply an element.
+				vDim := r.Num("v_head_dim")
+				if vDim == 0 {
+					vDim = r.Num("head_dim")
+				}
+				f.Elementwise += r.Num("heads") * vDim
 			}
 			return f
 		},
@@ -759,7 +785,7 @@ var Primitives = []*BlockDef{
 			// With an expression the cap is part of the score function
 			// FlexAttention compiles, which SDPA-06 says; without one it is
 			// FlashAttention's.
-			if r.Num("logit_softcap") != 0 && r.Bool("flash") && !a.Expressions() {
+			if r.Num("logit_softcap") != 0 && r.Bool("flash") && !a.Flex() {
 				out = append(out, BlockFinding{
 					ID: "SDPA-03", Severity: "info", Param: "logit_softcap",
 					Message: "capping the attention scores needs a kernel that caps inside it: " +

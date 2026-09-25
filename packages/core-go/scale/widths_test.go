@@ -110,3 +110,38 @@ func TestEveryScaledPresetStillChecksOut(t *testing.T) {
 		})
 	}
 }
+
+// A design that repeats a pair of layers stays a whole number of pairs.
+//
+// Gemma 2 and gpt-oss stack L/2 copies of a windowed layer and a full one, so a
+// scaled depth of one is half a pair: a repeat count of 0.5, which the
+// generated model cannot even loop over. The depth moves to the nearest value
+// that keeps every group whole, and the notes say so.
+func TestARepeatedPairStaysWhole(t *testing.T) {
+	for _, name := range []string{"gemma-2-9b", "gpt-oss-20b"} {
+		vocab := 256.0
+		res, err := scale.Design(presets.MustGet(name), scale.Options{TargetParams: 2e6, Vocab: &vocab})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if l := widthOf(t, res.Doc, "L"); l < 2 || int(l)%2 != 0 {
+			t.Errorf("%s scaled to L = %v", name, l)
+		}
+		report, err := rules.Validate(res.Doc, analysis.Options{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, f := range report.Findings {
+			if f.Severity == "error" {
+				t.Errorf("%s scaled has an error: %s", name, f.Message)
+			}
+		}
+		said := false
+		for _, n := range res.Notes {
+			said = said || strings.Contains(n, "each repeated group of layers is whole")
+		}
+		if !said {
+			t.Errorf("%s: the notes do not say the depth moved: %v", name, res.Notes)
+		}
+	}
+}

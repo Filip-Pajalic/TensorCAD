@@ -1,6 +1,6 @@
 # Attention variants: what to open up, and how far
 
-*A proposal for M10. Phases 1 and 2 are built; the rest is not. The point of
+*A proposal for M10. Phases 1 and 2 are built, and most of 3 and 4; the rest is not. The point of
 writing it first was that the choice decides what every attention estimate in
 the tool means. The language the two expressions are written in is
 [its own reference page](../reference/attention-expressions.md).*
@@ -242,9 +242,15 @@ analysis and the generated code currently disagree.
    which uses both sinks and banded attention. *The ALiBi model is done:*
    `bloom-7b1`, whose only sense of order is a score expression, reproduces its
    published count exactly, and its bias is checked against Hugging Face's own
-   construction of it.
+   construction of it. *So is gpt-oss:* `gpt-oss-20b` reproduces its 20.9B to
+   the parameter, sinks included.
 4. **The three that are not a score.** Sinks as a parameter, differential attention
-   as two blocks and a primitive, and the eager block with its rule.
+   as two blocks and a primitive, and the eager block with its rule. *Sinks are
+   done*, as planned above: `sinks` on the primitive, `heads` learned scalars,
+   no change to the memory. FlexAttention takes them through the log-sum-exp it
+   returns — the output times `sigmoid(lse - sink)` — so they need no kernel of
+   their own; the unfused form is one more column in the softmax, and the two
+   are held against each other and against Hugging Face's gpt-oss attention.
 
 **Done when** Gemma 2's attention is generated fused and counted fused and a
 profiler agrees with both; a windowed model's FLOPs match what its generated code

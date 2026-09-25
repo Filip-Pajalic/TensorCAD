@@ -14,6 +14,7 @@ import (
 	"math"
 
 	"github.com/tensorcad/core/analysis"
+	"github.com/tensorcad/core/catalog"
 	"github.com/tensorcad/core/ir"
 )
 
@@ -114,6 +115,33 @@ func setLiteral(doc *ir.Doc, name string, value float64) {
 	}
 	doc.Symbols[name] = ir.SymbolDef{Kind: "literal", Number: value, HasNumber: true}
 	doc.SymbolOrder = append(doc.SymbolOrder, name)
+}
+
+// wholeRepeats reports whether every repeat in the design stacks a whole number
+// of copies, at least one.
+func wholeRepeats(doc *ir.Doc) bool {
+	symbols := ir.ResolveSymbols(doc)
+	cat := catalog.Of(doc)
+	var walk func(g *ir.Graph) bool
+	walk = func(g *ir.Graph) bool {
+		if g == nil {
+			return true
+		}
+		for _, n := range g.Nodes {
+			if n.Type == "repeat" {
+				r := catalog.ResolveNodeParams(cat["repeat"], n.Params, symbols)
+				count := r.Num("count")
+				if len(r.Errors) > 0 || count < 1 || count != math.Trunc(count) {
+					return false
+				}
+			}
+			if !walk(n.Graph) {
+				return false
+			}
+		}
+		return true
+	}
+	return walk(&doc.Graph)
 }
 
 // roundTo rounds to the nearest positive multiple of m.
@@ -253,6 +281,32 @@ func applyScale(base *ir.Doc, factor float64, opts Options) (*ir.Doc, []string, 
 		}
 		setLiteral(doc, "Ld", math.Max(1, l-1))
 		notes = append(notes, "Reduced the leading dense layers so at least one sparse layer remains.")
+	}
+
+	// A repeat written over the depth has to come out whole: Gemma 2 and
+	// gpt-oss repeat a pair of layers L/2 times, and a depth of one is half a
+	// pair, which no model can be built with. The nearest depth that keeps
+	// every group whole, the smaller first.
+	for _, name := range depthNames {
+		depth, ok := literal(doc, name)
+		if !ok || wholeRepeats(doc) {
+			continue
+		}
+		for step := 1.0; step <= 16 && !wholeRepeats(doc); step++ {
+			for _, candidate := range []float64{depth - step, depth + step} {
+				if candidate < 1 {
+					continue
+				}
+				setLiteral(doc, name, candidate)
+				if wholeRepeats(doc) {
+					notes = append(notes, fmt.Sprintf(
+						"Set %s to %s rather than %s, so that each repeated group of layers is whole.",
+						name, analysis.JSNumber(candidate), analysis.JSNumber(depth)))
+					break
+				}
+				setLiteral(doc, name, depth)
+			}
+		}
 	}
 
 	if opts.Vocab != nil {

@@ -2,7 +2,7 @@
  * The walkthrough: the design explaining itself, a stage at a time.
  *
  * Brendan Bycroft's LLM visualisation has ten hand-written phases against one
- * model. Twenty-five presets cannot each have ten, and do not need to: what
+ * model. Twenty-six presets cannot each have ten, and do not need to: what
  * differs between them is which *kinds* of stage they have, not what a stage
  * is. An embedding is an embedding in a 124k-parameter sorter and in a 671B
  * mixture of experts, and the sentence that explains one explains the other
@@ -381,6 +381,9 @@ export function buildWalkthrough(doc: Doc, derived: Derived, trace: Trace | null
           ? `All ${count(heads)} heads keep their own keys and values.`
           : `${count(heads)} heads ask, but only ${count(kv)} sets of keys and values are kept and shared between them. That is what makes the cache affordable: ${formatBytes(a.kv.bytesPerToken)} per token rather than ${formatBytes((a.kv.bytesPerToken * heads) / Math.max(kv, 1))}.`,
         `Attention is the one stage whose cost grows with the sequence: ${formatFlops(a.flops.fwdAttention)} per token at ${count(a.options.T)} tokens, against ${formatFlops(a.flops.fwdDense)} for everything else.`,
+        p.sinks === true
+          ? `Each head also has a sink: one learned score that sits beside the keys in every softmax, so a token that finds nothing worth attending to can put its attention there instead of spreading it thin. It is ${count(heads)} parameters, and it is why a head can stay quiet.`
+          : null,
         run.attention ?? null,
       ],
       [attn.path],

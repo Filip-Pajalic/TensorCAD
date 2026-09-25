@@ -133,6 +133,16 @@ two functions to the whole score matrix and says once on a GPU that it is
 running unfused. That form is what a CPU verifies, profiles and exports, and a
 test holds it against `flex_attention` itself.
 
+## Sinks
+
+`sinks` is not an expression but sits beside them: one learned score per head
+in each row's softmax, beside the keys, so a query can put its attention
+nowhere (gpt-oss). It adds `heads` parameters to the block and nothing to the
+memory; a layer with sinks is FlexAttention's to run, which takes them through
+the log-sum-exp it returns — the output times `sigmoid(lse - sink)` — and the
+unfused form is one more column in the softmax that no value is read by. Unset,
+its default, is none.
+
 ## What they cannot say yet
 
 - **Learned tensors.** T5's relative-position bias reads a table the block

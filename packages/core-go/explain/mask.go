@@ -39,7 +39,7 @@ func Mask(doc *ir.Doc, path string, options analysis.Options, head float64) *Mas
 		}
 		out.Attention = n.Path
 		out.Found = true
-		out.MaskGrid = a.Grid(T, B, head)
+		out.MaskGrid = a.Grid(T, B, head, options.Packing)
 		return out
 	}
 	return out

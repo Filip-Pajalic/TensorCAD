@@ -259,3 +259,22 @@ func TestPositionsNeedARotation(t *testing.T) {
 		t.Error("no pos input")
 	}
 }
+
+// The preview draws one row of the packing: blocks far below the diagonal are
+// in other documents and empty, where one document would have kept them all.
+func TestThePreviewDrawsAPacking(t *testing.T) {
+	_, r := sdpaWith(t, map[string]any{"causal": true, "mask": documentMask})
+	a := AttentionOf(r)
+	one := a.Grid(8192, 1, 0, nil)
+	packed := a.Grid(8192, 1, 0, &Packing{Mean: 512})
+	if one.Sampled || !packed.Sampled {
+		t.Errorf("sampled: %v then %v", one.Sampled, packed.Sampled)
+	}
+	far := (one.Cells-1)*one.Cells + 0 // the last query block against the first key block
+	if one.Kept[far] != 1 || packed.Kept[far] != 0 {
+		t.Errorf("far below the diagonal: %v one document, %v packed", one.Kept[far], packed.Kept[far])
+	}
+	if !(packed.Density < one.Density/4) {
+		t.Errorf("density %v packed against %v", packed.Density, one.Density)
+	}
+}

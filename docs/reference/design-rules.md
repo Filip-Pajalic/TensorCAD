@@ -27,6 +27,8 @@ the block it is about.
 | `tensor-core-multiples` | A width is not a multiple that tensor cores like, so the hardware runs below peak. |
 | `vocab-padding` | The vocabulary is not padded to a friendly multiple. nanoGPT pads 50,257 to 50,304 for exactly this reason. |
 | `window-vs-context` | A sliding window is declared wider than the context it slides over. |
+| `packing-unused` | The operating point packs training rows with documents and every attention reads across them, so the packing changes nothing. |
+| `document-blocks` | Under a packing, a block-sparse kernel computes more than a quarter again the attention scores the mask keeps, because document boundaries cut its 128-token blocks. A note, and a warning once the difference is a twentieth of the whole forward pass. |
 | `eager-attention` | An attention is [written out](attention-expressions.md) rather than fused, and says how much its score matrices keep for the backward pass at the operating point. They grow with the square of the context, and a fused kernel keeps none of them. |
 | `attention-share` | Attention dominates the FLOPs, which at long context means the design is spending its time in the wrong place. |
 | `recompute-hint` | Activation memory would fall a long way under recomputation. |

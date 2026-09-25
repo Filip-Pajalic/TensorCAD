@@ -624,10 +624,16 @@ type MaskGrid struct {
 	Mask string `json:"mask"`
 	// Score is what each score becomes, the cap included; empty when nothing.
 	Score string `json:"score"`
+	// Sampled is a mask that reads the documents, drawn over one row of the
+	// operating point's packing rather than over one document.
+	Sampled bool `json:"sampled,omitempty"`
 }
 
-// Grid draws the mask at sequence length T, for one head.
-func (a Attention) Grid(T, B float64, head float64) MaskGrid {
+// Grid draws the mask at sequence length T, for one head. A mask that reads
+// the documents is drawn over one row of the packing, when there is one: the
+// block-diagonal a kernel sees, rather than the one document a row is
+// without it.
+func (a Attention) Grid(T, B float64, head float64, pack *Packing) MaskGrid {
 	cells := 32
 	if T < float64(cells) {
 		cells = int(math.Max(1, T))
@@ -636,7 +642,7 @@ func (a Attention) Grid(T, B float64, head float64) MaskGrid {
 	out := MaskGrid{
 		T: T, Cells: cells, Span: span, Head: head,
 		Kept:    make([]float64, cells*cells),
-		Density: a.KeysPerQuery(T, B, nil) / T,
+		Density: a.KeysPerQuery(T, B, pack) / T,
 	}
 	m := a.Mask()
 	if s := a.Score(); s != nil {
@@ -654,9 +660,11 @@ func (a Attention) Grid(T, B float64, head float64) MaskGrid {
 	// Eight by eight points a block, each drawn within its own sub-block.
 	per := int(math.Min(8, math.Max(1, math.Floor(span))))
 	g := seed(out.Mask)
-	// Drawn as one document for now: a packing drawn here is the editor's
-	// next step, and a mask read as NaN everywhere would draw nothing at all.
 	env := attnexpr.Env{H: head, Heads: a.Heads, Table: oneDocument}
+	if a.Documents && pack != nil {
+		env.Table = drawPacking(T, *pack, &g).document
+		out.Sampled = true
+	}
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
 			kept := 0.0

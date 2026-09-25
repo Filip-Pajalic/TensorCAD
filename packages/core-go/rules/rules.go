@@ -657,6 +657,8 @@ var Rules = []Rule{
 	chinchillaRatio,
 	unusedSymbols,
 	danglingOutputs,
+	packingUnused,
+	documentBlocks,
 	publishedDrift,
 	activeParamsDrift,
 }

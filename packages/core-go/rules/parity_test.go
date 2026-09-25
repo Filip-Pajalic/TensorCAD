@@ -140,8 +140,8 @@ func TestEveryRuleHasIdentity(t *testing.T) {
 		}
 		seen[r.ID] = true
 	}
-	if len(rules.Rules) != 21 {
-		t.Errorf("got %d rules, want 21; add the new one to the docs too", len(rules.Rules))
+	if len(rules.Rules) != 23 {
+		t.Errorf("got %d rules, want 23; add the new one to the docs too", len(rules.Rules))
 	}
 }
 

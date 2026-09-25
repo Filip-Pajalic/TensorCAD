@@ -101,6 +101,7 @@ nav:
       - Interaction design: explanation/interaction-design.md
       - Legibility: explanation/legibility.md
       - Attention variants: explanation/attention-variants.md
+      - Encoder–decoder: explanation/encoder-decoder.md
       - Landscape: explanation/landscape.md
 
 extra:

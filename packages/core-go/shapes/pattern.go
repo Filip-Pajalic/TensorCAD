@@ -40,6 +40,10 @@ type PatternAtom struct {
 type Pattern struct {
 	Src   string
 	Atoms []PatternAtom
+	// Any is the pattern "*": an input that takes a tensor of any shape and
+	// binds nothing, such as a table an attention's score expression reads.
+	// It can only be an input's: nothing is produced at "any shape".
+	Any bool
 }
 
 var patternCache sync.Map // string -> Pattern
@@ -62,6 +66,9 @@ func isSpace(c byte) bool { return c == ' ' || c == '\t' || c == '\n' || c == '\
 func parsePattern(src string) (Pattern, error) {
 	var atoms []PatternAtom
 	s := strings.TrimSpace(src)
+	if s == "*" {
+		return Pattern{Src: src, Any: true}, nil
+	}
 	i := 0
 	ellipses := 0
 
@@ -159,6 +166,9 @@ func AtomToString(atom PatternAtom) string {
 // batch supplies the dimensions bound to "..." and must be provided when the
 // pattern contains an ellipsis.
 func Instantiate(pattern Pattern, ctx EvalCtx, batch Shape, hasBatch bool) (Shape, []string) {
+	if pattern.Any {
+		return nil, []string{fmt.Sprintf("Pattern %q takes any shape and cannot be produced", pattern.Src)}
+	}
 	var errs []string
 	dims := Shape{}
 	for _, a := range pattern.Atoms {
@@ -195,6 +205,9 @@ type MatchResult struct {
 // makes a mismatch a real polynomial difference rather than two numbers that
 // happened not to match.
 func MatchPattern(actual Shape, pattern Pattern, ctx EvalCtx, values map[string]float64) MatchResult {
+	if pattern.Any {
+		return MatchResult{OK: true}
+	}
 	var errs []string
 
 	idx := -1

@@ -187,6 +187,10 @@ var Primitives = []BlockCase{
 	// explicit scale, which is what T5 has.
 	{"sdpa", map[string]any{"heads": 12.0, "kv_heads": 12.0, "head_dim": 64.0, "causal": false,
 		"cross": true, "scale": 1.0}},
+	// T5's relative-position bias: a table, and a score that reads it.
+	{"position_bias", map[string]any{"buckets": 32.0, "heads": 12.0}},
+	{"sdpa", map[string]any{"heads": 12.0, "kv_heads": 12.0, "head_dim": 64.0, "causal": false,
+		"score": "score + rel(t5_bucket(kv - q, 32, 128, true), h)"}},
 }
 
 // Composites are pinned as the subgraph they stand for, node for node.
@@ -250,6 +254,8 @@ var Composites = []BlockCase{
 	{"cross_attention", map[string]any{"d_model": "D", "heads": "H", "kv_heads": "Hkv", "head_dim": "dh"}},
 	{"transformer_block", map[string]any{"d_model": "D", "heads": "H", "kv_heads": "Hkv",
 		"head_dim": "dh", "ffn_hidden": "F", "cross_attention": true}},
+	{"gqa_attention", map[string]any{"d_model": "D", "heads": "H", "kv_heads": "Hkv", "head_dim": "dh",
+		"causal": false, "score": "score + rel(t5_bucket(kv - q, 32, 128, true), h)"}},
 }
 
 func f(v float64) *float64 { return &v }

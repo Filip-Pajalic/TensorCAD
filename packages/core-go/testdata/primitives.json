@@ -2471,6 +2471,104 @@
         "perToken": 0
       },
       "constraints": []
+    },
+    {
+      "type": "position_bias",
+      "params": {
+        "buckets": 32,
+        "heads": 12
+      },
+      "resolved": {
+        "buckets": 32,
+        "heads": 12
+      },
+      "errors": [],
+      "ports": {
+        "in": {},
+        "out": {
+          "table": "buckets heads"
+        },
+        "anchors": {
+          "table": "side/inherit"
+        }
+      },
+      "portError": "",
+      "paramCount": 384,
+      "flops": {
+        "elementwise": 0,
+        "fwd": 0,
+        "fwdSeq": 0,
+        "fwdSeqUnmasked": 0
+      },
+      "retains": [],
+      "extraActivationBytes": null,
+      "stateBytes": null,
+      "constraints": []
+    },
+    {
+      "type": "sdpa",
+      "params": {
+        "causal": false,
+        "head_dim": 64,
+        "heads": 12,
+        "kv_heads": 12,
+        "score": "score + rel(t5_bucket(kv - q, 32, 128, true), h)"
+      },
+      "resolved": {
+        "cache": true,
+        "causal": false,
+        "cross": null,
+        "flash": true,
+        "head_dim": 64,
+        "heads": 12,
+        "kv_heads": 12,
+        "logit_softcap": 0,
+        "scale": null,
+        "score": "score + rel(t5_bucket(kv - q, 32, 128, true), h)",
+        "shared_values": null,
+        "sinks": null,
+        "v_head_dim": 0,
+        "window": 0
+      },
+      "errors": [],
+      "ports": {
+        "in": {
+          "k": "B kv_heads T head_dim",
+          "q": "B heads T head_dim",
+          "rel": "*",
+          "v": "B kv_heads T head_dim"
+        },
+        "out": {
+          "y": "B heads T head_dim"
+        },
+        "anchors": {
+          "k": "flow/real",
+          "q": "flow/real",
+          "rel": "side/inherit",
+          "v": "flow/real"
+        }
+      },
+      "portError": "",
+      "paramCount": 0,
+      "flops": {
+        "elementwise": 737280,
+        "fwd": 0,
+        "fwdSeq": 12582912,
+        "fwdSeqUnmasked": 12582912
+      },
+      "retains": [
+        "q",
+        "k",
+        "v"
+      ],
+      "extraActivationBytes": 1584,
+      "stateBytes": {
+        "perSeq": 0,
+        "perToken": 3072
+      },
+      "constraints": [
+        "SDPA-06: The mask and score expressions are counted as FlexAttention runs them: one fused kernel that skips the blocks the mask removes and changes each score inside, so the score matrix is never kept for the backward pass."
+      ]
     }
   ]
 }

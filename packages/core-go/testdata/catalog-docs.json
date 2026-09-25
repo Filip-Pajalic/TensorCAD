@@ -1587,6 +1587,31 @@
       ]
     },
     {
+      "type": "position_bias",
+      "kind": "primitive",
+      "category": "position",
+      "name": "relative position bias",
+      "summary": "A learned table of biases, one per head for each bucket of relative distance, that attention scores read to know how far apart a query and a key are. T5 keeps one per stack, wired to every layer, rather than one per layer.",
+      "formula": "params = buckets * heads; read by a score expression as table(t5_bucket(kv - q, ...), h)",
+      "refs": [
+        "https://arxiv.org/abs/1910.10683"
+      ],
+      "params": [
+        [
+          "buckets",
+          "int",
+          "Rows of the table: how many distances are told apart",
+          null
+        ],
+        [
+          "heads",
+          "int",
+          "Columns: one learned bias per head",
+          null
+        ]
+      ]
+    },
+    {
       "type": "rearrange",
       "kind": "primitive",
       "category": "shape",

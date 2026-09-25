@@ -318,6 +318,36 @@ def expression_attention(
     return weights.to(v.dtype) @ v
 `
 
+// helperBucket is T5's relative-position bucket, for a score expression that
+// calls t5_bucket. It is Hugging Face's _relative_position_bucket written over
+// whatever tensors it is given: zero-dimensional ones inside FlexAttention's
+// score_mod, broadcast grids in the eager fallback.
+const helperBucket = `def t5_bucket(relative_position, num_buckets, max_distance, bidirectional):
+    """T5's relative-position bucket for kv - q.
+
+    Exact while the distance is small, then logarithmically spaced out to
+    max_distance, and everything further shares the last bucket. Two-sided
+    attention spends half its buckets on each side. This is Hugging Face's
+    _relative_position_bucket, written for any tensor it is handed.
+    """
+    import math
+
+    buckets = 0
+    if bidirectional:
+        num_buckets //= 2
+        buckets = buckets + (relative_position > 0).to(torch.long) * num_buckets
+        relative_position = torch.abs(relative_position)
+    else:
+        relative_position = -torch.clamp(relative_position, max=0)
+    max_exact = num_buckets // 2
+    is_small = relative_position < max_exact
+    large = max_exact + (
+        torch.log(relative_position.float() / max_exact) / math.log(max_distance / max_exact) * (num_buckets - max_exact)
+    ).to(torch.long)
+    large = torch.clamp(large, max=num_buckets - 1)
+    return buckets + torch.where(is_small, relative_position, large)
+`
+
 const helperShift = "def shift_sequence(x: torch.Tensor, by: int) -> torch.Tensor:\n" +
 	"    \"\"\"Move a sequence `by` positions earlier, zero-filling the end.\n" +
 	"\n" +
@@ -505,6 +535,8 @@ type ctx struct {
 	// inputArgs names the model's arguments when it has more than one input:
 	// each input node's own name.
 	inputArgs map[string]string
+	// needsBucket is T5's bucket function, for a score that calls it.
+	needsBucket bool
 	// needsExpression is the FlexAttention helper, and attnFuncs are the
 	// mask and score functions it is handed, one per distinct expression.
 	needsExpression bool
@@ -524,9 +556,17 @@ func (c *ctx) warn(format string, args ...any) {
 // attentionFunction is the name of a module-level mask_mod or score_mod
 // computing an expression, emitting it the first time it is asked for. Two
 // layers with the same expression share one function, as they share a class.
+//
+// A score that reads a tensor is a factory instead: called with the tensors,
+// it returns the score_mod, which has them in scope. That is how FlexAttention
+// takes a learned table, and the eager fallback calls the same function.
 func (c *ctx) attentionFunction(kind string, n attnexpr.Node, heads float64) string {
 	body := attnexpr.Python(n, heads)
-	key := kind + "|" + body
+	if strings.Contains(body, "t5_bucket(") {
+		c.needsBucket = true
+	}
+	tables := attnexpr.Tables(n)
+	key := kind + "|" + strings.Join(tables, ",") + "|" + body
 	if name, ok := c.attnNames[key]; ok {
 		return name
 	}
@@ -544,6 +584,12 @@ func (c *ctx) attentionFunction(kind string, n attnexpr.Node, heads float64) str
 	signature := "b, h, q_idx, kv_idx"
 	if kind == "score" {
 		signature = "score, " + signature
+	}
+	if len(tables) > 0 {
+		c.attnFuncs = append(c.attnFuncs, fmt.Sprintf(
+			"def %s(%s):\n    \"\"\"%s\"\"\"\n\n    def %s_mod(%s):\n        return %s\n\n    return %s_mod\n",
+			name, strings.Join(tables, ", "), attnexpr.String(n), kind, signature, body, kind))
+		return name
 	}
 	c.attnFuncs = append(c.attnFuncs, fmt.Sprintf("def %s(%s):\n    \"\"\"%s\"\"\"\n    return %s\n",
 		name, signature, attnexpr.String(n), body))
@@ -844,6 +890,14 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 				outName("y"), inputVar(node.ID, "x"), attr))
 			set("y", outName("y"))
 
+		case "position_bias":
+			// The table is the parameter, and what flows along the wire is the
+			// parameter itself: every attention that reads it reads the same
+			// one, and its gradient is theirs added up.
+			out.init = append(out.init, fmt.Sprintf("self.%s = nn.Parameter(torch.zeros(%s, %s))",
+				attr, pyValue(p["buckets"]), pyValue(p["heads"])))
+			set("table", "self."+attr)
+
 		case "scale":
 			out.forward = append(out.forward, fmt.Sprintf("%s = %s * %s",
 				outName("y"), inputVar(node.ID, "x"), pyValue(p["by"])))
@@ -1081,7 +1135,15 @@ func emitGraph(graph *ir.Graph, prefix string, inputs map[string]string, c *ctx)
 					}
 				}
 				if s := a.Score(); s != nil {
-					args = append(args, "score_mod="+c.attentionFunction("score", s, a.Heads))
+					fn := c.attentionFunction("score", s, a.Heads)
+					if tables := attnexpr.Tables(s); len(tables) > 0 {
+						vars := make([]string, len(tables))
+						for i, name := range tables {
+							vars[i] = inputVar(node.ID, name)
+						}
+						fn += "(" + strings.Join(vars, ", ") + ")"
+					}
+					args = append(args, "score_mod="+fn)
 				}
 				if scale != "" {
 					args = append(args, strings.TrimPrefix(scale, ", "))
@@ -1514,6 +1576,9 @@ func GenerateTorch(doc *ir.Doc, options Options) *Generated {
 	}
 	if c.needsFused {
 		helpers = append(helpers, helperFused, "")
+	}
+	if c.needsBucket {
+		helpers = append(helpers, helperBucket, "")
 	}
 	if c.needsExpression {
 		helpers = append(helpers, helperExpression, "")

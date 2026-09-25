@@ -20,6 +20,7 @@ They are on `sdpa`, on `gqa_attention`, and on `transformer_block` when its
 | `b` | The sequence's index in the batch |
 | `heads` | How many query heads the attention has; a constant once the expression is on a block |
 | `score` | The score, already scaled — in `score` only |
+| `name(i, j, ...)` | A tensor wired into the attention's input `name`, read at those indices — in `score` only; see [Tables](#tables) |
 | anything else | A symbol of the design, replaced by its value |
 
 `B` and `T` are not available. They carry a default in the symbol table, but a
@@ -53,8 +54,20 @@ Python's, with Python's precedence, loosest first:
 | `abs(x)`, `floor(x)` | 1 |
 | `min(a, b)`, `max(a, b)` | 1 |
 | `where(cond, a, b)` | 1 |
+| `t5_bucket(rel, buckets, max_distance, bidirectional)` | 12 |
+| a table read, `name(i, ...)` | 1 |
 
 Every other operation counts one.
+
+`t5_bucket` is T5's relative-position bucket for a distance `rel`, normally
+`kv - q`: exact while the distance is under half the buckets, logarithmically
+spaced out to `max_distance`, and the last bucket for everything further.
+Two-sided (`true`, an encoder) spends half the buckets on each side; one-sided
+(`false`, a decoder) puts every future key in bucket 0. It is Hugging Face's
+`_relative_position_bucket`, and `buckets`, `max_distance` and `bidirectional`
+have to be constants, since the kernel is built for one table. It is a built-in
+rather than something to write out because written out it reads worse than the
+twenty lines of Python it is.
 
 ## What a design may write
 
@@ -65,6 +78,43 @@ score either masks nothing or keeps nothing.
 
 A `score` is a number, and it has to read `score`: an expression that does not
 has thrown the attention scores away.
+
+## Tables
+
+A score expression can read a tensor. Any name called like a function that is
+not one of the functions above is a table: `rel(t5_bucket(kv - q, 32, 128,
+true), h)` reads the attention's input `rel` at row `t5_bucket(...)` and column
+`h`. The attention grows an input of that name, of any shape, and so does every
+block that carries the expression down to it, `gqa_attention` and
+`transformer_block`, so the table is wired to the layer and passed on inside.
+
+What goes into it is usually a `position_bias` block, a learned
+`[buckets, heads]` table whose parameters are counted once. T5 keeps one per
+stack, outside the repeat, handed unchanged to every layer:
+
+```python
+def score_mod_1(rel):
+    """score + rel(t5_bucket(kv - q, 32, 128, true), h)"""
+
+    def score_mod(score, b, h, q_idx, kv_idx):
+        return score + rel[t5_bucket(kv_idx - q_idx, 32, 128, True), h]
+
+    return score_mod
+```
+
+A score that reads a table is generated as a factory: called with the tensor,
+it returns the `score_mod`, with the tensor in scope, which is how FlexAttention
+takes one. The attention calls `score_mod=score_mod_1(rel)` with whatever its
+input is, and since that is the `nn.Parameter` itself the table is trained by
+every layer that reads it. A gradient reaches it through `flex_attention` as
+well as through the unfused form; a test holds both, and holds the bias against
+a transcription of Hugging Face's own.
+
+The indices are used as the generated code computes them. They have to be whole
+numbers — positions, heads, `+`, `-`, `*`, `%` and `t5_bucket` are; `/` is not,
+and neither is `floor` of it, which PyTorch keeps as a float — and one outside
+the table is not checked. A mask cannot read a table: a mask's share is
+measured by evaluating it, and a table's values are the model's.
 
 ## How they combine with the switches
 
@@ -86,6 +136,7 @@ what the preview under the field shows: every condition, and the whole score.
 | Half the heads global, half local | on | `h < heads / 2 or q - kv < W` | |
 | ALiBi, as `bloom-7b1` has it | on | | `score - 2 ** (-8 * (h + 1) / heads) * (q - kv)` |
 | Gemma 2's cap, written out | on | | `50 * tanh(score / 50)` |
+| T5's relative bias, in an encoder | off | | `score + rel(t5_bucket(kv - q, 32, 128, true), h)` |
 
 ## What the engine does with them
 
@@ -158,8 +209,8 @@ quietly dropped.
 
 ## What they cannot say yet
 
-- **Learned tensors.** T5's relative-position bias reads a table the block
-  owns; that is the next phase.
+- **Tables in a mask.** A score can read a tensor and a mask cannot, since a
+  mask is counted by evaluating it.
 - **Inputs at run time.** Document masking needs each position's document id,
   which is an input, not a position.
 - **The cache.** A mask that bounds how far back a query looks does not shrink

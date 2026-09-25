@@ -128,8 +128,8 @@ FlexAttention takes the same thing. A `score_mod` can capture a tensor and
 index it, and its announcement's relative-position example does exactly that.
 So the generated code is the design's expression with the table in scope, and
 the eager fallback indexes the same table. Whether gradients reach a captured
-table in the PyTorch version the runtime uses is the first thing phase 3
-checks. The eager fallback trains the table either way. The
+table in the PyTorch version the runtime uses was the first thing phase 3
+checked: they do, through `flex_attention` as through the fallback. The
 same mechanism is what document masking wants, with a runtime input rather than
 a learned table: `doc(q) == doc(kv)`, a mask for packed pretraining, left for
 M12.
@@ -214,6 +214,31 @@ generated code must compute what the model computes.
 3. **Tensors in expressions.** Ports read by name, the `position_bias` block,
    `t5_bucket`, and FlexAttention's captured table. Held against a transcription
    of Hugging Face's own `_relative_position_bucket` and bias computation.
+   *Done.*
+   - **The language.** A name called like a function that is not a function is
+     a table, read at the indices it is given, in a score and not a mask.
+     `t5_bucket` is a built-in whose last three arguments must be constants.
+   - **The ports.** `sdpa` has an input for each table its score reads, and
+     `gqa_attention` and `transformer_block` have the same input and wire it
+     through to the attention, so a table is wired to the layer. The input
+     takes any shape, which is new: `*` is a pattern every shape matches.
+   - **`position_bias`.** A `[buckets, heads]` table, `buckets × heads`
+     parameters, no inputs. In generated code it is an `nn.Parameter`, and
+     what flows along its wire is that parameter, so every layer reading it
+     reads the same one.
+   - **Generated code.** A score that reads a table is a factory, called with
+     the table and returning the `score_mod`, with `t5_bucket` emitted beside
+     it when it is used.
+
+   Checked in PyTorch 2.11: the generated bias is Hugging Face's to the bit
+   over 300 positions, two-sided and one-sided; uncompiled `flex_attention`
+   gives what the unfused form gives; and a gradient reaches the table through
+   both. The last was the open question, and it means the table is trained by
+   the fused kernel, not only by the fallback. A small T5-like model, a table
+   per stack handed to every layer, verifies: its count, its profiled FLOPs per
+   target token, a forward pass and an export. The tables add their 256
+   parameters and nothing to the matmuls; the bias is fifteen operations a
+   score, counted with the elementwise work, where the profiler does not look.
 4. **The presets.** `t5-small` and `flan-t5-base`, exact. The notes carry the
    checkpoint's unused table.
 

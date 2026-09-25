@@ -227,6 +227,7 @@ var gqaAttention = &BlockDef{
 			in["ve"] = PortSpec{Shape: "... (kv_heads head_dim)", Anchor: "side",
 				Doc: "A second embedding of the same tokens, mixed into the values"}
 		}
+		tablePorts(r, in)
 		return Ports{In: in, Out: map[string]PortSpec{"y": Port("... d_model")}}
 	},
 	Constraints: func(r *Resolved) []BlockFinding {
@@ -588,12 +589,17 @@ func expandGQA(raw map[string]any, r *Resolved) Expansion {
 	rope, hasRope := ropeOf(r)
 
 	ve := r.Bool("value_embeddings")
+	tables := TablesOf(r)
 	inNode, outNode := streamBoundary(D)
-	if ve {
-		inNode, outNode = boundary(
-			map[string]any{"x": "... " + D, "ve": fmt.Sprintf("B T (%s %s)", KV, dh)},
-			map[string]any{"y": "... " + D},
-		)
+	if ve || len(tables) > 0 {
+		ports := map[string]any{"x": "... " + D}
+		if ve {
+			ports["ve"] = fmt.Sprintf("B T (%s %s)", KV, dh)
+		}
+		for _, name := range tables {
+			ports[name] = "*"
+		}
+		inNode, outNode = boundary(ports, map[string]any{"y": "... " + D})
 	}
 	nodes := []ir.NodeDef{
 		inNode,
@@ -671,6 +677,10 @@ func expandGQA(raw map[string]any, r *Resolved) Expansion {
 	edges = append(edges,
 		edge(qTail, "attn:q"), edge(kTail, "attn:k"), edge(vTail, "attn:v"),
 		edge("attn:y", "o_merge:x"))
+	// A table the score reads goes straight through to the attention.
+	for _, name := range tables {
+		edges = append(edges, edge("_in:"+name, "attn:"+name))
+	}
 
 	// A sigmoid gate on the merged output, from a projection of the stream as
 	// wide as the queries. Qwen3-Next fuses it into `q_proj`, which is why that
@@ -1313,6 +1323,9 @@ var transformerBlock = &BlockDef{
 			in["memory"] = PortSpec{Shape: "B S d_model", Anchor: "side",
 				Doc: "The encoder's output, which the cross-attention reads every position of"}
 		}
+		if r.Str("attention") != "mla" {
+			tablePorts(r, in)
+		}
 		return Ports{In: in, Out: map[string]PortSpec{"y": Port("... d_model")}}
 	},
 	Docs: BlockDocs{
@@ -1337,13 +1350,20 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 	ve := r.Bool("value_embeddings") && r.Str("attention") != "mla"
 	inNode, outNode := streamBoundary(D)
 	cross := r.Bool("cross_attention")
-	if ve || cross {
+	var tables []string
+	if r.Str("attention") != "mla" {
+		tables = TablesOf(r)
+	}
+	if ve || cross || len(tables) > 0 {
 		ports := map[string]any{"x": "... " + D}
 		if ve {
 			ports["ve"] = fmt.Sprintf("B T (%s %s)", Ex(raw["kv_heads"], "0"), Ex(raw["head_dim"], "0"))
 		}
 		if cross {
 			ports["memory"] = "B S " + D
+		}
+		for _, name := range tables {
+			ports[name] = "*"
 		}
 		inNode, outNode = boundary(ports, map[string]any{"y": "... " + D})
 	}
@@ -1431,6 +1451,9 @@ func expandTransformerBlock(raw map[string]any, r *Resolved) Expansion {
 	}
 	if ve {
 		edges = append(edges, edge("_in:ve", "attn:ve"))
+	}
+	for _, name := range tables {
+		edges = append(edges, edge("_in:"+name, "attn:"+name))
 	}
 
 	// A decoder layer attends to the encoder's output between its own

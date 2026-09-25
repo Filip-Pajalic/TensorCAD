@@ -56,6 +56,26 @@ func AttentionOf(r *Resolved) Attention {
 	return a
 }
 
+// TablesOf are the tensors a block's score expression reads: each one an
+// input of that name, which any block that carries the expression down to its
+// attention also has, and passes on.
+func TablesOf(r *Resolved) []string {
+	return attnexpr.Tables(compiled(r.Str("score"), attnexpr.Score))
+}
+
+// tablePorts adds an input for each tensor a score expression reads. Any
+// shape, because what it holds is between the design and the expression: a
+// [buckets, heads] table for T5.
+func tablePorts(r *Resolved, in map[string]PortSpec) {
+	for _, name := range TablesOf(r) {
+		if _, taken := in[name]; taken {
+			continue
+		}
+		in[name] = PortSpec{Shape: "*", Anchor: "side", Dtype: "inherit",
+			Doc: "A tensor the score expression reads"}
+	}
+}
+
 // Expressions reports whether the design wrote either expression, which is
 // what decides the kernel: FlexAttention for any expression, FlashAttention
 // for the switches alone.

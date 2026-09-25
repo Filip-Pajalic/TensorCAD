@@ -152,7 +152,11 @@ func TestMistakesAreNamed(t *testing.T) {
 		{"kv <= q and 3", Mask, "joins comparisons"},
 		{"kv < q < 3", Mask, "do not chain"},
 		{"tanh(score, 2)", Score, "takes 1 argument"},
-		{"sigmoid(score)", Score, "not a function this knows"},
+		{"sigmoid(q) > 0 and kv <= q", Mask, "not a function this knows"},
+		{"score + rel()", Score, "needs to be told where"},
+		{"score + rel(kv <= q)", Score, "read at numbers"},
+		{"score + rel(t5_bucket(kv - q, B, 128, true), h)", Score, `"B" is not`},
+		{"score + rel(t5_bucket(kv - q, 32, 128, 1), h)", Score, "true or false"},
 		{"where(q, 1, 2)", Score, "first argument is a comparison"},
 		{"kv <= Q", Mask, `"Q" is not`},
 		{"kv <= (q", Mask, "not closed"},
@@ -229,5 +233,52 @@ func TestScoreFunctions(t *testing.T) {
 	n = compile(t, "sqrt(exp(log(score)))", Score, nil)
 	if got := Eval(n, Env{Score: 4}); math.Abs(got-2) > 1e-12 {
 		t.Errorf("got %v", got)
+	}
+}
+
+// T5's buckets, at values worked through Hugging Face's
+// _relative_position_bucket by hand: exact for small distances, logarithmic
+// out to 128, two-sided spending half its buckets on each side.
+func TestT5Buckets(t *testing.T) {
+	cases := []struct {
+		relative      float64
+		bidirectional bool
+		want          float64
+	}{
+		{0, true, 0}, {-1, true, 1}, {1, true, 17}, {-7, true, 7},
+		{-8, true, 8},                 // the first logarithmic bucket
+		{-20, true, 10},               // 8 + trunc(log(20/8) / log(128/8) * 8)
+		{200, true, 31},               // far on the right: the last bucket of that side
+		{-1, false, 1}, {3, false, 0}, // one-sided: the future is bucket 0
+		{-20, false, 17}, // 16 + trunc(log(20/16) / log(128/16) * 16)
+		{-1000, false, 31},
+	}
+	for _, c := range cases {
+		if got := T5Bucket(c.relative, 32, 128, c.bidirectional); got != c.want {
+			t.Errorf("relative %v, two-sided %v: bucket %v, want %v", c.relative, c.bidirectional, got, c.want)
+		}
+	}
+}
+
+// A score can read a tensor wired into the attention by name, and the
+// attention learns from Tables what inputs it needs.
+func TestAScoreReadsATable(t *testing.T) {
+	n := compile(t, "score + rel(t5_bucket(kv - q, 32, 128, true), h)", Score, nil)
+	if got := Tables(n); len(got) != 1 || got[0] != "rel" {
+		t.Errorf("tables %v", got)
+	}
+	if got := String(n); got != "score + rel(t5_bucket(kv - q, 32, 128, true), h)" {
+		t.Errorf("printed %q", got)
+	}
+	if got := Python(n, 8); got != "score + rel[t5_bucket(kv_idx - q_idx, 32, 128, True), h]" {
+		t.Errorf("python %q", got)
+	}
+	// A read is one operation; the bucket is a dozen.
+	if c := Cost(n); c != 1+1+12+1 {
+		t.Errorf("cost %v", c)
+	}
+	// A table's values are the model's: nothing here can evaluate one.
+	if v := Eval(n, Env{Q: 3, KV: 1}); !math.IsNaN(v) {
+		t.Errorf("evaluated a table to %v", v)
 	}
 }

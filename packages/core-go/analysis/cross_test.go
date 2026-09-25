@@ -2,6 +2,7 @@ package analysis_test
 
 import (
 	"encoding/json"
+	"os"
 	"testing"
 
 	"github.com/tensorcad/core/analysis"
@@ -144,5 +145,35 @@ func TestTheEncoderOutputIsKeptOnce(t *testing.T) {
 	}
 	if memory != D*S*bytes {
 		t.Errorf("the encoder's output is kept as %v bytes, want one %v", memory, D*S*bytes)
+	}
+}
+
+// T5's relative-position bias: one table per stack, outside it, read by every
+// layer's score. It is counted once per stack, and the attention grows an
+// input for it at every level it passes through.
+func TestATableIsCountedOncePerStack(t *testing.T) {
+	var t5 ir.Doc
+	raw, err := os.ReadFile("../codegen/testdata/t5ish.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(raw, &t5); err != nil {
+		t.Fatal(err)
+	}
+	plain := at(t, seq2seq(t), 32, 48)
+	res := at(t, &t5, 32, 48)
+	if got := res.Params.Total - plain.Params.Total; got != 2*32*4 {
+		t.Errorf("the tables add %v parameters, want two of 32 x 4", got)
+	}
+	shapes := infer.Shapes(&t5, ir.ResolveSymbols(&t5), infer.Options{ExpandComposites: true})
+	for _, issue := range shapes.Issues {
+		if issue.Severity == "error" {
+			t.Errorf("%s: %s", issue.Path, issue.Message)
+		}
+	}
+	for _, path := range []string{"encoder/block", "encoder/block/attn", "encoder/block/attn/attn"} {
+		if _, ok := shapes.Ports[path].In["rel"]; !ok {
+			t.Errorf("%s has no rel input", path)
+		}
 	}
 }

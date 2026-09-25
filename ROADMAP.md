@@ -21,7 +21,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 | M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
 | M10 Attention variants | **Phases 1, 2 and 4 done; phase 3 two thirds done.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Phase 3 is two thirds done: BLOOM-7b1's ALiBi is a score expression and gpt-oss-20b brings attention sinks, both reproducing their published parameter counts exactly and both held against Hugging Face's own construction of what they add. Differential attention is two fused attentions and a combine, held against Microsoft's reference, and attention can be written out on purpose, with talking heads, at a cost a rule states. Only T5 remains, and it wants a milestone of its own. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
-| M11 Encoder–decoder | **Phases 1 and 2 done.** A second sequence, and cross-attention to it, so T5 can be drawn and M10 can close: a source length `S` beside `T`, each block counted at the tokens of its own stream, cross-attention, a repeat that hands every layer the same tensor, and expressions that read a tensor — T5's shared relative-bias table. Every decoder-only number is held unchanged. [docs/explanation/encoder-decoder.md](docs/explanation/encoder-decoder.md). |
+| M11 Encoder–decoder | **Phases 1, 2 and 3 done.** A second sequence, and cross-attention to it, so T5 can be drawn and M10 can close: a source length `S` beside `T`, each block counted at the tokens of its own stream, cross-attention, a repeat that hands every layer the same tensor, and expressions that read a tensor — T5's shared relative-bias table, which is Hugging Face's to the bit and learns through FlexAttention. Only the two T5 presets remain. Every decoder-only number is held unchanged. [docs/explanation/encoder-decoder.md](docs/explanation/encoder-decoder.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -408,7 +408,7 @@ kernel before anything is added.
    learned. That finishes phase 4; T5, which needs encoder–decoder support and
    a learned table inside a score, is left for a milestone of its own.
 
-### M11 — Encoder–decoder · Phases 1 and 2 done
+### M11 — Encoder–decoder · Phases 1, 2 and 3 done
 
 M10's finishing line includes a relative-bias preset, and the relative-bias
 model is T5, an encoder–decoder. The engine assumes one sequence in five
@@ -443,7 +443,18 @@ adds a second sequence without changing what any existing number means:
 3. **Tensors in expressions** — a score reading a port by name,
    `score + rel(t5_bucket(kv - q, 32, 128, true), h)`, with the table owned by a
    `position_bias` block outside the stack and FlexAttention capturing it. The
-   same mechanism is what document masking will want.
+   same mechanism is what document masking will want. *Done:*
+   - Any name called like a function is a table, read in a score; a mask
+     cannot read one, because a mask is counted by evaluating it.
+   - `t5_bucket` is a built-in, and `position_bias` a `[buckets, heads]` table.
+   - Every block that carries a score down to its attention grows the input
+     the score reads, and a port can take any shape.
+   - A score that reads a table is generated as a factory that takes it.
+
+   The bias equals Hugging Face's exactly, two-sided and one-sided, and a
+   gradient reaches the table through `flex_attention` as well as the unfused
+   form — the question the proposal left open. A small T5-like model verifies
+   in PyTorch, count, FLOPs and export.
 4. **The presets** — `t5-small` (60,506,624; its checkpoint holds 256 more, a
    table the model never reads) and `flan-t5-base` (247,577,856), exact.
 

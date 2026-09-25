@@ -853,6 +853,80 @@ describe.skipIf(!available)("an encoder-decoder", () => {
 });
 
 /**
+ * T5's relative-position bias, M11's third phase: a learned table per stack,
+ * outside it, that every layer's score expression reads. The generated score
+ * has to add exactly Hugging Face's bias, two-sided in the encoder and
+ * one-sided in the decoder; FlexAttention has to agree with the eager
+ * fallback; and a gradient has to reach the table through both, which is what
+ * lets the table be a parameter rather than a constant.
+ */
+describe.skipIf(!available)("a relative-position bias", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+  const t5ish = JSON.parse(
+    readFileSync(join(import.meta.dir, "../../core-go/codegen/testdata/t5ish.json"), "utf8"),
+  ) as ReturnType<typeof getPreset>;
+  const write = (): string => {
+    const dir = mkdtempSync(join(tmpdir(), "tensorcad-t5-"));
+    const out = generateTorch(t5ish);
+    expect(out.warnings).toEqual([]);
+    for (const file of out.files) writeFileSync(join(dir, file.path), file.contents);
+    return dir;
+  };
+
+  it(
+    "is T5's, in both directions, and learns through FlexAttention",
+    () => {
+      const dir = write();
+      try {
+        const [cmd] = invocation;
+        const python = cmd === "tensorcad-runtime" ? "python" : cmd;
+        const result = spawnSync(python, [join(import.meta.dir, "t5_bias_probe.py"), join(dir, "model.py"), "4"], {
+          encoding: "utf8",
+          timeout: TIMEOUT_MS,
+          shell: process.platform === "win32",
+        });
+        const out = JSON.parse(result.stdout.trim().split(/\r?\n/).at(-1)!);
+        expect(out).toEqual({
+          score_mod_1: 0,
+          score_mod_2: 0,
+          flex_vs_eager: expect.any(Number),
+          eager_grad: true,
+          flex_grad: true,
+        });
+        expect(out.flex_vs_eager).toBeLessThan(1e-5);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+
+  it(
+    "has the parameters and the FLOPs it says, runs, and exports",
+    () => {
+      const dir = write();
+      try {
+        const full = runVerify(invocation, join(dir, "model.py"), ["--seq", "16", "--source", "24"]);
+        expect(full).not.toHaveProperty("spawnFailed");
+        const r = full as Verify;
+        expect({ ok: r.ok, matches: r.matches, forward: r.forward, export: r.export_ok }).toEqual({
+          ok: true,
+          matches: true,
+          forward: "ok",
+          export: true,
+        });
+        const analysis = analyze(t5ish, { T: 16, B: 2, S: 24 });
+        expect(r.params).toBe(analysis.params.total);
+        expect(r.flops! / (2 * 16)).toBe(analysis.flops.fwdTotalUnmasked);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+});
+
+/**
  * Every preset, through `ast.parse`.
  *
  * Cheaper than the block above and answering a different question: not "does

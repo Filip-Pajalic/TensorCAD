@@ -4751,6 +4751,175 @@
         ]
       ],
       "constraints": []
+    },
+    {
+      "type": "gqa_attention",
+      "params": {
+        "causal": false,
+        "d_model": "D",
+        "head_dim": "dh",
+        "heads": "H",
+        "kv_heads": "Hkv",
+        "score": "score + rel(t5_bucket(kv - q, 32, 128, true), h)"
+      },
+      "nodes": [
+        {
+          "id": "_in",
+          "type": "boundary_in",
+          "params": {
+            "ports": {
+              "rel": "*",
+              "x": "... D"
+            }
+          }
+        },
+        {
+          "id": "q_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "D",
+            "out_features": "H*dh"
+          }
+        },
+        {
+          "id": "k_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "D",
+            "out_features": "Hkv*dh"
+          }
+        },
+        {
+          "id": "v_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "D",
+            "out_features": "Hkv*dh"
+          }
+        },
+        {
+          "id": "q_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (H dh)",
+            "to": "B H T dh"
+          }
+        },
+        {
+          "id": "k_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (Hkv dh)",
+            "to": "B Hkv T dh"
+          }
+        },
+        {
+          "id": "v_heads",
+          "type": "rearrange",
+          "params": {
+            "from": "B T (Hkv dh)",
+            "to": "B Hkv T dh"
+          }
+        },
+        {
+          "id": "attn",
+          "type": "sdpa",
+          "params": {
+            "causal": false,
+            "flash": true,
+            "head_dim": "dh",
+            "heads": "H",
+            "kv_heads": "Hkv",
+            "logit_softcap": "0",
+            "score": "score + rel(t5_bucket(kv - q, 32, 128, true), h)",
+            "window": "0"
+          }
+        },
+        {
+          "id": "o_merge",
+          "type": "rearrange",
+          "params": {
+            "from": "B H T dh",
+            "to": "B T (H dh)"
+          }
+        },
+        {
+          "id": "o_proj",
+          "type": "linear",
+          "params": {
+            "bias": false,
+            "in_features": "H*dh",
+            "out_features": "D"
+          }
+        },
+        {
+          "id": "_out",
+          "type": "boundary_out",
+          "params": {
+            "ports": {
+              "y": "... D"
+            }
+          }
+        }
+      ],
+      "edges": [
+        [
+          "_in:x",
+          "q_proj:x"
+        ],
+        [
+          "_in:x",
+          "k_proj:x"
+        ],
+        [
+          "_in:x",
+          "v_proj:x"
+        ],
+        [
+          "q_proj:y",
+          "q_heads:x"
+        ],
+        [
+          "k_proj:y",
+          "k_heads:x"
+        ],
+        [
+          "v_proj:y",
+          "v_heads:x"
+        ],
+        [
+          "q_heads:y",
+          "attn:q"
+        ],
+        [
+          "k_heads:y",
+          "attn:k"
+        ],
+        [
+          "v_heads:y",
+          "attn:v"
+        ],
+        [
+          "attn:y",
+          "o_merge:x"
+        ],
+        [
+          "_in:rel",
+          "attn:rel"
+        ],
+        [
+          "o_merge:y",
+          "o_proj:x"
+        ],
+        [
+          "o_proj:y",
+          "_out:y"
+        ]
+      ],
+      "constraints": []
     }
   ]
 }

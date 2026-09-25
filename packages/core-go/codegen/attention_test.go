@@ -123,3 +123,34 @@ func TestAnEncoderDecoderTakesBothInputs(t *testing.T) {
 		t.Error("a one-input model no longer takes ids")
 	}
 }
+
+// A score that reads a table is generated as a factory: handed the table, it
+// returns the score_mod, which has the table in scope. T5 keeps one table per
+// stack, a parameter outside it, handed to every layer.
+func TestAScoreReadsItsTableThroughAFactory(t *testing.T) {
+	var doc ir.Doc
+	raw, err := os.ReadFile("testdata/t5ish.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		t.Fatal(err)
+	}
+	model := modelOf(t, &doc)
+	for _, want := range []string{
+		"def t5_bucket(relative_position, num_buckets, max_distance, bidirectional):",
+		"def score_mod_1(rel):\n" +
+			"    \"\"\"score + rel(t5_bucket(kv - q, 32, 128, true), h)\"\"\"\n\n" +
+			"    def score_mod(score, b, h, q_idx, kv_idx):\n" +
+			"        return score + rel[t5_bucket(kv_idx - q_idx, 32, 128, True), h]\n\n" +
+			"    return score_mod\n",
+		"score_mod=score_mod_1(rel)",
+		"self.enc_bias = nn.Parameter(torch.zeros(32, 4))",
+		"encoder_x = layer(self.enc_bias, encoder_x)",
+		"decoder_x = layer(enc_norm_y, self.dec_bias, decoder_x)",
+	} {
+		if !strings.Contains(model, want) {
+			t.Errorf("missing:\n%s", want)
+		}
+	}
+}

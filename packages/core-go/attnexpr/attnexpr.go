@@ -23,6 +23,13 @@
 //
 // Any other name is a design symbol, replaced by its value when the design is
 // resolved, so a prefix can be `kv < P` and follow P.
+//
+// A score expression can also read a tensor wired into the attention, by the
+// name of its input: `rel(t5_bucket(kv - q, 32, 128, true), h)` reads a table
+// called rel at a bucket and a head. Any call to a name that is not one of the
+// functions below is such a read, and the attention grows an input of that
+// name. A mask cannot read one yet: what it keeps would then depend on data
+// the engine does not have.
 package attnexpr
 
 import (
@@ -102,6 +109,45 @@ var funcs = map[string]struct {
 	"min":   {2, 1},
 	"max":   {2, 1},
 	"where": {3, 1},
+	// T5's relative-position bucket: a compare, an absolute value, a log, a
+	// divide and a clamp, roughly.
+	"t5_bucket": {4, 12},
+}
+
+// IsTable reports whether a call reads a tensor rather than applying a
+// function: any name that is not a function this language knows.
+func IsTable(name string) bool {
+	_, known := funcs[name]
+	return !known
+}
+
+// Tables are the tensors an expression reads, in the order it first reads
+// them.
+func Tables(n Node) []string {
+	var out []string
+	seen := map[string]bool{}
+	var walk func(Node)
+	walk = func(n Node) {
+		switch x := n.(type) {
+		case Unary:
+			walk(x.X)
+		case Binary:
+			walk(x.X)
+			walk(x.Y)
+		case Call:
+			if IsTable(x.Fn) && !seen[x.Fn] {
+				seen[x.Fn] = true
+				out = append(out, x.Fn)
+			}
+			for _, a := range x.Args {
+				walk(a)
+			}
+		}
+	}
+	if n != nil {
+		walk(n)
+	}
+	return out
 }
 
 // --- lexing ------------------------------------------------------------------
@@ -540,7 +586,21 @@ func typeOf(n Node) (isBool bool, err error) {
 	case Call:
 		f, ok := funcs[x.Fn]
 		if !ok {
-			return false, fmt.Errorf("%s is not a function this knows: %s", x.Fn, strings.Join(funcNames(), ", "))
+			// A read from a tensor wired into the attention: numbers in,
+			// a number out.
+			if len(x.Args) == 0 {
+				return false, fmt.Errorf("%s reads a tensor, and needs to be told where: %s(i, h)", x.Fn, x.Fn)
+			}
+			for _, a := range x.Args {
+				isB, err := typeOf(a)
+				if err != nil {
+					return false, err
+				}
+				if isB {
+					return false, fmt.Errorf("%s is read at numbers, not comparisons", x.Fn)
+				}
+			}
+			return false, nil
 		}
 		if len(x.Args) != f.arity {
 			return false, fmt.Errorf("%s takes %d argument(s), not %d", x.Fn, f.arity, len(x.Args))
@@ -550,9 +610,12 @@ func typeOf(n Node) (isBool bool, err error) {
 			if err != nil {
 				return false, err
 			}
-			wantBool := x.Fn == "where" && i == 0
+			wantBool := x.Fn == "where" && i == 0 || x.Fn == "t5_bucket" && i == 3
 			if isB != wantBool {
 				if wantBool {
+					if x.Fn == "t5_bucket" {
+						return false, fmt.Errorf("t5_bucket's last argument says whether it is two-sided: true or false")
+					}
 					return false, fmt.Errorf("where's first argument is a comparison")
 				}
 				return false, fmt.Errorf("%s takes numbers", x.Fn)
@@ -565,7 +628,7 @@ func typeOf(n Node) (isBool bool, err error) {
 
 func funcNames() []string {
 	names := make([]string, 0, len(funcs))
-	for _, n := range []string{"tanh", "exp", "log", "sqrt", "abs", "floor", "min", "max", "where"} {
+	for _, n := range []string{"tanh", "exp", "log", "sqrt", "abs", "floor", "min", "max", "where", "t5_bucket"} {
 		if _, ok := funcs[n]; ok {
 			names = append(names, n)
 		}
@@ -656,7 +719,7 @@ func Fold(n Node) Node {
 				all = false
 			}
 		}
-		if all && x.Fn != "where" {
+		if all && x.Fn != "where" && !IsTable(x.Fn) {
 			return Num{call(x.Fn, vals)}
 		}
 		if cond, ok := args[0].(Bool); ok && x.Fn == "where" {
@@ -735,8 +798,35 @@ func call(fn string, v []float64) float64 {
 		return math.Min(v[0], v[1])
 	case "max":
 		return math.Max(v[0], v[1])
+	case "t5_bucket":
+		return T5Bucket(v[0], v[1], v[2], v[3] != 0)
 	}
 	return math.NaN()
+}
+
+// T5Bucket is T5's relative-position bucket, as Hugging Face's
+// `_relative_position_bucket` computes it: the relative position kv - q is its
+// own bucket while it is small, then the buckets are spaced logarithmically out
+// to maxDistance, and everything further shares the last. Two-sided attention
+// spends half its buckets on each side.
+func T5Bucket(relative, buckets, maxDistance float64, bidirectional bool) float64 {
+	n := math.Floor(buckets)
+	out := 0.0
+	if bidirectional {
+		n = math.Floor(n / 2)
+		if relative > 0 {
+			out += n
+		}
+		relative = math.Abs(relative)
+	} else {
+		relative = -math.Min(relative, 0)
+	}
+	exact := math.Floor(n / 2)
+	if relative < exact {
+		return out + relative
+	}
+	large := exact + math.Trunc(math.Log(relative/exact)/math.Log(maxDistance/exact)*(n-exact))
+	return out + math.Min(large, n-1)
 }
 
 // Compile parses, binds the design's symbols, checks and folds an expression.
@@ -753,6 +843,13 @@ func Compile(src string, kind Kind, symbols map[string]float64) (Node, error) {
 		return nil, err
 	}
 	n = Fold(n)
+	if tables := Tables(n); len(tables) > 0 && kind == Mask {
+		return nil, fmt.Errorf("%s is not a function this knows (%s), and a mask cannot read a tensor yet: "+
+			"what it keeps would depend on data the engine does not have", tables[0], strings.Join(funcNames(), ", "))
+	}
+	if err := constantBuckets(n); err != nil {
+		return nil, err
+	}
 	switch kind {
 	case Mask:
 		if b, ok := n.(Bool); ok {
@@ -767,6 +864,38 @@ func Compile(src string, kind Kind, symbols map[string]float64) (Node, error) {
 		}
 	}
 	return n, nil
+}
+
+// constantBuckets insists that t5_bucket's shape — how many buckets, how far,
+// and whether two-sided — is fixed, which is what a table of that many rows
+// needs.
+func constantBuckets(n Node) error {
+	var err error
+	var walk func(Node)
+	walk = func(n Node) {
+		switch x := n.(type) {
+		case Unary:
+			walk(x.X)
+		case Binary:
+			walk(x.X)
+			walk(x.Y)
+		case Call:
+			if x.Fn == "t5_bucket" && err == nil {
+				for _, a := range x.Args[1:] {
+					switch a.(type) {
+					case Num, Bool:
+					default:
+						err = fmt.Errorf("t5_bucket's buckets, distance and sidedness have to be constants: %s", String(a))
+					}
+				}
+			}
+			for _, a := range x.Args {
+				walk(a)
+			}
+		}
+	}
+	walk(n)
+	return err
 }
 
 // --- evaluating --------------------------------------------------------------
@@ -824,6 +953,10 @@ func Eval(n Node, e Env) float64 {
 			}
 			return Eval(x.Args[2], e)
 		}
+		// A tensor's values are the model's, not the engine's.
+		if IsTable(x.Fn) {
+			return math.NaN()
+		}
 		vals := make([]float64, len(x.Args))
 		for i, a := range x.Args {
 			vals[i] = Eval(a, e)
@@ -850,6 +983,9 @@ func Cost(n Node) float64 {
 		return 1 + Cost(x.X) + Cost(x.Y)
 	case Call:
 		c := funcs[x.Fn].cost
+		if IsTable(x.Fn) {
+			c = 1
+		}
 		for _, a := range x.Args {
 			c += Cost(a)
 		}
@@ -1055,6 +1191,13 @@ func python(n Node, heads float64) string {
 			return "torch." + x.Fn + "imum(" + args[0] + ", " + args[1] + ")"
 		case "where":
 			return "torch.where(" + args[0] + ", " + args[1] + ", " + args[2] + ")"
+		case "t5_bucket":
+			// A helper the generated file carries, which is T5's own.
+			return "t5_bucket(" + strings.Join(args, ", ") + ")"
+		}
+		// A read from a tensor wired into the attention.
+		if IsTable(x.Fn) {
+			return x.Fn + "[" + strings.Join(args, ", ") + "]"
 		}
 		return "torch." + x.Fn + "(" + args[0] + ")"
 	}

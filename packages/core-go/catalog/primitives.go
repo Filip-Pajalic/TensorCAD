@@ -800,6 +800,29 @@ var Primitives = []*BlockDef{
 
 	// --- attention ----------------------------------------------------------
 	{
+		Kind: "primitive", Type: "position_bias", Category: "position",
+		Params: ParamList{
+			{"buckets", pInt(1, "Rows of the table: how many distances are told apart")},
+			{"heads", pInt(1, "Columns: one learned bias per head")},
+		},
+		Ports: Ports{
+			In: map[string]PortSpec{},
+			Out: map[string]PortSpec{"table": {Shape: "buckets heads", Anchor: "side",
+				Doc: "The table, read by the score expressions of every attention it is wired to"}},
+		},
+		ParamCount: func(r *Resolved) float64 { return r.Num("buckets") * r.Num("heads") },
+		Flops:      noFlops,
+		Retains:    noRetains,
+		Docs: BlockDocs{
+			Name: "relative position bias",
+			Summary: "A learned table of biases, one per head for each bucket of relative distance, that " +
+				"attention scores read to know how far apart a query and a key are. T5 keeps one per " +
+				"stack, wired to every layer, rather than one per layer.",
+			Formula: "params = buckets * heads; read by a score expression as table(t5_bucket(kv - q, ...), h)",
+			Refs:    []string{"https://arxiv.org/abs/1910.10683"},
+		},
+	},
+	{
 		Kind: "primitive", Type: "rope", Category: "position",
 		Params: ParamList{
 			{"heads", pInt(1, "Heads the rotation is applied across")},
@@ -871,14 +894,13 @@ var Primitives = []*BlockDef{
 			if r.Bool("cross") {
 				keys = "S"
 			}
-			return Ports{
-				In: map[string]PortSpec{
-					"q": {Shape: "B heads T head_dim", Dtype: "real", Anchor: "flow"},
-					"k": {Shape: "B kv_heads " + keys + " head_dim", Dtype: "real", Anchor: "flow"},
-					"v": {Shape: "B kv_heads " + keys + " " + v, Dtype: "real", Anchor: "flow"},
-				},
-				Out: map[string]PortSpec{"y": Port("B heads T " + v)},
+			in := map[string]PortSpec{
+				"q": {Shape: "B heads T head_dim", Dtype: "real", Anchor: "flow"},
+				"k": {Shape: "B kv_heads " + keys + " head_dim", Dtype: "real", Anchor: "flow"},
+				"v": {Shape: "B kv_heads " + keys + " " + v, Dtype: "real", Anchor: "flow"},
 			}
+			tablePorts(r, in)
+			return Ports{In: in, Out: map[string]PortSpec{"y": Port("B heads T " + v)}}
 		},
 		// A sink is one learned score per query head.
 		ParamCount: func(r *Resolved) float64 {

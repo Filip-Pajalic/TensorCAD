@@ -19,6 +19,10 @@ type Options struct {
 	T *float64
 	// B is the micro-batch size; it defaults to the document's runtime B.
 	B *float64
+	// S is the source length of a design with a second sequence, an
+	// encoder-decoder's; it defaults to the document's runtime S, and means
+	// nothing to a design that does not declare one.
+	S *float64
 	// Dtype is the training dtype for weights and activations.
 	Dtype string
 	// InferenceDtype is the serving dtype, often smaller than the training one.
@@ -85,8 +89,11 @@ func (p *PartialParallel) apply(plan ParallelPlan) ParallelPlan {
 // ResolvedOptions is the operating point with every default filled in, so a
 // report can say what it assumed.
 type ResolvedOptions struct {
-	T                 float64          `json:"T"`
-	B                 float64          `json:"B"`
+	T float64 `json:"T"`
+	B float64 `json:"B"`
+	// S is the source length, present only for a design with a second
+	// sequence.
+	S                 float64          `json:"S,omitempty"`
 	Dtype             string           `json:"dtype"`
 	InferenceDtype    string           `json:"inferenceDtype"`
 	KvDtype           string           `json:"kvDtype"`
@@ -240,12 +247,19 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 	cacheCtx := trainCtx
 	cacheCtx.Bytes = DtypeBytes[kvDtype]
 
+	source := 0.0
+	if symbols.Runtime["S"] {
+		source = orDefault(options.S, symbols.Values["S"])
+	}
+	streams := newStreams(expanded, symbols, t, source)
+
 	flops := CountFlops(flat, FlopsOptions{
 		Ctx:                trainCtx,
 		Recompute:          recompute,
 		NonEmbeddingActive: params.NonEmbeddingActive,
+		Streams:            streams,
 	})
-	kv := CountKvCache(flat, cacheCtx)
+	kv := CountKvCache(flat, cacheCtx, streams)
 
 	memory := AnalyzeMemory(flat, MemoryOptions{
 		Ctx:                 trainCtx,
@@ -259,6 +273,7 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 		Symbols:             symbols,
 		Params:              params,
 		Kv:                  kv,
+		Streams:             streams,
 	})
 
 	peak := PeakFlops(hardware, dtype)
@@ -310,7 +325,7 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 	return &Result{
 		Name: doc.Meta.Name,
 		Options: ResolvedOptions{
-			T: t, B: b,
+			T: t, B: b, S: source,
 			Dtype: dtype, InferenceDtype: inferenceDtype, KvDtype: kvDtype,
 			Hardware: hardware, GPUs: orDefault(options.GPUs, 1),
 			Parallel: parallel, Optimizer: optimizer, Recompute: recompute,

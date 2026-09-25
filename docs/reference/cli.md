@@ -31,8 +31,11 @@ it usable in CI.
 
 ```bash
 bun packages/cli/src/index.ts analyze <file|preset> \
-  [--T n] [--B n] [--hardware id] [--gpus n] [--tokens n] [--json]
+  [--T n] [--B n] [--S n] [--hardware id] [--gpus n] [--tokens n] [--json]
 ```
+
+`--S` is the source length, for a design with a second sequence; a design that
+declares no `S` ignores it.
 
 Parameters, FLOPs, KV cache, memory, throughput, cost and Chinchilla budget. See
 [analysis outputs](analysis.md).

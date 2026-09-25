@@ -47,6 +47,12 @@ Per token, unless stated.
 | `trainPerToken` | Forward plus backward, plus recomputation |
 | `attentionShare` | Fraction of forward FLOPs inside attention |
 | `ruleOfThumb2N` / `ruleOfThumb6N` | The usual approximations, for comparison |
+| `perStream` | A design with two sequences only: each one's forward pass per token of its own, `S` then `T` |
+| `fwdPerExample` | A design with two sequences only: one example's forward pass, both sequences' tokens |
+
+For a design with a second sequence every per-token figure above is per
+*target* token: the source's blocks are measured at `S`, and their share is
+spread over the target's tokens. `options.S` then says what `S` was.
 
 The two totals exist because they are answers to different questions. See
 [Verify a design against PyTorch](../how-to/verify-against-pytorch.md).

@@ -350,6 +350,7 @@ func (w *walker) graph(graph *ir.Graph, prefix string, seeds map[string]shapes.S
 		}
 
 		ctx := EvalCtxFor(resolved, w.symbols)
+		ctx = w.alongSource(ctx, node, prefix, nodePorts, producers)
 		batch := w.checkInputs(node, path, prefix, nodePorts, producers, ctx)
 
 		if catalog.IsContainer(def) && node.Graph != nil {
@@ -375,6 +376,51 @@ func (w *walker) graph(graph *ir.Graph, prefix string, seeds map[string]shapes.S
 
 		w.instantiateOutputs(node, path, nodePorts, ctx, batch, seeds)
 	}
+}
+
+// alongSource lets a block run along the source.
+//
+// A block declares its pins over T, the sequence: "B heads T head_dim", or a
+// rearrange from "B T (H dh)". In a declaration T means *this block's
+// sequence*, and a block that everything arrives at S long is running along
+// the source, an encoder's, so there T is S — on every pin, in and out. A
+// block that receives both S and T is left as it is, so the S one is reported
+// against the T its pattern asks for: two sequences meeting where a block only
+// takes one is a real mismatch, which is what the check is for. A design with
+// no S never reaches the substitution.
+func (w *walker) alongSource(
+	ctx shapes.EvalCtx, node ir.NodeDef, prefix string,
+	nodePorts catalog.Ports, producers map[string]string,
+) shapes.EvalCtx {
+	if !w.symbols.Runtime[ir.SourceSymbol] {
+		return ctx
+	}
+	seen := map[string]bool{}
+	for portName := range nodePorts.In {
+		from, ok := producers[node.ID+":"+portName]
+		if !ok {
+			continue
+		}
+		parsed, err := ir.SplitEndpoint(from)
+		if err != nil {
+			continue
+		}
+		for _, dim := range w.result.Outputs[ir.JoinPath(prefix, parsed.Node)+":"+parsed.Port] {
+			for _, name := range dim.Symbols() {
+				seen[name] = true
+			}
+		}
+	}
+	if !seen[ir.SourceSymbol] || seen["T"] {
+		return ctx
+	}
+	subs := make(map[string]shapes.Sym, len(ctx.Substitutions)+1)
+	for k, v := range ctx.Substitutions {
+		subs[k] = v
+	}
+	subs["T"] = shapes.V(ir.SourceSymbol)
+	ctx.Substitutions = subs
+	return ctx
 }
 
 // checkInputs compares what arrived at each input port with what the port says

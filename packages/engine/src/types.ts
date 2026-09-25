@@ -295,6 +295,12 @@ export const DTYPE_BYTES: Record<Dtype, number> = { fp32: 4, bf16: 2, fp16: 2, f
 export interface AnalysisOptions {
   T?: number;
   B?: number;
+  /**
+   * The source length of a design with a second sequence, an encoder's.
+   * Defaults to the design's own runtime `S`, and means nothing to a design
+   * that does not declare one.
+   */
+  S?: number;
   dtype?: Dtype;
   inferenceDtype?: Dtype;
   kvDtype?: Dtype;
@@ -352,7 +358,24 @@ export interface ParamsResult {
   errors: string[];
 }
 
+/** One sequence's forward pass, per token of that sequence. */
+export interface StreamFlops {
+  /** "T" for the target, "S" for the source. */
+  symbol: "T" | "S";
+  length: number;
+  /** Matmul FLOPs per token of this sequence, attention included. */
+  fwd: number;
+}
+
 export interface FlopsResult {
+  /**
+   * Present only for a design with two sequences. Every other per-token figure
+   * is then per target token, the source's share spread over the target's
+   * tokens.
+   */
+  perStream?: StreamFlops[];
+  /** One example's forward pass, every sequence's tokens; two sequences only. */
+  fwdPerExample?: number;
   fwdDense: number;
   fwdAttention: number;
   /** The attention term as a profiler counts it, with nothing masked. */
@@ -458,6 +481,8 @@ export interface ChinchillaResult {
 export interface ResolvedAnalysisOptions {
   T: number;
   B: number;
+  /** The source length; present only for a design with a second sequence. */
+  S?: number;
   dtype: Dtype;
   inferenceDtype: Dtype;
   kvDtype: Dtype;

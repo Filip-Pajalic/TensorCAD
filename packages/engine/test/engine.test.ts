@@ -356,6 +356,55 @@ describe("the compiled engine", () => {
     expect(flat.ports["embed"].out.y.shape).toBe("... dim");
   });
 
+  it("measures a second sequence through the boundary, and says nothing of one a design lacks", () => {
+    // An encoder over a source and a decoder over a target, nothing between
+    // them yet: M11's first phase.
+    const doc = {
+      version: 1,
+      meta: { name: "two-streams" },
+      symbols: {
+        B: { kind: "runtime", default: 1 },
+        T: { kind: "runtime", default: 64 },
+        S: { kind: "runtime", default: 256 },
+        D: { kind: "design", value: 64 },
+        H: { kind: "design", value: 4 },
+        dh: { kind: "design", value: 16 },
+        V: { kind: "design", value: 100 },
+      },
+      graph: {
+        nodes: [
+          { id: "src", type: "input", params: { shape: "B S", dtype: "int64" } },
+          { id: "src_embed", type: "embedding", params: { vocab: "V", dim: "D" } },
+          { id: "encoder", type: "transformer_block", params: { d_model: "D", heads: "H", kv_heads: "H", head_dim: "dh", ffn_hidden: "4*D", causal: false } },
+          { id: "encoded", type: "output" },
+          { id: "tgt", type: "input", params: { shape: "B T", dtype: "int64" } },
+          { id: "tgt_embed", type: "embedding", params: { vocab: "V", dim: "D" } },
+          { id: "decoder", type: "transformer_block", params: { d_model: "D", heads: "H", kv_heads: "H", head_dim: "dh", ffn_hidden: "4*D" } },
+          { id: "head", type: "lm_head", params: { vocab: "V", dim: "D", tied: false } },
+          { id: "logits", type: "output" },
+        ],
+        edges: [
+          ["src:x", "src_embed:ids"], ["src_embed:y", "encoder:x"], ["encoder:y", "encoded:x"],
+          ["tgt:x", "tgt_embed:ids"], ["tgt_embed:y", "decoder:x"], ["decoder:y", "head:x"], ["head:y", "logits:x"],
+        ],
+      },
+    } as unknown as Doc;
+    const a = engine.analyze(doc, { S: 512 });
+    expect(a.errors).toEqual([]);
+    expect(a.options.S).toBe(512);
+    expect(a.flops.perStream!.map((s) => [s.symbol, s.length])).toEqual([["S", 512], ["T", 64]]);
+    const [src, tgt] = a.flops.perStream!;
+    expect(a.flops.fwdPerExample).toBe(src.fwd * 512 + tgt.fwd * 64);
+    // The encoder's layers ran along S, so nothing inside it was told otherwise.
+    expect(engine.derive(doc, {}).report.findings.filter((f) => f.severity === "error")).toEqual([]);
+
+    // One sequence: no S, no streams, not even a null.
+    const one = engine.analyze(engine.preset("nano-sort"), { S: 512 });
+    expect("S" in one.options).toBe(false);
+    expect("perStream" in one.flops).toBe(false);
+    expect("fwdPerExample" in one.flops).toBe(false);
+  });
+
   it("draws an attention's mask through the boundary", () => {
     const doc = engine.preset("nano-sort");
     // A block with attention inside it answers through that attention, at the

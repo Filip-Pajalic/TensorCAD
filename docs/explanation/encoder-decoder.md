@@ -1,8 +1,8 @@
 # Encoder–decoder: a second sequence
 
-*A proposal for M11. Nothing here is built yet. It is written first for the
-same reason M10's was: the choice decides what "per token" means in every
-number the tool reports.*
+*A proposal for M11. Phase 1 is built; the rest is not. It was written first
+for the same reason M10's was: the choice decides what "per token" means in
+every number the tool reports.*
 
 M10 set itself a finishing line it has not crossed: "ALiBi and relative-bias
 presets reproduce their published counts". The relative-bias model is T5. T5 is
@@ -159,6 +159,23 @@ generated code must compute what the model computes.
    per-stream accounting. Every golden unchanged is the test, and a
    two-stream design with no cross-attention yet measures each stack at its own
    length.
+   *Done.* A design with a source declares `S` as a runtime symbol. `S` is
+   reserved for that and cannot be a design symbol, and a design that never
+   declares it is untouched: every golden was rewritten and not one byte
+   moved. The analysis finds which blocks run along the source from the
+   shapes on their pins, measures each at its own stream's length, and
+   spreads the source's per-token figures over the target's tokens. It
+   reports each stream per token of its own and one example whole
+   (`perStream`, `fwdPerExample`), and caches a source per request. The
+   operating point, the CLI (`--S`) and the MCP tools take the source length.
+   Building it found a sixth assumption the proposal had missed: every block
+   *declares* its pins over `T` (`B heads T head_dim`, a rearrange from
+   `B T (H dh)`), so an encoder built from them failed shape checking inside.
+   In a declaration `T` now means *this block's sequence*, which is `S` for a
+   block that everything arrives at `S` long. A block that receives both is
+   left alone, so the source and the target meeting where a block takes one is
+   still an error. Every block the catalog has runs along a source without
+   being written again.
 2. **Cross-attention.**
    - `sdpa` with keys of length `S`, not causal, counted at `S` keys a query,
      with a per-request cache.

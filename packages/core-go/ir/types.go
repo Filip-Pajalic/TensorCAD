@@ -19,6 +19,12 @@ const DocVersion = 1
 // not to match.
 var RuntimeSymbols = []string{"B", "T"}
 
+// SourceSymbol is the length of a second sequence: an encoder-decoder's
+// source, which its encoder runs along while its decoder runs along T. It is
+// not always present, because most designs have one sequence, so a design with
+// two declares it, and only as a runtime symbol.
+const SourceSymbol = "S"
+
 // ParamValue is a parameter as written in the document: a number, string,
 // boolean, null, object or array. It stays untyped because the catalog, not the
 // IR, decides what a given block's parameter means.

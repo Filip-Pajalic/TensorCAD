@@ -22,6 +22,12 @@ export interface OperatingPoint {
   B: number;
   /** Sequence length. Null means whatever the document declares. */
   T: number | null;
+  /**
+   * Source length, for a design with a second sequence: an encoder's. Null
+   * means whatever the document declares; a design that declares no S
+   * ignores it.
+   */
+  S: number | null;
   /** Training precision for weights and activations. */
   dtype: Dtype;
   /** Serving precision, which is usually smaller. */
@@ -57,6 +63,7 @@ export interface OperatingPoint {
 export const DEFAULT_OPERATING: OperatingPoint = {
   B: 1,
   T: null,
+  S: null,
   dtype: "bf16",
   inferenceDtype: "bf16",
   hardware: DEFAULT_HARDWARE,
@@ -83,6 +90,7 @@ export function toAnalysisOptions(o: OperatingPoint): AnalysisOptions {
   return {
     B: o.B,
     ...(o.T !== null ? { T: o.T } : {}),
+    ...(o.S !== null ? { S: o.S } : {}),
     dtype: o.dtype,
     inferenceDtype: o.inferenceDtype,
     hardware: o.hardware,

@@ -34,6 +34,12 @@ is reported rather than hung on.
 document omits them. They stay symbolic so a shape mismatch involving them is a
 real polynomial difference. See [the shape algebra](../explanation/shape-algebra.md).
 
+**`S` is the source length** of a design with a second sequence, an
+encoder–decoder's. It is not always available: a design that has one declares
+it, `{ "kind": "runtime", "default": 512 }`, and it cannot be a design symbol.
+A block every one of whose inputs is `S` long runs along the source, and its
+declared `T` means `S` there. See [encoder–decoder](../explanation/encoder-decoder.md).
+
 ## `graph`
 
 ```json

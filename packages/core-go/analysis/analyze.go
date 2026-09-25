@@ -252,6 +252,9 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 		source = orDefault(options.S, symbols.Values["S"])
 	}
 	streams := newStreams(expanded, symbols, t, source)
+	// Every block is told the source's length, which is what cross-attention
+	// reads all of.
+	trainCtx.S, cacheCtx.S = streams.Source, streams.Source
 
 	flops := CountFlops(flat, FlopsOptions{
 		Ctx:                trainCtx,

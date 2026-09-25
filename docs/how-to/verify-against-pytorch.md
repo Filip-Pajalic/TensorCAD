@@ -40,6 +40,11 @@ python -m tensorcad_runtime verify <model.py> --batch 2 --seq 128
 
 For a convolutional design pass `--seq 1`: its token is one image.
 
+An encoder-decoder takes two inputs, and the runtime builds both. `--seq` is
+the target's length and `--source` the source's, which defaults to the design's
+own `S`. The report's `inputs` says what each was called with, and
+`flops_per_token` is per target token, as the analysis's figures are.
+
 The harness reads the design's own `input` block for the shape and dtype of the
 tensor to feed, so a vision model gets `B C H W` floats rather than token ids.
 

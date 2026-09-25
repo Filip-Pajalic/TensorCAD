@@ -307,6 +307,67 @@
       ]
     },
     {
+      "type": "cross_attention",
+      "kind": "composite",
+      "category": "attention",
+      "name": "cross-attention",
+      "summary": "Attention from the target to the source: queries from the decoder's stream, keys and values from the encoder's output, every source position seen. Its cache is computed once per request, from the encoder.",
+      "formula": "FLOPs/target token = 2*S*heads*(head_dim + head_dim); cache = kv_heads*2*head_dim*bytes*S per request",
+      "refs": [
+        "https://arxiv.org/abs/1706.03762"
+      ],
+      "params": [
+        [
+          "d_model",
+          "int",
+          "Width of the target stream the queries come from",
+          null
+        ],
+        [
+          "memory_dim",
+          "int",
+          "Width of the source's memory the keys and values come from; 0 means d_model",
+          null
+        ],
+        [
+          "heads",
+          "int",
+          "Query heads",
+          null
+        ],
+        [
+          "kv_heads",
+          "int",
+          "Key/value heads",
+          null
+        ],
+        [
+          "head_dim",
+          "int",
+          "Width of one head",
+          null
+        ],
+        [
+          "bias",
+          "bool",
+          "Bias on the projections",
+          null
+        ],
+        [
+          "flash",
+          "bool",
+          "Assume a memory-efficient kernel",
+          null
+        ],
+        [
+          "scale",
+          "num",
+          "What the scores are multiplied by; unset is 1/sqrt(head_dim), and T5 uses 1",
+          null
+        ]
+      ]
+    },
+    {
       "type": "dense_mlp",
       "kind": "composite",
       "category": "mlp",
@@ -1743,6 +1804,18 @@
           "bool",
           "The values are another attention's, which caches them: this one caches its keys alone. Differential attention's second map reads the first one's values. Unset is no.",
           null
+        ],
+        [
+          "cross",
+          "bool",
+          "Attend from this sequence to the source: queries T long, keys and values S long, every one of them seen. An encoder-decoder's cross-attention. Unset is self-attention.",
+          null
+        ],
+        [
+          "scale",
+          "num",
+          "What the scores are multiplied by before the softmax; unset is 1/sqrt(head_dim). T5 uses 1, having folded the scale into its initialisation.",
+          null
         ]
       ]
     },
@@ -2149,6 +2222,12 @@
           "written_out",
           "bool",
           "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused.",
+          null
+        ],
+        [
+          "cross_attention",
+          "bool",
+          "Attend to an encoder's output after attending to this sequence: a decoder layer of an encoder-decoder. Adds a memory input, B S d_model, and a third norm. Unset is none.",
           null
         ],
         [

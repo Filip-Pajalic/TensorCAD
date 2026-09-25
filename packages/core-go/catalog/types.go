@@ -255,10 +255,14 @@ type FlopsPerToken struct {
 
 // AnalysisCtx is the operating point a formula is evaluated under.
 type AnalysisCtx struct {
+	// T is the length of the sequence the block runs along.
 	T     float64
 	B     float64
 	Bytes float64
 	Flash bool
+	// S is the source length of a design with a second sequence, which
+	// cross-attention reads every position of; zero with none.
+	S float64
 }
 
 // StateBytes is per-token cache and per-sequence state.

@@ -21,7 +21,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 | M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
 | M10 Attention variants | **Phases 1, 2 and 4 done; phase 3 two thirds done.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Phase 3 is two thirds done: BLOOM-7b1's ALiBi is a score expression and gpt-oss-20b brings attention sinks, both reproducing their published parameter counts exactly and both held against Hugging Face's own construction of what they add. Differential attention is two fused attentions and a combine, held against Microsoft's reference, and attention can be written out on purpose, with talking heads, at a cost a rule states. Only T5 remains, and it wants a milestone of its own. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
-| M11 Encoder–decoder | **Phase 1 done.** A second sequence, so T5 can be drawn and M10 can close: a source length `S` beside `T`, each block counted at the tokens of its own stream, cross-attention, a repeat that hands every layer the same tensor, and expressions that read a tensor — T5's shared relative-bias table. Every decoder-only number is held unchanged. [docs/explanation/encoder-decoder.md](docs/explanation/encoder-decoder.md). |
+| M11 Encoder–decoder | **Phases 1 and 2 done.** A second sequence, and cross-attention to it, so T5 can be drawn and M10 can close: a source length `S` beside `T`, each block counted at the tokens of its own stream, cross-attention, a repeat that hands every layer the same tensor, and expressions that read a tensor — T5's shared relative-bias table. Every decoder-only number is held unchanged. [docs/explanation/encoder-decoder.md](docs/explanation/encoder-decoder.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -408,7 +408,7 @@ kernel before anything is added.
    learned. That finishes phase 4; T5, which needs encoder–decoder support and
    a learned table inside a score, is left for a milestone of its own.
 
-### M11 — Encoder–decoder · Phase 1 done
+### M11 — Encoder–decoder · Phases 1 and 2 done
 
 M10's finishing line includes a relative-bias preset, and the relative-bias
 model is T5, an encoder–decoder. The engine assumes one sequence in five
@@ -429,7 +429,17 @@ adds a second sequence without changing what any existing number means:
 2. **Cross-attention** — `sdpa` with keys `S` long, not causal, and a cache
    computed once per request; a repeat's *broadcast* inputs, which every layer
    reads unchanged; `scale` on `sdpa`, since T5's attention is unscaled; and
-   generated code and verification with two inputs.
+   generated code and verification with two inputs. *Done:*
+   - `cross` on `sdpa`, and a `cross_attention` composite.
+   - `cross_attention` on `transformer_block`, which adds a `memory` input.
+   - A stack's input that its layer does not give back reaches every copy
+     unchanged, with no new syntax, and is charged once in memory.
+   - `forward(self, src, tgt)`, and a runtime that builds, profiles and exports
+     both inputs.
+
+   A small encoder-decoder's profiler count per target token equals the
+   analysis's exactly. Along the way, an encoder turned out to cache nothing,
+   and a pinned-shape port stopped taking part in batch binding.
 3. **Tensors in expressions** — a score reading a port by name,
    `score + rel(t5_bucket(kv - q, 32, 128, true), h)`, with the table owned by a
    `position_bias` block outside the stack and FlexAttention capturing it. The

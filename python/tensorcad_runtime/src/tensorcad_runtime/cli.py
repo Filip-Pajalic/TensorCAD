@@ -69,6 +69,12 @@ def build_parser() -> argparse.ArgumentParser:
     verify.add_argument("model", help="path to a generated model.py")
     verify.add_argument("--batch", type=int, default=2, help="batch size for the forward pass")
     verify.add_argument("--seq", type=int, default=128, help="sequence length for the forward pass")
+    verify.add_argument(
+        "--source",
+        type=int,
+        default=None,
+        help="source length, for an encoder-decoder (defaults to the design's own S)",
+    )
     verify.add_argument("--class-name", default=None, help="model class to instantiate")
     verify.add_argument(
         "--max-forward-bytes",
@@ -162,6 +168,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.model,
                 batch=args.batch,
                 seq=args.seq,
+                source=args.source,
                 class_name=args.class_name,
                 max_forward_bytes=(
                     args.max_forward_bytes

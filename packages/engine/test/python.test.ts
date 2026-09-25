@@ -807,6 +807,52 @@ describe.skipIf(!available)("talking heads, written out", () => {
 });
 
 /**
+ * An encoder-decoder, M11's second phase: a source and a target, an encoder
+ * stack over the one and a decoder stack over the other whose every layer
+ * attends to all of the encoder's output. The runtime builds both inputs, the
+ * profiler's count per target token has to be the analysis's — the encoder's
+ * share spread over the target, cross-attention at every source position —
+ * and export has to let the batch, the source and the target all move.
+ */
+describe.skipIf(!available)("an encoder-decoder", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+  const seq2seq = JSON.parse(
+    readFileSync(join(import.meta.dir, "../../core-go/codegen/testdata/seq2seq.json"), "utf8"),
+  ) as ReturnType<typeof getPreset>;
+
+  it(
+    "has the parameters and the FLOPs it says, runs on both inputs, and exports",
+    () => {
+      const dir = mkdtempSync(join(tmpdir(), "tensorcad-seq2seq-"));
+      try {
+        const out = generateTorch(seq2seq);
+        expect(out.warnings).toEqual([]);
+        for (const file of out.files) writeFileSync(join(dir, file.path), file.contents);
+        const full = runVerify(invocation, join(dir, "model.py"), ["--seq", "16", "--source", "24"]);
+        expect(full).not.toHaveProperty("spawnFailed");
+        const r = full as Verify & { inputs?: Record<string, number[]> };
+        expect({ ok: r.ok, matches: r.matches, forward: r.forward, export: r.export_ok }).toEqual({
+          ok: true,
+          matches: true,
+          forward: "ok",
+          export: true,
+        });
+        expect(r.inputs).toEqual({ src: [2, 24], tgt: [2, 16] });
+        const analysis = analyze(seq2seq, { T: 16, B: 2, S: 24 });
+        expect(r.params).toBe(analysis.params.total);
+        // Per target token, the encoder's work spread over the target's tokens.
+        expect(r.flops! / (2 * 16)).toBe(analysis.flops.fwdTotalUnmasked);
+        // One example is every target token's share, the source's included.
+        expect(analysis.flops.fwdPerExample).toBe(analysis.flops.fwdTotal * 16);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    TIMEOUT_MS,
+  );
+});
+
+/**
  * Every preset, through `ast.parse`.
  *
  * Cheaper than the block above and answering a different question: not "does

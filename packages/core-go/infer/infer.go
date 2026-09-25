@@ -479,6 +479,13 @@ func (w *walker) checkInputs(
 		if !m.OK {
 			continue
 		}
+		// Only a pattern with "..." binds a batch. One that spells every axis
+		// out has said what it takes, and has nothing to agree with the others
+		// about: a decoder block's stream is B T D and the encoder's memory it
+		// reads is B S D, and those are not the same batch of anything.
+		if !hasEllipsis(pattern) {
+			continue
+		}
 		if !bound {
 			batch, bound = m.Batch, true
 			continue
@@ -601,4 +608,13 @@ func sameShape(a, b shapes.Shape, values map[string]float64) bool {
 		}
 	}
 	return true
+}
+
+func hasEllipsis(p shapes.Pattern) bool {
+	for _, a := range p.Atoms {
+		if a.Kind == shapes.AtomEllipsis {
+			return true
+		}
+	}
+	return false
 }

@@ -24,6 +24,8 @@ type Attention struct {
 	Heads  float64
 	// Sinks is a learned score per head in the softmax's denominator.
 	Sinks bool
+	// Cross is attention to the source: every position of it, unmasked.
+	Cross bool
 	// MaskExpr and ScoreExpr are what the design wrote, nil where it wrote
 	// nothing.
 	MaskExpr  attnexpr.Node
@@ -39,6 +41,7 @@ func AttentionOf(r *Resolved) Attention {
 		Cap:    r.Num("logit_softcap"),
 		Heads:  r.Num("heads"),
 		Sinks:  r.Bool("sinks"),
+		Cross:  r.Bool("cross"),
 	}
 	if m := compiled(r.Str("mask"), attnexpr.Mask); m != nil {
 		a.MaskExpr = attnexpr.With(m, "heads", a.Heads)
@@ -428,6 +431,38 @@ func (a Attention) Grid(T, B float64, head float64) MaskGrid {
 
 // constraints are what the rules say about an sdpa's expressions.
 func (a Attention) constraints(r *Resolved) []BlockFinding {
+	if a.Cross {
+		// Everything that decides which scores count, or changes them, is
+		// about positions in one sequence; across two it means nothing yet.
+		var lost []string
+		if a.Causal {
+			lost = append(lost, "causal")
+		}
+		if a.Window > 0 {
+			lost = append(lost, "window")
+		}
+		if a.Cap != 0 {
+			lost = append(lost, "logit_softcap")
+		}
+		if a.MaskExpr != nil {
+			lost = append(lost, "mask")
+		}
+		if a.ScoreExpr != nil {
+			lost = append(lost, "score")
+		}
+		if a.Sinks {
+			lost = append(lost, "sinks")
+		}
+		if len(lost) == 0 {
+			return nil
+		}
+		return []BlockFinding{{
+			ID: "SDPA-07", Severity: "error", Param: lost[0],
+			Message: "Cross-attention sees every source position, so " + strings.Join(lost, ", ") +
+				" would mean nothing here.",
+			Hint: "Those belong to self-attention, where a query and a key are positions in one sequence.",
+		}}
+	}
 	if !a.Flex() {
 		return nil
 	}

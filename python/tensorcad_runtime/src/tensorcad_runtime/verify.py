@@ -20,6 +20,7 @@ from .loader import (
     read_design,
     resolve_symbols,
     input_spec_from_design,
+    input_specs_from_design,
     vocab_from_design,
     vocab_from_model,
 )
@@ -127,6 +128,20 @@ def _example_input(in_spec, vocab: int, batch: int, seq: int, *, device=None, co
     return torch.zeros(*dims, dtype=torch.long, device=device)
 
 
+def _example_inputs(in_spec, vocab: int, batch: int, seq: int, *, device=None, concrete: bool = False):
+    """Everything the model is called with, as a tuple.
+
+    ``in_spec`` is either one input's spec, as it always was, or a list of
+    them for a design with several inputs, each named: an encoder-decoder's
+    source and target.
+    """
+    if isinstance(in_spec, list):
+        return tuple(
+            _example_input(spec[1:], vocab, batch, seq, device=device, concrete=concrete) for spec in in_spec
+        )
+    return (_example_input(in_spec, vocab, batch, seq, device=device, concrete=concrete),)
+
+
 def _count_flops(cls, meta_model, in_spec, vocab: int, batch: int, seq: int, warnings: list[str]):
     """Forward FLOPs via FlopCounterMode, on meta tensors, then fake tensors.
 
@@ -138,10 +153,10 @@ def _count_flops(cls, meta_model, in_spec, vocab: int, batch: int, seq: int, war
 
     try:
         model = meta_model
-        ids = _example_input(in_spec, vocab, batch, seq, device="meta")
+        inputs = _example_inputs(in_spec, vocab, batch, seq, device="meta")
         counter = FlopCounterMode(display=False)
         with counter:
-            model(ids)
+            model(*inputs)
         total = counter.get_total_flops()
         if total:
             return int(total)
@@ -154,10 +169,10 @@ def _count_flops(cls, meta_model, in_spec, vocab: int, batch: int, seq: int, war
 
         with FakeTensorMode():
             model = cls()
-            ids = _example_input(in_spec, vocab, batch, seq)
+            inputs = _example_inputs(in_spec, vocab, batch, seq)
             counter = FlopCounterMode(display=False)
             with counter:
-                model(ids)
+                model(*inputs)
             total = counter.get_total_flops()
         return int(total) if total else None
     except Exception as exc:  # noqa: BLE001
@@ -179,32 +194,46 @@ def _try_export(meta_model, in_spec, vocab: int, batch: int, seq: int, seq_max: 
 
     model = meta_model
     model.eval()
-    ids = _example_input(in_spec, vocab, batch, seq, device="meta")
+    inputs = _example_inputs(in_spec, vocab, batch, seq, device="meta")
 
     # Which axes are allowed to move is a property of the design, not an
     # assumption: `B T` has two, `B C H W` has one, and asking for a dynamic
-    # channel count is how this used to fail on a convnet.
-    atoms = in_spec[2] if in_spec else ["B", "T"]
-    named: dict[int, Any] = {}
-    auto: dict[int, Any] = {}
-    for i, atom in enumerate(atoms):
-        if atom == "B":
-            named[i] = Dim("batch", min=1, max=8192)
-            auto[i] = Dim.AUTO
-        elif atom == "T" and seq_max >= 2 and seq >= 2:
-            named[i] = Dim("seq", min=2, max=seq_max)
-            auto[i] = Dim.AUTO
+    # channel count is how this used to fail on a convnet. The same axis in
+    # two inputs is one Dim, so an encoder-decoder's batch is one batch; its
+    # source length moves on its own.
+    dims = {
+        "B": Dim("batch", min=1, max=8192),
+        "T": Dim("seq", min=2, max=seq_max) if seq_max >= 2 and seq >= 2 else None,
+        "S": Dim("source", min=2, max=max(seq_max, 1 << 17)),
+    }
 
-    attempts: list[tuple[str, Any]] = [
-        ("Dim", {"ids": named}),
-        ("Dim.AUTO", {"ids": auto}),
-    ]
+    def dynamic(atoms: list[str]) -> tuple[dict[int, Any], dict[int, Any]]:
+        named: dict[int, Any] = {}
+        auto: dict[int, Any] = {}
+        for i, atom in enumerate(atoms):
+            if dims.get(atom) is not None:
+                named[i] = dims[atom]
+                auto[i] = Dim.AUTO
+        return named, auto
+
+    if isinstance(in_spec, list):
+        pairs = [dynamic(spec[3]) for spec in in_spec]
+        attempts: list[tuple[str, Any]] = [
+            ("Dim", tuple(p[0] for p in pairs)),
+            ("Dim.AUTO", tuple(p[1] for p in pairs)),
+        ]
+    else:
+        named, auto = dynamic(in_spec[2] if in_spec else ["B", "T"])
+        attempts = [
+            ("Dim", {"ids": named}),
+            ("Dim.AUTO", {"ids": auto}),
+        ]
 
     last_error = None
     attempted: list[str] = []
     for label, dynamic_shapes in attempts:
         try:
-            program = export(model, (ids,), dynamic_shapes=dynamic_shapes)
+            program = export(model, inputs, dynamic_shapes=dynamic_shapes)
         except Exception as exc:  # noqa: BLE001
             last_error = f"{type(exc).__name__}: {exc}"
             attempted.append(f"{label}: {last_error[:300]}")
@@ -261,14 +290,15 @@ def _run_forward(cls, in_spec, vocab: int, batch: int, seq: int, warnings: list[
     try:
         model = cls()
         model.eval()
-        ids = _example_input(in_spec, vocab, batch, seq, concrete=True)
+        inputs = _example_inputs(in_spec, vocab, batch, seq, concrete=True)
+        ids = inputs[0]
         counter = None
         if count_flops:
             from torch.utils.flop_counter import FlopCounterMode
 
             counter = FlopCounterMode(display=False)
         with torch.no_grad(), (counter or contextlib.nullcontext()):
-            out = model(ids)
+            out = model(*inputs)
         if isinstance(out, (tuple, list)):
             out = out[0]
         flops = int(counter.get_total_flops()) if counter is not None else None
@@ -276,6 +306,11 @@ def _run_forward(cls, in_spec, vocab: int, batch: int, seq: int, warnings: list[
             "ok",
             {
                 "input": list(ids.shape),
+                **(
+                    {"inputs": {spec[0]: list(x.shape) for spec, x in zip(in_spec, inputs)}}
+                    if isinstance(in_spec, list)
+                    else {}
+                ),
                 "logits": list(out.shape),
                 "dtype": str(out.dtype).replace("torch.", ""),
             },
@@ -317,8 +352,13 @@ def verify_model(
     skip_flops: bool = False,
     phase_timeout: float = DEFAULT_PHASE_TIMEOUT,
     progress=None,
+    source: int | None = None,
 ) -> dict[str, Any]:
-    """Verify a generated ``model.py``. Returns the JSON-ready report."""
+    """Verify a generated ``model.py``. Returns the JSON-ready report.
+
+    ``source`` is the source length of a design with two inputs, an
+    encoder-decoder's; it defaults to the design's own ``S``.
+    """
     import torch
 
     def say(message: str) -> None:
@@ -364,7 +404,8 @@ def verify_model(
 
     vocab = vocab_from_design(design)
     vocab_source = "design.symbols.V"
-    in_spec = input_spec_from_design(design, batch, seq)
+    # Several inputs are a list of named specs, one a single spec as ever.
+    in_spec = input_specs_from_design(design, batch, seq, source) or input_spec_from_design(design, batch, seq)
     if vocab is None:
         vocab = vocab_from_model(model)
         vocab_source = "final nn.Linear out_features"
@@ -391,6 +432,8 @@ def verify_model(
         "seq": seq,
         "torch_version": torch.__version__,
     }
+    if isinstance(in_spec, list):
+        report["inputs"] = {spec[0]: spec[1] for spec in in_spec}
 
     # -- FLOPs on meta/fake tensors ----------------------------------------
     flops = None

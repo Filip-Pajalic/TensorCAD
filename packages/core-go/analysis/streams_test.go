@@ -129,17 +129,17 @@ func TestEachStackIsMeasuredAtItsOwnLength(t *testing.T) {
 	}
 }
 
-// The encoder's cache, if it keeps one, is fixed for a request: the whole
-// source, read once, rather than a cost that grows with what is generated.
-func TestASourceIsCachedPerRequest(t *testing.T) {
+// A source keeps no cache. It is read once, before anything is generated,
+// and an encoder's own keys and values are not needed after it; what
+// generation keeps of the source is cross-attention's, which is the decoder's.
+func TestASourceKeepsNoCache(t *testing.T) {
 	res := at(t, twoStreamDoc(t), 64, 256)
 	const H, dh, bytes = 4.0, 16.0, 2.0
-	perToken := H * 2 * dh * bytes
-	if res.Kv.BytesPerToken != perToken {
-		t.Errorf("per target token %v, want the decoder's %v", res.Kv.BytesPerToken, perToken)
+	if want := H * 2 * dh * bytes; res.Kv.BytesPerToken != want {
+		t.Errorf("per target token %v, want the decoder's %v", res.Kv.BytesPerToken, want)
 	}
-	if res.Kv.BytesPerSequenceFixed != perToken*256 {
-		t.Errorf("per request %v, want the encoder's %v", res.Kv.BytesPerSequenceFixed, perToken*256)
+	if res.Kv.BytesPerSequenceFixed != 0 {
+		t.Errorf("the encoder holds %v bytes a request", res.Kv.BytesPerSequenceFixed)
 	}
 }
 

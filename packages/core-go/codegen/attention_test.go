@@ -1,6 +1,8 @@
 package codegen_test
 
 import (
+	"encoding/json"
+	"os"
 	"strings"
 	"testing"
 
@@ -89,5 +91,35 @@ func TestNoExpressionNoFlexAttention(t *testing.T) {
 		if model := modelOf(t, presets.MustGet(preset)); strings.Contains(model, "expression_attention") {
 			t.Errorf("%s uses the expression helper without an expression", preset)
 		}
+	}
+}
+
+// An encoder-decoder takes its source and its target by name, and its decoder
+// stack hands the encoder's output to every layer rather than threading it
+// through as though each layer made a new one.
+func TestAnEncoderDecoderTakesBothInputs(t *testing.T) {
+	var doc ir.Doc
+	raw, err := os.ReadFile("testdata/seq2seq.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		t.Fatal(err)
+	}
+	model := modelOf(t, &doc)
+	for _, want := range []string{
+		"    def forward(self, src, tgt):",
+		"        for layer in self.decoder:\n            decoder_x = layer(enc_norm_y, decoder_x)",
+		"        for layer in self.encoder:\n            encoder_x = layer(encoder_x)",
+		// Cross-attention's keys and values are the source's, every one seen.
+		"attn_y = F.scaled_dot_product_attention(q_heads_y, k_heads_y, v_heads_y, is_causal=False)",
+	} {
+		if !strings.Contains(model, want) {
+			t.Errorf("missing:\n%s", want)
+		}
+	}
+	// And a design with one input takes it as ids, as it always has.
+	if one := modelOf(t, presets.MustGet("gpt2-small")); !strings.Contains(one, "def forward(self, ids):") {
+		t.Error("a one-input model no longer takes ids")
 	}
 }

@@ -118,6 +118,33 @@ func elementsPerToken(shape shapes.Shape, env map[string]float64) (float64, bool
 	return product, true
 }
 
+// sequenceExcess is what a per-token size misses when a tensor is as long as
+// the sequence more than once.
+//
+// A tensor's size per token is taken with T at one and multiplied by the
+// tokens afterwards, which is right for anything with one sequence axis. A
+// score matrix has two — every query against every key, B heads T T — so it is
+// T times larger per token than that, and the second T is the operating
+// point's. Found by evaluating the shape at T = 2: the ratio is 2 to the power
+// of how many times T appears.
+func sequenceExcess(shape shapes.Shape, env map[string]float64, T float64) float64 {
+	one, okOne := elementsPerToken(shape, env)
+	doubled := make(map[string]float64, len(env))
+	for k, v := range env {
+		doubled[k] = v
+	}
+	doubled["T"] = 2
+	two, okTwo := elementsPerToken(shape, doubled)
+	if !okOne || !okTwo || one == 0 {
+		return 1
+	}
+	power := math.Round(math.Log2(two / one))
+	if power < 2 {
+		return 1
+	}
+	return math.Pow(T, power-1)
+}
+
 // AnalyzeMemory accounts for training and inference memory.
 //
 // Training memory is four things: weights, gradients, optimizer state and
@@ -199,6 +226,7 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 				errs = append(errs, fmt.Sprintf("%s: could not size the tensor on input %q", node.Path, port))
 				continue
 			}
+			elements *= sequenceExcess(shape, env, ctx.T)
 			// The tensor belongs to whoever produced it, not to whoever is
 			// reading it here.
 			owner := node.Path

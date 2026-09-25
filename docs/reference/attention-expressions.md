@@ -143,6 +143,19 @@ the log-sum-exp it returns — the output times `sigmoid(lse - sink)` — and th
 unfused form is one more column in the softmax that no value is read by. Unset,
 its default, is none.
 
+## Written out
+
+What a single score or its position decides belongs here, on the fused kernel.
+What needs every head's whole matrix at once — talking heads, which mixes the
+maps across heads — cannot be fused, and `written_out` (or `talking_heads`,
+which implies it) computes the attention as `attn_scores`, `attn_softmax` and
+`attn_values` with the score matrix a tensor between them. Every score is
+counted, masked or not, and the matrices it keeps are counted as activations;
+the `eager-attention` design rule states the bytes at the operating point.
+A written-out attention is causal attention and nothing else, so a mask, a
+score, a window, a cap or sinks on one is an error rather than something
+quietly dropped.
+
 ## What they cannot say yet
 
 - **Learned tensors.** T5's relative-position bias reads a table the block

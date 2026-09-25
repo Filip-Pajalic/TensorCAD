@@ -9,7 +9,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | Milestone | State |
 |---|---|
 | M0 Sketch (core IR, symbolic shapes, catalog, params) | **Done.** 26 presets, exact parameter match on 23 of them. |
-| M1 Check (design rules, full analysis) | **Done.** 19 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
+| M1 Check (design rules, full analysis) | **Done.** 20 rules, drawn on the canvas where the work happens; FLOPs, KV cache, memory, throughput, cost, Chinchilla. |
 | M2 Manufacture (PyTorch codegen, verification) | **Done.** Every generated model's parameter count matches PyTorch exactly, and the FLOPs estimate matches a profiler once the causal mask is accounted for. |
 | M3 Agent (MCP server, CLI) | **Done.** 19 MCP tools over stdio, 9 CLI commands, and the live editor bridge: an agent's edits land on the canvas as it makes them and the human's come back. |
 | M4 Test bench | **Done.** `tensorcad-runtime smoke-train` trains a scaled design on the local GPU and writes a run record; the editor's `Runs` tab opens several and draws their loss curves on one chart, naming anything that makes the comparison unfair. |
@@ -20,7 +20,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 | M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
-| M10 Attention variants | **Phases 1 and 2 done; 3 and 4 under way.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Phase 3 is two thirds done: BLOOM-7b1's ALiBi is a score expression and gpt-oss-20b brings attention sinks, both reproducing their published parameter counts exactly and both held against Hugging Face's own construction of what they add. Differential attention is two fused attentions and a combine, held against Microsoft's reference. T5 and the eager block remain. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
+| M10 Attention variants | **Phases 1, 2 and 4 done; phase 3 two thirds done.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. Phase 3 is two thirds done: BLOOM-7b1's ALiBi is a score expression and gpt-oss-20b brings attention sinks, both reproducing their published parameter counts exactly and both held against Hugging Face's own construction of what they add. Differential attention is two fused attentions and a combine, held against Microsoft's reference, and attention can be written out on purpose, with talking heads, at a cost a rule states. Only T5 remains, and it wants a milestone of its own. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
 the Go source; `bun test packages` checks the compiled module through the
@@ -321,7 +321,7 @@ can be copied to another machine; a trace of an earlier version of the design
 is loaded but said to be one. The browser suite reloads the page, opens only
 the design, and finds its values; with the shelf taken away, that check fails.
 
-### M10 — Attention variants · Phases 1 and 2 done, 3 and 4 under way
+### M10 — Attention variants · Phases 1, 2 and 4 done; T5 left
 
 The open question below, *how far to go op-level*, has a proposal:
 [Attention variants](docs/explanation/attention-variants.md). Attention stays one
@@ -397,6 +397,15 @@ kernel before anything is added.
    Microsoft's reference given the same weights, to 3.6e-7. Building it found
    that `sdpa` counted the value product at the key width: DeepSeek-V3's
    attention FLOPs were a sixth too high, and now match the profiler.
+   *Eager block done:* `eager_attention`, attention written out as scores,
+   softmax and weighted values, with `head_mix` for talking heads; opted into
+   with `written_out` or `talking_heads`, never by a preset. Every score is
+   counted, the matrices kept are counted — activation memory now knows a
+   tensor can be as long as the sequence twice — and the `eager-attention` rule
+   says how many bytes that is at the operating point. Held against PyTorch's
+   fused attention at the identity and the paper's formulation with the mixes
+   learned. That finishes phase 4; T5, which needs encoder–decoder support and
+   a learned table inside a score, is left for a milestone of its own.
 
 ## Sequencing and dependencies
 

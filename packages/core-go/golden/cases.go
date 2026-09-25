@@ -177,6 +177,12 @@ var Primitives = []BlockCase{
 		"shared_values": true}},
 	{"diff_combine", map[string]any{"heads": 16.0, "head_dim": 64.0, "dim": 128.0}},
 	{"scale", map[string]any{"dim": 128.0, "by": 0.2}},
+	// Attention written out: each matmul over the whole sequence, and the
+	// score matrix a tensor between them.
+	{"attn_scores", map[string]any{"heads": 32.0, "kv_heads": 8.0, "head_dim": 128.0}},
+	{"attn_softmax", map[string]any{"heads": 32.0}},
+	{"head_mix", map[string]any{"heads": 32.0}},
+	{"attn_values", map[string]any{"heads": 32.0, "kv_heads": 8.0, "v_head_dim": 128.0}},
 }
 
 // Composites are pinned as the subgraph they stand for, node for node.
@@ -233,6 +239,10 @@ var Composites = []BlockCase{
 		"rope": map[string]any{"theta": 10000.0}}},
 	{"transformer_block", map[string]any{"d_model": "D", "heads": "H", "kv_heads": "Hkv",
 		"head_dim": "dh", "ffn_hidden": "F", "attention": "diff", "lambda_init": 0.5}},
+	{"eager_attention", map[string]any{"heads": "H", "kv_heads": "Hkv", "head_dim": "dh"}},
+	{"eager_attention", map[string]any{"heads": "H", "kv_heads": "Hkv", "head_dim": "dh", "talking_heads": true}},
+	{"gqa_attention", map[string]any{"d_model": "D", "heads": "H", "kv_heads": "Hkv", "head_dim": "dh",
+		"talking_heads": true}},
 }
 
 func f(v float64) *float64 { return &v }

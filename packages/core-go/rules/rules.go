@@ -195,6 +195,53 @@ var windowVsContext = Rule{
 	},
 }
 
+// eagerAttentionCost says what an attention written out keeps. The bytes are
+// the analysis's own, charged to the blocks inside it, so the finding and the
+// memory readout cannot disagree.
+var eagerAttentionCost = Rule{
+	ID:          "eager-attention",
+	Title:       "Attention written out",
+	Description: "An attention computed eagerly keeps its score matrix, which grows with the square of the context.",
+	Run: func(ctx *Ctx) []Finding {
+		var out []Finding
+		train := ctx.Analysis.Memory.Train
+		for i := range ctx.Flat.Blocks {
+			b := &ctx.Flat.Blocks[i]
+			if b.Type != "eager_attention" {
+				continue
+			}
+			// What the block makes, which is its score and weight matrices.
+			// Its queries, keys and values arrive through its boundary and
+			// are charged to it there; they are made outside it and would be
+			// kept however the attention was computed.
+			kept := 0.0
+			for path, bytes := range train.ActivationsByPath {
+				rest, inside := strings.CutPrefix(path, b.Path+"/")
+				if inside && !strings.HasPrefix(rest, "_") {
+					kept += bytes
+				}
+			}
+			// Under full recomputation nothing inside a layer is kept, and
+			// there is nothing to say.
+			if kept <= 0 || train.Activations <= 0 {
+				continue
+			}
+			out = append(out, Finding{
+				Rule: "eager-attention", Severity: "warning", Path: b.Path,
+				Message: fmt.Sprintf(
+					"This attention is written out, so its score matrices are kept for the backward pass: "+
+						"%s at %s tokens, %s%% of all activation memory. A fused kernel keeps none of them.",
+					analysis.FormatBytes(kept), jsNum(ctx.Analysis.Options.T),
+					analysis.JSToFixed(kept/train.Activations*100, 0)),
+				Hint: "Only something that needs every head's whole matrix at once, such as talking heads, " +
+					"has to be written out. A mask or a change to each score belongs on the fused kernel, " +
+					"as an expression.",
+			})
+		}
+		return out
+	},
+}
+
 var inferenceFits = Rule{
 	ID:          "inference-fits",
 	Title:       "Serving footprint",
@@ -581,6 +628,7 @@ var Rules = []Rule{
 	tensorCoreShapes,
 	vocabPadding,
 	windowVsContext,
+	eagerAttentionCost,
 	inferenceFits,
 	trainingFits,
 	logitsMemory,

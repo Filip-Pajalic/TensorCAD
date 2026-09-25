@@ -297,6 +297,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -552,6 +564,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "value_embeddings",
@@ -1142,6 +1166,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -1450,6 +1486,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "value_embeddings",
@@ -1981,6 +2029,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -2236,6 +2296,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "value_embeddings",
@@ -2820,6 +2892,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -3075,6 +3159,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "value_embeddings",
@@ -3659,6 +3755,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -3914,6 +4022,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "value_embeddings",
@@ -4504,6 +4624,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -4812,6 +4944,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "value_embeddings",
@@ -5343,6 +5487,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -5598,6 +5754,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "value_embeddings",
@@ -6189,6 +6357,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -6459,6 +6639,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "value_embeddings",
@@ -7056,6 +7248,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -7505,6 +7709,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -7921,6 +8137,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -8372,6 +8600,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -8788,6 +9028,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -9239,6 +9491,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -9655,6 +9919,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -10106,6 +10382,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -10522,6 +10810,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -10973,6 +11273,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -11393,6 +11705,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -11854,6 +12178,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "value_embeddings",
               null,
               false,
@@ -12291,6 +12627,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -12598,6 +12946,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -13348,6 +13708,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -13660,6 +14032,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -13976,6 +14360,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -14290,6 +14686,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -14602,6 +15010,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -14920,6 +15340,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -15408,6 +15840,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -16256,6 +16700,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -17114,6 +17570,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -17981,6 +18449,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -18295,6 +18775,18 @@
               null,
               true,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -19154,6 +19646,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -20275,6 +20779,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "lambda_init",
@@ -22501,6 +23017,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -22874,6 +23402,18 @@
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
             ],
             [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
+            ],
+            [
               "lambda_init",
               null,
               null,
@@ -23199,6 +23739,18 @@
               null,
               null,
               "Learn one score per head that sits in the softmax's denominator beside the keys, so a query can put its attention nowhere rather than spreading it over keys it has no use for (gpt-oss). Adds heads parameters; unset is none."
+            ],
+            [
+              "written_out",
+              null,
+              null,
+              "Compute the attention written out rather than fused: the score matrix a tensor, kept for the backward pass. Only for what needs the whole matrix; a rule says what it costs. Unset is fused."
+            ],
+            [
+              "talking_heads",
+              null,
+              null,
+              "Mix the attention maps across heads, before the softmax and after it, with two learned heads by heads matrices (Shazeer et al. 2020). Needs the attention written out, and turns it on."
             ],
             [
               "value_embeddings",

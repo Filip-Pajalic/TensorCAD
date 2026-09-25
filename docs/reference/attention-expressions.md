@@ -212,7 +212,8 @@ quietly dropped.
 - **Tables in a mask.** A score can read a tensor and a mask cannot, since a
   mask is counted by evaluating it.
 - **Inputs at run time.** Document masking needs each position's document id,
-  which is an input, not a position.
+  which is an input, not a position. [Packed sequences](../explanation/packed-sequences.md)
+  proposes how.
 - **The cache.** A mask that bounds how far back a query looks does not shrink
   the KV-cache estimate; `window` does, and is what to use for a sliding window.
 - **Block granularity.** A kernel computes whole blocks, so a mask that keeps a

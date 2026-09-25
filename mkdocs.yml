@@ -102,6 +102,7 @@ nav:
       - Legibility: explanation/legibility.md
       - Attention variants: explanation/attention-variants.md
       - Encoder–decoder: explanation/encoder-decoder.md
+      - Packed sequences: explanation/packed-sequences.md
       - Landscape: explanation/landscape.md
 
 extra:

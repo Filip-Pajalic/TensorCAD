@@ -11,7 +11,7 @@
 import { useState } from "react";
 import { useEditor } from "../state/store.js";
 import { useDerived } from "../state/hooks.js";
-import type { Recompute } from "../state/operating.js";
+import { DEFAULT_OPERATING, type OperatingPoint, type Recompute } from "../state/operating.js";
 import type { Dtype, OptimizerKind } from "@tensor-cad/engine";
 import { formatCount } from "@tensor-cad/engine";
 import { HARDWARE, HARDWARE_BY_ID } from "../engine.js";
@@ -103,6 +103,53 @@ function readsDocuments(doc: { graph: { nodes: { type: string; params?: Record<s
   return doc.graph.nodes.some((n) => n.type === "input" && n.params?.role === "documents");
 }
 
+/** A panel's open or shut, remembered per browser. */
+function useRemembered(name: string, fallback: boolean): [boolean, () => void] {
+  const [open, setOpen] = useState(() => {
+    try {
+      const raw = localStorage.getItem(`tensorcad.${name}`);
+      return raw === null ? fallback : raw === "1";
+    } catch {
+      return fallback;
+    }
+  });
+  const toggle = (): void =>
+    setOpen((was) => {
+      try {
+        localStorage.setItem(`tensorcad.${name}`, was ? "0" : "1");
+      } catch {
+        // Not remembering it is harmless.
+      }
+      return !was;
+    });
+  return [open, toggle];
+}
+
+/**
+ * What under More is not at its default, in a few words.
+ *
+ * The heading says it while More is shut, because a setting that moves every
+ * number on screen must not be hidden by the act of tidying it away: pressing
+ * a cluster plan sets TP and ZeRO, and the heading then says so.
+ */
+export function changedUnderMore(o: OperatingPoint): string[] {
+  const d = DEFAULT_OPERATING;
+  const out: string[] = [];
+  if (o.dtype !== d.dtype) out.push(`train ${o.dtype}`);
+  if (o.inferenceDtype !== d.inferenceDtype) out.push(`serve ${o.inferenceDtype}`);
+  if (o.optimizer !== d.optimizer) out.push(OPTIMIZERS.find((x) => x.id === o.optimizer)?.label ?? o.optimizer);
+  if (o.recompute !== d.recompute) out.push(`recompute ${o.recompute}`);
+  if (o.zero !== d.zero) out.push(`ZeRO ${o.zero}`);
+  if (o.tp !== d.tp) out.push(`TP ${o.tp}`);
+  if (o.pp !== d.pp) out.push(`PP ${o.pp}`);
+  if (o.ep !== d.ep) out.push(`EP ${o.ep}`);
+  if (o.tp > 1 && o.sequenceParallel) out.push("sequence parallel");
+  if (o.concurrency !== d.concurrency) out.push(`${o.concurrency} streams`);
+  if (o.flash !== d.flash) out.push("unfused attention");
+  if (o.tokens !== null) out.push(`${formatCount(o.tokens)} tokens`);
+  return out;
+}
+
 export default function Operating(): React.ReactElement {
   const o = useEditor((s) => s.operating);
   const doc = useEditor((s) => s.doc);
@@ -115,23 +162,13 @@ export default function Operating(): React.ReactElement {
   // Only a design with a second sequence has a source length to set.
   const effectiveS = options.S;
   const dp = Math.max(1, Math.floor(o.gpus / Math.max(1, o.tp * o.pp)));
-  const [open, setOpen] = useState(() => {
-    try {
-      return localStorage.getItem("tensorcad.op.open") !== "0";
-    } catch {
-      return true;
-    }
-  });
-
-  const toggle = (): void =>
-    setOpen((was) => {
-      try {
-        localStorage.setItem("tensorcad.op.open", was ? "0" : "1");
-      } catch {
-        // Not remembering it is harmless.
-      }
-      return !was;
-    });
+  const [open, toggle] = useRemembered("op.open", true);
+  // Shut on a first visit: batch, sequence, device and GPUs are the four
+  // things a first question about a design turns on, and the other twelve
+  // are how a training run is set up — which matters, and is not where
+  // anybody starts.
+  const [more, toggleMore] = useRemembered("op.more", false);
+  const changed = changedUnderMore(o);
 
   // Folded, the header still has to say what the numbers below it mean.
   const summary = [
@@ -170,7 +207,7 @@ export default function Operating(): React.ReactElement {
       <div className="op__grid">
         <Num label="batch" value={o.B} onChange={(B) => set({ B })} title="Micro-batch per GPU." />
         <label className="op__field" title="Sequence length. Blank follows the design's own T.">
-          <span className="op__label">seq</span>
+          <span className="op__label">sequence</span>
           <input
             className="field field--num"
             type="number"
@@ -211,20 +248,6 @@ export default function Operating(): React.ReactElement {
             />
           </label>
         )}
-        <Pick
-          label="train"
-          value={o.dtype}
-          options={DTYPES.map((d) => ({ id: d, label: d }))}
-          onChange={(dtype) => set({ dtype })}
-          title="Precision of weights and activations while training."
-        />
-        <Pick
-          label="serve"
-          value={o.inferenceDtype}
-          options={DTYPES.map((d) => ({ id: d, label: d }))}
-          onChange={(inferenceDtype) => set({ inferenceDtype })}
-          title="Precision of the served weights and the cache."
-        />
       </div>
 
       {/* Shown for a design with documents to pack, and whenever a packing is set,
@@ -288,118 +311,152 @@ export default function Operating(): React.ReactElement {
         <Num label="GPUs" value={o.gpus} onChange={(gpus) => set({ gpus })} />
       </div>
 
-      <div className="op__grid">
-        <Pick
-          label="optimizer"
-          value={o.optimizer}
-          options={OPTIMIZERS}
-          onChange={(optimizer) => set({ optimizer })}
-        />
-        <Pick
-          label="recompute"
-          value={o.recompute}
-          options={RECOMPUTE.map((r) => ({ id: r, label: r }))}
-          onChange={(recompute) => set({ recompute })}
-          title="Activation checkpointing: trade a second forward pass for activation memory."
-        />
-        <Pick
-          label="ZeRO"
-          value={o.zero}
-          options={[0, 1, 2, 3].map((z) => ({
-            id: z as 0 | 1 | 2 | 3,
-            label: `stage ${z}`,
-          }))}
-          onChange={(zero) => set({ zero })}
-          title="What the data-parallel group shards: nothing, optimizer state, then gradients, then weights."
-        />
-        <Pick
-          label="TP"
-          value={o.tp}
-          options={POWERS.map((n) => ({ id: n, label: `${n}×` }))}
-          onChange={(tp) => set({ tp })}
-          title="Tensor-parallel degree."
-        />
-        <Pick
-          label="PP"
-          value={o.pp}
-          options={POWERS.map((n) => ({ id: n, label: `${n}×` }))}
-          onChange={(pp) => set({ pp })}
-          title="Pipeline stages."
-        />
-        <Pick
-          label="EP"
-          value={o.ep}
-          options={POWERS.map((n) => ({ id: n, label: `${n}×` }))}
-          onChange={(ep) => set({ ep })}
-          title="Expert-parallel degree. A design with no experts has nothing to divide."
-        />
-        <Num
-          label="streams"
-          value={o.concurrency}
-          onChange={(concurrency) => set({ concurrency })}
-          title="Concurrent sequences held in the cache while serving."
-        />
-      </div>
-
-      <div className="op__foot">
-        <label className="op__check" title="Assume a memory-efficient attention kernel.">
-          <input
-            type="checkbox"
-            checked={o.flash}
-            onChange={(e) => set({ flash: e.target.checked })}
-          />
-          fused attention
-        </label>
-        <label
-          className="op__check"
-          title={
-            o.tp > 1
-              ? "Shard the activations along the sequence across the tensor-parallel group."
-              : "Needs tensor parallelism: there is no group to shard the sequence across."
-          }
-        >
-          <input
-            type="checkbox"
-            checked={o.tp > 1 && o.sequenceParallel}
-            disabled={o.tp <= 1}
-            onChange={(e) => set({ sequenceParallel: e.target.checked })}
-          />
-          sequence parallel
-        </label>
-        <span
-          className="op__derived mono"
-          title="Data-parallel degree left after tensor and pipeline parallelism."
-        >
-          DP {dp}×
+      <button
+        type="button"
+        className="op__more"
+        data-testid="operating-more"
+        aria-expanded={more}
+        onClick={toggleMore}
+      >
+        <span className="fold__caret" aria-hidden>
+          {more ? "▾" : "▸"}
         </span>
-        <label
-          className="op__check"
-          title="Training token budget. Off follows the Chinchilla-optimal budget."
-        >
-          <input
-            type="checkbox"
-            checked={o.tokens !== null}
-            onChange={(e) => set({ tokens: e.target.checked ? 15e12 : null })}
-          />
-          token budget
-        </label>
-        {o.tokens !== null && (
-          <input
-            className="field field--num"
-            type="number"
-            min={1}
-            step={1e11}
-            value={o.tokens}
-            spellCheck={false}
-            title={formatCount(o.tokens)}
-            onKeyDown={(e) => e.stopPropagation()}
-            onChange={(e) => {
-              const n = Number(e.target.value);
-              if (Number.isFinite(n) && n >= 1) set({ tokens: n });
-            }}
-          />
-        )}
-      </div>
+        More
+        <span className={"op__changed" + (changed.length ? " is-changed" : "")}>
+          {changed.length ? changed.join(" · ") : "precision, optimizer, parallelism"}
+        </span>
+      </button>
+
+      {more && (
+        <>
+          <div className="op__grid">
+            <Pick
+              label="train"
+              value={o.dtype}
+              options={DTYPES.map((d) => ({ id: d, label: d }))}
+              onChange={(dtype) => set({ dtype })}
+              title="Precision of weights and activations while training."
+            />
+            <Pick
+              label="serve"
+              value={o.inferenceDtype}
+              options={DTYPES.map((d) => ({ id: d, label: d }))}
+              onChange={(inferenceDtype) => set({ inferenceDtype })}
+              title="Precision of the served weights and the cache."
+            />
+            <Pick
+              label="optimizer"
+              value={o.optimizer}
+              options={OPTIMIZERS}
+              onChange={(optimizer) => set({ optimizer })}
+            />
+            <Pick
+              label="recompute"
+              value={o.recompute}
+              options={RECOMPUTE.map((r) => ({ id: r, label: r }))}
+              onChange={(recompute) => set({ recompute })}
+              title="Activation checkpointing: trade a second forward pass for activation memory."
+            />
+            <Pick
+              label="ZeRO"
+              value={o.zero}
+              options={[0, 1, 2, 3].map((z) => ({
+                id: z as 0 | 1 | 2 | 3,
+                label: `stage ${z}`,
+              }))}
+              onChange={(zero) => set({ zero })}
+              title="What the data-parallel group shards: nothing, optimizer state, then gradients, then weights."
+            />
+            <Pick
+              label="TP"
+              value={o.tp}
+              options={POWERS.map((n) => ({ id: n, label: `${n}×` }))}
+              onChange={(tp) => set({ tp })}
+              title="Tensor-parallel degree."
+            />
+            <Pick
+              label="PP"
+              value={o.pp}
+              options={POWERS.map((n) => ({ id: n, label: `${n}×` }))}
+              onChange={(pp) => set({ pp })}
+              title="Pipeline stages."
+            />
+            <Pick
+              label="EP"
+              value={o.ep}
+              options={POWERS.map((n) => ({ id: n, label: `${n}×` }))}
+              onChange={(ep) => set({ ep })}
+              title="Expert-parallel degree. A design with no experts has nothing to divide."
+            />
+            <Num
+              label="streams"
+              value={o.concurrency}
+              onChange={(concurrency) => set({ concurrency })}
+              title="Concurrent sequences held in the cache while serving."
+            />
+          </div>
+
+          <div className="op__foot">
+            <label className="op__check" title="Assume a memory-efficient attention kernel.">
+              <input
+                type="checkbox"
+                checked={o.flash}
+                onChange={(e) => set({ flash: e.target.checked })}
+              />
+              fused attention
+            </label>
+            <label
+              className="op__check"
+              title={
+                o.tp > 1
+                  ? "Shard the activations along the sequence across the tensor-parallel group."
+                  : "Needs tensor parallelism: there is no group to shard the sequence across."
+              }
+            >
+              <input
+                type="checkbox"
+                checked={o.tp > 1 && o.sequenceParallel}
+                disabled={o.tp <= 1}
+                onChange={(e) => set({ sequenceParallel: e.target.checked })}
+              />
+              sequence parallel
+            </label>
+            <span
+              className="op__derived mono"
+              title="Data-parallel degree left after tensor and pipeline parallelism."
+            >
+              DP {dp}×
+            </span>
+            <label
+              className="op__check"
+              title="Training token budget. Off follows the Chinchilla-optimal budget."
+            >
+              <input
+                type="checkbox"
+                checked={o.tokens !== null}
+                onChange={(e) => set({ tokens: e.target.checked ? 15e12 : null })}
+              />
+              token budget
+            </label>
+            {o.tokens !== null && (
+              <input
+                className="field field--num"
+                type="number"
+                min={1}
+                step={1e11}
+                value={o.tokens}
+                spellCheck={false}
+                title={formatCount(o.tokens)}
+                onKeyDown={(e) => e.stopPropagation()}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  if (Number.isFinite(n) && n >= 1) set({ tokens: n });
+                }}
+              />
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

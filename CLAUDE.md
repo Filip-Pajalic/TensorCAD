@@ -119,7 +119,8 @@ Two cross-checks worth knowing:
   its own numbers. `src/engine.ts` is the editor's handle on the engine: it loads the module
   before the first frame, which is why `main.tsx` imports the app *after* the load rather
   than beside it — the store builds a starting design the moment its module runs. The right column splits: the readout (`Operating` + `Analysis`) is always
-  on screen above the tabbed editing pane (Inspector, Symbols, Cluster, Ladder), and the
+  on screen above the tabbed editing pane (Inspector, Symbols, Training, History — Training
+  being Cluster, Width ladder and Runs behind one switch, `panels/Training.tsx`), and the
   design-rule findings are a dock along the bottom rather than a tab — `panels/FindingsDock.tsx`
   wraps `Rules` in a strip that carries the counts even when collapsed, because the checks are
   about the drawing and belong under it.

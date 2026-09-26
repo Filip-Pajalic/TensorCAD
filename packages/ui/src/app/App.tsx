@@ -20,13 +20,11 @@ import Inspector from "../panels/Inspector.js";
 import Symbols from "../panels/Symbols.js";
 import Analysis from "../panels/Analysis.js";
 import Operating from "../panels/Operating.js";
-import Cluster from "../panels/Cluster.js";
 import StatusBar from "../panels/StatusBar.js";
 import ModelTree from "../panels/ModelTree.js";
 import ToolStrip from "../panels/ToolStrip.js";
 import Dialogs from "../panels/Dialogs.js";
-import Ladder from "../panels/Ladder.js";
-import Runs from "../panels/Runs.js";
+import Training, { isTrainingView, type TrainingView } from "../panels/Training.js";
 
 /**
  * The volume view, fetched the first time it is opened.
@@ -48,12 +46,17 @@ import { Tabs, TabsList, TabsTrigger } from "../ui/tabs.js";
 import { TooltipProvider } from "../ui/tooltip.js";
 import { formatCount } from "@tensor-cad/engine";
 
-const TABS: { id: RightTab; label: string }[] = [
+/**
+ * A tab in the row. Training is one tab over three views, so the row's own
+ * value is not always a `RightTab`: `training` stands for whichever of the
+ * three was open last.
+ */
+type TabId = Exclude<RightTab, TrainingView> | "training";
+
+const TABS: { id: TabId; label: string }[] = [
   { id: "inspector", label: "Inspector" },
   { id: "symbols", label: "Symbols" },
-  { id: "cluster", label: "Cluster" },
-  { id: "ladder", label: "Ladder" },
-  { id: "runs", label: "Runs" },
+  { id: "training", label: "Training" },
   { id: "history", label: "History" },
 ];
 
@@ -63,7 +66,7 @@ const TABS: { id: RightTab; label: string }[] = [
  * Not a tab that is always there and says "nothing configured" — a plain
  * checkout should look exactly like it did before any of this existed.
  */
-function tabsFor(hasStorage: boolean): { id: RightTab; label: string }[] {
+function tabsFor(hasStorage: boolean): { id: TabId; label: string }[] {
   return hasStorage ? [{ id: "designs", label: "Designs" }, ...TABS] : TABS;
 }
 
@@ -137,6 +140,9 @@ export default function App(): React.ReactElement {
   const dockOpen = useEditor((s) => s.dockOpen);
   const toggleFindings = useEditor((s) => s.toggleFindings);
   const rightColumn = useRef<HTMLElement | null>(null);
+  // Which training view the Training tab opens on: the one last looked at.
+  const lastTraining = useRef<TrainingView>("cluster");
+  if (isTrainingView(rightTab)) lastTraining.current = rightTab;
 
   // One listener, one command list. Tool keys are here rather than in the list
   // because a tool is a mode rather than an action, and a mode has no menu item.
@@ -171,11 +177,9 @@ export default function App(): React.ReactElement {
       case "symbols":
         return <Symbols />;
       case "cluster":
-        return <Cluster />;
       case "ladder":
-        return <Ladder />;
       case "runs":
-        return <Runs />;
+        return <Training view={rightTab} />;
       case "history":
         return <History />;
       case "designs":
@@ -300,8 +304,12 @@ export default function App(): React.ReactElement {
               <Resizer axis="y" onResize={dragReadout} />
               <section className="panel panel--edit">
                 <Tabs
-                  value={rightTab}
-                  onValueChange={(value) => useEditor.getState().setRightTab(value as RightTab)}
+                  value={isTrainingView(rightTab) ? "training" : rightTab}
+                  onValueChange={(value) =>
+                    useEditor
+                      .getState()
+                      .setRightTab(value === "training" ? lastTraining.current : (value as RightTab))
+                  }
                   className="flex min-h-0 flex-1 flex-col"
                 >
                   <TabsList>

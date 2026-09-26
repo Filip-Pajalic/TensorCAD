@@ -237,18 +237,28 @@ export interface EditorState {
   /** Whether the grid is drawn at all. */
   showGrid: boolean;
   setShowGrid: (show: boolean) => void;
-  /** Whether the minimap is drawn. */
+  /**
+   * Whether the minimap is drawn. Off until asked for: the drawing fits the
+   * window when it opens, and a map of a sheet you can already see is one
+   * more thing over it.
+   */
   showMinimap: boolean;
   setShowMinimap: (show: boolean) => void;
-  /** Whether the title block is drawn on the sheet. */
+  /**
+   * Whether the title block is drawn on the sheet. Off until asked for: every
+   * number on it is in the readout beside the sheet, and on a laptop it sat
+   * over a third of the drawing.
+   */
   showTitleBlock: boolean;
   setShowTitleBlock: (show: boolean) => void;
   /**
    * Whether the key is open on the sheet.
    *
-   * Open by default, and shut to a tab rather than away: the thing it explains
-   * is on every wire of every drawing, so a reader who does not know it is
-   * there is exactly the reader it is for.
+   * Shut to a tab rather than away: the thing it explains is on every wire of
+   * every drawing, so the tab stays on the sheet for the reader who does not
+   * know what a dotted line means. Shut, not open, on a first visit, because
+   * open it covered most of the drawing it was explaining — and the drawing is
+   * the first thing anybody should see.
    */
   showKey: boolean;
   setShowKey: (show: boolean) => void;
@@ -554,12 +564,12 @@ export const useEditor = create<EditorState>((set, get) => {
     setSnap: (snap) => set(saveFlag("snap", snap, { snap })),
     showGrid: loadFlag("grid", true),
     setShowGrid: (showGrid) => set(saveFlag("grid", showGrid, { showGrid })),
-    showMinimap: loadFlag("minimap", true),
+    showMinimap: loadFlag("minimap", false),
     setShowMinimap: (showMinimap) => set(saveFlag("minimap", showMinimap, { showMinimap })),
-    showTitleBlock: loadFlag("titleblock", true),
+    showTitleBlock: loadFlag("titleblock", false),
     setShowTitleBlock: (showTitleBlock) =>
       set(saveFlag("titleblock", showTitleBlock, { showTitleBlock })),
-    showKey: loadFlag("key", true),
+    showKey: loadFlag("key", false),
     setShowKey: (showKey) => set(saveFlag("key", showKey, { showKey })),
     figure: loadFlag("figure", false),
     setFigure: (figure) => set(saveFlag("figure", figure, { figure })),

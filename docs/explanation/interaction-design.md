@@ -1938,3 +1938,81 @@ Clicking a block drawn inside an unfolded frame selects it, and the inspector
 then says it is not on this level. That is true, and it is a poor answer to
 somebody who clicked the thing they wanted to know about. It belongs to the
 next pass, with the first screen.
+
+## Twenty-seventh pass: a calm first screen
+
+What somebody saw on a first visit, at 1440 by 900: the key open over the left
+half of the drawing, the title block over the bottom right, the minimap in the
+corner, sixteen controls for the operating point, and six tabs. At 1280 by 800,
+a thirteen-inch laptop, the drawing was almost entirely covered and the toolbar
+ran off the right edge, taking the Share button with it. Every one of those
+panels had been added for a reason, and the reasons were good; what nobody had
+done was open the editor for the first time after all of them.
+
+### Nothing over the drawing
+
+The key starts shut to its tab, which stays on the sheet: the reader who does
+not know what a dotted line means still has a button that says Key. The title
+block and the minimap start off, since every figure on the title block is in the
+readout beside the sheet and the drawing fits the window when it opens. All three
+are one keypress or one menu item away, and remember being turned on.
+
+### Four fields, and More
+
+Batch, sequence, device and GPUs are what a first question about a design turns
+on. Precision, the optimizer, recomputation, ZeRO, the three parallel degrees,
+the serving streams and the three switches are how a training run is set up,
+and they are under **More**. Shut, its line says what is inside it —
+*precision, optimizer, parallelism* — until something there differs from the
+default, and then it says that instead, in the accent colour: *ZeRO 3 · TP 2*.
+Pressing a cluster plan sets several of them at once, and tidying them away must
+not hide that the numbers now assume it.
+
+### Four tabs
+
+Cluster, the width ladder and Runs are one tab, **Training**, with the three as
+a switch inside it. They answer one question — what happens when this is
+trained — and six tabs across a column four hundred pixels wide read as six
+things to learn before starting. The tab opens on whichever of the three was
+open last, and each still has its own command and shortcut.
+
+### Start here
+
+With nothing selected the inspector used to say "Select a block on the canvas to
+edit its parameters", which is true and is the whole of what it said. It now
+says what there is to do — click any block to see what it is — and offers the
+walkthrough with a **Start here** button. The same command is the first item
+on the Help menu.
+
+### A block where it is
+
+The last pass left this open. Clicking a block drawn inside an unfolded frame
+selected it, and the inspector said it was not on this level. It now finds the
+level the block lives on and shows it there. Inside a stack that level is
+editable, so the block can be edited in place. Inside a built-in block's own
+expansion it is read-only, and the inspector says so: *part of block, a built-in
+transformer block, so it is read-only*. An **Open its level** link goes to where
+it lives, with the block still selected.
+
+### The toolbar at 1280
+
+The product name and the per-token FLOPs cell both appeared at Tailwind's `xl`,
+which is exactly 1280, and together they pushed Share off a laptop's screen. They
+now appear at 1360 and 1520. The FLOPs figure is in the readout either way.
+
+### What the tests hold
+
+The browser test opens a fresh profile and checks the first visit:
+- nothing covers the sheet;
+- the operating point is four fields;
+- the tabs are the four;
+- Start here opens the walkthrough;
+- at 1280 wide, Share ends inside the window.
+
+It then checks two interactions:
+- More names a ZeRO stage set under it;
+- a grouped-query attention clicked inside an unfolded transformer block is
+  inspected in place, read-only.
+
+The README screenshots are regenerated. They now open Llama-3-8B from a
+`#design=` link rather than by driving the preset menu.

@@ -1,4 +1,4 @@
-"""tensorcad-runtime — PyTorch verification and smoke training for TensorCAD designs.
+"""tensorcad-runtime — PyTorch verification, smoke training and memory measurement for TensorCAD designs.
 
 The CLI is the contract with the TypeScript side (one JSON object on stdout,
 progress on stderr), but everything is importable as a library too::
@@ -20,6 +20,7 @@ __all__ = [
     "__version__",
     "verify_model",
     "smoke_train",
+    "measure_memory",
     "prepare_data",
     "synthetic_corpus",
     "load_corpus",
@@ -43,6 +44,10 @@ def __getattr__(name: str) -> Any:
         from .smoke_train import smoke_train
 
         return smoke_train
+    if name == "measure_memory":
+        from .measure import measure_memory
+
+        return measure_memory
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 

@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import Compare from "./Compare.js";
 import Definitions from "./Definitions.js";
 import Library from "./Library.js";
+import NewDesign from "./NewDesign.js";
 import { SHAPE_MODES, SHAPE_MODE_HINT, type ShapeMode } from "../canvas/shapes.js";
 import CommandPalette from "./CommandPalette.js";
 import { Dialog, DialogContent } from "../ui/dialog.js";
@@ -214,6 +215,14 @@ export default function Dialogs(): React.ReactElement {
         {dialog === "compare" && (
           <DialogContent title="Compare" width="46rem">
             <Compare />
+          </DialogContent>
+        )}
+      </Dialog>
+
+      <Dialog open={dialog === "new"} onOpenChange={(open) => !open && close()}>
+        {dialog === "new" && (
+          <DialogContent title="New design" width="44rem">
+            <NewDesign />
           </DialogContent>
         )}
       </Dialog>

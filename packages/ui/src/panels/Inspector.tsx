@@ -491,6 +491,12 @@ export default function Inspector(): React.ReactElement {
           >
             Start here
           </button>
+          <p className="muted">
+            Or make one of your own: a kind of model and a size.{" "}
+            <button type="button" className="linkish" data-testid="new-design-link" onClick={() => runCommand("file.new")}>
+              New design…
+            </button>
+          </p>
         </div>
       </div>
     );

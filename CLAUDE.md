@@ -39,6 +39,11 @@ every handle the pointer passes over. `generateTorch(doc)` emits PyTorch.
 `explain(doc, path)` describes one block: its parameters as written and as
 evaluated, its shapes, its share of the model, and its documentation.
 `scale(doc, {targetParams})` shrinks a design while keeping its proportions.
+`newDesign({family, params | fit}, options)` starts one: the family's reference
+preset scaled to a size, or to the largest whose training fits one device of a
+profile, with its head groups kept whole and a small model's head tied;
+`families()` lists the kinds. It is `packages/core-go/start`, and it is what the
+editor's File ▸ New design is.
 `mup(doc, options)` is the same design at several widths, with what to multiply
 the initialization and the learning rate by at each: it holds the head dimension
 and grows the head count, and it classifies a weight by measuring which of its

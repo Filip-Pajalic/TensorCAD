@@ -36,6 +36,7 @@ import (
 	"github.com/tensorcad/core/report"
 	"github.com/tensorcad/core/rules"
 	"github.com/tensorcad/core/scale"
+	"github.com/tensorcad/core/start"
 )
 
 // call is one exported entry point: JSON strings in, a JSON string out.
@@ -59,6 +60,10 @@ func main() {
 		"attentionMask": wrap(4, attentionMask),
 		"generateTorch": wrap(2, generateTorch),
 		"scale":         wrap(2, scaleDesign),
+		// The kinds of model a new design can start as, and a new design of
+		// one at a size: the reference design of that kind, scaled.
+		"families":  wrap(0, families),
+		"newDesign": wrap(2, newDesign),
 		// The same design at several widths, with what to multiply the
 		// initialization and the learning rate by at each one.
 		"mup": wrap(2, mupLadder),
@@ -399,6 +404,27 @@ func scaleDesign(args []string) (string, error) {
 		return "", fmt.Errorf("could not read the scaling settings: %w", err)
 	}
 	result, err := scale.Design(doc, o)
+	if err != nil {
+		return "", err
+	}
+	return encode(result)
+}
+
+func families(args []string) (string, error) {
+	return encode(start.Families)
+}
+
+func newDesign(args []string) (string, error) {
+	// Straight into start.Request: its json tags are the wire contract.
+	var req start.Request
+	if err := json.Unmarshal([]byte(args[0]), &req); err != nil {
+		return "", fmt.Errorf("could not read what the new design should be: %w", err)
+	}
+	opts, err := decodeOptions(args[1])
+	if err != nil {
+		return "", err
+	}
+	result, err := start.New(req, opts)
 	if err != nil {
 		return "", err
 	}

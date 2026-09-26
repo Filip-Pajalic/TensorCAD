@@ -27,8 +27,11 @@ import {
   type HardwareProfile,
   type GeneratedCode,
   type Inference,
+  type ModelFamily,
   type MupLadder,
   type MupOptions,
+  type NewDesignRequest,
+  type NewDesignResult,
   type ParamSpec,
   type RuleInfo,
   type SymbolTable,
@@ -132,6 +135,22 @@ export function planCluster(
  */
 export function mupLadder(doc: Doc, options?: MupOptions): MupLadder {
   return engine().mup(doc, options);
+}
+
+/** The kinds of model a new design can start as. */
+export function modelFamilies(): ModelFamily[] {
+  return engine().families();
+}
+
+/**
+ * A new design of a kind, at a size or as large as trains on one device.
+ *
+ * A search, when it is asked to fit a device: a few dozen analyses. Called when
+ * a choice in the New design dialog changes, never per keystroke of anything
+ * else.
+ */
+export function newDesign(request: NewDesignRequest, options?: AnalysisOptions): NewDesignResult {
+  return engine().newDesign(request, options);
 }
 
 /** What changed between two designs, structurally and numerically. */

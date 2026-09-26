@@ -306,9 +306,13 @@ async function traceDesign(): Promise<void> {
 
 /** Commands the native menu can send. The editor decides what each one means. */
 const COMMANDS: Record<string, () => void | Promise<void>> = {
+  // The editor's New design dialog, which may make a design or be cancelled.
+  // The file is forgotten either way, first: a design made in the dialog must
+  // not be saved over the one opened before it, and a cancelled one costs only
+  // being asked where to save.
   new: () => {
-    useEditor.getState().newDoc();
     currentPath = "";
+    useEditor.getState().openDialog("new");
   },
   open: openDesign,
   save: () => saveDesign(false),

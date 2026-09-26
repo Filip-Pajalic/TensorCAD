@@ -498,6 +498,29 @@ try {
     );
   });
 
+  await check("New design makes a model of the kind and size chosen, and opens it", async () => {
+    await page(`document.activeElement?.blur()`);
+    await key("Escape");
+    const link = `document.querySelector("[data-testid=new-design-link]")`;
+    await until(link);
+    await page(`${link}.click()`);
+    const preview = `document.querySelector("[data-testid=new-design-preview]")?.textContent ?? ""`;
+    await until(`(${preview}).includes("from llama-3-8b")`, 20_000);
+    await page(`document.querySelector("[data-family=classic]").click()`);
+    await page(`[...document.querySelectorAll(".newdesign__size")].find((b) => b.textContent === "125M").click()`);
+    await until(`(${preview}).includes("from gpt2-small")`, 20_000);
+    expect(
+      "what it will be",
+      await page(`document.querySelector(".newdesign__shape").textContent`),
+      "12 layers · width 768 · 12 heads · feed-forward 3,072",
+    );
+    await page(`document.querySelector(".newdesign__walk input").click()`);
+    await page(`document.querySelector("[data-testid=create-design]").click()`);
+    await until(`document.querySelector('[aria-label="Design name"]')?.value === "classic-125m"`);
+    expect("the dialog closed", await page(`!!document.querySelector("[data-testid=new-design]")`), false);
+    expect("and nothing was started over it", await page(`!!document.querySelector(".wt")`), false);
+  });
+
   await check("Share makes a link that opens the same design in a new page", async () => {
     await page(`document.activeElement?.blur()`);
     // Renamed, so the design that opens is the one in the link and not one

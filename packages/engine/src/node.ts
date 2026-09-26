@@ -134,6 +134,9 @@ import type {
   ParamsResult,
   MupLadder,
   MupOptions,
+  ModelFamily,
+  NewDesignRequest,
+  NewDesignResult,
   ScaleOptions,
   ScaleResult,
   SymbolTable,
@@ -187,6 +190,16 @@ export function generateTorch(doc: Doc, options?: TorchOptions): GeneratedCode {
 
 export function scaleDesign(doc: Doc, options: ScaleOptions): ScaleResult {
   return engine().scale(doc, options);
+}
+
+/** The kinds of model a new design can start as. */
+export function modelFamilies(): ModelFamily[] {
+  return engine().families();
+}
+
+/** A new design of a kind, at a size or as large as trains on one device. */
+export function newDesign(request: NewDesignRequest, options?: AnalysisOptions): NewDesignResult {
+  return engine().newDesign(request, options);
 }
 
 export function mupLadder(doc: Doc, options?: MupOptions): MupLadder {

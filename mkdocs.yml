@@ -82,6 +82,7 @@ nav:
       - Your first design: tutorials/first-design.md
       - Tune small, run big: tutorials/tune-small-run-big.md
   - How-to:
+      - Start a design of your own: how-to/start-a-design.md
       - Add a block to the catalog: how-to/add-a-block.md
       - Add a preset: how-to/add-a-preset.md
       - Define a block inside a document: how-to/define-a-block-in-a-document.md

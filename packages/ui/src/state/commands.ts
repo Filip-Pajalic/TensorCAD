@@ -123,7 +123,14 @@ function walkThrough(): void {
 
 export const COMMANDS: Command[] = [
   // --- file ---------------------------------------------------------------
-  { id: "file.new", label: "New design", group: "file", shortcut: `${MOD}+n`, run: () => editor().newDoc() },
+  {
+    id: "file.new",
+    label: "New design…",
+    group: "file",
+    shortcut: `${MOD}+n`,
+    hint: "A model of the kind and size you choose, or a blank sheet",
+    run: () => editor().openDialog("new"),
+  },
   {
     id: "file.open",
     label: "Open…",

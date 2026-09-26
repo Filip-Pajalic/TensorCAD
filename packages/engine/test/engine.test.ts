@@ -569,6 +569,25 @@ describe("the compiled engine", () => {
     expect(explained.params.count.label).toBe("Repeats");
   });
 
+  it("starts a design of a kind, at a size or to fit a device", () => {
+    const families = engine.families();
+    expect(families.map((f) => f.id)).toEqual(["dense", "classic", "moe", "hybrid", "encoder-decoder", "vision"]);
+    const made = engine.newDesign({ family: "dense", params: 1e9 });
+    expect(Math.abs(made.params - 1e9) / 1e9).toBeLessThan(0.1);
+    expect(made.doc.meta.published).toBeUndefined();
+    expect(made.symbols.H / made.symbols.Hkv).toBe(4);
+    expect(Array.isArray(made.notes)).toBe(true);
+    // And what it is, measured the same way the readout will measure it.
+    expect(engine.analyze(made.doc).params.total).toBe(made.params);
+
+    const fitted = engine.newDesign({ family: "classic", fit: "rtx4090" });
+    expect(fitted.fits).toBe(true);
+    expect(fitted.trainBytes).toBeLessThanOrEqual(fitted.budget);
+    expect(fitted.device).toBe("rtx4090");
+
+    expect(() => engine.newDesign({ family: "rnn", params: 1e9 })).toThrow(/no kind of model/);
+  });
+
   it("imports a config into the design it came from", () => {
     const configs = golden<Record<string, unknown>>("hf-configs.json");
     for (const [name, config] of Object.entries(configs)) {

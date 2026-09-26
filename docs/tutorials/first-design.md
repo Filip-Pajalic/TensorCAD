@@ -32,7 +32,9 @@ Open the editor:
 bun run --cwd packages/ui dev
 ```
 
-Pick `gpt2-small` from **Load preset**. You are looking at a schematic: blocks
+Pick `gpt2-small` from **Load preset**. (To start a model of your own instead,
+at a size you choose, see [Start a design of your own](../how-to/start-a-design.md).)
+You are looking at a schematic: blocks
 with pins, tensors as wires, the repeated layer drawn once as a frame with a
 `32×` bracket.
 

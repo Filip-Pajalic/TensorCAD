@@ -2016,3 +2016,46 @@ It then checks two interactions:
 
 The README screenshots are regenerated. They now open Llama-3-8B from a
 `#design=` link rather than by driving the preset menu.
+
+## Twenty-eighth pass: a design of your own
+
+File ▸ New design made an empty sheet. For somebody who knows what a
+transformer is, and has not yet learned which of fifty-five blocks to drag and
+how to wire them, that is where the tool stops. The other way in was a preset,
+which is somebody else's model at somebody else's size: Llama 3 at eight
+billion, when what they have is one 24 GB card.
+
+### Two questions
+
+What somebody starting out knows is the kind of model they want and roughly how
+big. So those are the two questions. There are six kinds, each named and
+described in a sentence, and each size is a chip. You can also type a size of
+your own, or ask for *as large as trains on one* GPU.
+
+The answer is the kind's reference design scaled to the size. It is a preset,
+so it is something that was actually built and is held to its published count.
+Nothing is created until the dialog has said what the design came to: the
+parameters, the layers and width and heads, and whether training fits on one
+device, measured by the same analysis the readout will use a moment later.
+
+### What scaling a real model involves
+
+Scaling by the cube root is the bench's rule, and it was not enough for a
+design somebody will keep:
+
+- **Llama 3's four query heads per key head became thirteen over one** at a
+  billion parameters, because the width was rounded to whole heads. The head
+  count now moves to a neighbour the grouping divides, and the depth takes up
+  the size.
+- **A 125M Llama-style design came out three layers deep**, because 128,000
+  vocabulary entries each way were most of it. It now ties its head, as Llama
+  3.2's small models do.
+- **A mixture of experts did not fit on any single card at any size.** It had
+  been measured at Qwen3's 32,768-token serving context. It now trains at 4,096.
+
+### And the label on the frame
+
+The stack's frame on the sheet is labelled the way a figure labels it,
+*Transformer block x32*. The label is text, so a design scaled to seven layers
+went on saying thirty-two. The bench scaler had the same fault. `scale` now
+rewrites a label that ends in the count.

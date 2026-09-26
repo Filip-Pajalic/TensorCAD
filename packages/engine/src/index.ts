@@ -24,8 +24,11 @@ import type {
   ImportResult,
   Inference,
   MaskView,
+  ModelFamily,
   MupLadder,
   MupOptions,
+  NewDesignRequest,
+  NewDesignResult,
   ScaleOptions,
   ScaleResult,
   ClusterRequest,
@@ -82,6 +85,14 @@ export interface Engine {
   attentionMask(doc: Doc, path: string, options?: AnalysisOptions, head?: number): MaskView;
   generateTorch(doc: Doc, options?: TorchOptions): GeneratedCode;
   scale(doc: Doc, options: ScaleOptions): ScaleResult;
+  /** The kinds of model a new design can start as. */
+  families(): ModelFamily[];
+  /**
+   * A new design of a kind, at a size or as large as trains on one device:
+   * the kind's reference design, scaled with its proportions kept, and what
+   * training it would take on one device under `options`.
+   */
+  newDesign(request: NewDesignRequest, options?: AnalysisOptions): NewDesignResult;
   /**
    * The same design at several widths, with what to multiply the
    * initialization and the learning rate by at each one.
@@ -135,6 +146,8 @@ interface Exports {
   attentionMask(doc: string, path: string, options: string, head: string): string;
   generateTorch(doc: string, options: string): string;
   scale(doc: string, options: string): string;
+  families(): string;
+  newDesign(request: string, options: string): string;
   mup(doc: string, options: string): string;
   plan(doc: string, options: string, cluster: string): string;
   diff(a: string, b: string, options: string): string;
@@ -323,6 +336,9 @@ function wrap(api: Exports): Engine {
     generateTorch: (doc, options) =>
       unwrap(api.generateTorch(JSON.stringify(doc), options ? JSON.stringify(options) : "")) as GeneratedCode,
     scale: (doc, options) => unwrap(api.scale(JSON.stringify(doc), JSON.stringify(options))) as ScaleResult,
+    families: () => unwrap(api.families()) as ModelFamily[],
+    newDesign: (request, options) =>
+      unwrap(api.newDesign(JSON.stringify(request), point(options))) as NewDesignResult,
     mup: (doc, options) =>
       unwrap(api.mup(JSON.stringify(doc), options ? JSON.stringify(options) : "")) as MupLadder,
     plan: (doc, options, cluster) =>

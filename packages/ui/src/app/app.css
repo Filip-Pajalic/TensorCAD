@@ -4528,3 +4528,184 @@ select.field {
   color: var(--text);
   border-bottom-color: var(--accent);
 }
+
+/* --- New design ---------------------------------------------------------- */
+/* Two questions and what they come to, in the order they are answered. */
+
+.newdesign {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 12px;
+}
+
+.newdesign__question {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.newdesign__kinds {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 6px;
+}
+
+.newdesign__kind {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.newdesign__kind:hover,
+.newdesign__kind:focus-visible {
+  border-color: var(--accent);
+}
+
+.newdesign__kind.is-on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.newdesign__kindname {
+  font-weight: 600;
+}
+
+.newdesign__kindsummary {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-dim);
+}
+
+.newdesign__sizes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.newdesign__size {
+  min-width: 3.5rem;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.newdesign__size:hover,
+.newdesign__size:focus-visible {
+  border-color: var(--accent);
+}
+
+.newdesign__size.is-on,
+.newdesign__custom.is-on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.newdesign__custom {
+  width: 9rem;
+  margin-left: 6px;
+}
+
+.newdesign__fit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--text-dim);
+}
+
+.newdesign__fit select {
+  width: auto;
+}
+
+.newdesign__preview {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  background: var(--bg-input);
+  min-height: 5.5rem;
+  transition: opacity 120ms;
+}
+
+.newdesign__preview.is-busy {
+  opacity: 0.55;
+}
+
+.newdesign__preview p {
+  margin: 4px 0 0;
+}
+
+.newdesign__headline {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.newdesign__params {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.newdesign__base {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--dim);
+}
+
+.newdesign__shape {
+  color: var(--text);
+}
+
+.newdesign__train {
+  color: var(--ok);
+}
+
+.newdesign__train.is-over {
+  color: var(--warn);
+}
+
+.newdesign__error {
+  color: var(--error);
+}
+
+.newdesign__notes {
+  margin: 6px 0 0;
+  padding-left: 16px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.newdesign__foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.newdesign__name {
+  width: 12rem;
+}
+
+.newdesign__walk {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-dim);
+  cursor: pointer;
+}

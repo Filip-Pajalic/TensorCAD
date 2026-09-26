@@ -145,3 +145,22 @@ func TestARepeatedPairStaysWhole(t *testing.T) {
 		}
 	}
 }
+
+// A stack labelled with its count says the count it has after scaling, not the
+// one it had: Llama-3-8B's frame reads "Transformer block x32", and a design
+// scaled to a tenth of it is not thirty-two layers deep.
+func TestAScaledStackSaysItsNewCount(t *testing.T) {
+	result, err := scale.Design(presets.MustGet("llama-3-8b"), scale.Options{TargetParams: 1e9})
+	if err != nil {
+		t.Fatal(err)
+	}
+	layers := ir.ResolveSymbols(result.Doc).Values["L"]
+	for _, n := range result.Doc.Graph.Nodes {
+		if n.Type == "repeat" {
+			want := "Transformer block x" + analysis.JSNumber(layers)
+			if n.Label != want {
+				t.Errorf("the stack is labelled %q, want %q", n.Label, want)
+			}
+		}
+	}
+}

@@ -68,6 +68,7 @@ export type DialogId =
   | "palette"
   | "definitions"
   | "library"
+  | "new"
   | null;
 
 /**

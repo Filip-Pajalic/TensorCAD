@@ -865,6 +865,54 @@ export interface ScaleResult {
 }
 
 // ---------------------------------------------------------------------------
+// Starting a design
+// ---------------------------------------------------------------------------
+
+/** A kind of model a new design can start as. */
+export interface ModelFamily {
+  id: string;
+  name: string;
+  /** What the kind is, in a sentence somebody new can read. */
+  summary: string;
+  /** The preset it starts from. */
+  base: string;
+  /** The sizes worth offering, in parameters, smallest first. */
+  sizes: number[];
+  /** The sequence a run of this kind trains at, which becomes the design's T. */
+  sequence?: number;
+}
+
+/** What a new design should be: a kind, and a size or a device to fit. */
+export interface NewDesignRequest {
+  family: string;
+  /** Parameters to aim for, every one counted. */
+  params?: number;
+  /** A hardware id: the largest design whose training fits on one of these. */
+  fit?: string;
+  name?: string;
+}
+
+export interface NewDesignResult {
+  doc: Doc;
+  family: string;
+  base: string;
+  /** The size reached. */
+  params: number;
+  /** The size asked for, or for a fit the size the search settled on. */
+  target: number;
+  /** The design's sizes: L, D, H, Hkv, F and the like, where it has them. */
+  symbols: Record<string, number>;
+  /** The profile the training footprint was measured on. */
+  device: string;
+  /** Training on one device of it, in bytes. */
+  trainBytes: number;
+  /** What one device allows, after the planner's headroom. */
+  budget: number;
+  fits: boolean;
+  notes: string[];
+}
+
+// ---------------------------------------------------------------------------
 // The maximal-update-parametrization ladder
 // ---------------------------------------------------------------------------
 

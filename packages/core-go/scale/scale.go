@@ -12,10 +12,12 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"regexp"
 
 	"github.com/tensorcad/core/analysis"
 	"github.com/tensorcad/core/catalog"
 	"github.com/tensorcad/core/ir"
+	"github.com/tensorcad/core/shapes"
 )
 
 // Options steer the scaling.
@@ -442,6 +444,8 @@ func Design(base *ir.Doc, opts Options) (*Result, error) {
 		}
 	}
 
+	relabel(bestDoc)
+
 	baseName, baseNotes := base.Meta.Name, base.Meta.Notes
 	bestDoc.Meta.Name = baseName + "-" + formatShort(finalCounts.Total)
 	bestDoc.Meta.Notes = fmt.Sprintf("Scaled down from %s (%s parameters) for a local bench run. %s",
@@ -453,6 +457,56 @@ func Design(base *ir.Doc, opts Options) (*Result, error) {
 		Doc: bestDoc, Achieved: bestParams, Target: opts.TargetParams,
 		Changes: changes, Notes: notes,
 	}, nil
+}
+
+// countInLabel is a stack's label that says how many times it stacks, the way
+// a figure writes it: "Transformer block x32".
+var countInLabel = regexp.MustCompile(`^(.*\bx)(\d+)$`)
+
+// relabel keeps the count a stack's label writes in step with the count it has.
+//
+// The library labels its stacks as a figure does, and a label is text: a
+// design scaled to seven layers went on drawing a frame that said thirty-two.
+// Only a label that ends in the count is touched, and only when the count
+// evaluates to a number.
+func relabel(doc *ir.Doc) {
+	ctx := ir.SymbolCtx(ir.ResolveSymbols(doc))
+	var walk func(g *ir.Graph)
+	walk = func(g *ir.Graph) {
+		if g == nil {
+			return
+		}
+		for i := range g.Nodes {
+			n := &g.Nodes[i]
+			walk(n.Graph)
+			if n.Type != "repeat" {
+				continue
+			}
+			m := countInLabel.FindStringSubmatch(n.Label)
+			if m == nil {
+				continue
+			}
+			var count float64
+			switch v := n.Params["count"].(type) {
+			case float64:
+				count = v
+			case string:
+				sym, err := shapes.EvalExpr(v, ctx)
+				if err != nil {
+					continue
+				}
+				c, ok, err := sym.Evaluate(ctx.Values)
+				if err != nil || !ok {
+					continue
+				}
+				count = c
+			default:
+				continue
+			}
+			n.Label = m[1] + analysis.JSNumber(count)
+		}
+	}
+	walk(&doc.Graph)
 }
 
 // formatShort names a size the way a model is named: 1.3b, 124m, 500k.

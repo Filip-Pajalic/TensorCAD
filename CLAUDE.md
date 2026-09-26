@@ -102,7 +102,12 @@ Two cross-checks worth knowing:
   nested drawing the published figures use: containers become frames around their contents and
   container boundaries are short-circuited out of the wiring. Merging frames must happen after
   edges are resolved, because the set of open frames is what the edge tracer walks through.
-  `state/storage.ts` is the seam a store plugs into and `state/session.ts` is where you *were*
+  `state/storage.ts` is the seam a store plugs into, and what the toolbar's account corner and
+  Share button read: a provider's `account()`, `signIn()` and `signOut()` are shown by the
+  editor itself, so a deployment adds no bar of its own. Share goes through the store when
+  somebody is signed in to one and otherwise writes the design into the link's fragment,
+  `#design=`, which `state/link.ts` encodes and `openFromLocation` reads back in any
+  deployment. `state/session.ts` is where you *were*
   as distinct from what you had — the level, the selection, the unfold depth and the operating
   point, composed out of the store's own actions so a restore goes through the same doors an
   edit does. A view is kept beside a document and the two can drift, so a stale part is dropped

@@ -16,12 +16,13 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M5 Advanced parts | **Every block the plan named is there.** Mixture of experts, latent attention, state-space and linear-attention blocks; DeepSeek-V3, Nemotron-H-8B, Jamba, Qwen3-Next and Gemma-3 reproduce exactly. What is left is presets for models whose configs are still moving, which is not a thing that finishes. |
 | M6 Ship | **Done.** Documentation at [docs.tensorcad.dev](https://docs.tensorcad.dev/) and the editor at [tensorcad.dev](https://tensorcad.dev/), both static-asset Workers deployed from `main`. `bun run release` moves every version and tags `main`; the tag builds the engine, the MCPB bundle and the desktop binaries, publishes `@tensor-cad/engine`, `@tensor-cad/mcp` and `@tensor-cad/ui` to npm, then lists the server in the MCP registry, and cuts a GitHub release. |
 | Go engine | **Done.** The whole analysis is Go, compiled to WebAssembly, and the editor, the command line, the MCP server and the desktop shell all load the same module. The TypeScript it was ported from has been deleted; the golden files it wrote are the specification the engine is held to. |
-| Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, named refusals, a definition editor, a selectable tensor, a feature timeline, an SVG export of the sheet and a volume view whose stages are named. Twenty passes, each with what was wrong and what replaced it, in `docs/explanation/interaction-design.md`. Every block and wire has a spoken name and the hierarchy can be walked by keyboard — Enter into a block, Escape back out onto it — and `bun run test:browser` drives the built editor in headless Chrome with real key events, in CI, because the unit suite has no browser to see what React Flow does with a key first. |
+| Editor UI | **Reworked against CAD convention.** Orthogonal wires, a grid with snap, schematic-style blocks, a model tree with locking, typed pins, a status bar, named refusals, a definition editor, a selectable tensor, a feature timeline, an SVG export of the sheet and a volume view whose stages are named. Twenty-five passes, each with what was wrong and what replaced it, in `docs/explanation/interaction-design.md`. Every block and wire has a spoken name and the hierarchy can be walked by keyboard — Enter into a block, Escape back out onto it — and `bun run test:browser` drives the built editor in headless Chrome with real key events, in CI, because the unit suite has no browser to see what React Flow does with a key first. |
 | M7 Legibility | **Done.** The sheet says *grouped-query attention* rather than `gqa_attention`, every part explains itself on hover, a key names every letter and mark, shapes can be read as English, the plumbing can be left out the way a published figure leaves it out, each preset's own paragraph is on screen in a browsable library, the editor opens on a model small enough to see every number of, and a walkthrough narrates whatever design is open — with its numbers, changing when it changes. [docs/explanation/legibility.md](docs/explanation/legibility.md). |
 | M8 Real values | **Done.** `tensorcad-runtime trace` trains `nano-sort` to sort and records one run; the volume view draws its real values, the hover readout names each cell, and the walkthrough quotes the run. Everything else still draws decoration, labelled as such. |
 | M9 Your own values | **Done.** Any design under a million parameters with a token embedding can be traced — trained to sort when its vocabulary is small enough, run as initialised and labelled untrained when it is not — and the trace is loaded with File > Load a trace, or made and loaded in one step from the desktop app. Rotary and grouped-query attention are recomputed and checked like nano-sort's. The desktop's *Verify against PyTorch* and *Smoke train* run the same way: a sentence back, and a loss curve on the Runs chart. |
 | M10 Attention variants | **Done.** The analysis and the generated code describe the same kernel: softcapping and windows are counted as FlashAttention runs them and generated to use it. A design can now write a mask and a score expression on the fused primitive, FlexAttention-style, and see them counted, checked, drawn as a block mask and generated as `flex_attention`; a causal window is now counted at its width rather than half of it. BLOOM-7b1's ALiBi is a score expression and gpt-oss-20b brings attention sinks, both reproducing their published parameter counts exactly and both held against Hugging Face's own construction of what they add. Differential attention is two fused attentions and a combine, held against Microsoft's reference, and attention can be written out on purpose, with talking heads, at a cost a rule states. T5's relative bias came last, through M11's second sequence. [docs/explanation/attention-variants.md](docs/explanation/attention-variants.md). |
 | M11 Encoder–decoder | **Done.** A second sequence, and cross-attention to it, so T5 can be drawn and M10 can close: a source length `S` beside `T`, each block counted at the tokens of its own stream, cross-attention, a repeat that hands every layer the same tensor, and expressions that read a tensor — T5's shared relative-bias table, which is Hugging Face's to the bit and learns through FlexAttention. `t5-small` and `flan-t5-base` reproduce their published counts exactly and compute what Hugging Face's T5 computes, weight for weight. Every decoder-only number is held unchanged. [docs/explanation/encoder-decoder.md](docs/explanation/encoder-decoder.md). |
+| M13 The editor for someone new | **Phase 1 done.** One top bar, with the account in the editor's own corner, and a Share button that works everywhere: through a store when signed in to one, and with the design carried in the link itself anywhere else. Then plain names for blocks and parameters, and a calmer first screen. |
 | M12 Packed sequences | **Done.** Pretraining packs documents into one sequence and masks attention between them, which cuts Llama-3-8B's attention at 8k by eight times, and the engine assumes a sequence is one document. A documents input a mask can read, packing as a condition of training with a length distribution rather than a length, and a block mask built per batch. Phase 1 measures it: Llama-3-8B with its document mask at 8k in rows of 1,024-token documents keeps 491 keys a query, not 4,096, and trains 11% cheaper, while serving does not move. Phase 2 generates and verifies it: one block mask a batch shared by every layer, one document's tokens moving no other's outputs in PyTorch, and the kernel's whole blocks counted, 1.37 times the scores kept at 1,024 tokens, within 0.1% of FlexAttention's own count. Phase 3 restarts the positions at every document, and found that a rotary model under the mask computes the same either way while a learned position table does not. Phase 4 puts it in the editor: a packing control, the packed figures in the readout, the mask drawn over a sampled row, and two rules. [docs/explanation/packed-sequences.md](docs/explanation/packed-sequences.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
@@ -542,13 +543,36 @@ of the forward pass to 1.8%), gamma-distributed packings agree with the
 size-biased mean, a generated model keeps its documents apart, FlexAttention's
 block count matches the engine's, and with packing off no golden moves.
 
+### M13 — The editor for someone new · Phase 1 done
+
+Twelve milestones went into what the engine can say, and the editor someone
+meets first had drifted: a deployment with accounts showed two top bars, sharing
+was four steps into a tab and absent from the public editor, the inspector named
+every parameter by its code name, and the first screen opened with panels over
+the drawing. This is the editor, for somebody who has not read the docs.
+
+1. **One bar, and sharing in it.** The account moves into the editor's toolbar,
+   from what the storage provider reports, so a deployment needs no bar of its
+   own. A Share button beside it saves and links through a store when signed in
+   to one, and otherwise carries the design in the link's fragment, which needs
+   no server. *Done:* `signIn()`, `signOut()` and an account `problem` on the
+   seam; the toolbar's account corner and Share dialog; `#design=` links opened
+   by `openFromLocation` in any deployment. Every preset's link round-trips, the
+   longest under sixteen thousand characters.
+2. **Plain names.** Parameters with human labels and the code name beside them,
+   parameters that do not apply hidden rather than listed as unused, the rare
+   ones under Advanced, and the same plain names in the palette and the tree.
+3. **A calm first screen.** Nothing over the drawing on first open, the
+   operating point down to its essentials with the rest behind More, fewer tabs,
+   and a Start here into the walkthrough.
+
 ## Sequencing and dependencies
 
 ```
 M0 Sketch ──► M1 Check ──► M2 Manufacture ──► M3 Agent ──► M4 Test bench
                                │                 │
                                └──► M5 Advanced parts (starts after M2, runs alongside M3/M4)
-                                                                 └──► M6 Ship ──► M7 Legibility ──► M8 Real values ──► M9 Your own values ──► M10 Attention variants ──► M11 Encoder–decoder ──► M12 Packed sequences
+                                                                 └──► M6 Ship ──► M7 Legibility ──► M8 Real values ──► M9 Your own values ──► M10 Attention variants ──► M11 Encoder–decoder ──► M12 Packed sequences ──► M13 The editor for someone new
 ```
 
 M3 is deliberately short because the core is pure; the MCP server is a thin adapter. M5 is where most of the long-tail work lives and is driven by which architectures you want to learn next.

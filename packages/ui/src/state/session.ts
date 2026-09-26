@@ -17,6 +17,7 @@ import { useEditor } from "./store.js";
 import * as ops from "./ops.js";
 import { parseDoc } from "./serialize.js";
 import { storage, type ViewState } from "./storage.js";
+import { DESIGN_FRAGMENT, decodeDesign } from "./link.js";
 import type { Doc } from "@tensor-cad/engine";
 
 /** What the editor would need to put you back. */
@@ -90,6 +91,23 @@ const SHARED = /^\/d\/([A-Za-z0-9_-]{1,128})\/?$/;
  */
 export async function openFromLocation(): Promise<boolean> {
   if (typeof location === "undefined") return false;
+
+  // A design carried in the link itself, which needs no provider at all.
+  const inline = DESIGN_FRAGMENT.exec(location.hash ?? "");
+  if (inline) {
+    try {
+      const doc = parseDoc(await decodeDesign(inline[1]!));
+      useEditor.getState().setDoc(doc, `Opened ${doc.meta.name} from a link`);
+      // Taken off the address bar once it is open: from here on the design is
+      // what you make of it, and a reload should not put the original back.
+      history.replaceState(null, "", location.pathname + location.search);
+      return true;
+    } catch (e) {
+      useEditor.getState().setStatus(`That link did not open: ${(e as Error).message}`);
+      return false;
+    }
+  }
+
   const match = SHARED.exec(location.pathname);
   if (!match) return false;
 

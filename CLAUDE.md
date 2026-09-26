@@ -195,6 +195,11 @@ Two cross-checks worth knowing:
   border rather than by naming classes — the fill is on `.part__body`, not on the node, which
   is invisible until a block with dark text on a light fill turns up. `scripts/export-svg.ts`
   drives it headless and refuses to write a file with no wires in it.
+  `canvas/viewport.ts` decides where a sheet opens: whole when it fits at
+  `READABLE_ZOOM` (0.85), otherwise at that zoom from its top; `f` asks for the
+  whole however small. A fit waits until React Flow holds nodes carrying the
+  layout's positions (`settled` in `Canvas.tsx`) — two renders after a layout
+  lands — or it measures every part stacked at the origin.
   `canvas/wiring.ts` decides which of a port's four sides a wire leaves by and what
   kind of line it is. What is *drawn* at a connection point is eeschema's vocabulary and
   nothing else: a connected pin draws nothing at all, a net that branches gets a filled

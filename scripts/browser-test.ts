@@ -245,6 +245,22 @@ try {
       })`),
       { key: false, titleBlock: false, minimap: false },
     );
+    // Opened where its words can be read, and the words are words: no part
+    // says `dh 16` or `D 48` on its face any more.
+    const opened = await page<number>(
+      `Number(document.querySelector(".react-flow__viewport").style.transform.split("scale(")[1]?.split(")")[0])`,
+    );
+    if (!(opened >= 0.85)) throw new Error(`the sheet opened at ${opened}, where a part's type line is not legible`);
+    expect(
+      "code names on the parts",
+      await page(`[...document.querySelectorAll(".part__values")].map((v) => v.textContent).filter((t) => /\bdh \d|\bD \d|\bkv \d/.test(t))`),
+      [],
+    );
+    expect(
+      "the attention says what it is",
+      await page(`[...document.querySelectorAll(".part__values")].map((v) => v.textContent).find((t) => t.includes("heads"))`),
+      "3 heads × 16",
+    );
     expect(
       "the operating point",
       await page(`[...document.querySelectorAll(".op__label")].map((l) => l.textContent)`),
@@ -368,8 +384,12 @@ try {
     const scale = () =>
       page<number>(`Number(document.querySelector(".react-flow__viewport").style.transform.split("scale(")[1]?.split(")")[0])`);
     await page(`document.activeElement?.blur()`);
-    for (let i = 0; i < 4; i++) await key("=", 2); // Ctrl+=
-    await wait(600);
+    // Past the ceiling a fit would stop at, however readable the sheet opened.
+    for (let i = 0; i < 10 && !((await scale()) > 1.1); i++) {
+      await key("=", 2); // Ctrl+=
+      await wait(250);
+    }
+    await wait(400);
     const zoomed = await scale();
     if (!(zoomed > 1.1)) throw new Error(`zooming in did not take: ${zoomed}`);
     await key("f");

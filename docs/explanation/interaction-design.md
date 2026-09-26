@@ -2059,3 +2059,52 @@ The stack's frame on the sheet is labelled the way a figure labels it,
 *Transformer block x32*. The label is text, so a design scaled to seven layers
 went on saying thirty-two. The bench scaler had the same fault. `scale` now
 rewrites a label that ends in the count.
+
+## Twenty-ninth pass: a drawing you can read when it opens
+
+A sheet opened fitted to its window with a floor of 60% zoom, so that it would
+never open "at a zoom where the symbols cannot be read". At 60% a part's name is
+eight pixels and its type and summary six. The floor was named for legibility
+and set below it. And the summary, where it could be made out, said
+`D 48 · dh 16 · ffn 192`: the design's code names, which the inspector had
+stopped leading with a pass earlier.
+
+### A floor that is readable
+
+A part's type line is 10.5 pixels at full size and its summary 10, and below
+about nine on screen they stop being words. That puts the floor at 0.85. A
+drawing that fits at 0.85 or better opens whole and centred. One that doesn't
+opens at 0.85 from its top, and from its left if it is wider than the pane.
+That is where a model is read from, and its input at a legible size beats its
+middle as a thumbnail. Pressing `f` still fits the whole drawing, however small
+that makes it, because somebody pressing it wants the whole.
+
+The arithmetic is `standFor` in `canvas/viewport.ts`, with a test. It was the
+easy part. The first attempt opened on an empty corner: the fit ran on the
+render the layout arrived in, and read every part still stacked at the origin.
+The canvas copies laid-out nodes into its state a render later, and React Flow
+adopts that array a render after that. React Flow's own fit queues itself
+until then, which is why the old one never showed it. This one now waits the
+same way, until the nodes React Flow holds carry the layout's positions.
+
+The margins kept for the title block only apply when the title block is shown,
+which since the twenty-seventh pass is not by default.
+
+### A phrase, not code names
+
+Each common block now says what it is the way a figure annotates one:
+- *128,256 × 4,096* on an embedding;
+- *4,096 → 128,256 · tied* on an output projection;
+- *32 heads × 128 · 8 kv* on an attention;
+- *14,336 wide · SiLU* on a feed-forward;
+- *256 experts · top 8* on a mixture of experts.
+
+Enums are in the catalog's words. A block with no phrase of its own is described
+by its parameters' labels.
+
+The line is 10-pixel monospace, about six pixels a character, so it holds about
+twenty-one characters beside a parameter count and twenty-eight without one.
+Measured on DeepSeek-V3 and Jamba, five summaries ran into an ellipsis. So a
+phrase now lists its parts in order of importance and drops the ones that don't
+fit, never cutting one in half. *32 heads × 128 · 8 kv · causal* on a part
+with parameters loses *causal*, not *8 kv*.

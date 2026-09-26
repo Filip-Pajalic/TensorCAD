@@ -28,7 +28,7 @@ import {
 } from "@xyflow/react";
 import BlockNodeView, { type BlockFlowNode, type BlockNodeData, type PortView } from "./BlockNode.js";
 import FrameNodeView, { type FrameFlowNode, type FrameNodeData } from "./FrameNode.js";
-import { categoryColor, glyphFor, kindOf, labelOf, paramSummary, typeName } from "./blocks.js";
+import { categoryColor, glyphFor, kindOf, labelOf, paramSummary, SUMMARY_ROOM, typeName } from "./blocks.js";
 import { chooseSides, handleId, portOfHandle, sideOfHandle, wireKind, type Box } from "./wiring.js";
 import WireEdge from "./WireEdge.js";
 import { formatShape, type ShapeMode } from "./shapes.js";
@@ -40,7 +40,7 @@ import Key from "./Key.js";
 import Clarify, { type Candidate } from "./Clarify.js";
 import Walkthrough from "../panels/Walkthrough.js";
 import { ARIA_LABELS, blockLabel, frameLabel, wireLabel } from "./a11y.js";
-import { repairViewport } from "./viewport.js";
+import { READABLE_ZOOM, repairViewport, standFor } from "./viewport.js";
 import { buildWalkthrough } from "../state/walkthrough.js";
 import TitleBlock from "../panels/TitleBlock.js";
 import { onThemeChange, resolvedTheme, themeValue } from "../state/theme.js";
@@ -505,6 +505,7 @@ function buildView(opts: BuildOptions): { nodes: CanvasNode[]; edges: FlowEdge[]
 
     const resolved = derived.infer.resolved.get(path);
     const { inPorts, outPorts } = portViews(item, derived, shapeMode, connectedIn, connectedOut);
+    const owned = derived.paramsByPath.get(path) ?? 0;
     const data: BlockNodeData = {
       path,
       label: labelOf(node),
@@ -513,8 +514,14 @@ function buildView(opts: BuildOptions): { nodes: CanvasNode[]; edges: FlowEdge[]
       docs: def?.docs ?? EMPTY_DOCS,
       category: def?.category ?? "unknown",
       kind: kindOf(def),
-      summary: paramSummary(def, resolved, shapeMode, derived.symbols),
-      params: derived.paramsByPath.get(path) ?? 0,
+      summary: paramSummary(
+        def,
+        resolved,
+        shapeMode,
+        derived.symbols,
+        owned > 0 ? SUMMARY_ROOM.beside : SUMMARY_ROOM.alone,
+      ),
+      params: owned,
       inPorts,
       outPorts,
       severity: derived.severityByPath.get(path) ?? null,
@@ -649,7 +656,7 @@ export default function Canvas(): React.ReactElement {
   // screen are the template's, analysed as a design of its own. The readout
   // goes on showing the design's, which is what it is for.
   const { level, derived } = useLevel();
-  const { screenToFlowPosition, fitView, setCenter, getZoom, zoomIn, zoomOut, zoomTo, setViewport } =
+  const { screenToFlowPosition, getNodesBounds, setCenter, getZoom, zoomIn, zoomOut, zoomTo, setViewport } =
     useReactFlow();
 
   /**
@@ -915,13 +922,21 @@ export default function Canvas(): React.ReactElement {
    * says the measurements are in.
    */
   const pendingFit = useRef(true);
+  /**
+   * Which kind of fit is waiting. Opening a sheet, changing level and laying
+   * it out *read*: at a zoom its words can be read, from the top if it does not
+   * fit. Pressing f asks for the *whole* drawing, however small that makes it,
+   * because that is what somebody pressing it wants to see.
+   */
+  const fitMode = useRef<"read" | "whole">("read");
   // A render as well as a flag. Parked in a ref alone, a request honoured
   // "once the measurements are in" waited for some other render to come
   // along — which, when the sheet was already measured and nothing else was
   // changing, meant waiting for good.
   const [fitRequests, setFitRequests] = useState(0);
-  const fitSoon = useCallback(() => {
+  const fitSoon = useCallback((mode: "read" | "whole" = "read") => {
     pendingFit.current = true;
+    fitMode.current = mode;
     setFitRequests((n) => n + 1);
   }, []);
 
@@ -940,6 +955,22 @@ export default function Canvas(): React.ReactElement {
    * never caught taking it.
    */
   const sized = useStore((s) => s.width > 0 && s.height > 0);
+  const pane = useStore((s) => ({ width: s.width, height: s.height }), (a, b) => a.width === b.width && a.height === b.height);
+  /**
+   * The nodes React Flow is holding. Two hops lie between a layout and them:
+   * the canvas copies the laid-out nodes into its state a render later, and
+   * React Flow adopts that array a render after that. Bounds read before both
+   * are the old layout's — the first fit measured every block stacked at the
+   * origin, where the layout had not yet put them, and opened on the corner of
+   * a drawing that was not there. React Flow's own fit waits for this; so does
+   * this one. The copy carries each position across by reference, which is what
+   * makes "is this the layout's" a cheap question.
+   */
+  const adopted = useStore((s) => s.nodes);
+  const settled =
+    adopted === nodes &&
+    nodes.length === builtNodes.length &&
+    nodes.every((n, i) => n.position === builtNodes[i]!.position);
   const drawn = useStore((s) => {
     for (const n of s.nodeLookup.values()) if ((n.measured.width ?? 0) > 0 && (n.measured.height ?? 0) > 0) return true;
     return false;
@@ -948,21 +979,26 @@ export default function Canvas(): React.ReactElement {
   const fitted = useRef(false);
 
   useEffect(() => {
-    if (!nodesInitialized || !pendingFit.current || !sized || !drawn) return;
+    if (!nodesInitialized || !pendingFit.current || !sized || !drawn || !settled) return;
+    const stand = standFor(
+      getNodesBounds(nodesRef.current.map((n) => n.id)),
+      pane,
+      // The title block sits in the bottom-right corner of the sheet, the way
+      // it does on a real drawing, so when it is shown the drawing is fitted
+      // clear of it rather than under it.
+      showTitleBlock
+        ? { top: 0.06, right: 0.3, bottom: 0.22, left: 0.1 }
+        : { top: 0.06, right: 0.06, bottom: 0.06, left: 0.1 },
+      // Never open at a zoom where the words cannot be read: part of a large
+      // design, from its input, is better than all of it illegibly.
+      fitMode.current === "whole" ? 0.3 : READABLE_ZOOM,
+      1.1,
+    );
+    if (!stand) return;
     pendingFit.current = false;
-    // Never open at a zoom where the symbols cannot be read. Showing part of a
-    // large design is better than showing all of it illegibly.
-    // Asymmetric padding: the title block sits in the bottom-right corner of
-    // the sheet, the way it does on a real drawing, so the drawing is fitted
-    // clear of it rather than under it.
-    void fitView({
-      padding: { top: 0.1, right: 0.3, bottom: 0.22, left: 0.14 },
-      minZoom: 0.6,
-      maxZoom: 1.1,
-      duration: fitted.current ? 220 : 0,
-    });
+    void setViewport(stand, { duration: fitted.current ? 220 : 0 });
     fitted.current = true;
-  }, [nodesInitialized, nodes, fitView, sized, drawn, fitRequests]);
+  }, [nodesInitialized, settled, getNodesBounds, setViewport, pane, showTitleBlock, sized, drawn, fitRequests]);
 
   const runLayout = useCallback(async () => {
     const current = nodesRef.current;
@@ -1074,7 +1110,7 @@ export default function Canvas(): React.ReactElement {
    */
   useEffect(() => {
     setViewportApi({
-      fit: fitSoon,
+      fit: () => fitSoon("whole"),
       zoomIn: () => void zoomIn({ duration: 140 }),
       zoomOut: () => void zoomOut({ duration: 140 }),
       zoomReset: () => void zoomTo(1, { duration: 140 }),

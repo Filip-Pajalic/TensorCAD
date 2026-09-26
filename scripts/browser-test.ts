@@ -381,6 +381,20 @@ try {
     await until(`(document.activeElement?.getAttribute("aria-label") || "").startsWith("_in")`);
     await focusNode("block,");
     await key("Enter");
+    // A field leads with what it is called and keeps its name beside it, and
+    // the rare ones, the mask among them, wait under Advanced on a block that
+    // has changed none of them.
+    const advanced = `document.querySelector("[data-testid=advanced]")`;
+    await until(`${advanced}?.getAttribute("aria-expanded") === "false"`);
+    expect(
+      "a field's label and name",
+      await page(`[...document.querySelector(".inspector .param").querySelectorAll(".param__label, .param__name")].map((e) => e.textContent)`),
+      ["Model width", "d_model"],
+    );
+    if (await page(`!!document.querySelector("[data-testid=mask-preview]")`)) {
+      throw new Error("the mask was on screen before Advanced was opened");
+    }
+    await page(`${advanced}.click()`);
     await until(`document.querySelector("[data-testid=mask-preview]")`);
 
     const attention = `[...document.querySelectorAll("tr")].find((r) => r.cells[0]?.textContent.startsWith("forward, attention"))?.cells[1].textContent`;

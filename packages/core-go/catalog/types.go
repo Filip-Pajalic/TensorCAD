@@ -54,6 +54,15 @@ type ParamSpec struct {
 	// carries a value for them either way — but showing them beside the ones
 	// that matter is what makes a twenty-five field block unreadable.
 	When *ParamWhen
+	// Label is what a person reads for the parameter, where the name is what a
+	// document writes. See labels.go.
+	Label string
+	// Advanced marks a parameter most designs never touch, which the inspector
+	// keeps under a closed heading until a block sets one.
+	Advanced bool
+	// ValueLabels are what an enum's values are called where a person reads
+	// them, by value. A value with no entry reads as itself.
+	ValueLabels map[string]string
 }
 
 // ParamWhen is one parameter's value deciding whether another is meaningful.

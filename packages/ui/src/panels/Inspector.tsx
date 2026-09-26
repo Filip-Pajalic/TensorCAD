@@ -11,7 +11,7 @@ import { useState } from "react";
 import { useEditor } from "../state/store.js";
 import { useLevel } from "../state/hooks.js";
 import { TextArea, TextField } from "./Field.js";
-import { categoryColor, typeName } from "../canvas/blocks.js";
+import { categoryColor, categoryName, typeName } from "../canvas/blocks.js";
 import { formatShape } from "../canvas/shapes.js";
 import type { NodeDef, ParamSpec, ParamValue, Resolved } from "@tensor-cad/engine";
 import { formatCount } from "@tensor-cad/engine";
@@ -87,6 +87,7 @@ function ParamRow({
   resolved,
   disabled,
   irrelevant = false,
+  onlyWhen,
 }: {
   name: string;
   spec: ParamSpec;
@@ -96,6 +97,8 @@ function ParamRow({
   disabled: boolean;
   /** True when this block's own settings make the field mean nothing. */
   irrelevant?: boolean;
+  /** When it does apply, in words: "Only used when feed-forward is gated". */
+  onlyWhen?: string;
 }): React.ReactElement {
   const raw = node.params?.[name];
   const hasDefault = (spec as { default?: ParamValue }).default !== undefined;
@@ -146,11 +149,11 @@ function ParamRow({
               set(e.target.value === "inherit" ? null : e.target.value === "true")
             }
           >
-            {/* What unset means is the parameter's own to say, in its doc:
-                o_bias follows attn_bias, sinks are none. */}
-            <option value="inherit">unset</option>
-            <option value="true">true</option>
-            <option value="false">false</option>
+            {/* What the default is, is the parameter's own to say, in its
+                doc: o_bias follows attn_bias, sinks are none. */}
+            <option value="inherit">default</option>
+            <option value="true">on</option>
+            <option value="false">off</option>
           </select>
         );
       } else {
@@ -162,7 +165,7 @@ function ParamRow({
               checked={effective === true}
               onChange={(e) => set(e.target.checked)}
             />
-            <span className="mono">{effective === true ? "true" : "false"}</span>
+            <span>{effective === true ? "on" : "off"}</span>
           </label>
         );
       }
@@ -174,9 +177,12 @@ function ParamRow({
       // reading of it.
       const fallback = typeof spec.default === "string" ? spec.default : "";
       const effective = raw === undefined ? fallback : String(raw ?? "");
+      // Words where the catalog has them, and the value where it does not: an
+      // activation is "SiLU" in a paper and `silu` in a document.
+      const words = spec.valueLabels ?? {};
       control = (
         <select
-          className="field mono"
+          className={"field" + (Object.keys(words).length ? "" : " mono")}
           disabled={disabled}
           value={effective}
           onChange={(e) => set(e.target.value === "" ? undefined : e.target.value)}
@@ -184,7 +190,7 @@ function ParamRow({
           {effective === "" && <option value="">(unset)</option>}
           {(spec.values ?? []).map((v) => (
             <option key={v} value={v}>
-              {v}
+              {words[v] ?? v}
             </option>
           ))}
         </select>
@@ -247,15 +253,22 @@ function ParamRow({
       className={
         `param${missing ? " param--missing" : ""}` + (irrelevant ? " param--irrelevant" : "")
       }
-      title={
-        irrelevant && spec.when
-          ? `Only used when ${spec.when.param} is ${spec.when.is.join(" or ")}`
-          : undefined
-      }
+      title={irrelevant ? onlyWhen : undefined}
     >
+      {/*
+        The label leads and the name follows, smaller: the label is what the
+        field is, the name is what a document, a path and an MCP call write.
+        A design's own block may declare no label, and then the name is all
+        there is to say.
+      */}
       <div className="param__head">
-        <span className="param__name mono">{name}</span>
-        <span className="param__type">{spec.type}</span>
+        {spec.label && <span className="param__label">{spec.label}</span>}
+        <span
+          className={"param__name mono" + (spec.label ? "" : " param__name--alone")}
+          title="What a document writes"
+        >
+          {name}
+        </span>
         {missing && !irrelevant && <span className="badge badge--error">required</span>}
         {raw !== undefined && hasDefault && <span className="badge">set</span>}
         {/*
@@ -264,8 +277,8 @@ function ParamRow({
           the document and still editable — a block may be set up before the
           switch that turns it on.
         */}
-        {irrelevant && spec.when && (
-          <span className="badge badge--quiet" title={`Only used when ${spec.when.param} is ${spec.when.is.join(" or ")}`}>
+        {irrelevant && onlyWhen && (
+          <span className="badge badge--quiet" title={onlyWhen}>
             unused
           </span>
         )}
@@ -295,13 +308,47 @@ function meaningful(spec: ParamSpec, resolved: Resolved | undefined): boolean {
   return spec.when.is.includes(String(value));
 }
 
+/** "Feed-forward" to "feed-forward" for the middle of a sentence; "RMS" stays. */
+function lowerFirst(text: string): string {
+  return /^[A-Z][a-z]/.test(text) ? text[0]!.toLowerCase() + text.slice(1) : text;
+}
+
+/** Whether a block has written a parameter as something other than its default. */
+function changed(spec: ParamSpec, raw: ParamValue | undefined): boolean {
+  if (raw === undefined) return false;
+  return JSON.stringify(raw ?? null) !== JSON.stringify(spec.default ?? null);
+}
+
 /**
- * A block's parameters, under headings, with the irrelevant ones greyed.
+ * Fields under their headings, in the order their first field appears, so the
+ * headings follow the block's own order rather than the alphabet.
+ */
+function byGroup(names: string[], specs: Record<string, ParamSpec>): { name: string; fields: string[] }[] {
+  const groups: { name: string; fields: string[] }[] = [];
+  for (const name of names) {
+    const group = specs[name]?.group ?? "";
+    const existing = groups.find((g) => g.name === group);
+    if (existing) existing.fields.push(name);
+    else groups.push({ name: group, fields: [name] });
+  }
+  return groups;
+}
+
+/**
+ * A block's parameters: the ones that matter, then the rare ones, with the ones
+ * that do not apply kept out of the way.
  *
- * `transformer_block` has twenty-five and about ten of them mean nothing at any
- * moment. Greyed rather than hidden: a field that disappears when you change
- * `mlp` is one you go looking for, and the value is still in the document
- * either way.
+ * `transformer_block` has forty-odd, and at any moment about ten mean nothing
+ * — `experts` on a dense block — and another eighteen are things most designs
+ * never touch: attention sinks, a score cap, an expression mask. Listing all of
+ * them is how a twelve-field decision reads as a forty-field form.
+ *
+ * So three piles. The fields this block's settings make meaningful and that a
+ * design is made of are shown. The rare ones are under Advanced, which starts
+ * closed and opens by itself for a block that has changed one, so a design
+ * that uses sinks shows its sinks. The ones that do not apply are hidden behind
+ * a count that shows them, greyed, in their places: a field that vanishes when
+ * `mlp` changes is one you go looking for, and the count says where it went.
  */
 function Parameters({
   def,
@@ -319,52 +366,94 @@ function Parameters({
   const specs = def.params as Record<string, ParamSpec>;
   // The block's declared order, which the catalog carries beside the map
   // because a JSON object's is only its insertion order and a Go map has none.
-  const order = def.paramOrder ?? Object.keys(specs);
+  const order = (def.paramOrder ?? Object.keys(specs)).filter((name) => specs[name]);
+  const applies = (name: string): boolean => meaningful(specs[name], resolved);
+  // Said in the other field's words, not its identifier: "feed-forward is
+  // mixture of experts" rather than "mlp is moe".
+  const onlyWhen = (name: string): string | undefined => {
+    const when = specs[name].when;
+    if (!when) return undefined;
+    const other = specs[when.param];
+    const values = when.is.map((v) => other?.valueLabels?.[v] ?? v);
+    return `Only used when ${lowerFirst(other?.label ?? when.param)} is ${values.join(" or ")}`;
+  };
 
-  // Groups in the order their first field appears, so the headings follow the
-  // block's own order rather than the alphabet.
-  const groups: { name: string; fields: string[] }[] = [];
-  for (const name of order) {
-    const spec = specs[name];
-    if (!spec) continue;
-    const group = spec.group ?? "";
-    const existing = groups.find((g) => g.name === group);
-    if (existing) existing.fields.push(name);
-    else groups.push({ name: group, fields: [name] });
-  }
-
-  const dim = groups.reduce(
-    (n, g) => n + g.fields.filter((f) => !meaningful(specs[f], resolved)).length,
-    0,
+  const advanced = order.filter((name) => specs[name].advanced);
+  const advancedChanged = advanced.filter(
+    (name) => applies(name) && changed(specs[name], node.params?.[name]),
   );
+
+  const [showUnused, setShowUnused] = useState(false);
+  const [openAdvanced, setOpenAdvanced] = useState(advancedChanged.length > 0);
+
+  // What the count at the bottom would put back, which does not include what
+  // is under a closed Advanced: a count that promised twelve and showed nine
+  // would be the first thing wrong with it.
+  const unused = order.filter((name) => !applies(name) && (!specs[name].advanced || openAdvanced));
+  const shown = (name: string): boolean => showUnused || applies(name);
+  const basic = order.filter((name) => !specs[name].advanced && shown(name));
+  const rare = advanced.filter(shown);
+
+  const rows = (names: string[]): React.ReactElement[] =>
+    byGroup(names, specs).map((group) => (
+      <div className="param__group" key={group.name || "_"}>
+        {group.name && <div className="param__groupName">{group.name}</div>}
+        {group.fields.map((name) => (
+          <ParamRow
+            key={name}
+            name={name}
+            spec={specs[name]}
+            node={node}
+            path={path}
+            resolved={resolved}
+            disabled={disabled}
+            irrelevant={!applies(name)}
+            onlyWhen={onlyWhen(name)}
+          />
+        ))}
+      </div>
+    ));
 
   return (
     <section className="section">
-      <h3>
-        Parameters
-        {dim > 0 && (
-          <span className="section__note" title="Fields this block's own settings make irrelevant">
-            {dim} not in use
-          </span>
-        )}
-      </h3>
-      {groups.map((group) => (
-        <div className="param__group" key={group.name || "_"}>
-          {group.name && <div className="param__groupName">{group.name}</div>}
-          {group.fields.map((name) => (
-            <ParamRow
-              key={name}
-              name={name}
-              spec={specs[name]}
-              node={node}
-              path={path}
-              resolved={resolved}
-              disabled={disabled}
-              irrelevant={!meaningful(specs[name], resolved)}
-            />
-          ))}
+      <h3>Parameters</h3>
+      {rows(basic)}
+
+      {rare.length > 0 && (
+        <div className="param__more">
+          <button
+            type="button"
+            className="param__toggle"
+            data-testid="advanced"
+            aria-expanded={openAdvanced}
+            onClick={() => setOpenAdvanced(!openAdvanced)}
+          >
+            <span className="fold__caret" aria-hidden>
+              {openAdvanced ? "▾" : "▸"}
+            </span>
+            Advanced
+            <span className="param__count">
+              {advancedChanged.length > 0 ? `${advancedChanged.length} changed` : rare.length}
+            </span>
+          </button>
+          {openAdvanced && rows(rare)}
         </div>
-      ))}
+      )}
+
+      {unused.length > 0 && (
+        <button
+          type="button"
+          className="param__toggle param__toggle--quiet"
+          data-testid="show-unused"
+          aria-pressed={showUnused}
+          title="Fields this block's own settings make meaningless. Their values are still in the document."
+          onClick={() => setShowUnused(!showUnused)}
+        >
+          {showUnused
+            ? `Hide the ${unused.length} that don’t apply`
+            : `${unused.length} more that don’t apply`}
+        </button>
+      )}
     </section>
   );
 }
@@ -429,7 +518,7 @@ export default function Inspector(): React.ReactElement {
             {node.type}
           </span>
           <span className="badge">{def?.kind ?? "unknown"}</span>
-          <span className="badge">{def?.category ?? "?"}</span>
+          <span className="badge">{categoryName(def?.category)}</span>
           {params > 0 && (
             <span className="badge badge--num mono" title={`${params.toLocaleString("en-US")} parameters`}>
               {formatCount(params)}
@@ -485,6 +574,8 @@ export default function Inspector(): React.ReactElement {
 
       {def && Object.keys(def.params ?? {}).length > 0 && (
         <Parameters
+          // Keyed on the block, so what is open starts again for each one.
+          key={selection}
           def={def}
           node={node}
           path={selection}

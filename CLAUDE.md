@@ -276,7 +276,7 @@ Two cross-checks worth knowing:
 
 ## When adding a block
 
-A catalog entry needs: parameter specs, port patterns, `docs.summary` and `docs.formula` with a source link, and, for a primitive, the formulas (`paramCount`, `flops`, `retains`, `stateBytes`). Add a preset that uses it with a published figure, or a test that pins the arithmetic. Run `bun run scripts/report.ts` before and after.
+A catalog entry needs: parameter specs, port patterns, `docs.summary` and `docs.formula` with a source link, and, for a primitive, the formulas (`paramCount`, `flops`, `retains`, `stateBytes`). Every parameter needs a label — what the inspector leads with, the name beside it — and `catalog/labels.go` is where they live, keyed by name with per-block overrides, beside which parameters are `advanced` and what an enum's values are called; a test fails for a parameter without one. Add a preset that uses it with a published figure, or a test that pins the arithmetic. Run `bun run scripts/report.ts` before and after.
 
 ## Known gaps
 

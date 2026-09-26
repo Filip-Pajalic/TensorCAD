@@ -58,6 +58,11 @@ Refer to them by those ids in `edges`.
 **A broken definition is reported, not thrown.** It is dropped from the catalog
 and the `userBlocks` design rule says why.
 
+**A parameter can say what it is called.** `"label": "Hidden width"` is what the
+inspector shows above the field, with the name beside it; without one the name
+is shown alone. `"advanced": true` keeps a parameter with a `default` under the
+inspector's Advanced heading, closed until a block changes it.
+
 ## From the editor
 
 **Blocks ▸ Make a block from this level** lifts what is on screen into a

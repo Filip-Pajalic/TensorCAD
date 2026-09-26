@@ -21,7 +21,9 @@ type Param struct {
 	// Expression is what the document wrote, when it wrote an expression.
 	Expression string `json:"expression,omitempty"`
 	// Value is what it evaluated to.
-	Value any    `json:"value"`
+	Value any `json:"value"`
+	// Label is what the parameter is called where a person reads it.
+	Label string `json:"label,omitempty"`
 	Doc   string `json:"doc,omitempty"`
 }
 
@@ -215,6 +217,7 @@ func build(
 		}
 		if spec, ok := def.Params.Get(key); ok {
 			p.Doc = spec.Doc
+			p.Label = spec.Label
 		}
 		params[key] = p
 	}

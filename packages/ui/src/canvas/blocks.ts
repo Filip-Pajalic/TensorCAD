@@ -49,6 +49,40 @@ export function partColor(category: string | undefined): PartColor {
   };
 }
 
+/**
+ * What a category is called, in the order the palette lists them.
+ *
+ * The engine's category is a key — `ssm`, `moe`, `io` — and the palette is
+ * where somebody new meets it. Whole layers first, then what a layer is made
+ * of, then the plumbing, because that is the order a design is built in.
+ */
+const CATEGORIES: [key: string, name: string][] = [
+  ["block", "Layers"],
+  ["attention", "Attention"],
+  ["mlp", "Feed-forward"],
+  ["moe", "Mixture of experts"],
+  ["ssm", "State space"],
+  ["norm", "Normalization"],
+  ["embedding", "Embeddings"],
+  ["position", "Positions"],
+  ["head", "Output heads"],
+  ["linear", "Linear"],
+  ["elementwise", "Elementwise"],
+  ["shape", "Reshaping"],
+  ["container", "Containers"],
+  ["io", "Inputs and outputs"],
+];
+
+export function categoryName(category: string | undefined): string {
+  return CATEGORIES.find(([key]) => key === category)?.[1] ?? category ?? "Other";
+}
+
+/** Where a category comes in the palette; one it does not know goes last. */
+export function categoryRank(category: string): number {
+  const at = CATEGORIES.findIndex(([key]) => key === category);
+  return at < 0 ? CATEGORIES.length : at;
+}
+
 /** The outline colour, for swatches and the minimap. */
 export function categoryColor(category: string | undefined): string {
   return partColor(category).edge;

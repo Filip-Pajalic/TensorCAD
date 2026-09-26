@@ -543,6 +543,32 @@ describe("the compiled engine", () => {
     }
   });
 
+  it("carries what each parameter is called, and which are rare", () => {
+    // What the inspector leads with, across the boundary: a label on every
+    // built-in parameter, `advanced` only where it is true, and an enum's
+    // words keyed by its values. Go proves the table; this proves it arrives.
+    const unlabelled = engine
+      .catalog()
+      .flatMap((b) => b.paramOrder.filter((name) => !b.params[name].label).map((name) => `${b.type}.${name}`));
+    expect(unlabelled).toEqual([]);
+
+    const block = engine.catalog().find((b) => b.type === "transformer_block")!;
+    expect(block.params.ffn_hidden.label).toBe("Feed-forward width");
+    expect(block.params.ffn_hidden.advanced).toBeUndefined();
+    expect(block.params.sinks.advanced).toBe(true);
+    expect(block.params.attention.valueLabels).toEqual({
+      gqa: "grouped-query",
+      mla: "latent (MLA)",
+      diff: "differential",
+    });
+    const stack = engine.catalog().find((b) => b.type === "repeat")!;
+    expect(stack.params.count.label).toBe("Repeats");
+
+    // And explain, so an agent reading a block gets the same words.
+    const explained = engine.explain(engine.preset("gpt2-small"), "layers");
+    expect(explained.params.count.label).toBe("Repeats");
+  });
+
   it("imports a config into the design it came from", () => {
     const configs = golden<Record<string, unknown>>("hf-configs.json");
     for (const [name, config] of Object.entries(configs)) {

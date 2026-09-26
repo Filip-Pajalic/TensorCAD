@@ -882,6 +882,7 @@ export function registerTools(
             name: z.string(),
             expression: z.string().optional(),
             value: z.number().optional(),
+            label: z.string().optional(),
             doc: z.string().optional(),
           }),
         ),
@@ -927,6 +928,7 @@ export function registerTools(
               ? { expression: String(e.params[name].expression) }
               : {}),
             ...(typeof e.params[name].value === "number" ? { value: e.params[name].value } : {}),
+            ...(e.params[name].label ? { label: e.params[name].label } : {}),
             ...(e.params[name].doc ? { doc: e.params[name].doc } : {}),
           })),
           ports: {

@@ -16,6 +16,9 @@ import { formatShape } from "../canvas/shapes.js";
 import type { NodeDef, ParamSpec, ParamValue, Resolved } from "@tensor-cad/engine";
 import { formatCount } from "@tensor-cad/engine";
 import { blockDef, type BlockDef } from "../engine.js";
+import { resolveLevel } from "../state/level.js";
+import * as ops from "../state/ops.js";
+import { runCommand } from "../state/commands.js";
 import MaskPreview from "./MaskPreview.js";
 
 /** What an empty attention expression field suggests. */
@@ -468,7 +471,27 @@ export default function Inspector(): React.ReactElement {
   if (!selection) {
     return (
       <div className="panel__body">
-        <div className="empty">Select a block on the canvas to edit its parameters.</div>
+        {/*
+          The panel somebody new is looking at before they have done anything,
+          so it says the two things there are to do: click a block, or be shown
+          round. The walkthrough is the one on the Help menu; this is the place
+          it can be found without knowing that.
+        */}
+        <div className="inspector__start" data-testid="inspector-start">
+          <p>Click any block in the drawing to see what it is and change it.</p>
+          <p className="muted">
+            New to this? The walkthrough goes through the design one stage at a time, with its
+            own numbers.
+          </p>
+          <button
+            type="button"
+            className="btn btn--primary"
+            data-testid="start-here"
+            onClick={() => runCommand("help.start")}
+          >
+            Start here
+          </button>
+        </div>
       </div>
     );
   }
@@ -478,17 +501,31 @@ export default function Inspector(): React.ReactElement {
       ? selection.slice(level.prefix.length + 1)
       : null
     : selection;
-  const node = localId && !localId.includes("/") ? level.graph.nodes.find((n) => n.id === localId) : null;
+  let where = level;
+  let node = localId && !localId.includes("/") ? level.graph.nodes.find((n) => n.id === localId) : null;
+  // A block drawn inside an unfolded frame is on a deeper level than the one
+  // open, and clicking it is still asking what it is. So the inspector finds
+  // the level it lives on and shows it there — editable if that level is,
+  // which a stack's interior is and a built-in block's is not.
+  const segments = ops.segmentsOf(selection);
+  if (!node) {
+    const parent = resolveLevel(doc, segments.slice(0, -1), derived);
+    if (!parent.error) {
+      where = parent;
+      node = parent.graph.nodes.find((n) => n.id === segments[segments.length - 1]) ?? null;
+    }
+  }
 
   if (!node) {
     return (
       <div className="panel__body">
         <div className="empty">
-          <code>{selection}</code> is not on this level.
+          <code>{selection}</code> is not in this design.
         </div>
       </div>
     );
   }
+  const elsewhere = where !== level;
 
   // Through the document's own catalog (invariant 1), or a design's own
   // block inspects as an unknown kind with no documentation.
@@ -501,8 +538,12 @@ export default function Inspector(): React.ReactElement {
   const ports = derived.infer.ports.get(selection);
   const params = derived.paramsByPath.get(selection) ?? 0;
   const issues = derived.issues.filter((i) => i.path === selection);
-  const disabled = !level.editable;
+  const disabled = !where.editable;
   const act = useEditor.getState();
+  const openWhereItIs = (): void => {
+    act.setPath(segments.slice(0, -1));
+    act.select(selection);
+  };
 
   return (
     <div className="panel__body inspector">
@@ -526,6 +567,23 @@ export default function Inspector(): React.ReactElement {
           )}
         </div>
       </div>
+
+      {elsewhere && (
+        <p className="inspector__where" data-testid="inspector-where">
+          {where.editable ? (
+            <>Inside {where.owner?.label ?? where.owner?.id}, drawn open on this sheet. </>
+          ) : (
+            <>
+              Part of {where.owner?.label ?? where.owner?.id}, a built-in{" "}
+              {typeName(where.owner ? blockDef(where.owner.type, doc) : undefined, where.owner?.type ?? "")}
+              , so it is read-only: its settings come from that block&rsquo;s.{" "}
+            </>
+          )}
+          <button type="button" className="linkish" onClick={openWhereItIs}>
+            Open its level
+          </button>
+        </p>
+      )}
 
       {multiple && (
         <p className="inspector__multiple">

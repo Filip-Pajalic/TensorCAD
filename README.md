@@ -44,8 +44,8 @@ convolutional classifiers too, because the same machinery turned out to work.
 
 <p align="center">
   <sub>Llama-3-8B, one level open. Every net carries its shape; the readout is
-  measured under the operating point at the top of it, and the title block in
-  the corner says how the count compares with the published one.</sub>
+  measured under the operating point at the top of it, and says how the count
+  compares with the published one.</sub>
 </p>
 
 <table>

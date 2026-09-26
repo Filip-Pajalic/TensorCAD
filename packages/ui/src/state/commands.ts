@@ -106,6 +106,21 @@ function exportTorch(): void {
   );
 }
 
+/**
+ * Start the walkthrough on the open design.
+ *
+ * A design with no blocks has no steps, and the panel renders nothing — so the
+ * command would report itself as on and put nothing on screen. It says so.
+ */
+function walkThrough(): void {
+  const state = editor();
+  if (buildWalkthrough(state.doc, derive(state.doc, state.operating)).length === 0) {
+    state.setStatus("Nothing to walk through yet: this design has no blocks.");
+    return;
+  }
+  state.startWalkthrough();
+}
+
 export const COMMANDS: Command[] = [
   // --- file ---------------------------------------------------------------
   { id: "file.new", label: "New design", group: "file", shortcut: `${MOD}+n`, run: () => editor().newDoc() },
@@ -393,16 +408,8 @@ export const COMMANDS: Command[] = [
     shortcut: "w",
     hint: "What each stage of this design does, on this design, with its numbers",
     run: () => {
-      const state = editor();
-      if (state.walkthrough !== null) return state.endWalkthrough();
-      // A design with no blocks has no steps, and the panel renders nothing —
-      // so the command reported itself as on and put nothing on screen, which
-      // is the same silent success the rest of this pass is about.
-      if (buildWalkthrough(state.doc, derive(state.doc, state.operating)).length === 0) {
-        state.setStatus("Nothing to walk through yet: this design has no blocks.");
-        return;
-      }
-      state.startWalkthrough();
+      if (editor().walkthrough !== null) return editor().endWalkthrough();
+      walkThrough();
     },
     checked: () => editor().walkthrough !== null,
   },
@@ -508,7 +515,7 @@ export const COMMANDS: Command[] = [
   { id: "panel.inspector", label: "Inspector", group: "panel", shortcut: "1", run: () => editor().setRightTab("inspector") },
   { id: "panel.symbols", label: "Symbols", group: "panel", shortcut: "2", run: () => editor().setRightTab("symbols") },
   { id: "panel.cluster", label: "Cluster", group: "panel", shortcut: "3", run: () => editor().setRightTab("cluster") },
-  { id: "panel.ladder", label: "Ladder", group: "panel", shortcut: "4", run: () => editor().setRightTab("ladder") },
+  { id: "panel.ladder", label: "Width ladder", group: "panel", shortcut: "4", run: () => editor().setRightTab("ladder") },
   {
     id: "panel.findings",
     label: "Checks",
@@ -607,6 +614,15 @@ export const COMMANDS: Command[] = [
   },
 
   // --- help ---------------------------------------------------------------
+  {
+    id: "help.start",
+    label: "Start here",
+    group: "help",
+    hint: "A walk through the open design, one stage at a time, with its own numbers",
+    // Always starts, where the View menu's toggles: somebody who pressed Start
+    // here wants to be shown something, not to have it taken away.
+    run: () => walkThrough(),
+  },
   {
     id: "help.palette",
     label: "Commands…",

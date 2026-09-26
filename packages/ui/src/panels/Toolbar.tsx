@@ -207,8 +207,13 @@ export default function Toolbar(): React.ReactElement {
       {/* The one thing on the row that is decoration rather than function, so
           it is the first to go when the window cannot hold everything. Below
           that the menu bar starts at the left edge, which is where a menu bar
-          starts anyway. */}
-      <div className="hidden shrink-0 select-none items-baseline gap-1 font-sans text-[13px] font-semibold tracking-tight xl:flex">
+          starts anyway.
+
+          The widths are measured, not Tailwind's: at `xl`, exactly 1280, this
+          and the FLOPs cell both appeared and pushed Share off the right edge
+          of a thirteen-inch laptop, and a deployment's Sign in needs room
+          beside it too. */}
+      <div className="hidden shrink-0 select-none items-baseline gap-1 font-sans text-[13px] font-semibold tracking-tight min-[1360px]:flex">
         <span className="text-primary">Tensor</span>
         <span className="text-foreground">CAD</span>
       </div>
@@ -400,7 +405,7 @@ export default function Toolbar(): React.ReactElement {
             row. It is the least urgent of the three and the Readout panel
             carries it in full, so losing it costs nothing that is not one
             glance to the right. */}
-        <div className="hidden items-stretch xl:flex">
+        <div className="hidden items-stretch min-[1520px]:flex">
           <Tooltip
             content={`Forward FLOPs per token at T=${derived.analysis.options.T.toLocaleString("en-US")}`}
           >

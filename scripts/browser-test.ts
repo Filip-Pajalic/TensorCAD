@@ -235,6 +235,83 @@ try {
     expect("volume view chunks", view.length, 0);
   });
 
+  await check("a first visit: nothing over the drawing, four fields, four tabs, and Start here", async () => {
+    expect(
+      "what covers the sheet",
+      await page(`({
+        key: !!document.querySelector(".key:not(.key--shut)"),
+        titleBlock: !!document.querySelector(".title-block"),
+        minimap: !!document.querySelector(".react-flow__minimap"),
+      })`),
+      { key: false, titleBlock: false, minimap: false },
+    );
+    expect(
+      "the operating point",
+      await page(`[...document.querySelectorAll(".op__label")].map((l) => l.textContent)`),
+      ["batch", "sequence", "device", "GPUs"],
+    );
+    expect(
+      "the tabs",
+      await page(`[...document.querySelectorAll(".panel--edit [role=tab]")].map((t) => t.textContent)`),
+      ["Inspector", "Symbols", "Training", "History"],
+    );
+    await page(`document.querySelector("[data-testid=start-here]").click()`);
+    await until(`document.querySelector(".wt")`);
+    await page(`document.querySelector(".wt__shut").click()`);
+    await until(`!document.querySelector(".wt")`);
+
+    // And the toolbar holds on a thirteen-inch laptop: at 1280 it once pushed
+    // Share off the right-hand edge.
+    await dt.send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });
+    await wait(300);
+    const share = await page<number>(`document.querySelector("[data-testid=share]").getBoundingClientRect().right`);
+    await dt.send("Emulation.clearDeviceMetricsOverride");
+    await wait(300);
+    if (share > 1280) throw new Error(`Share ends at ${share}, past a 1280-wide window`);
+  });
+
+  await check("More keeps how a run is set up, and says what of it has changed", async () => {
+    const more = `document.querySelector("[data-testid=operating-more]")`;
+    expect("shut, it says what is inside", await page(`${more}.textContent`), "▸Moreprecision, optimizer, parallelism");
+    await page(`${more}.click()`);
+    const zero = `[...document.querySelectorAll(".op__field")].find((f) => f.querySelector(".op__label")?.textContent === "ZeRO")?.querySelector("select")`;
+    await until(zero);
+    await page(`(() => {
+      const select = ${zero};
+      Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value").set.call(select, "3");
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    })()`);
+    await page(`${more}.click()`);
+    await until(`${more}.textContent.endsWith("ZeRO 3")`);
+    await page(`[...document.querySelectorAll(".op__head .linkish, .op__head button")].find((b) => b.textContent === "reset")?.click()`);
+    // Reset is on the open header only; open the operating point's own fold if
+    // it had been shut, and put the defaults back for the checks after this.
+    await until(`!${more}.textContent.includes("ZeRO")`);
+  });
+
+  await check("a block drawn inside an unfolded frame is inspected where it is", async () => {
+    // Opened until the attention is drawn inside its frames, however deep the
+    // sheet starts.
+    const drawn = `[...document.querySelectorAll(".react-flow__node")].some((n) => (n.getAttribute("aria-label") || "").startsWith("attn, grouped-query attention"))`;
+    for (let i = 0; i < 4 && !(await page<boolean>(drawn)); i++) {
+      await page(`document.querySelector("button[aria-label='Open one more level']").click()`);
+      await wait(400);
+    }
+    await until(drawn);
+    await focusNode("attn, grouped-query attention");
+    await key("Enter");
+    await until(`document.querySelector(".inspector__type")?.textContent === "grouped-query attention"`);
+    const where = await page<string>(`document.querySelector("[data-testid=inspector-where]")?.textContent ?? ""`);
+    if (!where.includes("read-only")) throw new Error(`the inspector said: ${where}`);
+    expect(
+      "its fields, which a built-in block's interior cannot change",
+      await page(`[...document.querySelectorAll(".inspector .param input, .inspector .param select")].every((f) => f.disabled)`),
+      true,
+    );
+    await key("Escape");
+    await until(`document.querySelector("[data-testid=inspector-start]")`);
+  });
+
   await check("every block and wire has a name, and none of them says undefined", async () => {
     await key("[");
     await key("[");

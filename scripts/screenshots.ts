@@ -201,15 +201,6 @@ window.__shot = {
       );
     }
   },
-  async preset(name) {
-    const open = [...document.querySelectorAll("button")].find((b) =>
-      (b.textContent || "").includes("Load preset"),
-    );
-    open.click();
-    await new Promise((r) => setTimeout(r, 300));
-    this.click(name, "[role=option]");
-    await new Promise((r) => setTimeout(r, 900));
-  },
 };
 "ready"
 `;
@@ -240,14 +231,29 @@ const SHOTS: Shot[] = [
   {
     name: "cluster",
     caption: "Every way of splitting the training across the cluster, and which of them fit.",
-    prepare: `window.__shot.detail(0); window.__shot.growPanel(260); window.__shot.click("Cluster"); "ok"`,
+    // Training first, and a moment for it to draw the switch the view is on.
+    prepare: `(async () => {
+      window.__shot.detail(0);
+      window.__shot.growPanel(260);
+      window.__shot.click("Training");
+      await new Promise((r) => setTimeout(r, 400));
+      window.__shot.click("Cluster");
+      return "ok";
+    })()`,
     clip: `window.__shot.panelBox(".plan")`,
     settle: 3000,
   },
   {
     name: "ladder",
     caption: "The width ladder: the same design at several widths, and what to scale by at each.",
-    prepare: `window.__shot.detail(0); window.__shot.growPanel(260); window.__shot.click("Ladder"); "ok"`,
+    prepare: `(async () => {
+      window.__shot.detail(0);
+      window.__shot.growPanel(260);
+      window.__shot.click("Training");
+      await new Promise((r) => setTimeout(r, 400));
+      window.__shot.click("Width ladder");
+      return "ok";
+    })()`,
     clip: `window.__shot.panelBox(".rung, .mup__class")`,
     settle: 3000,
   },
@@ -330,8 +336,21 @@ async function main(): Promise<void> {
     });
 
     await mkdir(OUT, { recursive: true });
+    // Llama-3-8B, opened the way anybody would open a design sent to them: from
+    // a link carrying it. A preset picked from the dropdown would work too, but
+    // it is a menu to drive, and the default design is too small to show what
+    // the cluster and the ladder are for.
+    const { getPreset, loadEngine } = await import("@tensor-cad/engine/node");
+    await loadEngine();
+    const design = Buffer.from(JSON.stringify(getPreset("llama-3-8b"))).toString("base64url");
+    const start = `${URL_BASE}/#design=p${design}`;
+
     for (const shot of SHOTS) {
-      await dt.send("Page.navigate", { url: URL_BASE });
+      // Through a blank page: a navigation that changes only the fragment does
+      // not load the page again, and loading is when a link is read.
+      await dt.send("Page.navigate", { url: "about:blank" });
+      await wait(200);
+      await dt.send("Page.navigate", { url: start });
       // The engine is WebAssembly and the canvas fits itself once React Flow
       // has measured every node; both happen after `load`.
       await wait(5000);

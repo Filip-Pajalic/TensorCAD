@@ -112,6 +112,8 @@ export const PANELS_MENU: MenuNode[] = [
 ];
 
 export const HELP_MENU: MenuNode[] = [
+  item("help.start"),
+  sep(),
   item("help.palette"),
   sep(),
   item("help.settings"),

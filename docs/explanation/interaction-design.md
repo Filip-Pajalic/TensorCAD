@@ -2108,3 +2108,47 @@ Measured on DeepSeek-V3 and Jamba, five summaries ran into an ellipsis. So a
 phrase now lists its parts in order of importance and drops the ones that don't
 fit, never cutting one in half. *32 heads × 128 · 8 kv · causal* on a part
 with parameters loses *causal*, not *8 kv*.
+
+## Thirtieth pass: what a change did
+
+The editor has kept the design as it was opened since the Compare dialog was
+written. The dialog diffs against it, structure and numbers together, measured
+at one operating point. It sits under View, two clicks deep and behind a
+choice of what to compare with, and nobody trying "what if this had one key
+head" goes there. They change the value and look at the parameter count. The
+parameter count moves, and says nothing about the cache, which is the reason
+to make that change.
+
+### A strip under the number
+
+Once the design differs from where it started, a strip appears under the
+parameter count. It says what moved, and what that did to the four numbers a
+change is usually made for:
+
+> **Since you opened it** · key/value heads 3 → 1
+> parameters −11% · compute −11% · cache −67% · memory/GPU −11%
+
+What moved is said the way the rest of the editor says it:
+- a symbol by its own description, when the design gives it a short one, so
+  *key/value heads* rather than `Hkv`;
+- a block's parameter by the catalog's label, with an enum in the catalog's
+  words, so *block: activation GELU → ReLU*;
+- a block added or removed by what it is.
+
+The first two changes are listed, and the rest are counted.
+
+The percentages are signed and not coloured good or bad. A model made larger
+on purpose is not a warning, and the sign is all the direction there is.
+
+**Compare…** opens the full diff. **Compare from here** makes the design as it
+stands the new baseline, and the strip goes until something moves again.
+Opening a design, loading a preset or making one with New design sets the
+baseline too, which the store already did. Undoing back to the start makes the
+diff identical, and the strip goes with it.
+
+### Measured when you stop
+
+A diff analyses both designs. The readout has already analysed one of them,
+and a third analysis on every keystroke would be felt on a large design. So the
+strip is measured 200 milliseconds after the last edit, and dims while it
+waits rather than showing numbers that belong to the previous one.

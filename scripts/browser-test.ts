@@ -541,6 +541,23 @@ try {
     expect("and nothing was started over it", await page(`!!document.querySelector(".wt")`), false);
   });
 
+  await check("a change says what it did, under the number it changed", async () => {
+    // The design New design just made is the baseline, so nothing to say yet.
+    expect("before any change", await page(`!!document.querySelector("[data-testid=since-opened]")`), false);
+    await page(`[...document.querySelectorAll(".panel--edit [role=tab]")].find((t) => t.textContent === "Symbols").click()`);
+    const layers = `[...document.querySelectorAll(".table--symbols tbody tr")].find((r) => r.querySelector("input")?.value === "L")?.querySelectorAll("input")[1]`;
+    await until(layers);
+    await page(`(${layers}).focus(), (${layers}).select()`);
+    await dt.send("Input.insertText", { text: "6" });
+    await key("Enter");
+    const strip = `document.querySelector("[data-testid=since-opened]")?.textContent ?? ""`;
+    await until(`(${strip}).includes("12 → 6") && (${strip}).includes("parameters −")`);
+    // Comparing from here makes this the design later changes are measured
+    // against, and there is nothing yet to say about it.
+    await page(`[...document.querySelectorAll("[data-testid=since-opened] button")].find((b) => b.textContent === "Compare from here").click()`);
+    await until(`!document.querySelector("[data-testid=since-opened]")`);
+  });
+
   await check("Share makes a link that opens the same design in a new page", async () => {
     await page(`document.activeElement?.blur()`);
     // Renamed, so the design that opens is the one in the link and not one

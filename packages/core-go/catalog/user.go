@@ -42,6 +42,9 @@ type rawParam struct {
 	Max     *float64 `json:"max"`
 	Values  []string `json:"values"`
 	Doc     string   `json:"doc"`
+	// Label and Advanced are for the inspector, as a built-in block's are.
+	Label    string `json:"label"`
+	Advanced bool   `json:"advanced"`
 }
 
 type rawPorts struct {
@@ -173,6 +176,7 @@ func compileUserBlock(name string, raw any) (*BlockDef, error) {
 		params = append(params, ParamEntry{Name: key, Spec: ParamSpec{
 			Type: kind, Default: p.Default, HasDefault: p.Default != nil,
 			Min: p.Min, Max: p.Max, Values: p.Values, Doc: p.Doc,
+			Label: p.Label, Advanced: p.Advanced && p.Default != nil,
 		}})
 	}
 

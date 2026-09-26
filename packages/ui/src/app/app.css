@@ -1765,16 +1765,24 @@ select.field {
   margin-bottom: 3px;
 }
 
-.param__name {
+/* The label is the field; the name beside it is what a document writes, so it
+   is there for the person who has to type it and quiet for everyone else. */
+.param__label {
   font-size: 12px;
-  color: var(--accent);
+  color: var(--text);
   font-weight: 600;
 }
 
-.param__type {
-  font-size: 10px;
-  color: var(--text-dim);
-  color: var(--text-dim);
+.param__name {
+  font-size: 10.5px;
+  color: var(--dim);
+}
+
+/* A design's own block with no label: the name is all there is. */
+.param__name--alone {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .param__numeric {
@@ -3942,8 +3950,8 @@ select.field {
   margin-bottom: 4px;
 }
 
-/* Greyed rather than hidden: a field that disappears when you change `mlp` is
-   one you go looking for, and the value is still in the document either way. */
+/* Hidden until asked for, and then greyed in their places: a field that
+   vanishes when you change `mlp` is one you go looking for. */
 .param--irrelevant {
   opacity: 0.45;
 }
@@ -3951,6 +3959,50 @@ select.field {
 .param--irrelevant:hover,
 .param--irrelevant:focus-within {
   opacity: 1;
+}
+
+/* Advanced, and the fields that do not apply: a heading that opens. */
+.param__more {
+  margin-top: 4px;
+}
+
+.param__toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 4px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-soft);
+  background: none;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.param__toggle:hover,
+.param__toggle:focus-visible {
+  color: var(--text);
+}
+
+.param__more .param__toggle + .param__group {
+  margin-top: 8px;
+}
+
+.param__count {
+  margin-left: auto;
+  font-weight: 400;
+  color: var(--dim);
+}
+
+.param__toggle--quiet {
+  margin-top: 6px;
+  border-bottom: 0;
+  font-weight: 400;
+  color: var(--dim);
 }
 
 .section__note {

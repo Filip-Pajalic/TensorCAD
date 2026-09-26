@@ -14,6 +14,9 @@ var Builtin = func() Catalog {
 	for _, d := range Containers {
 		c[d.Type] = d
 	}
+	for _, d := range c {
+		label(d)
+	}
 	return c
 }()
 

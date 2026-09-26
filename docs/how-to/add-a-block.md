@@ -67,6 +67,15 @@ docs: {
 Someone will want to know where the arithmetic came from, and that someone is
 usually you in six months.
 
+Every parameter also needs a **label**, what the inspector leads with:
+"Feed-forward width" for `ffn_hidden`. Labels live in
+`packages/core-go/catalog/labels.go`, keyed by parameter name, so a name the
+catalog already uses is labelled already; a new one needs a line there, and a
+name that means something different on your block needs an override. The same
+file says which parameters are **advanced** — the ones most designs never
+touch, kept under a closed heading — and what an enum's values are called.
+`TestEveryBuiltinParameterHasALabel` fails for a parameter without one.
+
 ## Code generation
 
 Add a `case` to the switch in `codegen/torch.ts` and to the one in

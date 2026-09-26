@@ -188,6 +188,20 @@ export interface ParamSpec {
    * this is what lets a panel say so rather than showing them all alike.
    */
   when?: ParamWhen;
+  /**
+   * What a person reads for the parameter, where the name is what a document
+   * writes: "Feed-forward width" for `ffn_hidden`. Every built-in parameter has
+   * one; a design's own block may leave it out, and the name is shown instead.
+   */
+  label?: string;
+  /**
+   * A parameter most designs never touch. The inspector keeps these under a
+   * heading that starts closed, and opens it for a block that sets one. Only a
+   * parameter with a default can be advanced.
+   */
+  advanced?: boolean;
+  /** What an enum's values are called where a person reads them, by value. */
+  valueLabels?: Record<string, string>;
 }
 
 /** One parameter's value deciding whether another is meaningful. */
@@ -602,6 +616,8 @@ export interface ExplainedParam {
   /** The expression as written, when it was an expression. */
   expression?: string;
   value: unknown;
+  /** What the parameter is called where a person reads it. */
+  label?: string;
   doc?: string;
 }
 

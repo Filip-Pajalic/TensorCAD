@@ -9,7 +9,7 @@ import { useMemo, useState } from "react";
 import { useEditor } from "../state/store.js";
 import { useLevel } from "../state/hooks.js";
 import { newNodeFor } from "../state/addBlock.js";
-import { categoryColor, typeName } from "../canvas/blocks.js";
+import { categoryColor, categoryName, categoryRank, typeName } from "../canvas/blocks.js";
 import { DRAG_MIME } from "../canvas/Canvas.js";
 import { catalogByCategory, isUserBlock, type BlockDef } from "../engine.js";
 
@@ -19,10 +19,27 @@ const KIND_MARK: Record<string, string> = {
   container: "▣",
 };
 
+/** What each mark means, for the one reading it for the first time. */
+const KIND_TITLE: Record<string, string> = {
+  primitive: "A primitive: one operation, with its own formulas",
+  composite: "A composite: built from other blocks, and opens to show them",
+  container: "A container: holds a graph and repeats or routes it",
+};
+
+/**
+ * Whether a block answers a search.
+ *
+ * Its name, its identifier, its category in both spellings, its summary, and
+ * what its parameters are called: somebody looking for "experts per token"
+ * wants the blocks that have one.
+ */
 function matches(def: BlockDef, needle: string): boolean {
   if (!needle) return true;
+  const labels = Object.values(def.params ?? {})
+    .map((p) => p.label ?? "")
+    .join(" ");
   const hay =
-    `${def.docs.name ?? ""} ${def.type} ${def.category} ${def.docs.summary}`.toLowerCase();
+    `${def.docs.name ?? ""} ${def.type} ${def.category} ${categoryName(def.category)} ${def.docs.summary} ${labels}`.toLowerCase();
   return hay.includes(needle);
 }
 
@@ -48,6 +65,7 @@ export default function Palette(): React.ReactElement {
   };
 
   const visible = Object.entries(groups)
+    .sort(([a], [b]) => categoryRank(a) - categoryRank(b))
     .map(([category, defs]) => [category, defs.filter((d) => matches(d, needle))] as const)
     .filter(([, defs]) => defs.length > 0);
 
@@ -89,7 +107,7 @@ export default function Palette(): React.ReactElement {
         {visible.map(([category, defs]) => (
           <div className="palette__group" key={category}>
             <div className="palette__category" style={{ ["--accent" as string]: categoryColor(category) }}>
-              {category}
+              {categoryName(category)}
             </div>
             {defs.map((def) => (
               <div
@@ -108,7 +126,7 @@ export default function Palette(): React.ReactElement {
                 }}
                 onClick={() => add(def.type)}
               >
-                <span className="palette__kind" title={def.kind}>
+                <span className="palette__kind" title={KIND_TITLE[def.kind] ?? def.kind}>
                   {KIND_MARK[def.kind] ?? "?"}
                 </span>
                 <span className="palette__type">{typeName(def, def.type)}</span>

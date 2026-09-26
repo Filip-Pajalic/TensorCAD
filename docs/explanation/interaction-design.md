@@ -1872,3 +1872,69 @@ with a reason; opening one works with no provider registered and clears the
 address bar; and Share picks the store only when somebody is signed in to one
 that shares, saving the design first. In the browser, a link made by Share in
 one tab opened the same design in a fresh one.
+
+## Twenty-sixth pass: plain names
+
+Select a transformer block and the inspector listed forty-two fields, each
+headed by its code name and its type: `ffn_hidden int`, `kv_lora int`,
+`shared_expert_gate bool`. Twelve of them meant nothing for the block as it
+was set — `experts` on a dense one — and were greyed with "unused" beside them.
+Another eighteen were things almost no design touches: attention sinks, a score
+cap, an expression mask. Somebody opening the editor for the first time met a
+forty-two-field form for what is a fifteen-field decision, in a vocabulary they
+had to learn first.
+
+### A label, and the name beside it
+
+Every built-in parameter now has a label, and the inspector leads with it:
+**Feed-forward width**, with `ffn_hidden` small beside it. The name stays on
+screen because it is still what a document, a path and an MCP call write, and
+the person who needs to type it should not have to go looking. The type is gone
+from the heading; the control already says it.
+
+The labels are the engine's, not the editor's, in `catalog/labels.go`. They are
+keyed by the parameter's name, because a name means the same thing on nearly
+every block that has it — `heads` is heads on seventeen of the eighteen blocks
+that have one — with an override
+for the few names that do not: `count` is **Repeats** on a stack and **Vectors**
+on learned tokens, `by` is **Multiply by** on a scale and **Tokens ahead** on a
+multi-token head. Keeping them in the engine is what lets `explain` carry them,
+so an agent reading a block gets the same words a person does. A test fails for
+a built-in parameter without a label, and for two fields on one block that read
+alike.
+
+Enums read as words too, where the words are the ones a paper uses: the
+attention kinds are *grouped-query*, *latent (MLA)* and *differential*, the
+nonlinearities *SiLU*, *GELU* and *squared ReLU*. A switch says *on* and *off*,
+and a switch whose default belongs to another field says *default*.
+
+### Three piles
+
+The fields a block is made of are shown. The rare ones are under **Advanced**,
+which starts closed and opens by itself on a block that has changed one of them,
+so a design with sinks shows its sinks without a click; only a field with a
+default can be advanced, since a field a block cannot do without is not one to
+hide. The ones that do not apply are no longer greyed in place but hidden behind
+a count at the bottom — *9 more that don't apply* — which puts them back,
+greyed, where they were, and says in the other field's words when they would:
+*only used when feed-forward is mixture of experts*. The earlier pass kept them on screen because a field
+that vanishes when `mlp` changes is one you go looking for; the count is what
+says where it went.
+
+A transformer block now opens on fifteen fields.
+
+### The palette says the same
+
+Its headings were the engine's category keys, `ssm`, `moe`, `io`, in the order
+the catalog happened to list them. They are words now — *State space*,
+*Mixture of experts*, *Inputs and outputs* — in the order a design is built: whole
+layers first, then what a layer is made of, then the plumbing. A search also
+matches what a block's parameters are called, so *experts per token* finds the
+blocks that have one.
+
+### What is left
+
+Clicking a block drawn inside an unfolded frame selects it, and the inspector
+then says it is not on this level. That is true, and it is a poor answer to
+somebody who clicked the thing they wanted to know about. It belongs to the
+next pass, with the first screen.

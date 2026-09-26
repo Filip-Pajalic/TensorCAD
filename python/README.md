@@ -125,6 +125,40 @@ vocab 50257) emitted by the same generator as the real presets. Regenerate it wi
 bun run python/fixtures/make-tiny-gpt2.ts
 ```
 
+## `measure`
+
+```bash
+tensorcad-runtime measure out/gpt2-small/model.py --batch 2 --seq 512 --recipe amp
+```
+
+Runs a few AdamW steps on the GPU with random token ids and reports what they
+held, from PyTorch's own allocator. At rest, between steps, weights, gradients
+and optimizer state are each counted from the tensors themselves. In flight,
+`saved_bytes` is what one forward pass keeps for the backward pass and
+`peak_bytes` is the highest the step went. The last step is the one reported,
+because the first one allocates what the rest reuse.
+
+`--recipe` says how the step is run:
+
+| Recipe | Weights | Compute | AdamW state |
+|---|---|---|---|
+| `amp` (default) | fp32 | bf16 autocast | fp32 |
+| `bf16` | bf16 | bf16 | bf16 |
+| `fp32` | fp32 | fp32 | fp32 |
+
+`amp` is what `smoke-train` does, and what most PyTorch training scripts do.
+
+It needs a CUDA device, and says so rather than measuring host memory, which is
+shared with everything else the process does. It feeds token ids alone, so
+like `smoke-train` it refuses a design that takes several inputs.
+
+`packages/engine/test/python.test.ts` holds the analysis to it on the local GPU:
+- the resting state under `amp`, to 2%;
+- the activations saved under `bf16`, to 15%.
+
+What autocast saves on top of that is reported but not yet held; see
+[Analysis maths §1.4](../docs/reference/analysis-math.md).
+
 ## `trace`
 
 ```bash

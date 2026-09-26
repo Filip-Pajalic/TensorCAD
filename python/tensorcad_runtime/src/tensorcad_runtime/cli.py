@@ -114,6 +114,23 @@ def build_parser() -> argparse.ArgumentParser:
         "'default' keeps PyTorch's defaults",
     )
 
+    # -- measure -----------------------------------------------------------
+    measure = subparsers.add_parser(
+        "measure", help="run a few training steps on the GPU and report the memory they hold"
+    )
+    measure.add_argument("model", help="path to a generated model.py")
+    measure.add_argument("--batch", type=int, default=2, help="batch size")
+    measure.add_argument("--seq", type=int, default=512, help="sequence length")
+    measure.add_argument(
+        "--recipe",
+        default="amp",
+        choices=["amp", "bf16", "fp32"],
+        help="amp: fp32 weights under bf16 autocast (default); bf16: the whole model in bf16; fp32",
+    )
+    measure.add_argument("--steps", type=int, default=3, help="steps to run; the last one is reported")
+    measure.add_argument("--class-name", default=None, help="model class to instantiate")
+    measure.add_argument("--seed", type=int, default=1337, help="random seed")
+
     # -- trace -------------------------------------------------------------
     trace = subparsers.add_parser(
         "trace", help="run a tiny model on one input and record every value it computes"
@@ -221,6 +238,26 @@ def main(argv: list[str] | None = None) -> int:
             return _emit(summary)
         except Exception as exc:  # noqa: BLE001
             return _emit(_fail(exc, "smoke-train"))
+
+    if args.command == "measure":
+        try:
+            _require_torch()
+            from .measure import measure_memory
+
+            report = measure_memory(
+                args.model,
+                batch=args.batch,
+                seq=args.seq,
+                recipe=args.recipe,
+                steps=args.steps,
+                class_name=args.class_name,
+                seed=args.seed,
+                progress=_progress,
+            )
+            report["command"] = "measure"
+            return _emit(report)
+        except Exception as exc:  # noqa: BLE001
+            return _emit(_fail(exc, "measure"))
 
     if args.command == "trace":
         try:

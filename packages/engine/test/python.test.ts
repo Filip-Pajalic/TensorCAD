@@ -1240,3 +1240,99 @@ describe.skipIf(!python)("every generated model is valid Python", () => {
     TIMEOUT_MS,
   );
 });
+
+/**
+ * Training memory, measured on the GPU and held against the analysis.
+ *
+ * `tensorcad-runtime measure` runs real AdamW steps and reads PyTorch's own
+ * allocator. Two of its numbers are what the analysis claims under the same
+ * conditions, and are held to it here:
+ *
+ * - At rest, between steps, weights, gradients and optimizer state. The
+ *   analysis's bf16 accounting is sixteen bytes a parameter — bf16 weights and
+ *   gradients over an fp32 master copy and two fp32 moments — and PyTorch's
+ *   mixed precision comes to the same sixteen by another route: fp32 weights,
+ *   fp32 gradients, two fp32 moments.
+ * - The activations a forward pass saves for the backward one, with the whole
+ *   model in bf16, which is the activation dtype the analysis assumes.
+ *
+ * What autocast saves is not held yet, only reported: it keeps the residual
+ * stream and the norms in fp32 and a bf16 copy of every weight for the whole
+ * step, which is the next thing the analysis has to learn.
+ *
+ * Needs a CUDA device; skips without one, with a warning, as CI does.
+ */
+describe.skipIf(!available)("training memory, measured", () => {
+  const { invocation } = probed as Exclude<typeof probed, { reason: string }>;
+  const MiB = 2 ** 20;
+
+  type Measured = {
+    ok: boolean;
+    error_kind?: string;
+    params: number;
+    weights_bytes: number;
+    grads_bytes: number;
+    optimizer_bytes: number;
+    saved_bytes: number;
+    peak_bytes: number;
+  };
+
+  function measure(model: string, recipe: string, batch: number, seq: number): Measured {
+    const [cmd, base] = invocation;
+    const result = spawnSync(
+      cmd,
+      [...base, "measure", model, "--recipe", recipe, "--batch", String(batch), "--seq", String(seq)],
+      { encoding: "utf8", timeout: TIMEOUT_MS, shell: process.platform === "win32" },
+    );
+    return JSON.parse(result.stdout.trim().split(/\r?\n/).at(-1)!) as Measured;
+  }
+
+  const designs: [string, () => ReturnType<typeof getPreset>][] = [
+    ["gpt2-small", () => getPreset("gpt2-small")],
+    // A Llama at a size a desk GPU trains: grouped-query attention, a gated
+    // feed-forward and RMS norm, where GPT-2 has none of the three.
+    ["llama-style 150M", () => scaleDesign(getPreset("llama-3-8b"), { targetParams: 150e6 }).doc],
+  ];
+
+  for (const [name, make] of designs) {
+    it(
+      `${name}: the resting state and the saved activations are what the analysis says`,
+      () => {
+        const doc = make();
+        const dir = mkdtempSync(join(tmpdir(), "tensorcad-mem-"));
+        try {
+          for (const file of generateTorch(doc).files) writeFileSync(join(dir, file.path), file.contents);
+          const model = join(dir, "model.py");
+          const [B, T] = [2, 512];
+          const amp = measure(model, "amp", B, T);
+          if (!amp.ok && amp.error_kind === "no_cuda") {
+            console.warn("[python.test] no CUDA device; training memory was not measured");
+            return;
+          }
+          expect(amp.ok).toBe(true);
+          const bf16 = measure(model, "bf16", B, T);
+          expect(bf16.ok).toBe(true);
+
+          const a = analyze(doc, { B, T, dtype: "bf16", optimizer: "adamw", recompute: "none", gpus: 1, flash: true });
+          const train = a.memory.train;
+          expect(amp.params).toBe(a.params.total);
+
+          const resting = amp.weights_bytes + amp.grads_bytes + amp.optimizer_bytes;
+          const claimed = train.weights + train.grads + train.optimizer;
+          expect(Math.abs(resting / claimed - 1)).toBeLessThan(0.02);
+
+          const saved = bf16.saved_bytes / train.activations;
+          console.info(
+            `[python.test] ${name} at B=${B} T=${T}: activations ${(train.activations / MiB).toFixed(0)} MiB analysed, ` +
+              `${(bf16.saved_bytes / MiB).toFixed(0)} measured in bf16 (${saved.toFixed(2)}x), ` +
+              `${(amp.saved_bytes / MiB).toFixed(0)} under autocast (${(amp.saved_bytes / train.activations).toFixed(2)}x)`,
+          );
+          expect(Math.abs(saved - 1)).toBeLessThan(0.15);
+        } finally {
+          rmSync(dir, { recursive: true, force: true });
+        }
+      },
+      TIMEOUT_MS,
+    );
+  }
+});

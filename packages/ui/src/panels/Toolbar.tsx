@@ -32,6 +32,8 @@ import { Menubar } from "@base-ui-components/react/menubar";
 import { MENUBAR, POPUP, renderMenu } from "./menu-tree.js";
 import { formatCount, formatFlops } from "@tensor-cad/engine";
 import { PRESET_NAMES } from "../engine.js";
+import ShareButton from "./ShareButton.js";
+import AccountButton from "./AccountButton.js";
 
 /** The key a command is bound to, ready to drop into a tooltip. */
 function key(id: string): React.ReactNode {
@@ -409,6 +411,10 @@ export default function Toolbar(): React.ReactElement {
           </Tooltip>
         </div>
       </div>
+
+      {/* Sharing and the account, in the corner people look for them. */}
+      <ShareButton />
+      <AccountButton />
     </header>
   );
 }

@@ -407,6 +407,30 @@ try {
     );
   });
 
+  await check("Share makes a link that opens the same design in a new page", async () => {
+    await page(`document.activeElement?.blur()`);
+    // Renamed, so the design that opens is the one in the link and not one
+    // that happened to be there.
+    await page(`(() => {
+      const input = document.querySelector('[aria-label="Design name"]');
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(input, "shared-in-a-link");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    })()`);
+    await page(`document.querySelector("[data-testid=share]").click()`);
+    await until(`document.querySelector("[data-testid=share-link]")?.value`);
+    const link = await page<string>(`document.querySelector("[data-testid=share-link]").value`);
+    // Deflated by the browser, on this deployment's own origin.
+    if (!link.startsWith(`${SITE}/#design=z`)) throw new Error(`the link was ${link.slice(0, 80)}`);
+    await key("Escape");
+    // Through a blank page: a navigation that changes only the fragment would
+    // not load the page again, and loading is when a link is read.
+    await dt.send("Page.navigate", { url: "about:blank" });
+    await wait(200);
+    await dt.send("Page.navigate", { url: link });
+    await until(`document.querySelector('[aria-label="Design name"]')?.value === "shared-in-a-link"`, 30_000);
+    expect("the address bar, once it has opened", await page(`location.hash`), "");
+  });
+
   await check("nothing threw, and nothing was logged as an error", async () => {
     expect("errors", errors, []);
   });

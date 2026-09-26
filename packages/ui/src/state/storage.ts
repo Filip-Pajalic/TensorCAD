@@ -75,6 +75,11 @@ export interface Account {
   email?: string;
   avatarUrl?: string;
   signOutUrl?: string;
+  /**
+   * Something about the account worth a line in its menu: a session the
+   * server could not check, say. Absent when all is well.
+   */
+  problem?: string;
 }
 
 /**
@@ -104,6 +109,13 @@ export interface StorageProvider {
   loadShared?(shareId: string): Promise<{ body: string; name: string; view?: ViewState }>;
   /** Who is signed in. Absent means the provider has no notion of accounts. */
   account?(): Account | null;
+  /**
+   * Offer to sign in. The toolbar shows Sign in when nobody is and this is
+   * present, and calls it; what signing in looks like is the provider's.
+   */
+  signIn?(): void;
+  /** Sign out, where that is something the provider does rather than a page it links to. */
+  signOut?(): Promise<void>;
 }
 
 let provider: StorageProvider | null = null;
@@ -130,4 +142,19 @@ export function storage(): StorageProvider | null {
 export function subscribeStorage(listener: () => void): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
+}
+
+/**
+ * The stored design this editor is working on, when it came from a store: what
+ * Save writes to and what Share shares. Null is a design that has never been
+ * saved, which the next save makes a new one of.
+ */
+let opened: string | null = null;
+
+export function openDesignId(): string | null {
+  return opened;
+}
+
+export function setOpenDesign(id: string | null): void {
+  opened = id;
 }

@@ -16,16 +16,8 @@ import { useEditor } from "../state/store.js";
 import { useStorage } from "../state/hooks.js";
 import { captureView, applyView } from "../state/session.js";
 import { serializeDoc, parseDoc } from "../state/serialize.js";
-import type { StoredDesign } from "../state/storage.js";
+import { openDesignId, setOpenDesign, type StoredDesign } from "../state/storage.js";
 import Section from "./Section.js";
-
-/** The design this editor is currently working on, when it came from a store. */
-let openId: string | null = null;
-
-/** Called when a design is opened from elsewhere, so Save knows where to write. */
-export function setOpenDesign(id: string | null): void {
-  openId = id;
-}
 
 export default function Designs(): React.ReactElement {
   const provider = useStorage();
@@ -34,6 +26,7 @@ export default function Designs(): React.ReactElement {
   const setStatus = useEditor((s) => s.setStatus);
 
   const [rows, setRows] = useState<StoredDesign[] | null>(null);
+  const openId = openDesignId();
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
 
@@ -72,7 +65,7 @@ export default function Designs(): React.ReactElement {
   const save = (): Promise<void> =>
     run("Could not save", async () => {
       const { id } = await provider.save(openId, doc.meta.name, serializeDoc(doc), captureView());
-      openId = id;
+      setOpenDesign(id);
       setStatus(`Saved ${doc.meta.name}`);
       await refresh();
     });
@@ -84,7 +77,7 @@ export default function Designs(): React.ReactElement {
       setDoc(next, `Opened ${got.name}`);
       // After setDoc, which resets the level — putting you back is the point.
       applyView(got.view, next);
-      openId = row.id;
+      setOpenDesign(row.id);
     });
 
   const share = (row: StoredDesign): Promise<void> =>
@@ -99,8 +92,6 @@ export default function Designs(): React.ReactElement {
       }
       await refresh();
     });
-
-  const account = provider.account?.();
 
   return (
     <div className="panel__body designs">
@@ -133,7 +124,7 @@ export default function Designs(): React.ReactElement {
                   className="designs__drop"
                   onClick={() => void run("Could not delete", async () => {
                     await provider.remove(row.id);
-                    if (openId === row.id) openId = null;
+                    if (openId === row.id) setOpenDesign(null);
                     await refresh();
                   })}
                   disabled={busy}
@@ -151,7 +142,7 @@ export default function Designs(): React.ReactElement {
             {openId ? "Save" : "Save as new"}
           </button>
           {openId && (
-            <button type="button" onClick={() => { openId = null; setStatus("The next save will make a new design"); }}>
+            <button type="button" onClick={() => { setOpenDesign(null); setStatus("The next save will make a new design"); }}>
               Detach
             </button>
           )}
@@ -160,19 +151,6 @@ export default function Designs(): React.ReactElement {
         {problem && <p className="designs__problem">{problem}</p>}
       </Section>
 
-      {account && (
-        <Section id="designs.account" title="Account">
-          <div className="designs__account">
-            <span>{account.name}</span>
-            {account.email && <span className="designs__email">{account.email}</span>}
-            {account.signOutUrl && (
-              <a href={account.signOutUrl} className="designs__signout">
-                Sign out
-              </a>
-            )}
-          </div>
-        </Section>
-      )}
     </div>
   );
 }

@@ -1823,3 +1823,52 @@ unmeasured reason that might replace it. That reasoning still holds, and nobody
 has reported the view being slow. **Real values in the cells** rather than the
 speckle needs trained weights, which a design tool does not have; it is a
 feature about loading checkpoints, not a gap in this one.
+
+## Twenty-fifth pass: one bar, and a way to share
+
+The first thing a deployment with accounts showed was two top bars. Its own
+strip said the product's name and Sign in; the editor's toolbar under it said
+the product's name again. The editor had nowhere for an account to go, so the
+deployment built a place above it, and every page paid a row of height and a
+duplicated name for it.
+
+And sharing, which is the first thing anybody asks for once they have drawn
+something, was four steps into a tab: sign in, open Designs, save, press share
+on the row. In a plain checkout — the public editor — it was not there at all.
+
+### The account goes in the editor's corner
+
+The storage seam already carried who is signed in, for the Designs panel. It
+now carries two more things a provider may offer: `signIn()`, which the editor
+calls and the deployment answers with whatever signing in looks like there,
+and `signOut()`. An account can also carry a `problem`, a line for its menu.
+The toolbar's right-hand corner renders from that: Sign in when nobody is and
+the provider can ask, a name and a menu when somebody is, and nothing at all
+when there is no provider. The deployment's bar goes. The seam still names no
+vendor and no host: the corner shows what the provider reports and cannot tell
+where it came from.
+
+### Share, where it is looked for
+
+A Share button beside the account, one press. Signed in to a store that shares,
+it saves the design and copies the store's link, short and view-only. Anywhere
+else — the public editor, a plain checkout, somebody not signed in — the design
+goes in the link: serialized, deflated by the browser, and written into the
+fragment as `#design=…`. A fragment never leaves the browser, so nothing is
+uploaded and no server is involved, and the editor reads it back when the page
+loads, opens it and takes it off the address bar. Nemotron-H's fifty-two layers
+written out, the longest preset, is under sixteen thousand characters; a
+typical design is two or three thousand.
+
+The dialog says which kind of link it made, because they behave differently in
+the recipient's hands: a store's link shows the saved design, and a link that
+carries the design gives them a copy of their own to change.
+
+### What the tests hold
+
+Every preset's link comes back byte for byte, deflated and plain; a link this
+editor did not make, or one a browser without deflate cannot read, is refused
+with a reason; opening one works with no provider registered and clears the
+address bar; and Share picks the store only when somebody is signed in to one
+that shares, saving the design first. In the browser, a link made by Share in
+one tab opened the same design in a fresh one.

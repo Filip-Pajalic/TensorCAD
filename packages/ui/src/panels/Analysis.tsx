@@ -9,6 +9,7 @@
  */
 
 import { useEditor } from "../state/store.js";
+import SinceOpened from "./SinceOpened.js";
 import { useDerived } from "../state/hooks.js";
 import { categoryColor } from "../canvas/blocks.js";
 import Section from "./Section.js";
@@ -156,6 +157,8 @@ export default function Analysis(): React.ReactElement {
         <div className="headline__label">total parameters</div>
         <div className="headline__exact mono">{p.total.toLocaleString("en-US")}</div>
       </div>
+
+      <SinceOpened />
 
       <Section id="params" title="Parameters" note={formatCount(p.total)}>
         <table className="table">

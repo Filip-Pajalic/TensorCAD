@@ -195,6 +195,10 @@ Two cross-checks worth knowing:
   border rather than by naming classes — the fill is on `.part__body`, not on the node, which
   is invisible until a block with dark text on a light fill turns up. `scripts/export-svg.ts`
   drives it headless and refuses to write a file with no wires in it.
+  `panels/SinceOpened.tsx` is the strip under the parameter count: the engine's
+  `diff` of `opened` (the design as opened, created or last marked) against the
+  document, run 200 ms after the last edit rather than per keystroke, because it
+  analyses both sides.
   `canvas/viewport.ts` decides where a sheet opens: whole when it fits at
   `READABLE_ZOOM` (0.85), otherwise at that zoom from its top; `f` asks for the
   whole however small. A fit waits until React Flow holds nodes carrying the

@@ -4709,3 +4709,59 @@ select.field {
   color: var(--text-dim);
   cursor: pointer;
 }
+
+/* --- since you opened it -------------------------------------------------- */
+/* What a change did, under the number it changed. */
+
+.since {
+  margin: 4px 0 10px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  background: var(--bg-input);
+  font-size: 11.5px;
+  transition: opacity 120ms;
+}
+
+.since.is-stale {
+  opacity: 0.6;
+}
+
+.since__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.since__title {
+  flex: 1;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.since__what {
+  margin: 4px 0 0;
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.since__moved {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 5px;
+  color: var(--text-dim);
+}
+
+.since__delta b {
+  font-weight: 600;
+}
+
+/* Up and down, not good and bad: a model that grew on purpose is not a
+   warning, so the sign says which way and the colour stays out of it. */
+.since__delta b {
+  color: var(--text);
+}

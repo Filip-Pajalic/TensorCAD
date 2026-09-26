@@ -43,6 +43,12 @@ Open the **Symbols** tab on the right. These are the design's free variables —
 `D` from 768 to 1024 and watch every shape on the sheet, and every number in the
 readout, move at once.
 
+Under the parameter count a strip appears, **Since you opened it**. It lists what
+you changed and what that did to the parameters, the compute per token, the
+cache and the memory per GPU, measured against the design as you opened it.
+**Compare…** shows every number side by side, and **Compare from here** makes
+the design as it now stands the one later changes are measured against.
+
 That is the whole idea: the drawing is the model, not a picture of it.
 
 ## 3. Break it on purpose

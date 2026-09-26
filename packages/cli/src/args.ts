@@ -21,6 +21,7 @@ const VALUE_FLAGS = new Set([
   "tokens",
   "optimizer",
   "recompute",
+  "precision",
   "zero",
   "tp",
   "dp",

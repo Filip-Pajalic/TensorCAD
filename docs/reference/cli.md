@@ -32,8 +32,13 @@ it usable in CI.
 ```bash
 bun packages/cli/src/index.ts analyze <file|preset> \
   [--T n] [--B n] [--S n] [--hardware id] [--gpus n] [--tokens n]
-  [--pack mean] [--pack-spread c] [--json]
+  [--precision mixed|autocast] [--pack mean] [--pack-spread c] [--json]
 ```
+
+`--precision autocast` measures the training memory the way plain PyTorch trains:
+`torch.autocast`, fp32 weights, bf16 matrix multiplies. The default is `mixed`,
+the large frameworks' bf16 recipe. Both are held to measurements on a GPU; see
+[analysis maths §1.4](analysis-math.md).
 
 `--S` is the source length, for a design with a second sequence; a design that
 declares no `S` ignores it.

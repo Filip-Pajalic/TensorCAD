@@ -24,7 +24,7 @@ Effort estimates assume one developer working with an AI coding assistant, part-
 | M11 Encoder–decoder | **Done.** A second sequence, and cross-attention to it, so T5 can be drawn and M10 can close: a source length `S` beside `T`, each block counted at the tokens of its own stream, cross-attention, a repeat that hands every layer the same tensor, and expressions that read a tensor — T5's shared relative-bias table, which is Hugging Face's to the bit and learns through FlexAttention. `t5-small` and `flan-t5-base` reproduce their published counts exactly and compute what Hugging Face's T5 computes, weight for weight. Every decoder-only number is held unchanged. [docs/explanation/encoder-decoder.md](docs/explanation/encoder-decoder.md). |
 | M13 The editor for someone new | **Done.** One top bar, with the account in the editor's own corner, and a Share button that works everywhere: through a store when signed in to one, and with the design carried in the link itself anywhere else. Every parameter has a plain label, with its code name beside it, the rare ones under Advanced and the ones that do not apply out of the way. A first visit opens on the drawing with nothing over it, four operating fields, four tabs and a Start here. |
 | M14 Your first design | **Done.** File ▸ New design asks for a kind of model and a size, or a GPU the training has to fit on, and opens the kind's reference design scaled to it, with its head groups whole, a small model's head tied and a pretraining sequence length. A sheet opens where its words can be read, and its blocks say *32 heads × 128* rather than `dh 128`. A change says what it did, under the number it changed: *key/value heads 3 → 1 · cache −67%*. |
-| M15 Memory, measured | **Phase 1 done.** `tensorcad-runtime measure` runs real training steps on the GPU and reads the allocator: the resting state matches the analysis to 2% and bf16 activations to 6%. Plain autocast saves 1.26–1.55× more than the analysis says, which phase 2 models; phase 3 is the peak, not the sum. |
+| M15 Memory, measured | **Phases 1–2 done.** `tensorcad-runtime measure` runs real training steps on the GPU and reads the allocator: the resting state matches the analysis to 2% and bf16 activations to 6%. Plain autocast, which saves 1.26–1.55× more, is now a recipe the analysis models to within 5%. Phase 3 is the peak, not the sum. |
 | M12 Packed sequences | **Done.** Pretraining packs documents into one sequence and masks attention between them, which cuts Llama-3-8B's attention at 8k by eight times, and the engine assumes a sequence is one document. A documents input a mask can read, packing as a condition of training with a length distribution rather than a length, and a block mask built per batch. Phase 1 measures it: Llama-3-8B with its document mask at 8k in rows of 1,024-token documents keeps 491 keys a query, not 4,096, and trains 11% cheaper, while serving does not move. Phase 2 generates and verifies it: one block mask a batch shared by every layer, one document's tokens moving no other's outputs in PyTorch, and the kernel's whole blocks counted, 1.37 times the scores kept at 1,024 tokens, within 0.1% of FlexAttention's own count. Phase 3 restarts the positions at every document, and found that a rotary model under the mask computes the same either way while a learned position table does not. Phase 4 puts it in the editor: a packing control, the packed figures in the readout, the mask drawn over a sampled row, and two rules. [docs/explanation/packed-sequences.md](docs/explanation/packed-sequences.md). |
 
 Two suites, reading the same files. `go test ./...` in `packages/core-go` checks
@@ -617,7 +617,7 @@ as a way to start.
    by the engine's diff a moment after the last edit. Compare from here moves
    the baseline.
 
-### M15 — Memory, measured · Phase 1 done
+### M15 — Memory, measured · Phases 1–2 done
 
 The parameter count has been held to PyTorch since M2, and the FLOPs to its
 profiler since M4. Memory, the number people use to decide whether a model fits
@@ -640,7 +640,13 @@ came to 933 MiB of saved activations against 604 analysed.
 2. **Autocast, as a recipe.** A precision choice in the operating point beside
    the bf16 one the analysis models. Autocast keeps the residual stream and the
    norms in fp32, and a bf16 copy of every weight it casts for the whole step.
-   Held to the measurement the same way.
+   Held to the measurement the same way. *Done:* `precision: "autocast"`
+   follows each tensor's width through the graph, charges a bf16 copy per
+   matrix multiply that reads an fp32 tensor, and holds every cast weight. It
+   lands at 0.95–0.98× the measurement on both designs and both lengths, and
+   the resting state's 4/4/8 split is within 1% part by part. It is in the
+   operating point under More, in the CLI as `--precision`, and in the MCP
+   tools.
 3. **The peak, not the sum.** A step's high-water mark is not weights plus
    gradients plus optimizer plus activations. The backward pass holds
    gradients as it frees activations, and passes through transients, the

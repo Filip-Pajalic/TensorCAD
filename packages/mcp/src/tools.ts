@@ -88,6 +88,7 @@ type AnalysisInput = {
   tokens?: number;
   optimizer?: "adamw" | "adamw8bit" | "muon" | "sgd_momentum" | "sgd" | "bf16_adam";
   recompute?: "none" | "selective" | "full";
+  precision?: "mixed" | "autocast";
   zero?: number;
   tp?: number;
   dp?: number;
@@ -107,6 +108,7 @@ function toAnalysisOptions(input: AnalysisInput): AnalysisOptions {
   if (input.tokens !== undefined) out.tokens = input.tokens;
   if (input.optimizer) out.optimizer = input.optimizer;
   if (input.recompute) out.recompute = input.recompute;
+  if (input.precision) out.precision = input.precision;
   if (input.concurrency !== undefined) out.concurrency = input.concurrency;
   if (input.mfu !== undefined) out.mfu = input.mfu;
   if (input.packing) out.packing = { ...input.packing };

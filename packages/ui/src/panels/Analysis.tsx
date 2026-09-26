@@ -377,6 +377,7 @@ export default function Analysis(): React.ReactElement {
           <tbody>
             <Row label="optimizer" value={a.memory.optimizerLabel} />
             <Row label="recompute" value={o.recompute} />
+            {o.precision === "autocast" && <Row label="precision" value="autocast" />}
             <Row
               label="activations, unsharded"
               value={formatBytes(a.memory.train.activations)}
@@ -388,6 +389,14 @@ export default function Analysis(): React.ReactElement {
               aside={pct(a.memory.train.logits, a.memory.train.activations)}
               title="The vocabulary projection's output. Often the single largest activation in a small model."
             />
+            {(a.memory.train.castWeights ?? 0) > 0 && (
+              <Row
+                label="of which weight copies"
+                value={formatBytes(a.memory.train.castWeights!)}
+                aside={pct(a.memory.train.castWeights!, a.memory.train.activations)}
+                title="Autocast casts each weight to bf16 on its way into a matrix multiply and keeps the copy for the backward pass."
+              />
+            )}
           </tbody>
         </table>
 

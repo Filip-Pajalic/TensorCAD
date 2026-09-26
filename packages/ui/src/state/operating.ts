@@ -1,4 +1,4 @@
-import type { AnalysisOptions, Dtype, OptimizerKind } from "@tensor-cad/engine";
+import type { AnalysisOptions, Dtype, OptimizerKind, Precision } from "@tensor-cad/engine";
 import { DEFAULT_HARDWARE, DEFAULT_PARALLEL } from "@tensor-cad/engine";
 /**
  * The operating point.
@@ -30,6 +30,13 @@ export interface OperatingPoint {
   S: number | null;
   /** Training precision for weights and activations. */
   dtype: Dtype;
+  /**
+   * How a half-precision dtype is trained: `mixed`, bf16 weights and
+   * activations over an fp32 master copy, as the large frameworks do it; or
+   * `autocast`, what plain PyTorch does, which keeps more for the backward
+   * pass. The analysis is held to a measurement of each.
+   */
+  precision: Precision;
   /** Serving precision, which is usually smaller. */
   inferenceDtype: Dtype;
   hardware: string;
@@ -71,6 +78,7 @@ export const DEFAULT_OPERATING: OperatingPoint = {
   T: null,
   S: null,
   dtype: "bf16",
+  precision: "mixed",
   inferenceDtype: "bf16",
   hardware: DEFAULT_HARDWARE,
   gpus: 8,
@@ -104,6 +112,7 @@ export function toAnalysisOptions(o: OperatingPoint): AnalysisOptions {
     gpus: o.gpus,
     optimizer: o.optimizer,
     recompute: o.recompute,
+    precision: o.precision,
     flash: o.flash,
     concurrency: o.concurrency,
     ...(o.tokens !== null ? { tokens: o.tokens } : {}),

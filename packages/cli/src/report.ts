@@ -34,6 +34,7 @@ export function analysisJson(a: AnalysisResult): Record<string, unknown> {
       parallel: o.parallel,
       optimizer: o.optimizer,
       recompute: o.recompute,
+      ...(o.precision ? { precision: o.precision } : {}),
       flash: o.flash,
       tokens: o.tokens,
       tokens_were_defaulted: o.tokensWereDefaulted,
@@ -86,6 +87,7 @@ export function analysisJson(a: AnalysisResult): Record<string, unknown> {
         optimizer: n(a.memory.train.optimizer),
         activations: n(a.memory.train.activations),
         logits: n(a.memory.train.logits),
+        ...(a.memory.train.castWeights ? { cast_weights: n(a.memory.train.castWeights) } : {}),
         total: n(a.memory.train.total),
         per_gpu: {
           weights: n(a.memory.train.perGpu.weights),
@@ -161,6 +163,7 @@ export function analysisText(a: AnalysisResult, opts: { title?: string } = {}): 
       ["hardware", `${o.hardware.name}`, `${o.hardware.id} x${o.gpus}`],
       ["optimizer", o.optimizer, a.memory.optimizerLabel],
       ["recompute", o.recompute],
+      ...(o.precision ? ([["precision", o.precision, "torch.autocast: fp32 weights, bf16 matmuls"]] as [string, string, string][]) : []),
       [
         "parallel",
         `dp${o.parallel.dp} tp${o.parallel.tp} pp${o.parallel.pp} ep${o.parallel.ep}`,
@@ -247,7 +250,8 @@ export function analysisText(a: AnalysisResult, opts: { title?: string } = {}): 
       [
         "activations",
         finite(perGpu.activations, formatBytes),
-        `B=${o.B} T=${T}, logits ${finite(a.memory.train.logits, formatBytes)}`,
+        `B=${o.B} T=${T}, logits ${finite(a.memory.train.logits, formatBytes)}` +
+          (a.memory.train.castWeights ? `, weight copies ${finite(a.memory.train.castWeights, formatBytes)}` : ""),
       ],
       ["total per GPU", finite(perGpu.total, formatBytes), `fits ${finite(o.hardware.memory, formatBytes)}? ${perGpu.total <= o.hardware.memory ? "yes" : "no"}`],
       ["total all GPUs", finite(a.memory.train.total, formatBytes)],

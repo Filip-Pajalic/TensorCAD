@@ -54,6 +54,9 @@ type MemoryOptions struct {
 	Kv       *KvResult
 	// Streams says which sequence each block runs along; nil is one, T.
 	Streams *Streams
+	// Autocast counts what torch.autocast keeps rather than what bf16 mixed
+	// precision does. See autocast.go.
+	Autocast bool
 }
 
 // TrainPerGpu is the training footprint on one device.
@@ -72,7 +75,10 @@ type TrainMemory struct {
 	Optimizer   float64 `json:"optimizer"`
 	Activations float64 `json:"activations"`
 	// Logits is the part of Activations attributable to the vocabulary logits.
-	Logits            float64            `json:"logits"`
+	Logits float64 `json:"logits"`
+	// CastWeights is the part of Activations that is bf16 copies of weights,
+	// which autocast holds for the backward pass. Absent otherwise.
+	CastWeights       float64            `json:"castWeights,omitempty"`
 	Total             float64            `json:"total"`
 	PerGpu            TrainPerGpu        `json:"perGpu"`
 	ActivationsByPath map[string]float64 `json:"activationsByPath"`
@@ -173,6 +179,10 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 	}
 
 	counted := map[string]bool{}
+	var widths *precisions
+	if opts.Autocast {
+		widths = newPrecisions(flat, opts.Expanded)
+	}
 	// `tensor` is the producing "path:port" when there is one; the extras that
 	// belong to a block rather than to a wire pass their own path, which is
 	// what they are.
@@ -206,10 +216,20 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 				producer = outer.producer
 				multiplier /= outer.count
 			}
-			if counted[producer] {
+			// A tensor is kept once, at its own width — unless autocast casts
+			// it on the way into a matrix multiply, which then keeps a bf16
+			// copy of its own, one per reader.
+			width, key, copied := ctx.Bytes, producer, false
+			if widths != nil {
+				width = widths.bytesOf(producer)
+				if castsToHalf[node.Type] && width > 2 {
+					width, key, copied = 2, consumerKey+"#bf16", true
+				}
+			}
+			if counted[key] {
 				continue
 			}
-			counted[producer] = true
+			counted[key] = true
 
 			shape, known := opts.Expanded.Inputs[consumerKey]
 			if !known {
@@ -227,11 +247,13 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 			total := tensorTotal(shape, elements, env, ctx.B, lengths)
 			// The tensor belongs to whoever produced it, not to whoever is
 			// reading it here.
-			owner := node.Path
-			if at := strings.LastIndex(producer, ":"); at > 0 {
+			owner, tensor := node.Path, producer
+			if copied {
+				tensor = consumerKey
+			} else if at := strings.LastIndex(producer, ":"); at > 0 {
 				owner = producer[:at]
 			}
-			add(owner, producer, total*ctx.Bytes*multiplier)
+			add(owner, tensor, total*width*multiplier)
 		}
 
 		if node.Def.ExtraActivationBytes != nil {
@@ -246,6 +268,28 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 		}
 	}
 
+	// Autocast casts each weight a matrix multiply reads, and the bf16 copy
+	// is what the multiply saves for its backward pass. Every copy of a
+	// weight, not only the active ones: an expert that sees no token in a
+	// batch is rare, and the gather dispatch casts the rest regardless.
+	castWeights := 0.0
+	if widths != nil {
+		for i := range flat.Nodes {
+			node := &flat.Nodes[i]
+			if !castsToHalf[node.Type] || node.Def.ParamCount == nil {
+				continue
+			}
+			n := node.Def.ParamCount(node.Resolved)
+			// A tied head owns no weights and still casts the table it shares.
+			if node.Type == "lm_head" && node.Resolved.Bool("tied") {
+				n = node.Resolved.Num("vocab") * node.Resolved.Num("dim")
+			}
+			bytes := n * 2 * node.Multiplier
+			add(node.Path, node.Path+"#weights", bytes)
+			castWeights += bytes
+		}
+	}
+
 	if fullRecompute {
 		for _, rep := range flat.Repeats {
 			if rep.Type != "repeat" {
@@ -257,7 +301,13 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 					"Could not determine the stream width of %q for full recomputation", rep.Path))
 				continue
 			}
-			total := width * ctx.Bytes * rep.Count * tokensOf(rep.Path)
+			// Under autocast the residual stream a layer is recomputed from is
+			// fp32.
+			bytes := ctx.Bytes
+			if widths != nil {
+				bytes = 4
+			}
+			total := width * bytes * rep.Count * tokensOf(rep.Path)
 			activations += total
 			activationsByPath[rep.Path] = total
 			activationsByTensor[rep.Path] = total
@@ -276,6 +326,18 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 		bytesPer = Optimizers["adamw"]
 	}
 
+	// Autocast's weights are fp32 and are their own master copy: the same
+	// sixteen bytes a parameter for AdamW, split four, four and eight rather
+	// than two, two and twelve. Only pure bf16 Adam has no master copy to
+	// give up, and it is not an autocast recipe.
+	if opts.Autocast && opts.Optimizer != "bf16_adam" {
+		bytesPer.Optimizer -= 4 - bytesPer.Weights
+		bytesPer.Optimizer -= 4 - bytesPer.Grads
+		bytesPer.Weights, bytesPer.Grads = 4, 4
+		// The label names the recipe, and under autocast that is not mixed
+		// precision's bf16 weights over a master copy.
+		bytesPer.Label = strings.Replace(bytesPer.Label, "mixed precision", "under autocast", 1)
+	}
 	total := opts.Params.Total
 	weights := total * bytesPer.Weights
 	grads := total * bytesPer.Grads
@@ -358,7 +420,7 @@ func AnalyzeMemory(flat *FlatResult, opts MemoryOptions) *MemoryResult {
 		WeightsBytes: weights,
 		Train: TrainMemory{
 			Weights: weights, Grads: grads, Optimizer: optimizer,
-			Activations: activations, Logits: logits,
+			Activations: activations, Logits: logits, CastWeights: castWeights,
 			Total: weights + grads + optimizer + activations,
 			PerGpu: TrainPerGpu{
 				Weights: wGpu, Grads: gGpu, Optimizer: oGpu, Activations: actGpu,

@@ -65,6 +65,8 @@ export function analysisOptions(args: Args): AnalysisOptions {
   if (optimizer) out.optimizer = optimizer;
   const recompute = oneOf(args, "recompute", RECOMPUTE);
   if (recompute) out.recompute = recompute;
+  const precision = oneOf(args, "precision", ["mixed", "autocast"] as const);
+  if (precision) out.precision = precision;
 
   const parallel: NonNullable<AnalysisOptions["parallel"]> = {};
   const zero = num(args, "zero");

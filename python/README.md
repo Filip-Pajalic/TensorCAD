@@ -154,9 +154,10 @@ like `smoke-train` it refuses a design that takes several inputs.
 
 `packages/engine/test/python.test.ts` holds the analysis to it on the local GPU:
 - the resting state under `amp`, to 2%;
-- the activations saved under `bf16`, to 15%.
+- the activations saved under `bf16`, to 15%;
 
-What autocast saves on top of that is reported but not yet held; see
+and under `amp` against the analysis's `precision: autocast`: the saved
+activations to 10%, and weights, gradients and optimizer state each to 1%. See
 [Analysis maths §1.4](../docs/reference/analysis-math.md).
 
 ## `trace`

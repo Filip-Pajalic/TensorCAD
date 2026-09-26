@@ -53,6 +53,11 @@ type Options struct {
 	// Packing is how training rows are filled, for a design whose mask keeps
 	// documents apart. Nil is one document a row, which is what serving is.
 	Packing *catalog.Packing
+	// Precision is the recipe a half-precision dtype trains under: empty or
+	// "mixed" for bf16 weights and activations over an fp32 master copy, as
+	// the large frameworks do it; "autocast" for torch.autocast's fp32
+	// weights cast to bf16 at each matrix multiply. See autocast.go.
+	Precision string
 }
 
 // PartialParallel overrides part of the default parallel plan.
@@ -114,6 +119,8 @@ type ResolvedOptions struct {
 	Concurrency       float64          `json:"concurrency"`
 	// Packing is present only when the operating point gave one.
 	Packing *catalog.Packing `json:"packing,omitempty"`
+	// Precision is present only when it is autocast; mixed is the default.
+	Precision string `json:"precision,omitempty"`
 }
 
 // Result is every number the editor, the CLI and the MCP server report.
@@ -255,6 +262,9 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 	concurrency := orDefault(options.Concurrency, 1)
 
 	params := CountParams(flat)
+	// Autocast is a way to train in half precision; in fp32 there is nothing
+	// to cast to.
+	autocast := options.Precision == Autocast && DtypeBytes[dtype] < 4
 
 	trainCtx := catalog.AnalysisCtx{
 		T: t, B: b, Bytes: DtypeBytes[dtype],
@@ -316,6 +326,7 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 		Params:              params,
 		Kv:                  kv,
 		Streams:             streams,
+		Autocast:            autocast,
 	})
 
 	peak := PeakFlops(hardware, dtype)
@@ -373,7 +384,7 @@ func Analyze(doc *ir.Doc, options Options, pre Inputs) (*Result, error) {
 			Parallel: parallel, Optimizer: optimizer, Recompute: recompute,
 			Flash: flash, Tokens: tokens, TokensWereDefault: tokensWereDefault,
 			MFU: mfu, DecodeEfficiency: decodeEfficiency, Concurrency: concurrency,
-			Packing: options.Packing,
+			Packing: options.Packing, Precision: precisionName(autocast),
 		},
 		Symbols:    symbols,
 		Infer:      shapeInfo,

@@ -1253,12 +1253,12 @@ describe.skipIf(!python)("every generated model is valid Python", () => {
  *   gradients over an fp32 master copy and two fp32 moments — and PyTorch's
  *   mixed precision comes to the same sixteen by another route: fp32 weights,
  *   fp32 gradients, two fp32 moments.
- * - The activations a forward pass saves for the backward one, with the whole
- *   model in bf16, which is the activation dtype the analysis assumes.
- *
- * What autocast saves is not held yet, only reported: it keeps the residual
- * stream and the norms in fp32 and a bf16 copy of every weight for the whole
- * step, which is the next thing the analysis has to learn.
+ * - The activations a forward pass saves for the backward one, twice: with the
+ *   whole model in bf16, against the default mixed-precision accounting, and
+ *   under autocast, against the analysis's autocast recipe — which keeps the
+ *   residual stream and the norms in fp32 and a bf16 copy of every weight.
+ *   Under autocast the resting state splits four, four and eight bytes a
+ *   parameter rather than two, two and twelve, and each part is held.
  *
  * Needs a CUDA device; skips without one, with a warning, as CI does.
  */
@@ -1322,12 +1322,22 @@ describe.skipIf(!available)("training memory, measured", () => {
           expect(Math.abs(resting / claimed - 1)).toBeLessThan(0.02);
 
           const saved = bf16.saved_bytes / train.activations;
+          const auto = analyze(doc, {
+            B, T, dtype: "bf16", precision: "autocast", optimizer: "adamw", recompute: "none", gpus: 1, flash: true,
+          }).memory.train;
+          const autoSaved = amp.saved_bytes / auto.activations;
           console.info(
-            `[python.test] ${name} at B=${B} T=${T}: activations ${(train.activations / MiB).toFixed(0)} MiB analysed, ` +
-              `${(bf16.saved_bytes / MiB).toFixed(0)} measured in bf16 (${saved.toFixed(2)}x), ` +
-              `${(amp.saved_bytes / MiB).toFixed(0)} under autocast (${(amp.saved_bytes / train.activations).toFixed(2)}x)`,
+            `[python.test] ${name} at B=${B} T=${T}: bf16 ${(bf16.saved_bytes / MiB).toFixed(0)} MiB measured, ` +
+              `${(train.activations / MiB).toFixed(0)} analysed (${saved.toFixed(2)}x); ` +
+              `autocast ${(amp.saved_bytes / MiB).toFixed(0)} measured, ${(auto.activations / MiB).toFixed(0)} analysed (${autoSaved.toFixed(2)}x)`,
           );
           expect(Math.abs(saved - 1)).toBeLessThan(0.15);
+          expect(Math.abs(autoSaved - 1)).toBeLessThan(0.1);
+          // Autocast's resting state, part by part: fp32 weights that are their
+          // own master copy, fp32 gradients, two fp32 moments.
+          expect(Math.abs(amp.weights_bytes / auto.weights - 1)).toBeLessThan(0.01);
+          expect(Math.abs(amp.grads_bytes / auto.grads - 1)).toBeLessThan(0.01);
+          expect(Math.abs(amp.optimizer_bytes / auto.optimizer - 1)).toBeLessThan(0.01);
         } finally {
           rmSync(dir, { recursive: true, force: true });
         }

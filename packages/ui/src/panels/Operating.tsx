@@ -136,6 +136,7 @@ export function changedUnderMore(o: OperatingPoint): string[] {
   const d = DEFAULT_OPERATING;
   const out: string[] = [];
   if (o.dtype !== d.dtype) out.push(`train ${o.dtype}`);
+  if (o.precision !== d.precision) out.push(o.precision);
   if (o.inferenceDtype !== d.inferenceDtype) out.push(`serve ${o.inferenceDtype}`);
   if (o.optimizer !== d.optimizer) out.push(OPTIMIZERS.find((x) => x.id === o.optimizer)?.label ?? o.optimizer);
   if (o.recompute !== d.recompute) out.push(`recompute ${o.recompute}`);
@@ -336,6 +337,16 @@ export default function Operating(): React.ReactElement {
               options={DTYPES.map((d) => ({ id: d, label: d }))}
               onChange={(dtype) => set({ dtype })}
               title="Precision of weights and activations while training."
+            />
+            <Pick
+              label="recipe"
+              value={o.precision}
+              options={[
+                { id: "mixed", label: "mixed" },
+                { id: "autocast", label: "autocast" },
+              ]}
+              onChange={(precision) => set({ precision })}
+              title="How bf16 training is done. Mixed: bf16 weights and activations over an fp32 master copy, as Megatron does it. Autocast: plain PyTorch's torch.autocast, which keeps the residual stream and the norms in fp32 and a bf16 copy of every weight, and so saves more for the backward pass."
             />
             <Pick
               label="serve"

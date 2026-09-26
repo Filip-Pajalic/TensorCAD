@@ -503,6 +503,7 @@ export function analysisJson(a: AnalysisResult): Record<string, unknown> {
       parallel: { ...o.parallel },
       optimizer: o.optimizer,
       recompute: o.recompute,
+      ...(o.precision ? { precision: o.precision } : {}),
       tokens: o.tokens,
       tokens_were_defaulted: o.tokensWereDefaulted,
       mfu: o.mfu,

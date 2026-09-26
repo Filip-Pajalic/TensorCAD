@@ -176,6 +176,7 @@ type operatingPoint struct {
 	GPUs             *float64 `json:"gpus"`
 	Optimizer        string   `json:"optimizer"`
 	Recompute        string   `json:"recompute"`
+	Precision        string   `json:"precision"`
 	Flash            *bool    `json:"flash"`
 	Tokens           *float64 `json:"tokens"`
 	MFU              *float64 `json:"mfu"`
@@ -207,7 +208,7 @@ func decodeOptions(text string) (analysis.Options, error) {
 		T: o.T, B: o.B, S: o.S,
 		Dtype: o.Dtype, InferenceDtype: o.InferenceDtype, KvDtype: o.KvDtype,
 		Hardware: o.Hardware, GPUs: o.GPUs,
-		Optimizer: o.Optimizer, Recompute: o.Recompute, Flash: o.Flash,
+		Optimizer: o.Optimizer, Recompute: o.Recompute, Precision: o.Precision, Flash: o.Flash,
 		Tokens: o.Tokens, MFU: o.MFU,
 		DecodeEfficiency: o.DecodeEfficiency, Concurrency: o.Concurrency,
 	}

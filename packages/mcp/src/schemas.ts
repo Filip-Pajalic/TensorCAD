@@ -122,6 +122,13 @@ export const analysisOptionsShape = {
   tokens: z.number().positive().optional().describe("Training token budget. Defaults to Chinchilla-optimal."),
   optimizer: z.enum(["adamw", "adamw8bit", "muon", "sgd_momentum", "sgd", "bf16_adam"]).optional(),
   recompute: z.enum(["none", "selective", "full"]).optional(),
+  precision: z
+    .enum(["mixed", "autocast"])
+    .optional()
+    .describe(
+      "How bf16 training is done. mixed (default): bf16 weights and activations over an fp32 master copy. " +
+        "autocast: torch.autocast, fp32 weights cast at each matmul, which saves more activations.",
+    ),
   zero: z.number().int().min(0).max(3).optional().describe("ZeRO/FSDP sharding stage."),
   tp: z.number().int().positive().optional().describe("Tensor parallel degree."),
   dp: z.number().int().positive().optional().describe("Data parallel degree."),

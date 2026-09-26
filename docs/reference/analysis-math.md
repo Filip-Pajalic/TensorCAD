@@ -47,7 +47,12 @@ Canonical sources: EleutherAI [Transformer Math 101](https://blog.eleuther.ai/tr
 - **Measured** (`tensorcad-runtime measure` on an RTX 5080, PyTorch 2.11, B=2, T=512):
   - *At rest.* Weights, gradients and optimizer state agree with the 16 B/param above to within 2%. PyTorch's mixed precision reaches the same sixteen bytes by another route: fp32 weights, fp32 gradients and two fp32 moments.
   - *Saved activations with the whole model in bf16.* The activation dtype assumed here, and within 6% of the analysis: GPT-2 small 588 MiB measured against 604 analysed, a Llama-style 150M model 896 against 848.
-  - *Under autocast.* Plain PyTorch training saves 1.26–1.55× that: 933 and 1,071 MiB. Autocast keeps the residual stream and the norms in fp32, and holds a bf16 copy of every weight it casts for the whole step. Neither is in the formulas above; that is the next thing the analysis has to learn.
+  - *Under autocast.* Plain PyTorch training saves 1.26–1.55× that: 933 and 1,071 MiB. `precision: autocast` models it, and comes to 894 and 1,018 MiB (0.96× and 0.95× of the measurement), and 1,552 MiB against 1,586 for GPT-2 at T=1024. The model has three parts, in `analysis/autocast.go`:
+    - *Width.* Each tensor's width follows the graph. An embedding lookup is fp32, since the table is. Norms, softmax, rotations and the scans are fp32, by autocast's own list and by what they are written in. Matrix multiplies and the attention kernel produce bf16. Anything else is the widest of what it reads, so the residual stream is fp32 from the embedding on.
+    - *Per-consumer casts.* A matrix multiply that reads an fp32 tensor saves its own bf16 cast of it, one per reader. Three projections of one norm output are three copies.
+    - *Weight copies.* Every weight a matrix multiply casts is held as a bf16 copy until the backward pass has used it: 2 B per such parameter, a tied head's table included.
+
+    At rest the split is 4 + 4 + 8 B/param (fp32 weights are their own master copy), the same 16 as mixed precision, and it matches the allocator to 1%.
 - **Sharding**: ZeRO-1 `W + G + Opt/N_dp + Act`; ZeRO-2 `W + (G+Opt)/N_dp + Act`; ZeRO-3/FSDP `(W+G+Opt)/N_dp + Act + live unsharded layer`. TP divides W/G/Opt by `t` and activations by `t` only with sequence parallel; PP divides layers by `p` but holds `p` micro-batches of activations in flight (1F1B); EP divides only expert weights. Add 10–20% workspace/fragmentation.
 
 ### 1.5 Inference memory and roofline

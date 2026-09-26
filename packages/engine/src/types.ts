@@ -324,6 +324,14 @@ export interface AnalysisOptions {
   parallel?: Partial<ParallelPlan>;
   optimizer?: OptimizerKind;
   recompute?: Recompute;
+  /**
+   * How a half-precision dtype is trained. `mixed`, the default: bf16 weights
+   * and activations over an fp32 master copy, as the large frameworks do it.
+   * `autocast`: torch.autocast's fp32 weights cast to bf16 at each matrix
+   * multiply, which keeps the residual stream and the norms in fp32 and holds
+   * a bf16 copy of every weight for the backward pass.
+   */
+  precision?: Precision;
   /** Assume a memory-efficient attention kernel. */
   flash?: boolean;
   tokens?: number;
@@ -466,6 +474,8 @@ export interface MemoryResult {
     activations: number;
     /** The part of `activations` that is the vocabulary logits. */
     logits: number;
+    /** Under autocast, the part of `activations` that is bf16 copies of weights. */
+    castWeights?: number;
     total: number;
     perGpu: TrainPerGpu;
     activationsByPath: Record<string, number>;
@@ -529,6 +539,8 @@ export interface ChinchillaResult {
 }
 
 /** The operating point with every default filled in. */
+export type Precision = "mixed" | "autocast";
+
 export interface ResolvedAnalysisOptions {
   T: number;
   B: number;
@@ -542,6 +554,8 @@ export interface ResolvedAnalysisOptions {
   parallel: ParallelPlan;
   optimizer: OptimizerKind;
   recompute: Recompute;
+  /** Present only when the numbers assume autocast. */
+  precision?: "autocast";
   flash: boolean;
   tokens: number;
   tokensWereDefaulted: boolean;

@@ -19,6 +19,7 @@ Conditions the design is measured under, never properties of it:
 | `gpus` | How many |
 | `sharding` | ZeRO stage, tensor and pipeline parallel degree |
 | `recompute` | `none` / `selective` / `full` |
+| `precision` | How a bf16 or fp16 dtype is trained. `mixed`, the default: bf16 weights and activations over an fp32 master copy, as Megatron does it. `autocast`: `torch.autocast`, fp32 weights cast to bf16 at each matrix multiply. It keeps the residual stream and the norms in fp32 and a bf16 copy of every weight for the backward pass (reported as `memory.train.castWeights`), and splits the same 16 bytes a parameter 4/4/8 rather than 2/2/12. Ignored in fp32 |
 | `tokens` | Training token budget, for cost and Chinchilla |
 | `packing` | Training rows packed with documents, `{ mean, spread }`: the mean length in tokens and the coefficient of variation, 0 for fixed lengths and 1 for exponential. Absent is one document a row |
 
